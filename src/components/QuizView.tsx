@@ -20,8 +20,9 @@ const QuizView = ({ categoryId, categoryTitle, onBack }: QuizViewProps) => {
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
 
-  const handleAnswer = (correct: boolean) => {
-    if (correct) setScore((s) => s + 1);
+  const handleAnswer = (result: "best" | "acceptable" | "wrong") => {
+    if (result === "best") setScore((s) => s + 1);
+    else if (result === "acceptable") setScore((s) => s + 0.5);
   };
 
   const handleNext = () => {

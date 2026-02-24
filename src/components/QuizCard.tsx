@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Question } from "@/data/quizData";
-import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, XCircle, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface QuizCardProps {
   question: Question;
   currentIndex: number;
   totalQuestions: number;
-  onAnswer: (correct: boolean) => void;
+  onAnswer: (result: "best" | "acceptable" | "wrong") => void;
   onNext: () => void;
 }
 
@@ -20,7 +20,13 @@ const QuizCard = ({ question, currentIndex, totalQuestions, onAnswer, onNext }: 
     if (selectedAnswer !== null) return;
     setSelectedAnswer(index);
     setShowExplanation(true);
-    onAnswer(index === question.correctAnswer);
+    if (index === question.bestAnswer) {
+      onAnswer("best");
+    } else if (index === question.acceptableAnswer) {
+      onAnswer("acceptable");
+    } else {
+      onAnswer("wrong");
+    }
   };
 
   const handleNext = () => {
@@ -28,6 +34,9 @@ const QuizCard = ({ question, currentIndex, totalQuestions, onAnswer, onNext }: 
     setShowExplanation(false);
     onNext();
   };
+
+  const isBest = (index: number) => index === question.bestAnswer;
+  const isAcceptable = (index: number) => index === question.acceptableAnswer;
 
   return (
     <motion.div
@@ -56,22 +65,25 @@ const QuizCard = ({ question, currentIndex, totalQuestions, onAnswer, onNext }: 
 
       {/* Question */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
-        <h2 className="mb-6 font-display text-xl font-semibold text-foreground leading-relaxed">
+        <h2 className="mb-6 font-body text-base font-normal text-foreground leading-relaxed">
           {question.question}
         </h2>
 
         <div className="space-y-3">
           {question.options.map((option, index) => {
             const isSelected = selectedAnswer === index;
-            const isCorrect = index === question.correctAnswer;
             const showResult = selectedAnswer !== null;
+            const best = isBest(index);
+            const acceptable = isAcceptable(index);
 
             let optionClasses = "w-full rounded-xl border-2 p-4 text-left font-body text-sm transition-all duration-200 ";
             if (!showResult) {
               optionClasses += "border-border bg-card hover:border-primary/40 hover:bg-primary/5 cursor-pointer";
-            } else if (isCorrect) {
+            } else if (best) {
               optionClasses += "border-green-400 bg-green-50 text-green-900";
-            } else if (isSelected && !isCorrect) {
+            } else if (acceptable) {
+              optionClasses += "border-amber-400 bg-amber-50 text-amber-900";
+            } else if (isSelected) {
               optionClasses += "border-destructive/40 bg-destructive/5 text-destructive";
             } else {
               optionClasses += "border-border bg-card opacity-50";
@@ -91,10 +103,19 @@ const QuizCard = ({ question, currentIndex, totalQuestions, onAnswer, onNext }: 
                     {String.fromCharCode(65 + index)}
                   </span>
                   <span className="flex-1">{option}</span>
-                  {showResult && isCorrect && (
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
+                  {showResult && best && (
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 shrink-0 text-green-500 fill-green-500" />
+                      <span className="text-xs font-medium text-green-600">Best</span>
+                    </div>
                   )}
-                  {showResult && isSelected && !isCorrect && (
+                  {showResult && acceptable && (
+                    <div className="flex items-center gap-1">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-amber-500" />
+                      <span className="text-xs font-medium text-amber-600">Acceptable</span>
+                    </div>
+                  )}
+                  {showResult && isSelected && !best && !acceptable && (
                     <XCircle className="h-5 w-5 shrink-0 text-destructive" />
                   )}
                 </div>
@@ -112,6 +133,21 @@ const QuizCard = ({ question, currentIndex, totalQuestions, onAnswer, onNext }: 
               exit={{ opacity: 0, height: 0 }}
               className="mt-6 overflow-hidden"
             >
+              {/* Result banner */}
+              {selectedAnswer !== null && (
+                <div className={`mb-3 rounded-lg px-4 py-2 text-sm font-medium ${
+                  selectedAnswer === question.bestAnswer
+                    ? "bg-green-50 text-green-800 border border-green-200"
+                    : selectedAnswer === question.acceptableAnswer
+                    ? "bg-amber-50 text-amber-800 border border-amber-200"
+                    : "bg-destructive/5 text-destructive border border-destructive/20"
+                }`}>
+                  {selectedAnswer === question.bestAnswer && "⭐ Excellent! You chose the best answer."}
+                  {selectedAnswer === question.acceptableAnswer && "✓ Good — that's an acceptable answer, but there's a stronger choice."}
+                  {selectedAnswer !== question.bestAnswer && selectedAnswer !== question.acceptableAnswer && "✗ Not quite. Review the explanation below."}
+                </div>
+              )}
+
               <div className="rounded-xl bg-secondary/60 p-4">
                 <p className="text-sm font-medium text-secondary-foreground mb-1">Explanation</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">{question.explanation}</p>
