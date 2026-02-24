@@ -1,0 +1,145 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
+import { Heart, Sparkles } from "lucide-react";
+
+const US_STATES = [
+  "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia",
+  "Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland",
+  "Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey",
+  "New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina",
+  "South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"
+];
+
+const Signup = () => {
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [state, setState] = useState("");
+  const [examDate, setExamDate] = useState("");
+  const [program, setProgram] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+        emailRedirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      toast({ title: "Oops!", description: error.message, variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+
+    // Update profile with extra fields
+    if (data.user) {
+      await supabase.from("profiles").update({
+        state: state || null,
+        exam_date: examDate || null,
+        program: program || null,
+      }).eq("id", data.user.id);
+    }
+
+    setLoading(false);
+    toast({
+      title: "You're in! 🎉",
+      description: "Check your email to verify your account, then sign in.",
+    });
+    navigate("/login");
+  };
+
+  return (
+    <div className="theme-auth min-h-screen flex items-center justify-center px-4 py-12" style={{ background: "linear-gradient(135deg, hsl(320 45% 20%), hsl(346 50% 35%))" }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <Sparkles className="h-6 w-6 text-pink-300" />
+            <span className="font-display text-2xl font-bold text-white">CosmoPrep</span>
+          </div>
+          <p className="text-pink-200 text-sm">Your journey to passing boards starts here.</p>
+        </div>
+
+        <Card className="border-0 shadow-2xl" style={{ background: "hsl(320 20% 95%)" }}>
+          <CardHeader className="text-center">
+            <CardTitle className="font-display text-2xl" style={{ color: "hsl(320 45% 25%)" }}>Create Account</CardTitle>
+            <CardDescription>Tell us a little about yourself</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSignup} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Your Name</Label>
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="First name" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" required minLength={6} />
+              </div>
+              <div className="space-y-2">
+                <Label>Program</Label>
+                <Select value={program} onValueChange={setProgram}>
+                  <SelectTrigger><SelectValue placeholder="Select your program" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Cosmetology">Cosmetology</SelectItem>
+                    <SelectItem value="Esthetics">Esthetics</SelectItem>
+                    <SelectItem value="Nail Technology">Nail Technology</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>State</Label>
+                <Select value={state} onValueChange={setState}>
+                  <SelectTrigger><SelectValue placeholder="Select your state" /></SelectTrigger>
+                  <SelectContent>
+                    {US_STATES.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="examDate">Exam Date (optional)</Label>
+                <Input id="examDate" type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
+              </div>
+              <Button type="submit" className="w-full text-base py-6" disabled={loading} style={{ background: "hsl(320 45% 30%)", color: "white" }}>
+                {loading ? "Creating account..." : "Join CosmoPrep"}
+              </Button>
+            </form>
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Already have an account?{" "}
+              <Link to="/login" className="font-medium underline" style={{ color: "hsl(320 45% 30%)" }}>
+                Sign in
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
+};
+
+export default Signup;
