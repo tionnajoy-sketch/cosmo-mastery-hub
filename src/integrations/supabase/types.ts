@@ -14,7 +14,200 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          exam_date: string | null
+          id: string
+          name: string
+          program: string | null
+          state: string | null
+        }
+        Insert: {
+          created_at?: string
+          exam_date?: string | null
+          id: string
+          name?: string
+          program?: string | null
+          state?: string | null
+        }
+        Update: {
+          created_at?: string
+          exam_date?: string | null
+          id?: string
+          name?: string
+          program?: string | null
+          state?: string | null
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          block_number: number
+          correct_option: string
+          explanation: string
+          id: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question_text: string
+          related_term_id: string | null
+          section_id: string
+        }
+        Insert: {
+          block_number?: number
+          correct_option?: string
+          explanation?: string
+          id?: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question_text: string
+          related_term_id?: string | null
+          section_id: string
+        }
+        Update: {
+          block_number?: number
+          correct_option?: string
+          explanation?: string
+          id?: string
+          option_a?: string
+          option_b?: string
+          option_c?: string
+          option_d?: string
+          question_text?: string
+          related_term_id?: string | null
+          section_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_related_term_id_fkey"
+            columns: ["related_term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_results: {
+        Row: {
+          block_number: number
+          completed_at: string
+          id: string
+          score: number
+          section_id: string
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          block_number?: number
+          completed_at?: string
+          id?: string
+          score?: number
+          section_id: string
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          block_number?: number
+          completed_at?: string
+          id?: string
+          score?: number
+          section_id?: string
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_results_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_results_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sections: {
+        Row: {
+          color_theme: string
+          description: string
+          id: string
+          name: string
+          order: number
+        }
+        Insert: {
+          color_theme?: string
+          description?: string
+          id?: string
+          name: string
+          order?: number
+        }
+        Update: {
+          color_theme?: string
+          description?: string
+          id?: string
+          name?: string
+          order?: number
+        }
+        Relationships: []
+      }
+      terms: {
+        Row: {
+          affirmation: string
+          block_number: number
+          definition: string
+          id: string
+          metaphor: string
+          order: number
+          section_id: string
+          term: string
+        }
+        Insert: {
+          affirmation?: string
+          block_number?: number
+          definition?: string
+          id?: string
+          metaphor?: string
+          order?: number
+          section_id: string
+          term: string
+        }
+        Update: {
+          affirmation?: string
+          block_number?: number
+          definition?: string
+          id?: string
+          metaphor?: string
+          order?: number
+          section_id?: string
+          term?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terms_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
