@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Brain } from "lucide-react";
+import { ArrowLeft, Brain, Bookmark } from "lucide-react";
 
 interface Term {
   id: string;
@@ -16,7 +17,15 @@ interface Term {
 
 type TabType = "definition" | "metaphor" | "affirmation";
 
-const TermCard = ({ term }: { term: Term }) => {
+const TermCard = ({
+  term,
+  isBookmarked,
+  onToggleBookmark,
+}: {
+  term: Term;
+  isBookmarked: boolean;
+  onToggleBookmark: (termId: string) => void;
+}) => {
   const [activeTab, setActiveTab] = useState<TabType>("definition");
 
   const tabs: { key: TabType; label: string }[] = [
@@ -34,9 +43,26 @@ const TermCard = ({ term }: { term: Term }) => {
   return (
     <Card className="border-0 shadow-md overflow-hidden" style={{ background: "white" }}>
       <CardContent className="p-5">
-        <h3 className="font-display text-xl font-semibold mb-4" style={{ color: "hsl(42 50% 25%)" }}>
-          {term.term}
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-xl font-semibold" style={{ color: "hsl(42 50% 25%)" }}>
+            {term.term}
+          </h3>
+          <button
+            onClick={() => onToggleBookmark(term.id)}
+            className="p-1.5 rounded-full transition-colors"
+            style={{
+              background: isBookmarked ? "hsl(42 60% 92%)" : "transparent",
+            }}
+          >
+            <Bookmark
+              className="h-5 w-5 transition-colors"
+              style={{
+                color: isBookmarked ? "hsl(42 55% 48%)" : "hsl(42 15% 70%)",
+                fill: isBookmarked ? "hsl(42 55% 48%)" : "none",
+              }}
+            />
+          </button>
+        </div>
 
         {/* Pill tabs */}
         <div className="flex gap-2 mb-4">
@@ -77,8 +103,10 @@ const TermCard = ({ term }: { term: Term }) => {
 const StudyPage = () => {
   const { id, block } = useParams<{ id: string; block: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [sectionName, setSectionName] = useState("");
   const [terms, setTerms] = useState<Term[]>([]);
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!id || !block) return;
@@ -93,6 +121,38 @@ const StudyPage = () => {
     fetchData();
   }, [id, block]);
 
+  useEffect(() => {
+    if (!user || terms.length === 0) return;
+    const fetchBookmarks = async () => {
+      const { data } = await supabase
+        .from("bookmarks")
+        .select("term_id")
+        .eq("user_id", user.id)
+        .in("term_id", terms.map((t) => t.id));
+      if (data) setBookmarkedIds(new Set(data.map((b) => b.term_id)));
+    };
+    fetchBookmarks();
+  }, [user, terms]);
+
+  const toggleBookmark = async (termId: string) => {
+    if (!user) return;
+    const isCurrentlyBookmarked = bookmarkedIds.has(termId);
+
+    // Optimistic update
+    setBookmarkedIds((prev) => {
+      const next = new Set(prev);
+      if (isCurrentlyBookmarked) next.delete(termId);
+      else next.add(termId);
+      return next;
+    });
+
+    if (isCurrentlyBookmarked) {
+      await supabase.from("bookmarks").delete().eq("user_id", user.id).eq("term_id", termId);
+    } else {
+      await supabase.from("bookmarks").insert({ user_id: user.id, term_id: termId });
+    }
+  };
+
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, hsl(42 50% 92%), hsl(170 25% 94%))" }}>
       <div className="max-w-2xl mx-auto px-4 py-6">
@@ -104,9 +164,18 @@ const StudyPage = () => {
           <h1 className="font-display text-3xl font-bold mb-1" style={{ color: "hsl(42 50% 22%)" }}>
             {sectionName} — Block {block}
           </h1>
-          <p className="text-sm mb-8 leading-relaxed" style={{ color: "hsl(42 20% 45%)" }}>
+          <p className="text-sm mb-4 leading-relaxed" style={{ color: "hsl(42 20% 45%)" }}>
             Tap through Definition, Metaphor, and Affirmation for each term. Take your time.
           </p>
+
+          {/* Supportive message */}
+          <Card className="border-0 shadow-sm mb-6" style={{ background: "hsl(42 60% 96%)" }}>
+            <CardContent className="p-4">
+              <p className="text-sm leading-relaxed" style={{ color: "hsl(42 30% 30%)" }}>
+                🌱 There is no rush here. Read each definition slowly, let the metaphor connect to something real in your life, and sit with the affirmation for a moment. This is your time to learn and grow at your own pace.
+              </p>
+            </CardContent>
+          </Card>
         </motion.div>
 
         <div className="space-y-5">
@@ -117,7 +186,11 @@ const StudyPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 + i * 0.08 }}
             >
-              <TermCard term={term} />
+              <TermCard
+                term={term}
+                isBookmarked={bookmarkedIds.has(term.id)}
+                onToggleBookmark={toggleBookmark}
+              />
             </motion.div>
           ))}
         </div>

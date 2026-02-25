@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { BookOpen, ArrowLeft, Sparkles } from "lucide-react";
 
+type QuizMode = "practice" | "confidence";
+
 const ResultsPage = () => {
   const { id, block } = useParams<{ id: string; block: string }>();
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ const ResultsPage = () => {
 
   const score = (location.state as any)?.score ?? 0;
   const total = (location.state as any)?.total ?? 0;
+  const mode: QuizMode = (location.state as any)?.mode ?? "practice";
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
 
   useEffect(() => {
@@ -31,10 +34,16 @@ const ResultsPage = () => {
   }, [user, id, block, score, total]);
 
   const getMessage = () => {
+    if (mode === "confidence") {
+      if (percentage === 100) return "Look at you! Every single one correct. You studied, you showed up, and it paid off. I am so proud of you. 💛";
+      if (percentage >= 80) return "You did beautifully. A few slipped by, but your understanding is clear. Review the ones you missed and you will have this locked down.";
+      if (percentage >= 60) return "You are making real progress. Some of these terms are tricky, and the fact that you are here working through them says everything about who you are. Keep going.";
+      return "This is not a setback. This is information. Now you know exactly what to review. Go back through the block slowly, sit with each term, and try again when you are ready. You are capable of this.";
+    }
     if (percentage === 100) return "Perfect score! You really know your stuff. 💅";
-    if (percentage >= 80) return "Amazing work! You're building real understanding. Keep going!";
+    if (percentage >= 80) return "Amazing work! You are building real understanding. Keep going!";
     if (percentage >= 60) return "Good effort! Review any terms that felt shaky, then try again.";
-    return "Every attempt makes you stronger. Review the block and give it another go — you've got this!";
+    return "Every attempt makes you stronger. Review the block and give it another go. You have got this!";
   };
 
   return (
@@ -50,6 +59,9 @@ const ResultsPage = () => {
           <h1 className="font-display text-3xl font-bold text-white mb-1">
             Block {block} Complete!
           </h1>
+          {mode === "confidence" && (
+            <p className="text-sm text-white/70">Confidence Builder Mode</p>
+          )}
         </div>
 
         <Card className="border-0 shadow-2xl" style={{ background: "white" }}>
