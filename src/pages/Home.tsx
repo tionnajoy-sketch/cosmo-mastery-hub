@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { BookOpen, LogOut, ArrowRight, Target, Sparkles, TrendingUp, Info } from "lucide-react";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
+import PopUpReview from "@/components/PopUpReview";
 
 const c = pageColors.home;
 
@@ -264,6 +265,8 @@ const Home = () => {
           </CardContent>
         </Card>
       </div>
+
+      <PopUpReview />
     </div>
   );
 };

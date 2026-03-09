@@ -274,6 +274,41 @@ export type Database = {
           },
         ]
       }
+      term_learning_status: {
+        Row: {
+          created_at: string
+          id: string
+          last_reviewed_at: string
+          status: string
+          term_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_reviewed_at?: string
+          status?: string
+          term_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_reviewed_at?: string
+          status?: string
+          term_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "term_learning_status_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       terms: {
         Row: {
           affirmation: string

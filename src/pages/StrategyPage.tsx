@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, BookOpen, Target, Eye, XCircle, CheckCircle2, Lightbulb } from "lucide-react";
+import BrainNote from "@/components/BrainNote";
 import { pageColors } from "@/lib/colors";
 
 const c = pageColors.strategy;
@@ -14,6 +15,7 @@ const steps = [
     title: "Step 1: Read the Answer Choices First",
     description: "Before you even look at the question, read all four answer choices. This primes your brain to know what kind of information you're looking for. It's like scanning a menu before the waiter asks what you want — you already know your options.",
     tip: "Look for patterns. Often two answers will be clearly related and two will seem off. That's your first clue.",
+    brainNote: "Brain note: When you look at the answer choices first, your brain knows what to look for. It stops reading on autopilot and starts searching for key words on purpose.",
     example: {
       answers: ["Epidermis", "Dermis", "Hypodermis", "Melanocyte"],
       insight: "Notice: three are skin layers, one is a cell type. That difference matters."
@@ -24,6 +26,7 @@ const steps = [
     title: "Step 2: Read the Question Stem",
     description: "Now read the question or passage carefully. Because you already know the answer choices, your brain is filtering for relevant information as you read. You're reading with purpose, not passively.",
     tip: "Underline or mentally note key words like 'outermost,' 'deepest,' 'primary function,' or 'most likely.'",
+    brainNote: "Brain note: Because you already know the choices, your brain filters for what matters. You're reading with intention, not guessing what the question wants.",
     example: {
       question: "Which layer of the skin is the outermost layer and serves as the body's first line of defense against environmental damage?",
       insight: "Key words: 'outermost' and 'first line of defense' — these narrow it down immediately."
@@ -34,6 +37,7 @@ const steps = [
     title: "Step 3: Eliminate Two Wrong Answers",
     description: "This is where the magic happens. Don't try to find the right answer yet. Instead, find the two answers that are clearly wrong. Crossing out wrong answers reduces your stress and increases your odds from 25% to 50%.",
     tip: "Ask yourself: 'Is this answer even in the same category as what the question is asking?' If not, eliminate it.",
+    brainNote: "Brain note: Crossing out wrong answers reduces overload. Your brain can focus better when it only has to compare two options instead of four.",
     example: {
       eliminated: ["Hypodermis — this is the deepest layer, not outermost", "Melanocyte — this is a cell, not a layer"],
       remaining: ["Epidermis", "Dermis"],
@@ -45,6 +49,7 @@ const steps = [
     title: "Step 4: Choose the Best Remaining Answer",
     description: "Look at your two remaining answers. Re-read the question if needed. Choose the one that is most directly supported by the information in the question. Don't overthink — trust your preparation.",
     tip: "The best answer is the one that matches the most key words from the question stem.",
+    brainNote: "Brain note: The best answer is usually the one that repeats or matches the most key words from the question. Your brain loves patterns — let them guide you.",
     example: {
       correct: "Epidermis",
       reasoning: "'Outermost' and 'first line of defense' both describe the epidermis. The dermis is the second layer. Epidermis is the strongest answer."
@@ -124,6 +129,7 @@ const StrategyPage = () => {
                             {step.tip}
                           </p>
                         </div>
+                        {step.brainNote && <BrainNote text={step.brainNote} />}
                       </CardContent>
                     </Card>
 

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, Brain, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
 import AIMentorChat from "@/components/AIMentorChat";
 
@@ -134,6 +134,31 @@ const SectionPage = () => {
             );
           })}
         </div>
+
+        {/* Final Exam entry */}
+        {blocks.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + blocks.length * 0.08 }}>
+            <Card
+              className="border-2 cursor-pointer hover:shadow-lg transition-all mt-4 mb-6"
+              style={{ background: "hsl(42 50% 97%)", borderColor: "hsl(42 40% 75%)" }}
+              onClick={() => navigate(`/section/${id}/final-exam`)}
+            >
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className="p-3 rounded-full" style={{ background: "hsl(42 40% 90%)" }}>
+                  <Target className="h-6 w-6" style={{ color: "hsl(42 50% 40%)" }} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-display text-lg font-semibold" style={{ color: "hsl(42 35% 25%)" }}>
+                    {section.name} Final Check
+                  </h3>
+                  <p className="text-sm" style={{ color: "hsl(42 20% 45%)" }}>
+                    Test yourself on all {blocks.length} blocks at once with a full-length quiz.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
 
       <AIMentorChat sectionName={section.name} sectionId={id!} />
