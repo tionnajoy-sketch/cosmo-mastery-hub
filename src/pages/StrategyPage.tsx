@@ -14,6 +14,7 @@ const steps = [
     title: "Step 1: Read the Answer Choices First",
     description: "Before you even look at the question, read all four answer choices. This primes your brain to know what kind of information you're looking for. It's like scanning a menu before the waiter asks what you want — you already know your options.",
     tip: "Look for patterns. Often two answers will be clearly related and two will seem off. That's your first clue.",
+    brainNote: "Brain note: When you look at the answer choices first, your brain knows what to look for. It stops reading on autopilot and starts searching for key words on purpose.",
     example: {
       answers: ["Epidermis", "Dermis", "Hypodermis", "Melanocyte"],
       insight: "Notice: three are skin layers, one is a cell type. That difference matters."
