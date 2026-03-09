@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, BookOpen, Target, Eye, XCircle, CheckCircle2, Lightbulb } from "lucide-react";
+import BrainNote from "@/components/BrainNote";
 import { pageColors } from "@/lib/colors";
 
 const c = pageColors.strategy;
