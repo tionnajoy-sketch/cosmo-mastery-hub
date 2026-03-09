@@ -28,12 +28,24 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setLoading(false);
       toast({ title: "Oops!", description: error.message, variant: "destructive" });
+      return;
+    }
+    // Check if first-time user (no quiz results yet) → show welcome
+    const userId = data.session?.user?.id;
+    if (userId) {
+      const { count } = await supabase
+        .from("quiz_results")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId);
+      setLoading(false);
+      navigate(count === 0 ? "/welcome" : "/");
     } else {
-      navigate("/");
+      setLoading(false);
+      navigate("/welcome");
     }
   };
 
