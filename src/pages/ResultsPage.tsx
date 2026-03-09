@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { BookOpen, ArrowLeft, Sparkles, AlertTriangle } from "lucide-react";
+import { pageColors } from "@/lib/colors";
 
+const c = pageColors.results;
 type QuizMode = "practice" | "confidence";
 
 const ResultsPage = () => {
@@ -28,28 +30,16 @@ const ResultsPage = () => {
   useEffect(() => {
     if (saved.current || !user || !id || !block) return;
     saved.current = true;
-    supabase.from("quiz_results").insert({
-      user_id: user.id,
-      section_id: id,
-      block_number: Number(block),
-      score,
-      total_questions: total,
-    });
+    supabase.from("quiz_results").insert({ user_id: user.id, section_id: id, block_number: Number(block), score, total_questions: total });
   }, [user, id, block, score, total]);
 
-  // Check total wrong answers for the section
   useEffect(() => {
     if (!user || !id) return;
     const fetchWrongCount = async () => {
-      const { count } = await supabase
-        .from("wrong_answers")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .eq("section_id", id);
-      const total = count ?? 0;
-      setTotalWrongForSection(total);
-      // Trigger pop quiz if 3+ wrong answers accumulated
-      setNeedsPopQuiz(total >= 3);
+      const { count } = await supabase.from("wrong_answers").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("section_id", id);
+      const t = count ?? 0;
+      setTotalWrongForSection(t);
+      setNeedsPopQuiz(t >= 3);
     };
     fetchWrongCount();
   }, [user, id]);
@@ -68,58 +58,35 @@ const ResultsPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: "linear-gradient(135deg, hsl(346 40% 55%), hsl(25 55% 60%))" }}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: c.gradient }}>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="w-full max-w-md">
         <div className="text-center mb-6">
-          <Sparkles className="h-10 w-10 text-white/80 mx-auto mb-3" />
-          <h1 className="font-display text-3xl font-bold text-white mb-1">
-            Block {block} Complete!
-          </h1>
-          {mode === "confidence" && (
-            <p className="text-sm text-white/70">Confidence Builder Mode</p>
-          )}
+          <Sparkles className="h-10 w-10 mx-auto mb-3" style={{ color: c.heading }} />
+          <h1 className="font-display text-3xl font-bold" style={{ color: c.heading }}>Block {block} Complete!</h1>
+          {mode === "confidence" && <p className="text-sm" style={{ color: c.subtext }}>Confidence Builder Mode</p>}
         </div>
 
-        <Card className="border-0 shadow-2xl" style={{ background: "white" }}>
+        <Card className="border-0 shadow-2xl" style={{ background: c.card }}>
           <CardContent className="p-8 text-center">
             <div className="mb-6">
-              <div className="font-display text-5xl font-bold mb-1" style={{ color: "hsl(346 45% 45%)" }}>
-                {score}/{total}
-              </div>
-              <p className="text-sm" style={{ color: "hsl(346 15% 50%)" }}>
-                {percentage}% correct
-              </p>
-              {wrongCount > 0 && (
-                <p className="text-xs mt-1" style={{ color: "hsl(0 50% 50%)" }}>
-                  {wrongCount} wrong {wrongCount === 1 ? "answer" : "answers"} tracked
-                </p>
-              )}
+              <div className="font-display text-5xl font-bold mb-1" style={{ color: c.scoreColor }}>{score}/{total}</div>
+              <p className="text-sm" style={{ color: c.scoreSubtext }}>{percentage}% correct</p>
+              {wrongCount > 0 && <p className="text-xs mt-1" style={{ color: c.wrongText }}>{wrongCount} wrong {wrongCount === 1 ? "answer" : "answers"} tracked</p>}
             </div>
 
-            <p className="text-base leading-relaxed mb-6" style={{ color: "hsl(346 15% 30%)" }}>
-              {getMessage()}
-            </p>
+            <p className="text-base leading-relaxed mb-6" style={{ color: c.bodyText }}>{getMessage()}</p>
 
             {needsPopQuiz && (
-              <Card className="border-2 mb-6" style={{ borderColor: "hsl(25 60% 65%)", background: "hsl(25 50% 96%)" }}>
+              <Card className="border-2 mb-6" style={{ borderColor: c.popQuizBorder, background: c.popQuizBg }}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="h-5 w-5" style={{ color: "hsl(25 60% 50%)" }} />
-                    <span className="font-semibold text-sm" style={{ color: "hsl(25 40% 30%)" }}>Pop Quiz Required</span>
+                    <AlertTriangle className="h-5 w-5" style={{ color: c.popQuizIcon }} />
+                    <span className="font-semibold text-sm" style={{ color: c.popQuizHeading }}>Pop Quiz Required</span>
                   </div>
-                  <p className="text-xs leading-relaxed" style={{ color: "hsl(25 20% 40%)" }}>
+                  <p className="text-xs leading-relaxed" style={{ color: c.popQuizText }}>
                     You have {totalWrongForSection} missed questions in this section. Complete a pop quiz on your missed terms before moving to the next section.
                   </p>
-                  <Button
-                    className="w-full mt-3 py-4 text-sm gap-2"
-                    style={{ background: "hsl(25 60% 50%)", color: "white" }}
-                    onClick={() => navigate(`/section/${id}/pop-quiz`)}
-                  >
+                  <Button className="w-full mt-3 py-4 text-sm gap-2" style={{ background: c.popQuizButton, color: "white" }} onClick={() => navigate(`/section/${id}/pop-quiz`)}>
                     <AlertTriangle className="h-4 w-4" /> Take Pop Quiz
                   </Button>
                 </CardContent>
@@ -127,18 +94,10 @@ const ResultsPage = () => {
             )}
 
             <div className="space-y-3">
-              <Button
-                className="w-full py-5 text-base gap-2"
-                style={{ background: "hsl(346 45% 50%)", color: "white" }}
-                onClick={() => navigate(`/section/${id}/study/${block}`)}
-              >
+              <Button className="w-full py-5 text-base gap-2" style={{ background: c.reviewButton, color: "white" }} onClick={() => navigate(`/section/${id}/study/${block}`)}>
                 <BookOpen className="h-4 w-4" /> Review This Block
               </Button>
-              <Button
-                variant="outline"
-                className="w-full py-5 text-base gap-2"
-                onClick={() => navigate(`/section/${id}`)}
-              >
+              <Button variant="outline" className="w-full py-5 text-base gap-2" onClick={() => navigate(`/section/${id}`)}>
                 <ArrowLeft className="h-4 w-4" /> Back to Section
               </Button>
             </div>
