@@ -25,6 +25,7 @@ const steps = [
     title: "Step 2: Read the Question Stem",
     description: "Now read the question or passage carefully. Because you already know the answer choices, your brain is filtering for relevant information as you read. You're reading with purpose, not passively.",
     tip: "Underline or mentally note key words like 'outermost,' 'deepest,' 'primary function,' or 'most likely.'",
+    brainNote: "Brain note: Because you already know the choices, your brain filters for what matters. You're reading with intention, not guessing what the question wants.",
     example: {
       question: "Which layer of the skin is the outermost layer and serves as the body's first line of defense against environmental damage?",
       insight: "Key words: 'outermost' and 'first line of defense' — these narrow it down immediately."
