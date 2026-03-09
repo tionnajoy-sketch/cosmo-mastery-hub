@@ -9,6 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { pageColors } from "@/lib/colors";
+
+const c = pageColors.signup;
 
 const US_STATES = [
   "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia",
@@ -66,7 +69,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="theme-auth min-h-screen flex items-center justify-center px-4 py-12" style={{ background: "linear-gradient(135deg, hsl(320 45% 20%), hsl(346 50% 35%))" }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: c.gradient }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -75,15 +78,15 @@ const Signup = () => {
       >
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-3">
-            <Sparkles className="h-6 w-6 text-pink-300" />
-            <span className="font-display text-2xl font-bold text-white">CosmoPrep</span>
+            <Sparkles className="h-6 w-6" style={{ color: c.heading }} />
+            <span className="font-display text-2xl font-bold" style={{ color: c.heading }}>CosmoPrep</span>
           </div>
-          <p className="text-pink-200 text-sm">Your journey to passing boards starts here.</p>
+          <p className="text-sm" style={{ color: c.subtext }}>Your journey to passing boards starts here.</p>
         </div>
 
-        <Card className="border-0 shadow-2xl" style={{ background: "hsl(320 20% 95%)" }}>
+        <Card className="border-0 shadow-2xl" style={{ background: c.card }}>
           <CardHeader className="text-center">
-            <CardTitle className="font-display text-2xl" style={{ color: "hsl(320 45% 25%)" }}>Create Account</CardTitle>
+            <CardTitle className="font-display text-2xl" style={{ color: c.cardHeading }}>Create Account</CardTitle>
             <CardDescription>Tell us a little about yourself</CardDescription>
           </CardHeader>
           <CardContent>
@@ -137,13 +140,13 @@ const Signup = () => {
                 <Label htmlFor="examDate">Exam Date (optional)</Label>
                 <Input id="examDate" type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
               </div>
-              <Button type="submit" className="w-full text-base py-6" disabled={loading} style={{ background: "hsl(320 45% 30%)", color: "white" }}>
+              <Button type="submit" className="w-full text-base py-6" disabled={loading} style={{ background: c.button, color: "white" }}>
                 {loading ? "Creating account..." : "Join CosmoPrep"}
               </Button>
             </form>
             <p className="text-center text-sm text-muted-foreground mt-4">
               Already have an account?{" "}
-              <Link to="/login" className="font-medium underline" style={{ color: "hsl(320 45% 30%)" }}>
+              <Link to="/login" className="font-medium underline" style={{ color: c.link }}>
                 Sign in
               </Link>
             </p>
