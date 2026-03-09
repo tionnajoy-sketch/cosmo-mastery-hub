@@ -53,6 +53,25 @@ const Login = () => {
           <p className="text-sm" style={{ color: c.subtext }}>Welcome back, beauty! Let's keep studying.</p>
         </div>
 
+        {/* Language Selector */}
+        <div className="flex justify-center gap-2 mb-6">
+          {Object.entries(languageLabels).map(([key, { flag, label }]) => (
+            <button
+              key={key}
+              onClick={() => setSelectedLang(key)}
+              className="px-4 py-2.5 rounded-full text-sm font-medium transition-all border-2"
+              style={{
+                background: selectedLang === key ? c.button : "rgba(255,255,255,0.8)",
+                color: selectedLang === key ? "white" : c.cardHeading,
+                borderColor: selectedLang === key ? c.button : "rgba(255,255,255,0.4)",
+                boxShadow: selectedLang === key ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+              }}
+            >
+              {flag} {label}
+            </button>
+          ))}
+        </div>
+
         <Card className="border-0 shadow-2xl" style={{ background: c.card }}>
           <CardHeader className="text-center">
             <CardTitle className="font-display text-2xl" style={{ color: c.cardHeading }}>Sign In</CardTitle>
