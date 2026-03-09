@@ -174,7 +174,7 @@ export const pageColors = {
     emptyText: "hsl(145 22% 40%)",
     emptyButton: "hsl(145 42% 40%)",
   },
-} as const;
+} as const satisfies Record<string, Record<string, string>>;
 
 // Section card accent colors for Home page — each section gets a unique crayon color
 export const sectionAccentColors = [
