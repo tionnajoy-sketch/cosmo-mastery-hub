@@ -15,6 +15,7 @@ import ActivityPage from "./pages/ActivityPage";
 import QuizPage from "./pages/QuizPage";
 import ResultsPage from "./pages/ResultsPage";
 import PopQuizPage from "./pages/PopQuizPage";
+import StrategyPage from "./pages/StrategyPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
