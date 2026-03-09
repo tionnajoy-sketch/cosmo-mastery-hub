@@ -31,8 +31,22 @@ serve(async (req) => {
       });
     }
 
-    // Generate image using Lovable AI
-    const prompt = `Create a simple, elegant educational illustration that visually explains both the definition and metaphor of the cosmetology term "${term}". Definition: "${definition}". Metaphor: "${metaphor}". Style: soft watercolor, warm tones, clean and beautiful, no text, suitable for a beauty school study app. On a clean white background.`;
+    // Generate image using Lovable AI — realistic, labeled, educational
+    const prompt = `Create a realistic, detailed educational diagram for a cosmetology student studying for their state board exam. The image should clearly illustrate the term "${term}".
+
+Scientific definition: "${definition}"
+Conceptual metaphor: "${metaphor}"
+
+Requirements:
+- Realistic anatomical or scientific illustration style (NOT cartoon, NOT watercolor)
+- Include clear TEXT LABELS directly on the image pointing to key structures
+- The main label should show the term name "${term}" in bold
+- Add 2-3 additional labels pointing to relevant anatomical features mentioned in the definition
+- Include a small caption area at the bottom of the image that reads: "${term} — ${metaphor}"
+- Use a clean, light background with professional medical/educational illustration quality
+- Color-coded sections where appropriate (like a textbook cross-section diagram)
+- Make it visually clear how the metaphor relates to the actual structure
+- This should help visual learners understand and remember the concept`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
