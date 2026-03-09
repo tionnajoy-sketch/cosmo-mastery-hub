@@ -265,6 +265,8 @@ const Home = () => {
           </CardContent>
         </Card>
       </div>
+
+      <PopUpReview />
     </div>
   );
 };
