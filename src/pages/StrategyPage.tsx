@@ -36,6 +36,7 @@ const steps = [
     title: "Step 3: Eliminate Two Wrong Answers",
     description: "This is where the magic happens. Don't try to find the right answer yet. Instead, find the two answers that are clearly wrong. Crossing out wrong answers reduces your stress and increases your odds from 25% to 50%.",
     tip: "Ask yourself: 'Is this answer even in the same category as what the question is asking?' If not, eliminate it.",
+    brainNote: "Brain note: Crossing out wrong answers reduces overload. Your brain can focus better when it only has to compare two options instead of four.",
     example: {
       eliminated: ["Hypodermis — this is the deepest layer, not outermost", "Melanocyte — this is a cell, not a layer"],
       remaining: ["Epidermis", "Dermis"],
