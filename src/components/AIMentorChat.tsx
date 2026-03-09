@@ -50,18 +50,28 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorCh
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Chat error:", error);
+        const statusText = error?.message || "";
+        const errorMsg = statusText.includes("429")
+          ? "I'm getting too many questions right now. Wait a moment and try again."
+          : statusText.includes("402")
+            ? "AI credits need to be topped up. Please contact your admin."
+            : "Something went wrong. Please try again.";
+        setMessages((prev) => [...prev, { role: "assistant", content: errorMsg }]);
+        return;
+      }
+
+      if (data?.error) {
+        setMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Please try again." }]);
+        return;
+      }
 
       const assistantContent = data?.response || "I'm sorry, I couldn't process that. Please try again.";
       setMessages((prev) => [...prev, { role: "assistant", content: assistantContent }]);
     } catch (e: any) {
       console.error("Chat error:", e);
-      const errorMsg = e?.message?.includes("429")
-        ? "I'm getting too many questions right now. Wait a moment and try again."
-        : e?.message?.includes("402")
-          ? "AI credits need to be topped up. Please contact your admin."
-          : "Something went wrong. Please try again.";
-      setMessages((prev) => [...prev, { role: "assistant", content: errorMsg }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Please try again." }]);
     } finally {
       setLoading(false);
     }
