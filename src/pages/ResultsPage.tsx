@@ -11,6 +11,12 @@ import { pageColors } from "@/lib/colors";
 const c = pageColors.results;
 type QuizMode = "practice" | "confidence";
 
+const reflectionOptions = [
+  { key: "terms", label: "I didn't fully know the terms", tip: "Tip: Next time, spend 2–3 minutes in Practice Activities first. A quick warm-up helps your brain recognize the terms before the questions appear." },
+  { key: "rushed", label: "I rushed and skipped the steps", tip: "Tip: On your next quiz, say the four steps out loud on the first question. Slowing down for one question helps your brain stay with the plan." },
+  { key: "second_guessed", label: "I second-guessed myself", tip: "Tip: If your first choice matches the key words in the question, practice trusting it. Your brain is often right the first time when you've prepared." },
+];
+
 const ResultsPage = () => {
   const { id, block } = useParams<{ id: string; block: string }>();
   const navigate = useNavigate();
@@ -26,6 +32,7 @@ const ResultsPage = () => {
 
   const [totalWrongForSection, setTotalWrongForSection] = useState(0);
   const [needsPopQuiz, setNeedsPopQuiz] = useState(false);
+  const [reflection, setReflection] = useState<string | null>(null);
 
   useEffect(() => {
     if (saved.current || !user || !id || !block) return;
@@ -57,6 +64,8 @@ const ResultsPage = () => {
     return "Every attempt makes you stronger. Review the block and give it another go. You have got this!";
   };
 
+  const selectedReflection = reflectionOptions.find((r) => r.key === reflection);
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: c.gradient }}>
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="w-full max-w-md">
@@ -75,6 +84,33 @@ const ResultsPage = () => {
             </div>
 
             <p className="text-base leading-relaxed mb-6" style={{ color: c.bodyText }}>{getMessage()}</p>
+
+            {/* Post-Quiz Reflection */}
+            <Card className="border-0 shadow-sm mb-6 text-left" style={{ background: "hsl(42 50% 97%)" }}>
+              <CardContent className="p-4">
+                <p className="text-sm font-medium mb-3" style={{ color: "hsl(42 30% 28%)" }}>
+                  Quick check-in: What made this quiz feel hardest?
+                </p>
+                {!reflection ? (
+                  <div className="space-y-2">
+                    {reflectionOptions.map((opt) => (
+                      <button
+                        key={opt.key}
+                        onClick={() => setReflection(opt.key)}
+                        className="w-full text-left px-3 py-2.5 rounded-lg text-sm border-2 transition-all hover:shadow-sm"
+                        style={{ background: "white", borderColor: "hsl(42 30% 85%)", color: "hsl(42 25% 30%)" }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm leading-relaxed p-3 rounded-lg" style={{ background: "hsl(42 40% 94%)", color: "hsl(42 25% 30%)" }}>
+                    {selectedReflection?.tip}
+                  </motion.p>
+                )}
+              </CardContent>
+            </Card>
 
             {needsPopQuiz && (
               <Card className="border-2 mb-6" style={{ borderColor: c.popQuizBorder, background: c.popQuizBg }}>

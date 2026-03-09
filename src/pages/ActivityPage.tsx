@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Shuffle, Zap, PenLine, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import BrainNote from "@/components/BrainNote";
 
 const c = pageColors.activity;
 
@@ -171,20 +173,69 @@ const MatchingGame = ({ terms }: { terms: Term[] }) => {
 
 // ============ FLASHCARD DRILL ============
 const FlashcardDrill = ({ terms }: { terms: Term[] }) => {
+  const { user } = useAuth();
+  const [orderedTerms, setOrderedTerms] = useState<Term[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState<Set<number>>(new Set());
-  const done = known.size === terms.length;
-  const current = terms[currentIndex];
+  const [statusLoaded, setStatusLoaded] = useState(false);
 
-  const markKnown = () => { setKnown((prev) => new Set([...prev, currentIndex])); goNext(); };
+  // Load term statuses and order: still_learning first
+  useEffect(() => {
+    if (!user || terms.length === 0) {
+      setOrderedTerms(terms);
+      setStatusLoaded(true);
+      return;
+    }
+    const loadStatuses = async () => {
+      const { data } = await supabase
+        .from("term_learning_status")
+        .select("term_id, status")
+        .eq("user_id", user.id)
+        .in("term_id", terms.map((t) => t.id));
+
+      const statusMap = new Map<string, string>();
+      if (data) data.forEach((d) => statusMap.set(d.term_id, d.status));
+
+      const stillLearning = terms.filter((t) => statusMap.get(t.id) !== "know_this");
+      const knowThis = terms.filter((t) => statusMap.get(t.id) === "know_this");
+      setOrderedTerms([...stillLearning, ...knowThis]);
+      setStatusLoaded(true);
+    };
+    loadStatuses();
+  }, [user, terms]);
+
+  const done = known.size === orderedTerms.length;
+  const current = orderedTerms[currentIndex];
+
+  const saveStatus = async (termId: string, status: string) => {
+    if (!user) return;
+    await supabase.from("term_learning_status").upsert(
+      { user_id: user.id, term_id: termId, status, last_reviewed_at: new Date().toISOString() },
+      { onConflict: "user_id,term_id" }
+    );
+  };
+
+  const markKnown = () => {
+    if (current) saveStatus(current.id, "know_this");
+    setKnown((prev) => new Set([...prev, currentIndex]));
+    goNext();
+  };
+
+  const markStillLearning = () => {
+    if (current) saveStatus(current.id, "still_learning");
+    goNext();
+  };
+
   const goNext = () => {
     setFlipped(false);
-    let next = (currentIndex + 1) % terms.length;
+    let next = (currentIndex + 1) % orderedTerms.length;
     let attempts = 0;
-    while (known.has(next) && attempts < terms.length) { next = (next + 1) % terms.length; attempts++; }
+    while (known.has(next) && attempts < orderedTerms.length) { next = (next + 1) % orderedTerms.length; attempts++; }
     setCurrentIndex(next);
   };
+
+  if (!statusLoaded) return <p className="text-muted-foreground text-center py-8">Loading...</p>;
 
   if (done) {
     return (
@@ -202,8 +253,15 @@ const FlashcardDrill = ({ terms }: { terms: Term[] }) => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <h2 className="font-display text-2xl font-bold mb-2" style={{ color: c.heading }}>Flashcard Drill</h2>
-      <p className="text-sm mb-6" style={{ color: c.subtext }}>{known.size}/{terms.length} mastered — Tap to flip</p>
+      <h2 className="font-display text-2xl font-bold mb-1" style={{ color: c.heading }}>Flashcard Drill</h2>
+      <p className="text-sm mb-2" style={{ color: c.subtext }}>{known.size}/{orderedTerms.length} mastered — Tap to flip</p>
+
+      {/* Spaced repetition note */}
+      <div className="mb-4 px-3 py-2 rounded-lg" style={{ background: "hsl(220 30% 96%)" }}>
+        <p className="text-xs leading-relaxed" style={{ color: "hsl(220 20% 50%)" }}>
+          We'll show "Still Learning" cards more often and "I Know This" a bit less. Seeing tricky terms again right before you forget them is one of the easiest ways to keep them for the exam.
+        </p>
+      </div>
 
       <Card
         className="border-0 shadow-lg cursor-pointer min-h-[200px] flex items-center justify-center"
@@ -214,7 +272,10 @@ const FlashcardDrill = ({ terms }: { terms: Term[] }) => {
           <AnimatePresence mode="wait">
             <motion.div key={flipped ? "back" : "front"} initial={{ opacity: 0, rotateY: 90 }} animate={{ opacity: 1, rotateY: 0 }} exit={{ opacity: 0, rotateY: -90 }} transition={{ duration: 0.2 }}>
               {flipped ? (
-                <p className="text-base leading-relaxed" style={{ color: c.heading }}>{current.definition}</p>
+                <>
+                  <p className="text-base leading-relaxed" style={{ color: c.heading }}>{current.definition}</p>
+                  <BrainNote text="Every time you pull a term from memory without seeing choices, you strengthen that pathway. This 'recall' is one of the strongest ways to lock information in." />
+                </>
               ) : (
                 <h3 className="font-display text-2xl font-bold" style={{ color: c.heading }}>{current.term}</h3>
               )}
@@ -224,7 +285,7 @@ const FlashcardDrill = ({ terms }: { terms: Term[] }) => {
       </Card>
 
       <div className="flex gap-3 mt-4">
-        <Button className="flex-1 py-5" variant="outline" onClick={goNext} style={{ borderColor: c.cardBorder, color: c.accent }}>
+        <Button className="flex-1 py-5" variant="outline" onClick={markStillLearning} style={{ borderColor: c.cardBorder, color: c.accent }}>
           <XCircle className="h-4 w-4 mr-2" /> Still Learning
         </Button>
         <Button className="flex-1 py-5" onClick={markKnown} style={{ background: c.successColor, color: "white" }}>
@@ -285,12 +346,18 @@ const FillInBlank = ({ terms }: { terms: Term[] }) => {
       {submitted ? (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="border-0 shadow-sm mb-4" style={{ background: correct ? c.successBg : c.wrongBg }}>
-            <CardContent className="p-4 flex items-center gap-2">
-              {correct ? (
-                <><CheckCircle2 className="h-5 w-5" style={{ color: c.successColor }} /><span className="font-medium" style={{ color: c.successHeading }}>Correct! ✨</span></>
-              ) : (
-                <><XCircle className="h-5 w-5" style={{ color: c.wrongBorder }} /><span className="text-sm" style={{ color: c.heading }}>The answer was <strong>{current.term}</strong>. Keep studying — you'll get it!</span></>
-              )}
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                {correct ? (
+                  <><CheckCircle2 className="h-5 w-5" style={{ color: c.successColor }} /><span className="font-medium" style={{ color: c.successHeading }}>Correct! ✨</span></>
+                ) : (
+                  <><XCircle className="h-5 w-5" style={{ color: c.wrongBorder }} /><span className="text-sm" style={{ color: c.heading }}>The answer was <strong>{current.term}</strong>. Keep studying — you'll get it!</span></>
+                )}
+              </div>
+              <BrainNote text={correct
+                ? "Naming the term yourself tells your brain, 'This matters.' That makes it easier to find again on test day."
+                : "Even a miss builds the pathway. Seeing the right answer right after trying makes your brain update and grow."
+              } />
             </CardContent>
           </Card>
           <Button className="w-full py-5" onClick={handleNext} style={{ background: c.button, color: "white" }}>Next</Button>
