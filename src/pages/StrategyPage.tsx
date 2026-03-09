@@ -123,10 +123,13 @@ const StrategyPage = () => {
                         <p className="text-base leading-relaxed mb-4" style={{ color: c.cardText }}>
                           {step.description}
                         </p>
-                        <div className="flex items-start gap-2 p-3 rounded-lg" style={{ background: c.tipBg }}>
+                         <div className="flex items-start gap-2 p-3 rounded-lg" style={{ background: c.tipBg }}>
                           <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: c.tipIcon }} />
                           <p className="text-sm leading-relaxed" style={{ color: c.tipText }}>
                             {step.tip}
+                          </p>
+                        </div>
+                        {step.brainNote && <BrainNote text={step.brainNote} />}
                           </p>
                         </div>
                       </CardContent>
