@@ -50,11 +50,51 @@ export type Database = {
           },
         ]
       }
+      journal_notes: {
+        Row: {
+          id: string
+          note: string
+          term_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          note?: string
+          term_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          note?: string
+          term_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_notes_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_notes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
           exam_date: string | null
           id: string
+          language: string
           name: string
           program: string | null
           state: string | null
@@ -63,6 +103,7 @@ export type Database = {
           created_at?: string
           exam_date?: string | null
           id: string
+          language?: string
           name?: string
           program?: string | null
           state?: string | null
@@ -71,6 +112,7 @@ export type Database = {
           created_at?: string
           exam_date?: string | null
           id?: string
+          language?: string
           name?: string
           program?: string | null
           state?: string | null
@@ -203,6 +245,35 @@ export type Database = {
         }
         Relationships: []
       }
+      term_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          term_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          term_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "term_images_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: true
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       terms: {
         Row: {
           affirmation: string
@@ -240,6 +311,58 @@ export type Database = {
             columns: ["section_id"]
             isOneToOne: false
             referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wrong_answers: {
+        Row: {
+          block_number: number
+          created_at: string
+          id: string
+          question_id: string
+          section_id: string
+          selected_option: string
+          user_id: string
+        }
+        Insert: {
+          block_number?: number
+          created_at?: string
+          id?: string
+          question_id: string
+          section_id: string
+          selected_option: string
+          user_id: string
+        }
+        Update: {
+          block_number?: number
+          created_at?: string
+          id?: string
+          question_id?: string
+          section_id?: string
+          selected_option?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wrong_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wrong_answers_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wrong_answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
