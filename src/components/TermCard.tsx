@@ -94,7 +94,17 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
                 <p className="text-sm" style={{ color: c.subtext }}>Generating your illustration...</p>
               </div>
             ) : imageUrl ? (
-              <img src={imageUrl} alt={`Illustration for ${term.term}`} className="rounded-lg max-h-64 object-contain" />
+              <div className="w-full">
+                <img src={imageUrl} alt={`Illustration for ${term.term}`} className="rounded-lg max-h-64 object-contain w-full" />
+                <div className="mt-3 p-3 rounded-lg" style={{ background: c.tabInactive }}>
+                  <p className="font-display text-sm font-semibold mb-1" style={{ color: c.termHeading }}>
+                    {term.term}
+                  </p>
+                  <p className="text-xs leading-relaxed italic" style={{ color: c.subtext }}>
+                    {term.metaphor}
+                  </p>
+                </div>
+              </div>
             ) : (
               <div className="py-8 text-center">
                 <p className="text-sm" style={{ color: c.subtext }}>Image will generate automatically...</p>

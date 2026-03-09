@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
+import WelcomePage from "./pages/WelcomePage";
 import SectionPage from "./pages/SectionPage";
 import StudyPage from "./pages/StudyPage";
 import ActivityPage from "./pages/ActivityPage";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/welcome" element={<ProtectedRoute><WelcomePage /></ProtectedRoute>} />
             <Route path="/section/:id" element={<ProtectedRoute><SectionPage /></ProtectedRoute>} />
             <Route path="/section/:id/study/:block" element={<ProtectedRoute><StudyPage /></ProtectedRoute>} />
             <Route path="/section/:id/activity/:block" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
