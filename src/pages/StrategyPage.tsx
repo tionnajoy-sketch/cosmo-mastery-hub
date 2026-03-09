@@ -48,6 +48,7 @@ const steps = [
     title: "Step 4: Choose the Best Remaining Answer",
     description: "Look at your two remaining answers. Re-read the question if needed. Choose the one that is most directly supported by the information in the question. Don't overthink — trust your preparation.",
     tip: "The best answer is the one that matches the most key words from the question stem.",
+    brainNote: "Brain note: The best answer is usually the one that repeats or matches the most key words from the question. Your brain loves patterns — let them guide you.",
     example: {
       correct: "Epidermis",
       reasoning: "'Outermost' and 'first line of defense' both describe the epidermis. The dermis is the second layer. Epidermis is the strongest answer."
