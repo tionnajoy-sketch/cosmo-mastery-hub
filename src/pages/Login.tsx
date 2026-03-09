@@ -12,11 +12,18 @@ import { pageColors } from "@/lib/colors";
 
 const c = pageColors.login;
 
+const languageLabels = {
+  en: { flag: "🇺🇸", label: "English" },
+  es: { flag: "🇪🇸", label: "Español" },
+  fr: { flag: "🇫🇷", label: "Français" },
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedLang, setSelectedLang] = useState("en");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
