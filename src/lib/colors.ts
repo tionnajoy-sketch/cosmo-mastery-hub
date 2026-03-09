@@ -174,6 +174,29 @@ export const pageColors = {
     emptyText: "hsl(145 22% 40%)",
     emptyButton: "hsl(145 42% 40%)",
   },
+  // STRATEGY: Teal + Navy educational
+  strategy: {
+    gradient: "linear-gradient(180deg, hsl(185 40% 92%), hsl(195 35% 94%), hsl(200 30% 96%))",
+    heading: "hsl(185 45% 25%)",
+    subtext: "hsl(185 20% 45%)",
+    card: "hsl(0 0% 100%)",
+    cardHeading: "hsl(185 35% 22%)",
+    cardText: "hsl(185 18% 32%)",
+    iconBg: "hsl(185 30% 90%)",
+    iconColor: "hsl(185 45% 35%)",
+    tipBg: "hsl(42 55% 95%)",
+    tipIcon: "hsl(42 55% 45%)",
+    tipText: "hsl(42 30% 30%)",
+    exampleBg: "hsl(185 20% 97%)",
+    exampleBorder: "hsl(185 25% 82%)",
+    exampleLabel: "hsl(185 35% 40%)",
+    stepActive: "hsl(185 45% 30%)",
+    stepInactive: "hsl(185 20% 88%)",
+    stepActiveText: "hsl(0 0% 100%)",
+    stepInactiveText: "hsl(185 20% 50%)",
+    nextButton: "hsl(185 45% 30%)",
+    backButton: "hsl(185 20% 55%)",
+  },
 };
 
 // Section card accent colors for Home page — each section gets a unique crayon color
