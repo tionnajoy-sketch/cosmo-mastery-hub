@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, Brain, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
 import AIMentorChat from "@/components/AIMentorChat";
 
