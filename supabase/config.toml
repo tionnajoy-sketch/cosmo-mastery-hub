@@ -1,1 +1,7 @@
 project_id = "wtpjtreunnrvgrpvihvx"
+
+[functions.ai-mentor-chat]
+verify_jwt = false
+
+[functions.generate-term-image]
+verify_jwt = false
