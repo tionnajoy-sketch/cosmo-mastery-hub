@@ -1,0 +1,212 @@
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bookmark, Loader2 } from "lucide-react";
+
+interface Term {
+  id: string;
+  term: string;
+  definition: string;
+  metaphor: string;
+  affirmation: string;
+}
+
+type TabType = "definition" | "picture" | "metaphor" | "affirmation" | "journal";
+
+interface TermCardProps {
+  term: Term;
+  isBookmarked: boolean;
+  onToggleBookmark: (termId: string) => void;
+}
+
+const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<TabType>("definition");
+  const [journalNote, setJournalNote] = useState("");
+  const [journalSaving, setJournalSaving] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
+
+  const tabs: { key: TabType; label: string }[] = [
+    { key: "definition", label: "Definition" },
+    { key: "picture", label: "Picture" },
+    { key: "metaphor", label: "Metaphor" },
+    { key: "affirmation", label: "Affirmation" },
+    { key: "journal", label: "Journal" },
+  ];
+
+  // Load journal note
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("journal_notes")
+      .select("note")
+      .eq("user_id", user.id)
+      .eq("term_id", term.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setJournalNote(data.note);
+      });
+  }, [user, term.id]);
+
+  // Load existing image
+  useEffect(() => {
+    supabase
+      .from("term_images")
+      .select("image_url")
+      .eq("term_id", term.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setImageUrl(data.image_url);
+      });
+  }, [term.id]);
+
+  // Generate image on demand
+  const generateImage = useCallback(async () => {
+    if (imageUrl || imageLoading) return;
+    setImageLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-term-image", {
+        body: {
+          termId: term.id,
+          term: term.term,
+          definition: term.definition,
+          metaphor: term.metaphor,
+        },
+      });
+      if (data?.image_url) setImageUrl(data.image_url);
+      if (error) console.error("Image generation error:", error);
+    } catch (e) {
+      console.error("Failed to generate image:", e);
+    } finally {
+      setImageLoading(false);
+    }
+  }, [term, imageUrl, imageLoading]);
+
+  // Auto-generate when Picture tab is selected
+  useEffect(() => {
+    if (activeTab === "picture" && !imageUrl && !imageLoading) {
+      generateImage();
+    }
+  }, [activeTab, imageUrl, imageLoading, generateImage]);
+
+  // Save journal note with debounce
+  useEffect(() => {
+    if (!user) return;
+    const timeout = setTimeout(async () => {
+      if (journalNote === "") return;
+      setJournalSaving(true);
+      await supabase.from("journal_notes").upsert(
+        { user_id: user.id, term_id: term.id, note: journalNote, updated_at: new Date().toISOString() },
+        { onConflict: "user_id,term_id" }
+      );
+      setJournalSaving(false);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [journalNote, user, term.id]);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "definition":
+        return <p className="text-base leading-relaxed" style={{ color: "hsl(42 15% 30%)" }}>{term.definition}</p>;
+      case "picture":
+        return (
+          <div className="flex flex-col items-center">
+            {imageLoading ? (
+              <div className="flex flex-col items-center gap-3 py-8">
+                <Loader2 className="h-8 w-8 animate-spin" style={{ color: "hsl(42 55% 48%)" }} />
+                <p className="text-sm" style={{ color: "hsl(42 20% 50%)" }}>Generating your illustration...</p>
+              </div>
+            ) : imageUrl ? (
+              <img src={imageUrl} alt={`Illustration for ${term.term}`} className="rounded-lg max-h-64 object-contain" />
+            ) : (
+              <div className="py-8 text-center">
+                <p className="text-sm" style={{ color: "hsl(42 20% 50%)" }}>Image will generate automatically...</p>
+              </div>
+            )}
+          </div>
+        );
+      case "metaphor":
+        return <p className="text-base leading-relaxed italic" style={{ color: "hsl(42 15% 30%)" }}>{term.metaphor}</p>;
+      case "affirmation":
+        return <p className="text-base leading-relaxed" style={{ color: "hsl(42 15% 30%)" }}>{term.affirmation}</p>;
+      case "journal":
+        return (
+          <div>
+            <Textarea
+              placeholder="Write your notes about this term here... How does it connect to what you already know?"
+              value={journalNote}
+              onChange={(e) => setJournalNote(e.target.value)}
+              className="min-h-[100px] border-0 bg-transparent resize-none focus-visible:ring-0 text-base"
+              style={{ color: "hsl(42 15% 30%)" }}
+            />
+            {journalSaving && (
+              <p className="text-xs mt-1" style={{ color: "hsl(42 20% 60%)" }}>Saving...</p>
+            )}
+            {!journalSaving && journalNote && (
+              <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>
+            )}
+          </div>
+        );
+    }
+  };
+
+  return (
+    <Card className="border-0 shadow-md overflow-hidden" style={{ background: "white" }}>
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-xl font-semibold" style={{ color: "hsl(42 50% 25%)" }}>
+            {term.term}
+          </h3>
+          <button
+            onClick={() => onToggleBookmark(term.id)}
+            className="p-1.5 rounded-full transition-colors"
+            style={{ background: isBookmarked ? "hsl(42 60% 92%)" : "transparent" }}
+          >
+            <Bookmark
+              className="h-5 w-5 transition-colors"
+              style={{
+                color: isBookmarked ? "hsl(42 55% 48%)" : "hsl(42 15% 70%)",
+                fill: isBookmarked ? "hsl(42 55% 48%)" : "none",
+              }}
+            />
+          </button>
+        </div>
+
+        {/* Scrollable pill tabs */}
+        <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
+              style={{
+                background: activeTab === tab.key ? "hsl(42 55% 48%)" : "hsl(42 30% 92%)",
+                color: activeTab === tab.key ? "white" : "hsl(42 30% 35%)",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+          >
+            {renderContent()}
+          </motion.div>
+        </AnimatePresence>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default TermCard;

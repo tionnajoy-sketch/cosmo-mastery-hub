@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,11 +29,13 @@ type QuizMode = "practice" | "confidence";
 const QuizPage = () => {
   const { id, block } = useParams<{ id: string; block: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [sectionName, setSectionName] = useState("");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(0);
+  const [wrongCount, setWrongCount] = useState(0);
   const [relatedTerm, setRelatedTerm] = useState<RelatedTerm | null>(null);
   const [mode, setMode] = useState<QuizMode | null>(null);
 
@@ -58,6 +61,18 @@ const QuizPage = () => {
     setSelectedAnswer(option);
     if (option === currentQuestion.correct_option) {
       setScore((s) => s + 1);
+    } else {
+      setWrongCount((c) => c + 1);
+      // Track wrong answer
+      if (user && id) {
+        await supabase.from("wrong_answers").insert({
+          user_id: user.id,
+          question_id: currentQuestion.id,
+          section_id: id,
+          block_number: Number(block),
+          selected_option: option,
+        });
+      }
     }
     if (currentQuestion.related_term_id) {
       const { data } = await supabase
@@ -72,7 +87,7 @@ const QuizPage = () => {
   const handleNext = () => {
     if (isLastQuestion) {
       navigate(`/section/${id}/results/${block}`, {
-        state: { score, total: questions.length, mode },
+        state: { score, total: questions.length, mode, wrongCount },
       });
     } else {
       setCurrentIndex((i) => i + 1);
@@ -106,7 +121,7 @@ const QuizPage = () => {
                 <h3 className="font-display text-lg font-semibold" style={{ color: "hsl(174 30% 20%)" }}>Practice Mode</h3>
               </div>
               <p className="text-sm leading-relaxed" style={{ color: "hsl(174 15% 35%)" }}>
-                Standard exam prep. Test your knowledge with clear, professional feedback designed to get you board ready.
+                Harder questions for serious exam prep. Designed to challenge you and expose weak areas.
               </p>
             </CardContent>
           </Card>
@@ -122,7 +137,7 @@ const QuizPage = () => {
                 <h3 className="font-display text-lg font-semibold" style={{ color: "hsl(42 30% 22%)" }}>Confidence Builder</h3>
               </div>
               <p className="text-sm leading-relaxed" style={{ color: "hsl(42 15% 35%)" }}>
-                Extra encouragement and gentler feedback. Perfect when you are feeling anxious or just want to learn without pressure. Mistakes are part of growing.
+                Gentler questions with nurturing feedback. Perfect when you want to build confidence without pressure.
               </p>
             </CardContent>
           </Card>
@@ -153,7 +168,7 @@ const QuizPage = () => {
 
   const getWrongFeedback = () => {
     if (mode === "confidence") {
-      return "That was not the best answer, but you are learning and that is what matters. Let us look at why together. Every question you work through is making you stronger.";
+      return "That was not the best answer, but you are learning and that is what matters. Let us look at why together.";
     }
     return "Not quite. Let's look at why.";
   };
@@ -173,7 +188,7 @@ const QuizPage = () => {
             {mode === "confidence" && <Heart className="h-4 w-4" style={{ color: "hsl(42 55% 65%)" }} />}
           </div>
           <p className="text-sm" style={{ color: "hsl(174 20% 65%)" }}>
-            Question {currentIndex + 1} of {questions.length} — choose the best answer.
+            Question {currentIndex + 1} of {questions.length} — {mode === "practice" ? "Practice Mode" : "Confidence Builder"}
           </p>
         </div>
 
