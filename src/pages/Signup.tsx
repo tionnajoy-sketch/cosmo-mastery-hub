@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Heart, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 const US_STATES = [
   "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia",
@@ -26,6 +26,7 @@ const Signup = () => {
   const [state, setState] = useState("");
   const [examDate, setExamDate] = useState("");
   const [program, setProgram] = useState("");
+  const [language, setLanguage] = useState("en");
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -47,12 +48,12 @@ const Signup = () => {
       return;
     }
 
-    // Update profile with extra fields
     if (data.user) {
       await supabase.from("profiles").update({
         state: state || null,
         exam_date: examDate || null,
         program: program || null,
+        language,
       }).eq("id", data.user.id);
     }
 
@@ -98,6 +99,17 @@ const Signup = () => {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" required minLength={6} />
+              </div>
+              <div className="space-y-2">
+                <Label>Preferred Language</Label>
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger><SelectValue placeholder="Select language" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">🇺🇸 English</SelectItem>
+                    <SelectItem value="es">🇪🇸 Español</SelectItem>
+                    <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Program</Label>

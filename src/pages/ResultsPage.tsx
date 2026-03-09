@@ -1,11 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { BookOpen, ArrowLeft, Sparkles } from "lucide-react";
+import { BookOpen, ArrowLeft, Sparkles, AlertTriangle } from "lucide-react";
 
 type QuizMode = "practice" | "confidence";
 
@@ -19,7 +19,11 @@ const ResultsPage = () => {
   const score = (location.state as any)?.score ?? 0;
   const total = (location.state as any)?.total ?? 0;
   const mode: QuizMode = (location.state as any)?.mode ?? "practice";
+  const wrongCount = (location.state as any)?.wrongCount ?? 0;
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
+
+  const [totalWrongForSection, setTotalWrongForSection] = useState(0);
+  const [needsPopQuiz, setNeedsPopQuiz] = useState(false);
 
   useEffect(() => {
     if (saved.current || !user || !id || !block) return;
@@ -32,6 +36,23 @@ const ResultsPage = () => {
       total_questions: total,
     });
   }, [user, id, block, score, total]);
+
+  // Check total wrong answers for the section
+  useEffect(() => {
+    if (!user || !id) return;
+    const fetchWrongCount = async () => {
+      const { count } = await supabase
+        .from("wrong_answers")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("section_id", id);
+      const total = count ?? 0;
+      setTotalWrongForSection(total);
+      // Trigger pop quiz if 3+ wrong answers accumulated
+      setNeedsPopQuiz(total >= 3);
+    };
+    fetchWrongCount();
+  }, [user, id]);
 
   const getMessage = () => {
     if (mode === "confidence") {
@@ -73,11 +94,37 @@ const ResultsPage = () => {
               <p className="text-sm" style={{ color: "hsl(346 15% 50%)" }}>
                 {percentage}% correct
               </p>
+              {wrongCount > 0 && (
+                <p className="text-xs mt-1" style={{ color: "hsl(0 50% 50%)" }}>
+                  {wrongCount} wrong {wrongCount === 1 ? "answer" : "answers"} tracked
+                </p>
+              )}
             </div>
 
-            <p className="text-base leading-relaxed mb-8" style={{ color: "hsl(346 15% 30%)" }}>
+            <p className="text-base leading-relaxed mb-6" style={{ color: "hsl(346 15% 30%)" }}>
               {getMessage()}
             </p>
+
+            {needsPopQuiz && (
+              <Card className="border-2 mb-6" style={{ borderColor: "hsl(25 60% 65%)", background: "hsl(25 50% 96%)" }}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="h-5 w-5" style={{ color: "hsl(25 60% 50%)" }} />
+                    <span className="font-semibold text-sm" style={{ color: "hsl(25 40% 30%)" }}>Pop Quiz Required</span>
+                  </div>
+                  <p className="text-xs leading-relaxed" style={{ color: "hsl(25 20% 40%)" }}>
+                    You have {totalWrongForSection} missed questions in this section. Complete a pop quiz on your missed terms before moving to the next section.
+                  </p>
+                  <Button
+                    className="w-full mt-3 py-4 text-sm gap-2"
+                    style={{ background: "hsl(25 60% 50%)", color: "white" }}
+                    onClick={() => navigate(`/section/${id}/pop-quiz`)}
+                  >
+                    <AlertTriangle className="h-4 w-4" /> Take Pop Quiz
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="space-y-3">
               <Button

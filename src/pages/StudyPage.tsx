@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Brain, Bookmark } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, Brain, Gamepad2 } from "lucide-react";
+import TermCard from "@/components/TermCard";
 
 interface Term {
   id: string;
@@ -14,91 +15,6 @@ interface Term {
   metaphor: string;
   affirmation: string;
 }
-
-type TabType = "definition" | "metaphor" | "affirmation";
-
-const TermCard = ({
-  term,
-  isBookmarked,
-  onToggleBookmark,
-}: {
-  term: Term;
-  isBookmarked: boolean;
-  onToggleBookmark: (termId: string) => void;
-}) => {
-  const [activeTab, setActiveTab] = useState<TabType>("definition");
-
-  const tabs: { key: TabType; label: string }[] = [
-    { key: "definition", label: "Definition" },
-    { key: "metaphor", label: "Metaphor" },
-    { key: "affirmation", label: "Affirmation" },
-  ];
-
-  const content = {
-    definition: term.definition,
-    metaphor: term.metaphor,
-    affirmation: term.affirmation,
-  };
-
-  return (
-    <Card className="border-0 shadow-md overflow-hidden" style={{ background: "white" }}>
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-xl font-semibold" style={{ color: "hsl(42 50% 25%)" }}>
-            {term.term}
-          </h3>
-          <button
-            onClick={() => onToggleBookmark(term.id)}
-            className="p-1.5 rounded-full transition-colors"
-            style={{
-              background: isBookmarked ? "hsl(42 60% 92%)" : "transparent",
-            }}
-          >
-            <Bookmark
-              className="h-5 w-5 transition-colors"
-              style={{
-                color: isBookmarked ? "hsl(42 55% 48%)" : "hsl(42 15% 70%)",
-                fill: isBookmarked ? "hsl(42 55% 48%)" : "none",
-              }}
-            />
-          </button>
-        </div>
-
-        {/* Pill tabs */}
-        <div className="flex gap-2 mb-4">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className="px-4 py-2 rounded-full text-sm font-medium transition-all"
-              style={{
-                background: activeTab === tab.key ? "hsl(42 55% 48%)" : "hsl(42 30% 92%)",
-                color: activeTab === tab.key ? "white" : "hsl(42 30% 35%)",
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={activeTab}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="text-base leading-relaxed"
-            style={{ color: "hsl(42 15% 30%)" }}
-          >
-            {content[activeTab]}
-          </motion.p>
-        </AnimatePresence>
-      </CardContent>
-    </Card>
-  );
-};
 
 const StudyPage = () => {
   const { id, block } = useParams<{ id: string; block: string }>();
@@ -137,15 +53,12 @@ const StudyPage = () => {
   const toggleBookmark = async (termId: string) => {
     if (!user) return;
     const isCurrentlyBookmarked = bookmarkedIds.has(termId);
-
-    // Optimistic update
     setBookmarkedIds((prev) => {
       const next = new Set(prev);
       if (isCurrentlyBookmarked) next.delete(termId);
       else next.add(termId);
       return next;
     });
-
     if (isCurrentlyBookmarked) {
       await supabase.from("bookmarks").delete().eq("user_id", user.id).eq("term_id", termId);
     } else {
@@ -165,14 +78,13 @@ const StudyPage = () => {
             {sectionName} — Block {block}
           </h1>
           <p className="text-sm mb-4 leading-relaxed" style={{ color: "hsl(42 20% 45%)" }}>
-            Tap through Definition, Metaphor, and Affirmation for each term. Take your time.
+            Explore each term through five perspectives. Take your time.
           </p>
 
-          {/* Supportive message */}
           <Card className="border-0 shadow-sm mb-6" style={{ background: "hsl(42 60% 96%)" }}>
             <CardContent className="p-4">
               <p className="text-sm leading-relaxed" style={{ color: "hsl(42 30% 30%)" }}>
-                🌱 There is no rush here. Read each definition slowly, let the metaphor connect to something real in your life, and sit with the affirmation for a moment. This is your time to learn and grow at your own pace.
+                🌱 Read the definition, view the picture, feel the metaphor, embrace the affirmation, and journal your thoughts. This is your time to learn and grow at your own pace.
               </p>
             </CardContent>
           </Card>
@@ -200,8 +112,15 @@ const StudyPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="mt-8 pb-8"
+            className="mt-8 pb-8 space-y-3"
           >
+            <Button
+              className="w-full py-6 text-base gap-2"
+              style={{ background: "hsl(42 55% 48%)", color: "white" }}
+              onClick={() => navigate(`/section/${id}/activity/${block}`)}
+            >
+              <Gamepad2 className="h-5 w-5" /> Practice Activities
+            </Button>
             <Button
               className="w-full py-6 text-base gap-2"
               style={{ background: "hsl(170 40% 35%)", color: "white" }}

@@ -8,6 +8,7 @@ interface Profile {
   state: string | null;
   exam_date: string | null;
   program: string | null;
+  language: string;
 }
 
 interface AuthContextType {
@@ -39,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select("*")
       .eq("id", userId)
       .single();
-    if (data) setProfile(data);
+    if (data) setProfile(data as Profile);
   };
 
   useEffect(() => {
@@ -47,7 +48,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async (_event, session) => {
         setSession(session);
         if (session?.user) {
-          // Use setTimeout to avoid Supabase deadlock
           setTimeout(() => fetchProfile(session.user.id), 0);
         } else {
           setProfile(null);
