@@ -41,15 +41,16 @@ const SectionPage = () => {
         const resultsByBlock: Record<number, { score: number; total: number }> = {};
         if (resultsRes.data) {
           (resultsRes.data as any[]).forEach((r) => {
-            const existing = resultsByBlock.get(r.block_number);
-            if (!existing || r.score > existing.score) resultsByBlock.set(r.block_number, { score: r.score, total: r.total_questions });
+            const existing = resultsByBlock[r.block_number];
+            if (!existing || r.score > existing.score) resultsByBlock[r.block_number] = { score: r.score, total: r.total_questions };
           });
         }
 
         setBlocks(
-          Array.from(blockMap.entries())
-            .map(([block_number, term_count]) => {
-              const result = resultsByBlock.get(block_number);
+          Object.entries(blockMap)
+            .map(([key, term_count]) => {
+              const block_number = Number(key);
+              const result = resultsByBlock[block_number];
               return { block_number, term_count, completed: !!result, bestScore: result?.score ?? null, bestTotal: result?.total ?? null };
             })
             .sort((a, b) => a.block_number - b.block_number)
