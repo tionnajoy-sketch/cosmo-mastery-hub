@@ -9,55 +9,12 @@ import { motion } from "framer-motion";
 import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target, GraduationCap } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
 import AIMentorChat from "@/components/AIMentorChat";
+import { sectionObjectivesMap, blockObjectivesMap } from "@/lib/sectionObjectives";
 
 const c = pageColors.section;
 
 interface Section { id: string; name: string; description: string; }
 interface BlockInfo { block_number: number; term_count: number; completed: boolean; bestScore: number | null; bestTotal: number | null; }
-
-const sectionObjectives = [
-  "Identify the major layers, structures, and functions of the skin.",
-  "Match key skin terms with their correct definitions and roles in skin health.",
-  "Apply the TJ Anderson Layer Method to answer State Board–style skin questions with confidence.",
-];
-
-const blockObjectivesMap: Record<number, string[]> = {
-  1: [
-    "Explain the structure and function of the epidermis and dermis.",
-    "Identify the role of key skin layers in protection and growth.",
-    "Answer State Board–style questions about basic skin anatomy.",
-  ],
-  2: [
-    "Recognize the sublayers of the epidermis and their functions.",
-    "Match terms like stratum corneum and stratum germinativum with their descriptions.",
-    "Apply your knowledge to exam questions about cell renewal.",
-  ],
-  3: [
-    "Identify the components of the dermis including collagen and elastin.",
-    "Explain how the dermis supports skin strength and flexibility.",
-    "Answer questions about dermal structures in exam scenarios.",
-  ],
-  4: [
-    "Explain what sebaceous glands and sebum do for the skin and hair.",
-    "Recognize where these glands are located and how over-cleansing affects them.",
-    "Answer State Board–style questions using real-world scenarios about these glands.",
-  ],
-  5: [
-    "Identify the structure and function of sudoriferous (sweat) glands.",
-    "Match terms like secretory coil and sweat duct with their correct descriptions.",
-    "Apply your knowledge to exam questions about temperature regulation and sweat.",
-  ],
-  6: [
-    "Explain key skin functions including sensation, absorption, and secretion.",
-    "Identify how the skin protects against environmental damage.",
-    "Answer questions that connect skin functions to everyday scenarios.",
-  ],
-  7: [
-    "Recognize common skin conditions and growth patterns.",
-    "Explain factors that affect skin health and regeneration.",
-    "Apply your understanding to State Board questions about skin conditions.",
-  ],
-};
 
 const SectionPage = () => {
   const { id } = useParams<{ id: string }>();
