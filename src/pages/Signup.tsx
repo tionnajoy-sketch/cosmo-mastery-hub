@@ -31,6 +31,7 @@ const Signup = () => {
   const [examDate, setExamDate] = useState("");
   const [program, setProgram] = useState("");
   const [language, setLanguage] = useState("en");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
