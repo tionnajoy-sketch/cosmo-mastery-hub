@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target, GraduationCap, Circle } from "lucide-react";
+import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target, GraduationCap, Circle, Map } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
 import AIMentorChat from "@/components/AIMentorChat";
 import { sectionObjectivesMap, blockObjectivesMap } from "@/lib/sectionObjectives";
@@ -86,7 +86,28 @@ const SectionPage = () => {
           <p className="text-base mb-6 leading-relaxed" style={{ color: c.subtext }}>{section.description}</p>
         </motion.div>
 
-        {/* ───── PROGRESS PIE + STATS ───── */}
+        {/* ───── ANATOMY MAP SHORTCUT (Anatomy section only) ───── */}
+        {id === "b2c3d4e5-f6a7-8901-bcde-fa2345678901" && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}>
+            <Card
+              className="border-0 shadow-sm mb-6 cursor-pointer hover:shadow-md transition-shadow"
+              style={{ background: "linear-gradient(135deg, hsl(200 55% 95%), hsl(42 50% 95%))" }}
+              onClick={() => navigate("/anatomy-map")}
+            >
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "hsl(200 60% 88%)" }}>
+                  <Map className="w-5 h-5" style={{ color: "hsl(200 65% 42%)" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold" style={{ color: "hsl(200 50% 28%)" }}>Anatomy Map</p>
+                  <p className="text-xs" style={{ color: "hsl(200 20% 50%)" }}>Interactive body diagram — tap bones, muscles & nerves to explore</p>
+                </div>
+                <ArrowLeft className="w-4 h-4 rotate-180 shrink-0" style={{ color: "hsl(200 40% 60%)" }} />
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {totalBlocks > 0 && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
             <Card className="border-0 shadow-sm mb-8" style={{ background: "hsl(0 0% 100%)" }}>
