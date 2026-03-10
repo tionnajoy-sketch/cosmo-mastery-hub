@@ -3,16 +3,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bookmark, Loader2 } from "lucide-react";
+import { Bookmark, Loader2, CheckCircle2 } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import { getBuildExercise } from "@/lib/buildExercises";
 import BuildTheBody from "@/components/BuildTheBody";
+import BrainNote from "@/components/BrainNote";
 
 const c = pageColors.study;
 
+const generateReflectionPrompt = (term: string, definition: string): string => {
+  const prompts = [
+    `Why is ${term} important in cosmetology, and how would you explain it to a fellow student?`,
+    `In your own words, what role does ${term} play? How does it connect to what you already know?`,
+    `If a client asked you about ${term}, how would you explain it simply and confidently?`,
+    `Think about ${term}. Why does understanding this concept matter for your career?`,
+    `How does ${term} relate to what you see or do in the salon? Describe the connection.`,
+  ];
+  // Deterministic selection based on term name length
+  return prompts[term.length % prompts.length];
+};
+
 interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; }
-type TabType = "definition" | "picture" | "metaphor" | "affirmation" | "journal" | "build";
+type TabType = "definition" | "picture" | "metaphor" | "affirmation" | "reflection" | "journal" | "build";
 
 interface TermCardProps {
   term: Term;
