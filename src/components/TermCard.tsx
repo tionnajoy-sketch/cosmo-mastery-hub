@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bookmark, Loader2 } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import { getBuildExercise } from "@/lib/buildExercises";
+import BuildTheBody from "@/components/BuildTheBody";
 
 const c = pageColors.study;
 
