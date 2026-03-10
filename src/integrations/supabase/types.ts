@@ -221,6 +221,45 @@ export type Database = {
           },
         ]
       }
+      reflections: {
+        Row: {
+          id: string
+          response: string
+          term_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          response?: string
+          term_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          response?: string
+          term_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reflections_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reflections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sections: {
         Row: {
           color_theme: string
