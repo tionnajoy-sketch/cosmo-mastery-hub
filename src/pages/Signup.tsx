@@ -142,7 +142,20 @@ const Signup = () => {
                 <Label htmlFor="examDate">Exam Date (optional)</Label>
                 <Input id="examDate" type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
               </div>
-              <Button type="submit" className="w-full text-base py-6" disabled={loading} style={{ background: c.button, color: "white" }}>
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="terms"
+                  checked={agreedToTerms}
+                  onCheckedChange={(v) => setAgreedToTerms(v === true)}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="terms" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+                  I agree to the{" "}
+                  <a href="/terms" target="_blank" className="underline text-primary">Terms of Use</a>{" "}
+                  and acknowledge that CosmoPrep™ content is proprietary.
+                </Label>
+              </div>
+              <Button type="submit" className="w-full text-base py-6" disabled={loading || !agreedToTerms} style={{ background: c.button, color: "white" }}>
                 {loading ? "Creating account..." : "Join CosmoPrep"}
               </Button>
             </form>
