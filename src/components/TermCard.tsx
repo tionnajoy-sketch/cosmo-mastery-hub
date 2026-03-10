@@ -46,12 +46,14 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const [reflectionSubmitted, setReflectionSubmitted] = useState(false);
 
   const buildExercise = useMemo(() => getBuildExercise(term.term), [term.term]);
+  const reflectionPrompt = useMemo(() => generateReflectionPrompt(term.term, term.definition), [term.term, term.definition]);
 
   const tabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Definition" },
     { key: "picture", label: "Picture" },
     { key: "metaphor", label: "Metaphor" },
     { key: "affirmation", label: "Affirmation" },
+    { key: "reflection", label: "Reflection" },
     ...(buildExercise ? [{ key: "build" as TabType, label: "🧩 Build" }] : []),
     { key: "journal", label: "Journal" },
   ];
