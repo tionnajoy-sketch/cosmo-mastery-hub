@@ -24,7 +24,7 @@ const StudyPage = () => {
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
 
   const blockNum = Number(block);
-  const objectives = blockObjectivesMap[blockNum] || [];
+  const objectives = blockObjectivesMap[id!]?.[blockNum] || [];
 
   useEffect(() => {
     if (!id || !block) return;
