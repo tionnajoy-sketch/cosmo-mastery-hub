@@ -28,11 +28,14 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
 
+  const buildExercise = useMemo(() => getBuildExercise(term.term), [term.term]);
+
   const tabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Definition" },
     { key: "picture", label: "Picture" },
     { key: "metaphor", label: "Metaphor" },
     { key: "affirmation", label: "Affirmation" },
+    ...(buildExercise ? [{ key: "build" as TabType, label: "🧩 Build" }] : []),
     { key: "journal", label: "Journal" },
   ];
 
