@@ -157,6 +157,48 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
         return <p className="text-base leading-relaxed italic" style={{ color: c.bodyText }}>{term.metaphor}</p>;
       case "affirmation":
         return <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{term.affirmation}</p>;
+      case "reflection":
+        return (
+          <div className="space-y-3">
+            <p className="text-sm font-medium leading-relaxed" style={{ color: c.termHeading }}>
+              {reflectionPrompt}
+            </p>
+            <Textarea
+              placeholder="Take a moment to pause and reflect... Write 1–2 sentences."
+              value={reflectionText}
+              onChange={(e) => { setReflectionText(e.target.value); setReflectionSubmitted(false); }}
+              disabled={reflectionSubmitted}
+              className="min-h-[90px] text-sm resize-none"
+              style={{ color: c.bodyText }}
+            />
+            {!reflectionSubmitted ? (
+              <Button
+                size="sm"
+                onClick={saveReflection}
+                disabled={!reflectionText.trim() || reflectionSaving}
+                className="w-full"
+                style={{ background: c.tabActive, color: c.tabActiveText }}
+              >
+                {reflectionSaving ? "Saving..." : "Save My Reflection"}
+              </Button>
+            ) : (
+              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(145 40% 45%)" }} />
+                  <span className="text-sm font-medium" style={{ color: "hsl(145 40% 45%)" }}>Reflection saved</span>
+                </div>
+                <BrainNote text="Pausing to reflect activates your prefrontal cortex and helps move information from short-term to long-term memory. You are building real understanding." />
+                <button
+                  onClick={() => setReflectionSubmitted(false)}
+                  className="text-xs underline"
+                  style={{ color: c.subtext }}
+                >
+                  Edit my reflection
+                </button>
+              </motion.div>
+            )}
+          </div>
+        );
       case "build":
         return buildExercise ? <BuildTheBody exercise={buildExercise} /> : null;
       case "journal":
