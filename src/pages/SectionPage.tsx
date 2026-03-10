@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target, GraduationCap, Circle } from "lucide-react";
+import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target, GraduationCap, Circle, Map } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
 import AIMentorChat from "@/components/AIMentorChat";
 import { sectionObjectivesMap, blockObjectivesMap } from "@/lib/sectionObjectives";
