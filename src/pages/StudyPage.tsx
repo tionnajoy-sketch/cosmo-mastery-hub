@@ -9,41 +9,11 @@ import { ArrowLeft, Brain, Gamepad2, GraduationCap } from "lucide-react";
 import TermCard from "@/components/TermCard";
 import AIMentorChat from "@/components/AIMentorChat";
 import { pageColors } from "@/lib/colors";
+import { blockObjectivesMap } from "@/lib/sectionObjectives";
 
 const c = pageColors.study;
 
 interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; }
-
-const blockObjectivesMap: Record<number, string[]> = {
-  1: [
-    "Explain the structure and function of the epidermis and dermis.",
-    "Identify the role of key skin layers in protection and growth.",
-  ],
-  2: [
-    "Recognize the sublayers of the epidermis and their functions.",
-    "Match terms like stratum corneum and stratum germinativum with their descriptions.",
-  ],
-  3: [
-    "Identify the components of the dermis including collagen and elastin.",
-    "Explain how the dermis supports skin strength and flexibility.",
-  ],
-  4: [
-    "Explain what sebaceous glands and sebum do for the skin and hair.",
-    "Recognize where these glands are located and how over-cleansing affects them.",
-  ],
-  5: [
-    "Identify the structure and function of sudoriferous (sweat) glands.",
-    "Match terms like secretory coil and sweat duct with their correct descriptions.",
-  ],
-  6: [
-    "Explain key skin functions including sensation, absorption, and secretion.",
-    "Identify how the skin protects against environmental damage.",
-  ],
-  7: [
-    "Recognize common skin conditions and growth patterns.",
-    "Explain factors that affect skin health and regeneration.",
-  ],
-};
 
 const StudyPage = () => {
   const { id, block } = useParams<{ id: string; block: string }>();

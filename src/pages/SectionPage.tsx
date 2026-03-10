@@ -121,7 +121,7 @@ const SectionPage = () => {
         <div className="space-y-4">
           {blocks.map((block, i) => {
             const accent = blockAccentColors[i % blockAccentColors.length];
-            const objectives = blockObjectivesMap[block.block_number] || [];
+            const objectives = blockObjectivesMap[id!]?.[block.block_number] || [];
             return (
               <motion.div key={block.block_number} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.08 }}>
                 <Card className="border-0 shadow-md overflow-hidden" style={{ background: c.card }}>
