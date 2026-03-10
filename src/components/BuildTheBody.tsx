@@ -184,7 +184,7 @@ const BuildTheBody = ({ exercise }: Props) => {
           <>
             <div className="flex-1">
               {perfect ? (
-                <p className="text-sm font-semibold text-green-700">
+                <p className="text-sm font-semibold text-primary">
                   🎉 Perfect build!
                 </p>
               ) : (
