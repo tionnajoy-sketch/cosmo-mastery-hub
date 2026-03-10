@@ -53,23 +53,19 @@ const QuizPage = () => {
   useEffect(() => {
     if (!id || !block) return;
     const fetchData = async () => {
-      const promises: Promise<any>[] = [
+      const [sectionRes, questionsRes] = await Promise.all([
         supabase.from("sections").select("name").eq("id", id).single(),
         supabase.from("questions").select("*").eq("section_id", id).eq("block_number", Number(block)),
-      ];
+      ]);
+      if (sectionRes.data) setSectionName(sectionRes.data.name);
+      if (questionsRes.data) setQuestions(questionsRes.data);
       if (user) {
-        promises.push(
-          supabase.from("quiz_results").select("score, total_questions").eq("section_id", id).eq("block_number", Number(block)).eq("user_id", user.id)
-        );
-      }
-      const results = await Promise.all(promises);
-      if (results[0].data) setSectionName(results[0].data.name);
-      if (results[1].data) setQuestions(results[1].data);
-      if (results[2]?.data && results[2].data.length > 0) {
-        const attempts = results[2].data;
-        setTotalAttempts(attempts.length);
-        const best = attempts.reduce((a: any, b: any) => (a.score > b.score ? a : b), attempts[0]);
-        setPreviousBest({ score: best.score, total: best.total_questions });
+        const { data: resultsData } = await supabase.from("quiz_results").select("score, total_questions").eq("section_id", id).eq("block_number", Number(block)).eq("user_id", user.id);
+        if (resultsData && resultsData.length > 0) {
+          setTotalAttempts(resultsData.length);
+          const best = resultsData.reduce((a, b) => (a.score > b.score ? a : b), resultsData[0]);
+          setPreviousBest({ score: best.score, total: best.total_questions });
+        }
       }
     };
     fetchData();
