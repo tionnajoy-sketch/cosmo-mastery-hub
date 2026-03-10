@@ -63,6 +63,12 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     supabase.from("journal_notes").select("note").eq("user_id", user.id).eq("term_id", term.id).single().then(({ data }) => {
       if (data) setJournalNote(data.note);
     });
+    supabase.from("reflections").select("response").eq("user_id", user.id).eq("term_id", term.id).single().then(({ data }) => {
+      if (data && data.response) {
+        setReflectionText(data.response);
+        setReflectionSubmitted(true);
+      }
+    });
   }, [user, term.id]);
 
   useEffect(() => {
