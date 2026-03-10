@@ -111,6 +111,17 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     return () => clearTimeout(timeout);
   }, [journalNote, user, term.id]);
 
+  const saveReflection = useCallback(async () => {
+    if (!user || !reflectionText.trim()) return;
+    setReflectionSaving(true);
+    await supabase.from("reflections").upsert(
+      { user_id: user.id, term_id: term.id, response: reflectionText, updated_at: new Date().toISOString() },
+      { onConflict: "user_id,term_id" }
+    );
+    setReflectionSaving(false);
+    setReflectionSubmitted(true);
+  }, [user, term.id, reflectionText]);
+
   const renderContent = () => {
     switch (activeTab) {
       case "definition":
