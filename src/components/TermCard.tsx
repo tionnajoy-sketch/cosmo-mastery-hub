@@ -12,7 +12,7 @@ import BuildTheBody from "@/components/BuildTheBody";
 const c = pageColors.study;
 
 interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; }
-type TabType = "definition" | "picture" | "metaphor" | "affirmation" | "journal";
+type TabType = "definition" | "picture" | "metaphor" | "affirmation" | "journal" | "build";
 
 interface TermCardProps {
   term: Term;
