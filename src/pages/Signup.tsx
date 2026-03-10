@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { pageColors } from "@/lib/colors";
 
 const c = pageColors.signup;
