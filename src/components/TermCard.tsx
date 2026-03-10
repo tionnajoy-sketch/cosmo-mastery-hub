@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,11 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bookmark, Loader2 } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import { getBuildExercise } from "@/lib/buildExercises";
+import BuildTheBody from "@/components/BuildTheBody";
 
 const c = pageColors.study;
 
 interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; }
-type TabType = "definition" | "picture" | "metaphor" | "affirmation" | "journal";
+type TabType = "definition" | "picture" | "metaphor" | "affirmation" | "journal" | "build";
 
 interface TermCardProps {
   term: Term;
@@ -26,11 +28,14 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
 
+  const buildExercise = useMemo(() => getBuildExercise(term.term), [term.term]);
+
   const tabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Definition" },
     { key: "picture", label: "Picture" },
     { key: "metaphor", label: "Metaphor" },
     { key: "affirmation", label: "Affirmation" },
+    ...(buildExercise ? [{ key: "build" as TabType, label: "🧩 Build" }] : []),
     { key: "journal", label: "Journal" },
   ];
 
@@ -116,6 +121,8 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
         return <p className="text-base leading-relaxed italic" style={{ color: c.bodyText }}>{term.metaphor}</p>;
       case "affirmation":
         return <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{term.affirmation}</p>;
+      case "build":
+        return buildExercise ? <BuildTheBody exercise={buildExercise} /> : null;
       case "journal":
         return (
           <div>
