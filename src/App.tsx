@@ -23,6 +23,7 @@ import PretestPage from "./pages/PretestPage";
 import PretestResultsPage from "./pages/PretestResultsPage";
 import PosttestPage from "./pages/PosttestPage";
 import PosttestResultsPage from "./pages/PosttestResultsPage";
+import AnatomyMapPage from "./pages/AnatomyMapPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/pretest-results" element={<ProtectedRoute><PretestResultsPage /></ProtectedRoute>} />
             <Route path="/post-test" element={<ProtectedRoute><PosttestPage /></ProtectedRoute>} />
             <Route path="/post-test-results" element={<ProtectedRoute><PosttestResultsPage /></ProtectedRoute>} />
+            <Route path="/anatomy-map" element={<ProtectedRoute><AnatomyMapPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
