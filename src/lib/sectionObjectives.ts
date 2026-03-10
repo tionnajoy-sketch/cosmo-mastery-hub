@@ -5,13 +5,15 @@ export const sectionObjectivesMap: Record<string, string[]> = {
   "a1b2c3d4-e5f6-7890-abcd-ef1234567890": [
     "Identify the major layers, structures, and functions of the skin.",
     "Match key skin terms with their correct definitions and roles in skin health.",
-    "Apply the TJ Anderson Layer Method to answer State Board–style skin questions with confidence.",
+    "Use the TJ Anderson Layer Method to build deep understanding through definition, metaphor, affirmation, and reflection.",
+    "Answer State Board–style skin questions with confidence.",
   ],
   // General Anatomy and Physiology
   "b2c3d4e5-f6a7-8901-bcde-fa2345678901": [
     "Identify the structures and functions of cells, tissues, organs, and body systems.",
     "Explain key body systems including the skeletal, muscular, nervous, circulatory, and lymphatic systems.",
-    "Apply the TJ Anderson Layer Method to answer State Board–style anatomy and physiology questions with confidence.",
+    "Use the TJ Anderson Layer Method to build deep understanding through definition, metaphor, affirmation, and reflection.",
+    "Answer State Board–style anatomy and physiology questions with confidence.",
   ],
 };
 
