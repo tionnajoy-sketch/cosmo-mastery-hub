@@ -85,7 +85,7 @@ const SectionPage = () => {
               </div>
               <p className="text-xs mb-2" style={{ color: "hsl(195 20% 40%)" }}>By the end of this section, you will be able to:</p>
               <ul className="space-y-1">
-                {sectionObjectives.map((obj, i) => (
+                {(sectionObjectivesMap[id!] || []).map((obj, i) => (
                   <li key={i} className="text-xs leading-relaxed flex items-start gap-2" style={{ color: "hsl(195 18% 32%)" }}>
                     <span style={{ color: "hsl(195 45% 45%)" }}>•</span>
                     {obj}
