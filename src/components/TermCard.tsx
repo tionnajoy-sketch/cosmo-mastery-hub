@@ -121,6 +121,8 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
         return <p className="text-base leading-relaxed italic" style={{ color: c.bodyText }}>{term.metaphor}</p>;
       case "affirmation":
         return <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{term.affirmation}</p>;
+      case "build":
+        return buildExercise ? <BuildTheBody exercise={buildExercise} /> : null;
       case "journal":
         return (
           <div>
