@@ -41,6 +41,9 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const [journalSaving, setJournalSaving] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
+  const [reflectionText, setReflectionText] = useState("");
+  const [reflectionSaving, setReflectionSaving] = useState(false);
+  const [reflectionSubmitted, setReflectionSubmitted] = useState(false);
 
   const buildExercise = useMemo(() => getBuildExercise(term.term), [term.term]);
 
