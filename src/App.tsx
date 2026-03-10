@@ -17,6 +17,7 @@ import ResultsPage from "./pages/ResultsPage";
 import PopQuizPage from "./pages/PopQuizPage";
 import StrategyPage from "./pages/StrategyPage";
 import FinalExamPage from "./pages/FinalExamPage";
+import ProgressPage from "./pages/ProgressPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/section/:id/pop-quiz" element={<ProtectedRoute><PopQuizPage /></ProtectedRoute>} />
             <Route path="/section/:id/final-exam" element={<ProtectedRoute><FinalExamPage /></ProtectedRoute>} />
             <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
+            <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useStudyTracker } from "@/hooks/useStudyTracker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, CheckCircle2, XCircle, Clock, Brain, Sparkles, BookOpen, Target } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, Clock, Brain, Sparkles, BookOpen, Target, Heart } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 
 const c = pageColors.quiz;
@@ -29,6 +30,7 @@ const FinalExamPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { trackQuestions } = useStudyTracker();
   const [sectionName, setSectionName] = useState("");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -41,6 +43,7 @@ const FinalExamPage = () => {
   const [done, setDone] = useState(false);
   const [reflection, setReflection] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const trackedRef = useRef(false);
 
   useEffect(() => {
     if (!id) return;
@@ -51,7 +54,6 @@ const FinalExamPage = () => {
       ]);
       if (sRes.data) setSectionName(sRes.data.name);
       if (qRes.data) {
-        // Pick ~4 questions per block evenly
         const byBlock = new Map<number, Question[]>();
         qRes.data.forEach((q: Question) => {
           if (!byBlock.has(q.block_number)) byBlock.set(q.block_number, []);
@@ -80,14 +82,21 @@ const FinalExamPage = () => {
     }
   }, [mode, done]);
 
+  // Track questions when done
+  useEffect(() => {
+    if (done && !trackedRef.current && questions.length > 0) {
+      trackedRef.current = true;
+      trackQuestions(questions.length);
+    }
+  }, [done]);
+
   const startExam = (m: ExamMode) => {
     setMode(m);
-    if (m === "exam") setTimeLeft(questions.length * 60); // 1 min per question
+    if (m === "exam") setTimeLeft(questions.length * 60);
   };
 
   const finishExam = () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    // Calculate scores from examAnswers
     const bs = new Map<number, { correct: number; total: number }>();
     let totalCorrect = 0;
     questions.forEach((q, i) => {
@@ -105,9 +114,7 @@ const FinalExamPage = () => {
   const handleAnswer = (option: string) => {
     if (mode === "exam") {
       setExamAnswers((prev) => new Map(prev).set(currentIndex, option));
-      if (currentIndex < questions.length - 1) {
-        setCurrentIndex((i) => i + 1);
-      }
+      if (currentIndex < questions.length - 1) setCurrentIndex((i) => i + 1);
     } else {
       if (selectedAnswer) return;
       setSelectedAnswer(option);
@@ -143,6 +150,16 @@ const FinalExamPage = () => {
             <h1 className="font-display text-3xl font-bold mb-2" style={{ color: c.heading }}>{sectionName} Final Check</h1>
             <p className="text-sm" style={{ color: c.subtext }}>Test yourself on all blocks at once. {questions.length} questions.</p>
           </div>
+
+          {/* You're Not Alone - before Final Check */}
+          <Card className="border-0 shadow-sm" style={{ background: "hsl(185 18% 28%)" }}>
+            <CardContent className="p-4 flex items-start gap-2">
+              <Heart className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(346 45% 65%)" }} />
+              <p className="text-xs leading-relaxed italic" style={{ color: "hsl(185 15% 75%)" }}>
+                This is practice, not a judgment. Other students miss questions here too. The goal is to learn what to review—not to be perfect.
+              </p>
+            </CardContent>
+          </Card>
 
           <Card className="border-2 cursor-pointer hover:shadow-lg transition-all" style={{ background: c.practiceBg, borderColor: c.practiceBorder }} onClick={() => startExam("practice")}>
             <CardContent className="p-6">
@@ -199,7 +216,16 @@ const FinalExamPage = () => {
                 <div className="font-display text-5xl font-bold mb-1" style={{ color: c.heading }}>{score}/{questions.length}</div>
                 <p className="text-sm mb-4" style={{ color: c.subtext }}>{percentage}% correct</p>
 
-                {/* Block breakdown */}
+                {/* You're Not Alone for low scores */}
+                {percentage < 60 && (
+                  <div className="flex items-start gap-2 p-3 rounded-lg mb-4 text-left" style={{ background: "hsl(346 35% 96%)" }}>
+                    <Heart className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(346 45% 55%)" }} />
+                    <p className="text-xs leading-relaxed italic" style={{ color: "hsl(346 25% 35%)" }}>
+                      You are not the only one who finds this tough. That's why this app exists—to walk through it with you.
+                    </p>
+                  </div>
+                )}
+
                 <div className="space-y-2 text-left mb-4">
                   <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: c.subtext }}>Score by Block</p>
                   {sortedBlocks.map(([block, data]) => {
@@ -370,9 +396,15 @@ const FinalExamPage = () => {
                     Previous
                   </Button>
                 )}
-                <Button className="flex-1 py-5 text-base" style={{ background: c.nextButton, color: "white" }} onClick={handleNext}>
-                  {currentIndex === questions.length - 1 ? "Finish Exam" : "Next"}
-                </Button>
+                {currentIndex === questions.length - 1 ? (
+                  <Button className="flex-1 py-5" style={{ background: c.nextButton, color: "white" }} onClick={finishExam}>
+                    Finish Exam
+                  </Button>
+                ) : (
+                  <Button className="flex-1 py-5" style={{ background: c.nextButton, color: "white" }} onClick={() => setCurrentIndex((i) => i + 1)}>
+                    Next
+                  </Button>
+                )}
               </div>
             )}
           </motion.div>

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target } from "lucide-react";
+import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target, GraduationCap } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
 import AIMentorChat from "@/components/AIMentorChat";
 
@@ -14,6 +14,50 @@ const c = pageColors.section;
 
 interface Section { id: string; name: string; description: string; }
 interface BlockInfo { block_number: number; term_count: number; completed: boolean; bestScore: number | null; bestTotal: number | null; }
+
+const sectionObjectives = [
+  "Identify the major layers, structures, and functions of the skin.",
+  "Match key skin terms with their correct definitions and roles in skin health.",
+  "Apply the TJ Anderson Layer Method to answer State Board–style skin questions with confidence.",
+];
+
+const blockObjectivesMap: Record<number, string[]> = {
+  1: [
+    "Explain the structure and function of the epidermis and dermis.",
+    "Identify the role of key skin layers in protection and growth.",
+    "Answer State Board–style questions about basic skin anatomy.",
+  ],
+  2: [
+    "Recognize the sublayers of the epidermis and their functions.",
+    "Match terms like stratum corneum and stratum germinativum with their descriptions.",
+    "Apply your knowledge to exam questions about cell renewal.",
+  ],
+  3: [
+    "Identify the components of the dermis including collagen and elastin.",
+    "Explain how the dermis supports skin strength and flexibility.",
+    "Answer questions about dermal structures in exam scenarios.",
+  ],
+  4: [
+    "Explain what sebaceous glands and sebum do for the skin and hair.",
+    "Recognize where these glands are located and how over-cleansing affects them.",
+    "Answer State Board–style questions using real-world scenarios about these glands.",
+  ],
+  5: [
+    "Identify the structure and function of sudoriferous (sweat) glands.",
+    "Match terms like secretory coil and sweat duct with their correct descriptions.",
+    "Apply your knowledge to exam questions about temperature regulation and sweat.",
+  ],
+  6: [
+    "Explain key skin functions including sensation, absorption, and secretion.",
+    "Identify how the skin protects against environmental damage.",
+    "Answer questions that connect skin functions to everyday scenarios.",
+  ],
+  7: [
+    "Recognize common skin conditions and growth patterns.",
+    "Explain factors that affect skin health and regeneration.",
+    "Apply your understanding to State Board questions about skin conditions.",
+  ],
+};
 
 const SectionPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -75,6 +119,25 @@ const SectionPage = () => {
           <h1 className="font-display text-3xl font-bold mb-2" style={{ color: c.heading }}>{section.name}</h1>
           <p className="text-base mb-4 leading-relaxed" style={{ color: c.subtext }}>{section.description}</p>
 
+          {/* Learning Objectives */}
+          <Card className="border-0 shadow-sm mb-4" style={{ background: "hsl(195 30% 96%)" }}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <GraduationCap className="h-4 w-4" style={{ color: "hsl(195 45% 38%)" }} />
+                <span className="font-display text-sm font-semibold" style={{ color: "hsl(195 35% 25%)" }}>Learning Objectives</span>
+              </div>
+              <p className="text-xs mb-2" style={{ color: "hsl(195 20% 40%)" }}>By the end of this section, you will be able to:</p>
+              <ul className="space-y-1">
+                {sectionObjectives.map((obj, i) => (
+                  <li key={i} className="text-xs leading-relaxed flex items-start gap-2" style={{ color: "hsl(195 18% 32%)" }}>
+                    <span style={{ color: "hsl(195 45% 45%)" }}>•</span>
+                    {obj}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
           <Card className="border-0 shadow-sm mb-6" style={{ background: c.tipBg }}>
             <CardContent className="p-4">
               <p className="text-sm leading-relaxed" style={{ color: c.tipText }}>
@@ -101,6 +164,7 @@ const SectionPage = () => {
         <div className="space-y-4">
           {blocks.map((block, i) => {
             const accent = blockAccentColors[i % blockAccentColors.length];
+            const objectives = blockObjectivesMap[block.block_number] || [];
             return (
               <motion.div key={block.block_number} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.08 }}>
                 <Card className="border-0 shadow-md overflow-hidden" style={{ background: c.card }}>
@@ -119,6 +183,14 @@ const SectionPage = () => {
                           )}
                         </div>
                       </div>
+                      {objectives.length > 0 && (
+                        <div className="mb-3 p-2.5 rounded-lg" style={{ background: "hsl(195 25% 96%)" }}>
+                          <p className="text-xs font-medium mb-1" style={{ color: "hsl(195 30% 35%)" }}>In this block, you will be able to:</p>
+                          {objectives.map((obj, j) => (
+                            <p key={j} className="text-xs leading-relaxed" style={{ color: "hsl(195 15% 40%)" }}>• {obj}</p>
+                          ))}
+                        </div>
+                      )}
                       <div className="flex gap-3">
                         <Button className="flex-1 gap-2 py-5 text-sm" style={{ background: accent.stripe, color: "white" }} onClick={() => navigate(`/section/${id}/study/${block.block_number}`)}>
                           <BookOpen className="h-4 w-4" /> Study Block

@@ -6,14 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Shuffle, Zap, PenLine, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import { ArrowLeft, Shuffle, Zap, PenLine, CheckCircle2, XCircle, RotateCcw, Grid3X3, Brain, Image, Lightbulb, FileText, Type } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import BrainNote from "@/components/BrainNote";
+import WordScramble from "@/components/activities/WordScramble";
+import CrosswordClues from "@/components/activities/CrosswordClues";
+import OwnWords from "@/components/activities/OwnWords";
+import BrainDump from "@/components/activities/BrainDump";
+import PictureMatch from "@/components/activities/PictureMatch";
+import MnemonicBuilder from "@/components/activities/MnemonicBuilder";
 
 const c = pageColors.activity;
 
 interface Term { id: string; term: string; definition: string; }
-type ActivityType = "matching" | "flashcard" | "fillin";
+type ActivityType = "matching" | "flashcard" | "fillin" | "scramble" | "crossword" | "ownwords" | "braindump" | "picturematch" | "mnemonic";
 
 const ActivityPage = () => {
   const { id, block } = useParams<{ id: string; block: string }>();
@@ -35,6 +41,18 @@ const ActivityPage = () => {
     fetch();
   }, [id, block]);
 
+  const activities = [
+    { key: "matching" as ActivityType, icon: Shuffle, label: "Matching Game", desc: "Match each term to its definition by tapping pairs." },
+    { key: "flashcard" as ActivityType, icon: Zap, label: "Flashcard Drill", desc: "Flip cards to test your recall. Mark what you know." },
+    { key: "fillin" as ActivityType, icon: PenLine, label: "Fill in the Blank", desc: "Type the missing term from its definition." },
+    { key: "scramble" as ActivityType, icon: Type, label: "Word Scramble", desc: "Unscramble the letters to reveal the term." },
+    { key: "crossword" as ActivityType, icon: Grid3X3, label: "Crossword Clues", desc: "Read clues and type the matching terms." },
+    { key: "ownwords" as ActivityType, icon: FileText, label: "Write In Your Own Words", desc: "Explain each term in your own language." },
+    { key: "braindump" as ActivityType, icon: Brain, label: "Brain Dump", desc: "List everything you remember, then compare." },
+    { key: "picturematch" as ActivityType, icon: Image, label: "Picture Match", desc: "See an image and choose the matching term." },
+    { key: "mnemonic" as ActivityType, icon: Lightbulb, label: "Build a Mnemonic", desc: "Create your own memory tricks for each term." },
+  ];
+
   if (!activity) {
     return (
       <div className="min-h-screen" style={{ background: c.gradient }}>
@@ -47,21 +65,17 @@ const ActivityPage = () => {
             <p className="text-sm mb-6" style={{ color: c.subtext }}>{sectionName} — Block {block}. Choose an activity to strengthen your understanding before the quiz.</p>
           </motion.div>
 
-          <div className="space-y-4">
-            {[
-              { key: "matching" as ActivityType, icon: Shuffle, label: "Matching Game", desc: "Match each term to its definition by tapping pairs." },
-              { key: "flashcard" as ActivityType, icon: Zap, label: "Flashcard Drill", desc: "Flip cards to test your recall. Mark what you know." },
-              { key: "fillin" as ActivityType, icon: PenLine, label: "Fill in the Blank", desc: "Type the missing term from its definition." },
-            ].map((a, i) => (
-              <motion.div key={a.key} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.08 }}>
+          <div className="space-y-3">
+            {activities.map((a, i) => (
+              <motion.div key={a.key} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.04 }}>
                 <Card className="border-2 cursor-pointer hover:shadow-lg transition-all" style={{ background: c.card, borderColor: c.cardBorder }} onClick={() => setActivity(a.key)}>
-                  <CardContent className="p-5 flex items-center gap-4">
-                    <div className="p-3 rounded-full" style={{ background: c.iconBg }}>
-                      <a.icon className="h-6 w-6" style={{ color: c.iconColor }} />
+                  <CardContent className="p-4 flex items-center gap-4">
+                    <div className="p-2.5 rounded-full" style={{ background: c.iconBg }}>
+                      <a.icon className="h-5 w-5" style={{ color: c.iconColor }} />
                     </div>
                     <div>
-                      <h3 className="font-display text-lg font-semibold" style={{ color: c.heading }}>{a.label}</h3>
-                      <p className="text-sm" style={{ color: c.subtext }}>{a.desc}</p>
+                      <h3 className="font-display text-base font-semibold" style={{ color: c.heading }}>{a.label}</h3>
+                      <p className="text-xs" style={{ color: c.subtext }}>{a.desc}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -82,6 +96,12 @@ const ActivityPage = () => {
         {activity === "matching" && <MatchingGame terms={terms} />}
         {activity === "flashcard" && <FlashcardDrill terms={terms} />}
         {activity === "fillin" && <FillInBlank terms={terms} />}
+        {activity === "scramble" && <WordScramble terms={terms} colors={c} />}
+        {activity === "crossword" && <CrosswordClues terms={terms} colors={c} />}
+        {activity === "ownwords" && <OwnWords terms={terms} colors={c} />}
+        {activity === "braindump" && <BrainDump terms={terms} colors={c} />}
+        {activity === "picturematch" && <PictureMatch terms={terms} colors={c} />}
+        {activity === "mnemonic" && <MnemonicBuilder terms={terms} colors={c} />}
       </div>
     </div>
   );
@@ -180,7 +200,6 @@ const FlashcardDrill = ({ terms }: { terms: Term[] }) => {
   const [known, setKnown] = useState<Set<number>>(new Set());
   const [statusLoaded, setStatusLoaded] = useState(false);
 
-  // Load term statuses and order: still_learning first
   useEffect(() => {
     if (!user || terms.length === 0) {
       setOrderedTerms(terms);
@@ -256,7 +275,6 @@ const FlashcardDrill = ({ terms }: { terms: Term[] }) => {
       <h2 className="font-display text-2xl font-bold mb-1" style={{ color: c.heading }}>Flashcard Drill</h2>
       <p className="text-sm mb-2" style={{ color: c.subtext }}>{known.size}/{orderedTerms.length} mastered — Tap to flip</p>
 
-      {/* Spaced repetition note */}
       <div className="mb-4 px-3 py-2 rounded-lg" style={{ background: "hsl(220 30% 96%)" }}>
         <p className="text-xs leading-relaxed" style={{ color: "hsl(220 20% 50%)" }}>
           We'll show "Still Learning" cards more often and "I Know This" a bit less. Seeing tricky terms again right before you forget them is one of the easiest ways to keep them for the exam.
