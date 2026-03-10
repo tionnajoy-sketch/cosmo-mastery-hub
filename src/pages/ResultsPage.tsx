@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useStudyTracker } from "@/hooks/useStudyTracker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { BookOpen, ArrowLeft, Sparkles, AlertTriangle } from "lucide-react";
+import { BookOpen, ArrowLeft, Sparkles, AlertTriangle, Heart } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 
 const c = pageColors.results;
@@ -22,6 +23,7 @@ const ResultsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { trackQuestions } = useStudyTracker();
   const saved = useRef(false);
 
   const score = (location.state as any)?.score ?? 0;
@@ -38,6 +40,8 @@ const ResultsPage = () => {
     if (saved.current || !user || !id || !block) return;
     saved.current = true;
     supabase.from("quiz_results").insert({ user_id: user.id, section_id: id, block_number: Number(block), score, total_questions: total });
+    // Track questions for daily goal
+    if (total > 0) trackQuestions(total);
   }, [user, id, block, score, total]);
 
   useEffect(() => {
@@ -83,7 +87,17 @@ const ResultsPage = () => {
               {wrongCount > 0 && <p className="text-xs mt-1" style={{ color: c.wrongText }}>{wrongCount} wrong {wrongCount === 1 ? "answer" : "answers"} tracked</p>}
             </div>
 
-            <p className="text-base leading-relaxed mb-6" style={{ color: c.bodyText }}>{getMessage()}</p>
+            <p className="text-base leading-relaxed mb-4" style={{ color: c.bodyText }}>{getMessage()}</p>
+
+            {/* You're Not Alone for low scores */}
+            {percentage < 60 && (
+              <div className="flex items-start gap-2 p-3 rounded-lg mb-4" style={{ background: "hsl(346 35% 96%)" }}>
+                <Heart className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(346 45% 55%)" }} />
+                <p className="text-xs leading-relaxed italic" style={{ color: "hsl(346 25% 35%)" }}>
+                  You are not the only one who finds this tough. That's why this app exists—to walk through it with you.
+                </p>
+              </div>
+            )}
 
             {/* Post-Quiz Reflection */}
             <Card className="border-0 shadow-sm mb-6 text-left" style={{ background: "hsl(42 50% 97%)" }}>

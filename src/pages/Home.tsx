@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useStudyTracker } from "@/hooks/useStudyTracker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
-import { BookOpen, LogOut, ArrowRight, Target, Sparkles, TrendingUp, Info } from "lucide-react";
+import { BookOpen, LogOut, ArrowRight, Target, Sparkles, TrendingUp, Info, CheckCircle2, Flame, BarChart3, Heart } from "lucide-react";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
 import PopUpReview from "@/components/PopUpReview";
 
@@ -25,12 +26,13 @@ interface SectionProgress {
   completedBlocks: number;
 }
 
-const motivationalMessages = [
+const communityMessages = [
+  "Many students are working through this material just like you. You're not alone in this.",
+  "Every question you answer is one more step toward your license—and other future professionals are doing the same work today.",
+  "Feeling nervous is normal. You're building something real, one concept at a time.",
   "Remember: everyone learns differently. Take your time. 💛",
-  "You are building something powerful — one concept at a time.",
-  "Every question you practice gets you closer to passing. Keep going!",
-  "Confidence comes from preparation, and you are preparing right now.",
   "You were made for this. Trust the process.",
+  "Confidence comes from preparation, and you are preparing right now.",
 ];
 
 const getStatusLabel = (percent: number) => {
@@ -44,11 +46,12 @@ const getStatusLabel = (percent: number) => {
 const Home = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const { questionsToday, goalMet, currentStreak, longestStreak, loading: trackerLoading } = useStudyTracker();
   const [sections, setSections] = useState<Section[]>([]);
   const [progressMap, setProgressMap] = useState<Map<string, SectionProgress>>(new Map());
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [totalCorrect, setTotalCorrect] = useState(0);
-  const [motivationalMessage] = useState(() => motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)]);
+  const [communityMessage] = useState(() => communityMessages[Math.floor(Math.random() * communityMessages.length)]);
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -68,7 +71,6 @@ const Home = () => {
 
       const terms = termsRes.data;
       const results = resultsRes.data;
-
       const map = new Map<string, SectionProgress>();
       let tq = 0, tc = 0;
 
@@ -113,29 +115,69 @@ const Home = () => {
           <BookOpen className="h-5 w-5" style={{ color: c.icon }} />
           <span className="font-display text-lg font-bold" style={{ color: c.heading }}>CosmoPrep</span>
         </div>
-        <Button variant="ghost" size="sm" onClick={signOut} className="gap-1 text-muted-foreground">
-          <LogOut className="h-4 w-4" /> Sign out
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/progress")} className="gap-1 text-muted-foreground">
+            <BarChart3 className="h-4 w-4" /> Progress
+          </Button>
+          <Button variant="ghost" size="sm" onClick={signOut} className="gap-1 text-muted-foreground">
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
       </header>
 
-      <div className="px-4 pt-8 pb-6 max-w-2xl mx-auto">
+      <div className="px-4 pt-4 pb-6 max-w-2xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className="font-display text-3xl font-bold mb-2" style={{ color: c.heading }}>
+          <h1 className="font-display text-3xl font-bold mb-1" style={{ color: c.heading }}>
             Welcome, {firstName} ✨
           </h1>
-          <p className="text-base leading-relaxed mb-4" style={{ color: c.subtext }}>
-            Let's get you ready to pass your boards. Pick a section to start studying.
+
+          {/* You're Not Alone */}
+          <p className="text-sm leading-relaxed mb-4" style={{ color: c.subtext }}>
+            {communityMessage}
           </p>
 
-          {/* Motivational message */}
-          <Card className="border-0 shadow-md mb-4" style={{ background: "hsl(42 60% 96%)" }}>
-            <CardContent className="p-4 flex items-start gap-3">
-              <Sparkles className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "hsl(42 58% 48%)" }} />
-              <p className="text-sm italic leading-relaxed" style={{ color: "hsl(42 30% 30%)" }}>
-                {motivationalMessage}
-              </p>
-            </CardContent>
-          </Card>
+          {/* Daily Goal Card */}
+          {!trackerLoading && (
+            <Card className="border-0 shadow-md mb-4" style={{ background: goalMet ? "hsl(145 40% 96%)" : "hsl(42 60% 96%)" }}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  {goalMet ? (
+                    <CheckCircle2 className="h-5 w-5" style={{ color: "hsl(145 60% 35%)" }} />
+                  ) : (
+                    <Target className="h-5 w-5" style={{ color: "hsl(42 58% 48%)" }} />
+                  )}
+                  <h3 className="font-display text-sm font-semibold" style={{ color: goalMet ? "hsl(145 40% 22%)" : "hsl(42 35% 25%)" }}>
+                    Today's Study Goal
+                  </h3>
+                </div>
+                {goalMet ? (
+                  <p className="text-sm" style={{ color: "hsl(145 30% 30%)" }}>
+                    Goal complete for today. Beautiful work. ✓
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-xs mb-2" style={{ color: "hsl(42 25% 35%)" }}>
+                      Complete one activity or answer 10 questions to meet today's goal.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Progress value={Math.min((questionsToday / 10) * 100, 100)} className="h-1.5 flex-1" />
+                      <span className="text-xs font-medium" style={{ color: "hsl(42 35% 40%)" }}>
+                        {questionsToday}/10
+                      </span>
+                    </div>
+                  </>
+                )}
+                {/* Streak */}
+                <div className="flex items-center gap-4 mt-3 pt-3 border-t" style={{ borderColor: goalMet ? "hsl(145 30% 85%)" : "hsl(42 30% 88%)" }}>
+                  <div className="flex items-center gap-1">
+                    <Flame className="h-3.5 w-3.5" style={{ color: currentStreak > 0 ? "hsl(25 70% 50%)" : "hsl(0 0% 65%)" }} />
+                    <span className="text-xs" style={{ color: c.subtext }}>Streak: {currentStreak} day{currentStreak !== 1 ? "s" : ""}</span>
+                  </div>
+                  <span className="text-xs" style={{ color: c.subtext }}>Best: {longestStreak} day{longestStreak !== 1 ? "s" : ""}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Progress Dashboard */}
           {totalQuestions > 0 && (
