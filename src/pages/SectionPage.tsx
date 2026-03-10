@@ -35,10 +35,10 @@ const SectionPage = () => {
       ]);
       if (sectionRes.data) setSection(sectionRes.data);
       if (termsRes.data) {
-        const blockMap = new Map<number, number>();
-        termsRes.data.forEach((t) => blockMap.set(t.block_number, (blockMap.get(t.block_number) || 0) + 1));
+        const blockMap: Record<number, number> = {};
+        termsRes.data.forEach((t) => { blockMap[t.block_number] = (blockMap[t.block_number] || 0) + 1; });
 
-        const resultsByBlock = new Map<number, { score: number; total: number }>();
+        const resultsByBlock: Record<number, { score: number; total: number }> = {};
         if (resultsRes.data) {
           (resultsRes.data as any[]).forEach((r) => {
             const existing = resultsByBlock.get(r.block_number);
