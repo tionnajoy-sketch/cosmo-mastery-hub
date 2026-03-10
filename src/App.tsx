@@ -18,6 +18,11 @@ import PopQuizPage from "./pages/PopQuizPage";
 import StrategyPage from "./pages/StrategyPage";
 import FinalExamPage from "./pages/FinalExamPage";
 import ProgressPage from "./pages/ProgressPage";
+import TermsPage from "./pages/TermsPage";
+import PretestPage from "./pages/PretestPage";
+import PretestResultsPage from "./pages/PretestResultsPage";
+import PosttestPage from "./pages/PosttestPage";
+import PosttestResultsPage from "./pages/PosttestResultsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
