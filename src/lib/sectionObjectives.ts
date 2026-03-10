@@ -9,8 +9,8 @@ export const sectionObjectivesMap: Record<string, string[]> = {
   ],
   // General Anatomy and Physiology
   "b2c3d4e5-f6a7-8901-bcde-fa2345678901": [
-    "Identify the structures and functions of cells, tissues, and organs.",
-    "Explain key body systems including the skeletal, muscular, nervous, and circulatory systems.",
+    "Identify the structures and functions of cells, tissues, organs, and body systems.",
+    "Explain key body systems including the skeletal, muscular, nervous, circulatory, and lymphatic systems.",
     "Apply the TJ Anderson Layer Method to answer State Board–style anatomy and physiology questions with confidence.",
   ],
 };
@@ -59,37 +59,114 @@ export const blockObjectivesMap: Record<string, Record<number, string[]>> = {
     1: [
       "Identify the basic structures of a cell including the membrane, nucleus, and cytoplasm.",
       "Explain the role each cell part plays in keeping the cell alive and functioning.",
-      "Answer State Board–style questions about cell structure.",
     ],
     2: [
       "Explain the difference between anabolism and catabolism.",
-      "Identify mitosis as the process of cell reproduction.",
-      "Apply your knowledge to exam questions about metabolism and tissue formation.",
+      "Identify mitosis as the process of cell reproduction and tissue as groups of similar cells.",
     ],
     3: [
       "Identify the four main types of body tissue and their functions.",
       "Explain how tissues combine to form organs.",
-      "Answer questions that match tissue types with their roles in the body.",
     ],
     4: [
       "Explain the difference between anatomy and physiology.",
-      "Identify the skeletal system and its role as the body's foundation.",
-      "Recognize how body systems work together to sustain life.",
+      "Identify the skeletal system and body systems and how they work together.",
     ],
     5: [
       "Identify the bones of the cranium including the frontal, parietal, and occipital bones.",
       "Explain the difference between the cranium and the facial skeleton.",
-      "Answer exam questions about the location and function of skull bones.",
     ],
     6: [
       "Explain the three parts of a muscle: origin, insertion, and belly.",
       "Identify the frontalis muscle and its role in facial expression.",
-      "Apply your knowledge to questions about the muscular system.",
     ],
     7: [
       "Identify the central and peripheral nervous systems and their functions.",
       "Explain the role of the heart and circulatory system in the body.",
-      "Answer State Board–style questions about the nervous and circulatory systems.",
+    ],
+    8: [
+      "Identify the temporal, sphenoid, and ethmoid bones and their locations.",
+      "Explain the unique characteristics of the hyoid bone and the role of joints.",
+    ],
+    9: [
+      "Identify the 14 bones of the facial skeleton including the mandible and maxillae.",
+      "Match facial bones with their locations and functions.",
+    ],
+    10: [
+      "Identify the cervical vertebrae, clavicle, scapula, and humerus.",
+      "Explain how the bones of the neck and shoulder support movement.",
+    ],
+    11: [
+      "Identify the radius, ulna, carpus, metacarpus, and phalanges.",
+      "Explain how the bones of the arm and hand work together for movement and grip.",
+    ],
+    12: [
+      "Identify the patella, tibia, fibula, talus, and tarsals.",
+      "Explain how the bones of the leg and foot support weight and balance.",
+    ],
+    13: [
+      "Identify the integumentary system and its components.",
+      "Explain the difference between endocrine and exocrine glands.",
+    ],
+    14: [
+      "Explain the role of hormones in the body.",
+      "Identify the epicranius, occipitalis, and epicranial aponeurosis and how they work together.",
+    ],
+    15: [
+      "Identify the corrugator, orbicularis oculi, and procerus muscles.",
+      "Explain the functions of the orbicularis oris and levator palpebrae superioris.",
+    ],
+    16: [
+      "Identify muscles of the upper mouth including the levator labii superioris and buccinator.",
+      "Explain the functions of the mentalis, levator anguli oris, and depressor labii inferioris.",
+    ],
+    17: [
+      "Identify the risorius, triangularis, zygomaticus major, zygomaticus minor, and masseter.",
+      "Explain how facial expression muscles work together for smiling and chewing.",
+    ],
+    18: [
+      "Identify the temporalis, platysma, sternocleidomastoideus, and trapezius.",
+      "Explain the role of neck muscles in head movement and posture.",
+    ],
+    19: [
+      "Identify the deltoid, bicep, tricep, pronator, and supinator.",
+      "Explain how arm muscles work in pairs to create movement.",
+    ],
+    20: [
+      "Identify extensors, flexors, abductors, adductors, and the opponens.",
+      "Explain how muscle groups create opposing movements for balance and control.",
+    ],
+    21: [
+      "Identify muscles of the foot including the abductor hallucis and flexor digitorum brevis.",
+      "Explain how foot muscles support balance, walking, and standing.",
+    ],
+    22: [
+      "Identify the gastrocnemius, soleus, peroneus longus, and peroneus brevis.",
+      "Explain how calf and lower leg muscles support movement and stability.",
+    ],
+    23: [
+      "Identify the tibialis anterior and its role in walking.",
+      "Explain the components of the lymphatic system and their role in immunity.",
+    ],
+    24: [
+      "Identify the brain, spinal cord, and types of nerves in the nervous system.",
+      "Explain the difference between motor nerves and sensory nerves.",
+    ],
+    25: [
+      "Identify the autonomic nervous system and explain what a reflex is.",
+      "Explain the role of blood and blood vessels in the circulatory system.",
+    ],
+    26: [
+      "Identify arteries, arterioles, capillaries, veins, and venules.",
+      "Explain how blood flows through different types of vessels.",
+    ],
+    27: [
+      "Identify the aorta and the carotid arteries that supply the head.",
+      "Explain pulmonary circulation and its role in oxygenating blood.",
+    ],
+    28: [
+      "Identify the external and internal jugular veins.",
+      "Explain systemic circulation and how it delivers oxygen throughout the body.",
     ],
   },
 };
