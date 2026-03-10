@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, RotateCcw, Sparkles } from "lucide-react";
 import { BuildExercise } from "@/lib/buildExercises";
 import { pageColors } from "@/lib/colors";
+import BodyDiagram from "@/components/BodyDiagram";
 
 const c = pageColors.study;
 
@@ -76,10 +77,18 @@ const BuildTheBody = ({ exercise }: Props) => {
 
   return (
     <div className="space-y-4">
-      {/* Prompt */}
-      <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4" style={{ color: c.accent }} />
-        <p className="text-sm font-semibold" style={{ color: c.termHeading }}>{exercise.prompt}</p>
+      {/* Header with skeleton + prompt */}
+      <div className="flex items-start gap-4">
+        <BodyDiagram highlightRegion={exercise.bodyRegion} completed={perfect} />
+        <div className="flex-1 pt-1">
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="h-4 w-4 flex-shrink-0" style={{ color: c.accent }} />
+            <p className="text-sm font-semibold" style={{ color: c.termHeading }}>{exercise.prompt}</p>
+          </div>
+          <p className="text-xs" style={{ color: c.subtext }}>
+            Tap each piece into the correct group to build this structure.
+          </p>
+        </div>
       </div>
 
       {/* Group selector tabs */}
