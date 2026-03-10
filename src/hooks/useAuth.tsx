@@ -9,6 +9,7 @@ interface Profile {
   exam_date: string | null;
   program: string | null;
   language: string;
+  has_completed_pretest: boolean;
 }
 
 interface AuthContextType {

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { pageColors } from "@/lib/colors";
 
 const c = pageColors.signup;
@@ -30,6 +31,7 @@ const Signup = () => {
   const [examDate, setExamDate] = useState("");
   const [program, setProgram] = useState("");
   const [language, setLanguage] = useState("en");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -140,7 +142,20 @@ const Signup = () => {
                 <Label htmlFor="examDate">Exam Date (optional)</Label>
                 <Input id="examDate" type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
               </div>
-              <Button type="submit" className="w-full text-base py-6" disabled={loading} style={{ background: c.button, color: "white" }}>
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="terms"
+                  checked={agreedToTerms}
+                  onCheckedChange={(v) => setAgreedToTerms(v === true)}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="terms" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+                  I agree to the{" "}
+                  <a href="/terms" target="_blank" className="underline text-primary">Terms of Use</a>{" "}
+                  and acknowledge that CosmoPrep™ content is proprietary.
+                </Label>
+              </div>
+              <Button type="submit" className="w-full text-base py-6" disabled={loading || !agreedToTerms} style={{ background: c.button, color: "white" }}>
                 {loading ? "Creating account..." : "Join CosmoPrep"}
               </Button>
             </form>

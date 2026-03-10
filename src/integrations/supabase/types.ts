@@ -89,10 +89,123 @@ export type Database = {
           },
         ]
       }
+      posttest_results: {
+        Row: {
+          completed_at: string
+          id: string
+          overall_score: number
+          section_scores: Json
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          overall_score?: number
+          section_scores?: Json
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          overall_score?: number
+          section_scores?: Json
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posttest_results_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pretest_answers: {
+        Row: {
+          id: string
+          is_correct: boolean
+          question_id: string
+          selected_option: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_correct?: boolean
+          question_id: string
+          selected_option: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          selected_option?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pretest_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pretest_answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pretest_results: {
+        Row: {
+          completed_at: string
+          id: string
+          learning_style: string
+          overall_score: number
+          section_scores: Json
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          learning_style?: string
+          overall_score?: number
+          section_scores?: Json
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          learning_style?: string
+          overall_score?: number
+          section_scores?: Json
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pretest_results_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
           exam_date: string | null
+          has_completed_pretest: boolean
           id: string
           language: string
           name: string
@@ -102,6 +215,7 @@ export type Database = {
         Insert: {
           created_at?: string
           exam_date?: string | null
+          has_completed_pretest?: boolean
           id: string
           language?: string
           name?: string
@@ -111,6 +225,7 @@ export type Database = {
         Update: {
           created_at?: string
           exam_date?: string | null
+          has_completed_pretest?: boolean
           id?: string
           language?: string
           name?: string
@@ -283,6 +398,38 @@ export type Database = {
           order?: number
         }
         Relationships: []
+      }
+      student_contracts: {
+        Row: {
+          commitment_text: string
+          goal_date: string | null
+          id: string
+          signed_at: string
+          user_id: string
+        }
+        Insert: {
+          commitment_text?: string
+          goal_date?: string | null
+          id?: string
+          signed_at?: string
+          user_id: string
+        }
+        Update: {
+          commitment_text?: string
+          goal_date?: string | null
+          id?: string
+          signed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_contracts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       study_activity: {
         Row: {

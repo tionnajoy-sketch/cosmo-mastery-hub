@@ -18,6 +18,11 @@ import PopQuizPage from "./pages/PopQuizPage";
 import StrategyPage from "./pages/StrategyPage";
 import FinalExamPage from "./pages/FinalExamPage";
 import ProgressPage from "./pages/ProgressPage";
+import TermsPage from "./pages/TermsPage";
+import PretestPage from "./pages/PretestPage";
+import PretestResultsPage from "./pages/PretestResultsPage";
+import PosttestPage from "./pages/PosttestPage";
+import PosttestResultsPage from "./pages/PosttestResultsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +48,11 @@ const App = () => (
             <Route path="/section/:id/final-exam" element={<ProtectedRoute><FinalExamPage /></ProtectedRoute>} />
             <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
             <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/pretest" element={<ProtectedRoute><PretestPage /></ProtectedRoute>} />
+            <Route path="/pretest-results" element={<ProtectedRoute><PretestResultsPage /></ProtectedRoute>} />
+            <Route path="/post-test" element={<ProtectedRoute><PosttestPage /></ProtectedRoute>} />
+            <Route path="/post-test-results" element={<ProtectedRoute><PosttestResultsPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
