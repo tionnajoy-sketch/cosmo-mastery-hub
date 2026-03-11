@@ -11,6 +11,7 @@ interface StudyStats {
   goalMet: boolean;
   currentStreak: number;
   longestStreak: number;
+  dailyGoal: number;
   loading: boolean;
 }
 
