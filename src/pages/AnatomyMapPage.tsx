@@ -100,9 +100,8 @@ interface DiagramProps {
 
 const AnatomyDiagram = ({ terms, selectedTerm, onSelectTerm, accent, accentLight, quizMode, quizTarget, onRegionTap }: DiagramProps) => {
   const selectedData = terms.find(t => t.name === selectedTerm);
-  const highlightRegions = selectedData ? [selectedData.region] : [];
+  const highlightRegion = selectedData?.region;
 
-  // In quiz mode, collect all unique regions as tappable
   const allRegions = useMemo(() => {
     const set = new Set(terms.map(t => t.region));
     return Array.from(set);
@@ -110,109 +109,64 @@ const AnatomyDiagram = ({ terms, selectedTerm, onSelectTerm, accent, accentLight
 
   return (
     <div className="flex flex-col items-center">
-      <svg viewBox="0 0 210 295" className="w-full max-w-[240px] h-auto" style={{ filter: "drop-shadow(0 1px 4px hsl(0 0% 0%/0.08))" }}>
-        {/* Full body outline */}
-        <path d={regionPaths.full} fill="none" stroke="hsl(42 20% 75%)" strokeWidth="1.5" strokeLinejoin="round" />
+      <div className="relative w-full max-w-[280px]">
+        <img src={skeletonImg} alt="Human skeleton diagram" className="w-full h-auto" />
 
-        {/* Skeletal details */}
-        <g stroke="hsl(42 15% 82%)" strokeWidth="0.8" fill="none" opacity={0.5}>
-          <path d="M80 82 Q105 88 130 82" />
-          <path d="M78 90 Q105 96 132 90" />
-          <path d="M77 98 Q105 104 133 98" />
-          <path d="M78 106 Q105 112 132 106" />
-          <path d="M80 114 Q105 118 130 114" />
-          <line x1="105" y1="55" x2="105" y2="170" strokeDasharray="3 2" />
-          <path d="M78 155 Q90 168 105 170 Q120 168 132 155" />
-          <path d="M92 15 Q105 22 118 15" />
-          <circle cx="95" cy="34" r="5" />
-          <circle cx="115" cy="34" r="5" />
-          <path d="M103 38 L105 46 L107 38" />
-          <path d="M90 48 Q105 56 120 48" />
-          <circle cx="72" cy="78" r="4" />
-          <circle cx="138" cy="78" r="4" />
-          <circle cx="62" cy="130" r="3" />
-          <circle cx="148" cy="130" r="3" />
-          <circle cx="85" cy="165" r="4" />
-          <circle cx="125" cy="165" r="4" />
-          <circle cx="83" cy="225" r="3" />
-          <circle cx="127" cy="225" r="3" />
-        </g>
+        {/* Highlight overlay for selected region */}
+        {highlightRegion && regionZones[highlightRegion] && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0.2, 0.4, 0.2] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="absolute rounded-md pointer-events-none"
+            style={{
+              ...regionZones[highlightRegion],
+              background: `${accent}30`,
+              border: `2px solid ${accent}`,
+              boxShadow: `0 0 16px ${accent}40`,
+            }}
+          />
+        )}
 
-        {/* Tappable regions in quiz mode */}
-        {quizMode && allRegions.map(region => (
-          <path
+        {/* Tappable zones in quiz mode */}
+        {quizMode && allRegions.map(region => regionZones[region] && (
+          <div
             key={region}
-            d={regionPaths[region] || ""}
-            fill="hsl(0 0% 0% / 0)"
-            stroke="none"
-            className="cursor-pointer"
+            className="absolute cursor-pointer hover:bg-yellow-200/30 rounded-md transition-all border border-dashed border-transparent hover:border-yellow-500/50"
+            style={regionZones[region]}
             onClick={() => onRegionTap?.(region)}
           />
         ))}
 
-        {/* Highlighted regions */}
-        {highlightRegions.map(region => regionPaths[region] && (
-          <motion.path
-            key={region}
-            d={regionPaths[region]}
-            fill={accent}
-            fillOpacity={0.2}
-            stroke={accent}
-            strokeWidth="2"
-            strokeLinejoin="round"
-            initial={{ fillOpacity: 0 }}
-            animate={{ fillOpacity: [0.12, 0.25, 0.12], strokeOpacity: 1 }}
-            transition={{ fillOpacity: { repeat: Infinity, duration: 2 }, strokeOpacity: { duration: 0.3 } }}
-          />
-        ))}
-
-        {/* Label lines and dots */}
+        {/* Term label dots on the image */}
         {!quizMode && terms.map(t => {
+          const zone = regionZones[t.region];
+          if (!zone) return null;
           const isSelected = t.name === selectedTerm;
+          // Position dot at the center of the zone
+          const dotTop = `calc(${zone.top} + ${zone.height} / 2)`;
+          const dotLeft = t.labelPos.x > 105 ? `calc(${zone.left} + ${zone.width})` : zone.left;
           return (
-            <g key={t.name} className="cursor-pointer" onClick={() => onSelectTerm(t.name)}>
-              <line
-                x1={t.anchorPos.x} y1={t.anchorPos.y}
-                x2={t.labelPos.x} y2={t.labelPos.y}
-                stroke={isSelected ? accent : "hsl(42 15% 72%)"}
-                strokeWidth={isSelected ? 1.2 : 0.7}
-                strokeDasharray={isSelected ? "none" : "2 2"}
+            <button
+              key={t.name}
+              onClick={() => onSelectTerm(t.name)}
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all z-10"
+              style={{ top: dotTop, left: dotLeft }}
+            >
+              <div
+                className="rounded-full transition-all"
+                style={{
+                  width: isSelected ? 12 : 8,
+                  height: isSelected ? 12 : 8,
+                  background: isSelected ? accent : "hsl(42 30% 60%)",
+                  boxShadow: isSelected ? `0 0 8px ${accent}` : "none",
+                  border: isSelected ? "2px solid white" : "1px solid white",
+                }}
               />
-              <circle cx={t.anchorPos.x} cy={t.anchorPos.y} r={isSelected ? 3.5 : 2.5} fill={isSelected ? accent : "hsl(42 15% 72%)"} />
-              <text
-                x={t.labelPos.x} y={t.labelPos.y + 1}
-                fontSize={isSelected ? "6.5" : "5.5"}
-                fontWeight={isSelected ? "700" : "500"}
-                fill={isSelected ? accent : "hsl(42 18% 38%)"}
-                textAnchor={t.labelPos.x > 105 ? "start" : "end"}
-                className="cursor-pointer select-none"
-              >
-                {t.name}
-              </text>
-            </g>
+            </button>
           );
         })}
-
-        {/* Quiz mode: show target region with a "?" */}
-        {quizMode && quizTarget && (
-          <g>
-            {allRegions.map(region => regionPaths[region] && (
-              <path
-                key={`quiz-${region}`}
-                d={regionPaths[region]}
-                fill="hsl(42 50% 90%)"
-                fillOpacity={0.3}
-                stroke="hsl(42 40% 70%)"
-                strokeWidth="1"
-                strokeDasharray="4 3"
-                strokeLinejoin="round"
-                className="cursor-pointer hover:fill-opacity-50 transition-all"
-                onClick={() => onRegionTap?.(region)}
-              />
-            ))}
-          </g>
-        )}
-      </svg>
+      </div>
     </div>
   );
 };
