@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-const DAILY_QUESTION_GOAL = 10;
+const DEFAULT_QUESTION_GOAL = 10;
+const GOAL_STORAGE_KEY = "study_daily_goal";
 
 interface StudyStats {
   questionsToday: number;
