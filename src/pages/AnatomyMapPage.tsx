@@ -8,11 +8,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { pageColors } from "@/lib/colors";
 import AppFooter from "@/components/AppFooter";
 import skeletonImg from "@/assets/skeleton-diagram.png";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { pageColors } from "@/lib/colors";
-import AppFooter from "@/components/AppFooter";
 
 const c = pageColors.study;
 
