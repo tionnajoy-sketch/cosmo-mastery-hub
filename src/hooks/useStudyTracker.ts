@@ -104,6 +104,7 @@ export const useStudyTracker = () => {
       goalMet: todayData?.goal_met || false,
       currentStreak,
       longestStreak,
+      dailyGoal,
       loading: false,
     });
   }, [user]);
