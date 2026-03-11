@@ -1,7 +1,13 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Search, Sparkles, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import { ArrowLeft, Search, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { pageColors } from "@/lib/colors";
+import AppFooter from "@/components/AppFooter";
+import skeletonImg from "@/assets/skeleton-diagram.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
