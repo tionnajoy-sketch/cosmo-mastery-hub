@@ -17,12 +17,17 @@ interface StudyStats {
 
 export const useStudyTracker = () => {
   const { user } = useAuth();
+  const [dailyGoal, setDailyGoalState] = useState(() => {
+    const saved = localStorage.getItem(GOAL_STORAGE_KEY);
+    return saved ? Number(saved) : DEFAULT_QUESTION_GOAL;
+  });
   const [stats, setStats] = useState<StudyStats>({
     questionsToday: 0,
     activitiesToday: 0,
     goalMet: false,
     currentStreak: 0,
     longestStreak: 0,
+    dailyGoal: dailyGoal,
     loading: true,
   });
 
