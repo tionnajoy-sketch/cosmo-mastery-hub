@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ScrollToTop from "@/components/ScrollToTop";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
@@ -24,6 +25,7 @@ import PretestResultsPage from "./pages/PretestResultsPage";
 import PosttestPage from "./pages/PosttestPage";
 import PosttestResultsPage from "./pages/PosttestResultsPage";
 import AnatomyMapPage from "./pages/AnatomyMapPage";
+import SkinMapPage from "./pages/SkinMapPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +37,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ScrollToTop />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
@@ -55,6 +58,7 @@ const App = () => (
             <Route path="/post-test" element={<ProtectedRoute><PosttestPage /></ProtectedRoute>} />
             <Route path="/post-test-results" element={<ProtectedRoute><PosttestResultsPage /></ProtectedRoute>} />
             <Route path="/anatomy-map" element={<ProtectedRoute><AnatomyMapPage /></ProtectedRoute>} />
+            <Route path="/skin-map" element={<ProtectedRoute><SkinMapPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

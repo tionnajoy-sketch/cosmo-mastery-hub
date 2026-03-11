@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-const DAILY_QUESTION_GOAL = 10;
+const DEFAULT_QUESTION_GOAL = 10;
+const GOAL_STORAGE_KEY = "study_daily_goal";
 
 interface StudyStats {
   questionsToday: number;
@@ -10,17 +11,23 @@ interface StudyStats {
   goalMet: boolean;
   currentStreak: number;
   longestStreak: number;
+  dailyGoal: number;
   loading: boolean;
 }
 
 export const useStudyTracker = () => {
   const { user } = useAuth();
+  const [dailyGoal, setDailyGoalState] = useState(() => {
+    const saved = localStorage.getItem(GOAL_STORAGE_KEY);
+    return saved ? Number(saved) : DEFAULT_QUESTION_GOAL;
+  });
   const [stats, setStats] = useState<StudyStats>({
     questionsToday: 0,
     activitiesToday: 0,
     goalMet: false,
     currentStreak: 0,
     longestStreak: 0,
+    dailyGoal: dailyGoal,
     loading: true,
   });
 
@@ -97,6 +104,7 @@ export const useStudyTracker = () => {
       goalMet: todayData?.goal_met || false,
       currentStreak,
       longestStreak,
+      dailyGoal,
       loading: false,
     });
   }, [user]);
@@ -116,7 +124,7 @@ export const useStudyTracker = () => {
 
     const newQuestions = (existing?.questions_answered || 0) + count;
     const newActivities = existing?.activities_completed || 0;
-    const goalMet = newQuestions >= DAILY_QUESTION_GOAL || newActivities >= 1;
+    const goalMet = newQuestions >= dailyGoal || newActivities >= 1;
 
     if (existing) {
       await supabase
@@ -144,7 +152,7 @@ export const useStudyTracker = () => {
 
     const newActivities = (existing?.activities_completed || 0) + 1;
     const newQuestions = existing?.questions_answered || 0;
-    const goalMet = newQuestions >= DAILY_QUESTION_GOAL || newActivities >= 1;
+    const goalMet = newQuestions >= dailyGoal || newActivities >= 1;
 
     if (existing) {
       await supabase
@@ -159,5 +167,11 @@ export const useStudyTracker = () => {
     fetchStats();
   }, [user, fetchStats]);
 
-  return { ...stats, trackQuestions, trackActivity };
+  const setDailyGoal = useCallback((goal: number) => {
+    setDailyGoalState(goal);
+    localStorage.setItem(GOAL_STORAGE_KEY, String(goal));
+    setStats(prev => ({ ...prev, dailyGoal: goal }));
+  }, []);
+
+  return { ...stats, trackQuestions, trackActivity, setDailyGoal };
 };

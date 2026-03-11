@@ -109,6 +109,28 @@ const SectionPage = () => {
           </motion.div>
         )}
 
+        {/* ───── SKIN MAP SHORTCUT (Skin section only) ───── */}
+        {id === "a1b2c3d4-e5f6-7890-abcd-ef1234567890" && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}>
+            <Card
+              className="border-0 shadow-sm mb-6 cursor-pointer hover:shadow-md transition-shadow"
+              style={{ background: "linear-gradient(135deg, hsl(346 45% 95%), hsl(25 50% 95%))" }}
+              onClick={() => navigate("/skin-map")}
+            >
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "hsl(346 45% 88%)" }}>
+                  <Map className="w-5 h-5" style={{ color: "hsl(346 50% 42%)" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold" style={{ color: "hsl(346 40% 28%)" }}>Skin Map</p>
+                  <p className="text-xs" style={{ color: "hsl(346 20% 50%)" }}>Interactive skin layers — explore epidermis, dermis & structures</p>
+                </div>
+                <ArrowLeft className="w-4 h-4 rotate-180 shrink-0" style={{ color: "hsl(346 35% 60%)" }} />
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {totalBlocks > 0 && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
             <Card className="border-0 shadow-sm mb-8" style={{ background: "hsl(0 0% 100%)" }}>

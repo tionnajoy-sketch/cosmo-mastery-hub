@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Search, Sparkles, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import { ArrowLeft, Search, CheckCircle2, XCircle, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { pageColors } from "@/lib/colors";
 import AppFooter from "@/components/AppFooter";
+import skeletonImg from "@/assets/skeleton-diagram.png";
 
 const c = pageColors.study;
 
@@ -61,24 +62,24 @@ const tabData = [
   { key: "nerves", label: "Nerves & Systems", terms: nerveTerms, accent: "hsl(200 65% 48%)", accentLight: "hsl(200 55% 92%)" },
 ];
 
-/* ─── SVG Body Diagram ─── */
-const regionPaths: Record<string, string> = {
-  head: "M85 18 C85 8 95 2 105 2 C115 2 125 8 125 18 L125 40 C125 48 118 55 105 55 C92 55 85 48 85 40 Z",
-  skull: "M85 18 C85 8 95 2 105 2 C115 2 125 8 125 18 L125 40 C125 48 118 55 105 55 C92 55 85 48 85 40 Z",
-  brain: "M90 12 C90 7 97 4 105 4 C113 4 120 7 120 12 L120 30 C120 36 114 40 105 40 C96 40 90 36 90 30 Z",
-  face: "M90 30 C90 28 92 26 105 26 C118 26 120 28 120 30 L120 48 C120 52 115 55 105 55 C95 55 90 52 90 48 Z",
-  neck: "M97 55 L97 68 L113 68 L113 55 Z",
-  shoulder: "M60 68 L97 68 L97 78 L60 78 Z M113 68 L150 68 L150 78 L113 78 Z",
-  chest: "M72 78 L138 78 L138 120 L72 120 Z",
-  torso: "M72 78 L138 78 L138 155 L72 155 Z",
-  abdomen: "M75 120 L135 120 L135 155 L75 155 Z",
-  spine: "M103 55 L107 55 L107 160 L103 160 Z",
-  arm: "M50 78 L72 78 L72 85 L62 130 L55 170 L45 170 L52 130 L50 85 Z M138 78 L160 78 L160 85 L158 130 L165 170 L155 170 L148 130 L138 85 Z",
-  hand: "M42 170 L58 170 L60 190 L40 190 Z M152 170 L168 170 L170 190 L150 190 Z",
-  pelvis: "M75 155 L135 155 L140 175 L70 175 Z",
-  leg: "M75 175 L100 175 L95 270 L70 270 Z M110 175 L135 175 L140 270 L115 270 Z",
-  foot: "M65 270 L100 270 L102 285 L63 285 Z M110 270 L145 270 L147 285 L108 285 Z",
-  full: "M85 2 C115 2 125 8 125 18 L125 55 L150 68 L160 78 L165 170 L170 190 L150 190 L138 85 L138 155 L140 175 L145 270 L147 285 L108 285 L110 175 L105 155 L100 175 L100 270 L102 285 L63 285 L70 270 L75 175 L72 155 L72 85 L60 190 L40 190 L45 170 L50 78 L60 68 L85 55 L85 18 Z",
+/* ─── Clickable regions mapped as percentage-based zones on the skeleton image ─── */
+const regionZones: Record<string, { top: string; left: string; width: string; height: string }> = {
+  head: { top: "0%", left: "30%", width: "40%", height: "10%" },
+  skull: { top: "0%", left: "30%", width: "40%", height: "8%" },
+  brain: { top: "1%", left: "33%", width: "34%", height: "6%" },
+  face: { top: "5%", left: "32%", width: "36%", height: "7%" },
+  neck: { top: "11%", left: "38%", width: "24%", height: "4%" },
+  shoulder: { top: "14%", left: "18%", width: "64%", height: "5%" },
+  chest: { top: "19%", left: "28%", width: "44%", height: "14%" },
+  torso: { top: "19%", left: "28%", width: "44%", height: "25%" },
+  abdomen: { top: "33%", left: "30%", width: "40%", height: "12%" },
+  spine: { top: "15%", left: "45%", width: "10%", height: "35%" },
+  arm: { top: "19%", left: "8%", width: "18%", height: "30%" },
+  hand: { top: "49%", left: "3%", width: "15%", height: "8%" },
+  pelvis: { top: "44%", left: "28%", width: "44%", height: "8%" },
+  leg: { top: "52%", left: "25%", width: "50%", height: "35%" },
+  foot: { top: "88%", left: "22%", width: "56%", height: "10%" },
+  full: { top: "0%", left: "5%", width: "90%", height: "100%" },
 };
 
 interface DiagramProps {
@@ -94,9 +95,8 @@ interface DiagramProps {
 
 const AnatomyDiagram = ({ terms, selectedTerm, onSelectTerm, accent, accentLight, quizMode, quizTarget, onRegionTap }: DiagramProps) => {
   const selectedData = terms.find(t => t.name === selectedTerm);
-  const highlightRegions = selectedData ? [selectedData.region] : [];
+  const highlightRegion = selectedData?.region;
 
-  // In quiz mode, collect all unique regions as tappable
   const allRegions = useMemo(() => {
     const set = new Set(terms.map(t => t.region));
     return Array.from(set);
@@ -104,109 +104,64 @@ const AnatomyDiagram = ({ terms, selectedTerm, onSelectTerm, accent, accentLight
 
   return (
     <div className="flex flex-col items-center">
-      <svg viewBox="0 0 210 295" className="w-full max-w-[240px] h-auto" style={{ filter: "drop-shadow(0 1px 4px hsl(0 0% 0%/0.08))" }}>
-        {/* Full body outline */}
-        <path d={regionPaths.full} fill="none" stroke="hsl(42 20% 75%)" strokeWidth="1.5" strokeLinejoin="round" />
+      <div className="relative w-full max-w-[280px]">
+        <img src={skeletonImg} alt="Human skeleton diagram" className="w-full h-auto" />
 
-        {/* Skeletal details */}
-        <g stroke="hsl(42 15% 82%)" strokeWidth="0.8" fill="none" opacity={0.5}>
-          <path d="M80 82 Q105 88 130 82" />
-          <path d="M78 90 Q105 96 132 90" />
-          <path d="M77 98 Q105 104 133 98" />
-          <path d="M78 106 Q105 112 132 106" />
-          <path d="M80 114 Q105 118 130 114" />
-          <line x1="105" y1="55" x2="105" y2="170" strokeDasharray="3 2" />
-          <path d="M78 155 Q90 168 105 170 Q120 168 132 155" />
-          <path d="M92 15 Q105 22 118 15" />
-          <circle cx="95" cy="34" r="5" />
-          <circle cx="115" cy="34" r="5" />
-          <path d="M103 38 L105 46 L107 38" />
-          <path d="M90 48 Q105 56 120 48" />
-          <circle cx="72" cy="78" r="4" />
-          <circle cx="138" cy="78" r="4" />
-          <circle cx="62" cy="130" r="3" />
-          <circle cx="148" cy="130" r="3" />
-          <circle cx="85" cy="165" r="4" />
-          <circle cx="125" cy="165" r="4" />
-          <circle cx="83" cy="225" r="3" />
-          <circle cx="127" cy="225" r="3" />
-        </g>
+        {/* Highlight overlay for selected region */}
+        {highlightRegion && regionZones[highlightRegion] && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0.2, 0.4, 0.2] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="absolute rounded-md pointer-events-none"
+            style={{
+              ...regionZones[highlightRegion],
+              background: `${accent}30`,
+              border: `2px solid ${accent}`,
+              boxShadow: `0 0 16px ${accent}40`,
+            }}
+          />
+        )}
 
-        {/* Tappable regions in quiz mode */}
-        {quizMode && allRegions.map(region => (
-          <path
+        {/* Tappable zones in quiz mode */}
+        {quizMode && allRegions.map(region => regionZones[region] && (
+          <div
             key={region}
-            d={regionPaths[region] || ""}
-            fill="hsl(0 0% 0% / 0)"
-            stroke="none"
-            className="cursor-pointer"
+            className="absolute cursor-pointer hover:bg-yellow-200/30 rounded-md transition-all border border-dashed border-transparent hover:border-yellow-500/50"
+            style={regionZones[region]}
             onClick={() => onRegionTap?.(region)}
           />
         ))}
 
-        {/* Highlighted regions */}
-        {highlightRegions.map(region => regionPaths[region] && (
-          <motion.path
-            key={region}
-            d={regionPaths[region]}
-            fill={accent}
-            fillOpacity={0.2}
-            stroke={accent}
-            strokeWidth="2"
-            strokeLinejoin="round"
-            initial={{ fillOpacity: 0 }}
-            animate={{ fillOpacity: [0.12, 0.25, 0.12], strokeOpacity: 1 }}
-            transition={{ fillOpacity: { repeat: Infinity, duration: 2 }, strokeOpacity: { duration: 0.3 } }}
-          />
-        ))}
-
-        {/* Label lines and dots */}
+        {/* Term label dots on the image */}
         {!quizMode && terms.map(t => {
+          const zone = regionZones[t.region];
+          if (!zone) return null;
           const isSelected = t.name === selectedTerm;
+          // Position dot at the center of the zone
+          const dotTop = `calc(${zone.top} + ${zone.height} / 2)`;
+          const dotLeft = t.labelPos.x > 105 ? `calc(${zone.left} + ${zone.width})` : zone.left;
           return (
-            <g key={t.name} className="cursor-pointer" onClick={() => onSelectTerm(t.name)}>
-              <line
-                x1={t.anchorPos.x} y1={t.anchorPos.y}
-                x2={t.labelPos.x} y2={t.labelPos.y}
-                stroke={isSelected ? accent : "hsl(42 15% 72%)"}
-                strokeWidth={isSelected ? 1.2 : 0.7}
-                strokeDasharray={isSelected ? "none" : "2 2"}
+            <button
+              key={t.name}
+              onClick={() => onSelectTerm(t.name)}
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all z-10"
+              style={{ top: dotTop, left: dotLeft }}
+            >
+              <div
+                className="rounded-full transition-all"
+                style={{
+                  width: isSelected ? 12 : 8,
+                  height: isSelected ? 12 : 8,
+                  background: isSelected ? accent : "hsl(42 30% 60%)",
+                  boxShadow: isSelected ? `0 0 8px ${accent}` : "none",
+                  border: isSelected ? "2px solid white" : "1px solid white",
+                }}
               />
-              <circle cx={t.anchorPos.x} cy={t.anchorPos.y} r={isSelected ? 3.5 : 2.5} fill={isSelected ? accent : "hsl(42 15% 72%)"} />
-              <text
-                x={t.labelPos.x} y={t.labelPos.y + 1}
-                fontSize={isSelected ? "6.5" : "5.5"}
-                fontWeight={isSelected ? "700" : "500"}
-                fill={isSelected ? accent : "hsl(42 18% 38%)"}
-                textAnchor={t.labelPos.x > 105 ? "start" : "end"}
-                className="cursor-pointer select-none"
-              >
-                {t.name}
-              </text>
-            </g>
+            </button>
           );
         })}
-
-        {/* Quiz mode: show target region with a "?" */}
-        {quizMode && quizTarget && (
-          <g>
-            {allRegions.map(region => regionPaths[region] && (
-              <path
-                key={`quiz-${region}`}
-                d={regionPaths[region]}
-                fill="hsl(42 50% 90%)"
-                fillOpacity={0.3}
-                stroke="hsl(42 40% 70%)"
-                strokeWidth="1"
-                strokeDasharray="4 3"
-                strokeLinejoin="round"
-                className="cursor-pointer hover:fill-opacity-50 transition-all"
-                onClick={() => onRegionTap?.(region)}
-              />
-            ))}
-          </g>
-        )}
-      </svg>
+      </div>
     </div>
   );
 };

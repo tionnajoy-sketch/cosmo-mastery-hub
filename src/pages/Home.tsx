@@ -15,6 +15,7 @@ import {
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
 import PopUpReview from "@/components/PopUpReview";
+import RandomQuizPopup from "@/components/RandomQuizPopup";
 import DailyPopQuestion from "@/components/DailyPopQuestion";
 import StudentContract from "@/components/StudentContract";
 import AppFooter from "@/components/AppFooter";
@@ -62,7 +63,8 @@ const PIE_COLORS = ["hsl(346 45% 56%)", "hsl(30 20% 88%)"];
 const Home = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
-  const { questionsToday, goalMet, currentStreak, longestStreak, loading: trackerLoading } = useStudyTracker();
+  const { questionsToday, goalMet, currentStreak, longestStreak, dailyGoal, setDailyGoal, loading: trackerLoading } = useStudyTracker();
+  const [showGoalPicker, setShowGoalPicker] = useState(false);
   const [sections, setSections] = useState<Section[]>([]);
   const [progressMap, setProgressMap] = useState<Map<string, SectionProgress>>(new Map());
   const [totalQuestions, setTotalQuestions] = useState(0);
@@ -233,13 +235,40 @@ const Home = () => {
                   </p>
                 ) : (
                   <>
-                    <p className="text-xs mb-2" style={{ color: "hsl(42 25% 35%)" }}>
-                      Complete one activity or answer 10 questions to meet today's goal.
-                    </p>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs" style={{ color: "hsl(42 25% 35%)" }}>
+                        Complete one activity or answer {dailyGoal} questions to meet today's goal.
+                      </p>
+                      <button
+                        onClick={() => setShowGoalPicker(!showGoalPicker)}
+                        className="text-xs font-medium underline ml-2 flex-shrink-0"
+                        style={{ color: "hsl(42 50% 45%)" }}
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    {showGoalPicker && (
+                      <div className="flex items-center gap-2 mb-3 p-2 rounded-lg" style={{ background: "hsl(42 40% 92%)" }}>
+                        <span className="text-xs" style={{ color: "hsl(42 25% 35%)" }}>Daily question goal:</span>
+                        {[5, 10, 15, 20, 25].map(g => (
+                          <button
+                            key={g}
+                            onClick={() => { setDailyGoal(g); setShowGoalPicker(false); }}
+                            className="px-2 py-1 rounded-full text-xs font-medium transition-all"
+                            style={{
+                              background: dailyGoal === g ? "hsl(42 55% 48%)" : "white",
+                              color: dailyGoal === g ? "white" : "hsl(42 30% 35%)",
+                            }}
+                          >
+                            {g}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2">
-                      <Progress value={Math.min((questionsToday / 10) * 100, 100)} className="h-1.5 flex-1" />
+                      <Progress value={Math.min((questionsToday / dailyGoal) * 100, 100)} className="h-1.5 flex-1" />
                       <span className="text-xs font-medium" style={{ color: "hsl(42 35% 40%)" }}>
-                        {questionsToday}/10
+                        {questionsToday}/{dailyGoal}
                       </span>
                     </div>
                   </>
@@ -395,6 +424,7 @@ const Home = () => {
 
       <AppFooter />
       <PopUpReview />
+      <RandomQuizPopup />
       <DailyPopQuestion />
     </div>
   );

@@ -23,16 +23,26 @@ interface Term { id: string; term: string; definition: string; }
 type ActivityType = "matching" | "flashcard" | "fillin" | "scramble" | "crossword" | "ownwords" | "braindump" | "picturematch" | "mnemonic";
 
 // Rich, distinct colors for each activity card — crayon-box variety
+// Cognitive-type color groupings: Recall=Red, Vision=Blue, Creative=Pink, Logic=Gold, Motor=Green
+const cognitiveColors = {
+  recall:   { bg: "hsl(350 50% 96%)", border: "hsl(350 55% 75%)", icon: "hsl(350 55% 48%)", iconBg: "hsl(350 50% 90%)" },
+  vision:   { bg: "hsl(215 50% 96%)", border: "hsl(215 55% 72%)", icon: "hsl(215 55% 42%)", iconBg: "hsl(215 50% 88%)" },
+  creative: { bg: "hsl(325 45% 96%)", border: "hsl(325 48% 72%)", icon: "hsl(325 50% 45%)", iconBg: "hsl(325 42% 88%)" },
+  logic:    { bg: "hsl(48 60% 96%)", border: "hsl(48 55% 70%)", icon: "hsl(48 65% 38%)", iconBg: "hsl(48 55% 88%)" },
+  motor:    { bg: "hsl(145 40% 96%)", border: "hsl(145 45% 68%)", icon: "hsl(145 50% 35%)", iconBg: "hsl(145 40% 88%)" },
+};
+
+// Map each activity to its cognitive type
 const activityAccents = [
-  { bg: "hsl(350 50% 96%)", border: "hsl(350 55% 75%)", icon: "hsl(350 55% 48%)", iconBg: "hsl(350 50% 90%)" },  // Rose
-  { bg: "hsl(25 55% 96%)", border: "hsl(25 60% 72%)", icon: "hsl(25 65% 45%)", iconBg: "hsl(25 55% 88%)" },    // Tangerine
-  { bg: "hsl(175 40% 96%)", border: "hsl(175 45% 68%)", icon: "hsl(175 50% 35%)", iconBg: "hsl(175 40% 88%)" },  // Teal
-  { bg: "hsl(48 60% 96%)", border: "hsl(48 55% 70%)", icon: "hsl(48 65% 38%)", iconBg: "hsl(48 55% 88%)" },    // Gold
-  { bg: "hsl(215 45% 96%)", border: "hsl(215 50% 72%)", icon: "hsl(215 55% 42%)", iconBg: "hsl(215 45% 88%)" },  // Indigo
-  { bg: "hsl(145 40% 96%)", border: "hsl(145 45% 68%)", icon: "hsl(145 50% 35%)", iconBg: "hsl(145 40% 88%)" },  // Emerald
-  { bg: "hsl(290 40% 96%)", border: "hsl(290 42% 72%)", icon: "hsl(290 45% 45%)", iconBg: "hsl(290 38% 88%)" },  // Plum
-  { bg: "hsl(200 50% 96%)", border: "hsl(200 55% 70%)", icon: "hsl(200 60% 40%)", iconBg: "hsl(200 50% 88%)" },  // Cerulean
-  { bg: "hsl(325 45% 96%)", border: "hsl(325 48% 72%)", icon: "hsl(325 50% 45%)", iconBg: "hsl(325 42% 88%)" },  // Orchid
+  cognitiveColors.vision,    // Matching Game - Visual
+  cognitiveColors.recall,    // Flashcard Drill - Recall
+  cognitiveColors.recall,    // Fill in the Blank - Recall
+  cognitiveColors.logic,     // Word Scramble - Pattern/Logic
+  cognitiveColors.logic,     // Crossword Clues - Logic
+  cognitiveColors.motor,     // Own Words - Motor/Writing
+  cognitiveColors.recall,    // Brain Dump - Free Recall
+  cognitiveColors.vision,    // Picture Match - Visual
+  cognitiveColors.creative,  // Mnemonic Builder - Creative
 ];
 
 const calmingMessages = [
@@ -204,15 +214,15 @@ const ActivityPage = () => {
                     </thead>
                     <tbody>
                       {[
-                        { name: "Matching Game", type: "Visual", brain: "Visual Cortex" },
-                        { name: "Flashcard Drill", type: "Recall", brain: "Hippocampus" },
-                        { name: "Fill in the Blank", type: "Recall", brain: "Prefrontal" },
-                        { name: "Word Scramble", type: "Pattern", brain: "Language Center" },
-                        { name: "Crossword Clues", type: "Logic", brain: "Frontal Lobe" },
-                        { name: "Own Words", type: "Creation", brain: "Motor Cortex" },
-                        { name: "Brain Dump", type: "Free Recall", brain: "Hippocampus" },
-                        { name: "Picture Match", type: "Visual", brain: "Occipital Lobe" },
-                        { name: "Mnemonic Builder", type: "Creative", brain: "Limbic System" },
+                        { name: "Matching Game", type: "Visual", brain: "Visual Cortex", color: cognitiveColors.vision },
+                        { name: "Flashcard Drill", type: "Recall", brain: "Hippocampus", color: cognitiveColors.recall },
+                        { name: "Fill in the Blank", type: "Recall", brain: "Prefrontal", color: cognitiveColors.recall },
+                        { name: "Word Scramble", type: "Logic", brain: "Language Center", color: cognitiveColors.logic },
+                        { name: "Crossword Clues", type: "Logic", brain: "Frontal Lobe", color: cognitiveColors.logic },
+                        { name: "Own Words", type: "Motor", brain: "Motor Cortex", color: cognitiveColors.motor },
+                        { name: "Brain Dump", type: "Recall", brain: "Hippocampus", color: cognitiveColors.recall },
+                        { name: "Picture Match", type: "Visual", brain: "Occipital Lobe", color: cognitiveColors.vision },
+                        { name: "Mnemonic Builder", type: "Creative", brain: "Limbic System", color: cognitiveColors.creative },
                       ].map((row, i) => (
                         <tr key={i} className="border-t" style={{ borderColor: "hsl(262 10% 92%)" }}>
                           <td className="px-5 py-2.5 font-medium" style={{ color: c.heading }}>
