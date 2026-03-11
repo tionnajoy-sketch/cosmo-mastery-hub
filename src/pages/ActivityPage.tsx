@@ -214,15 +214,15 @@ const ActivityPage = () => {
                     </thead>
                     <tbody>
                       {[
-                        { name: "Matching Game", type: "Visual", brain: "Visual Cortex" },
-                        { name: "Flashcard Drill", type: "Recall", brain: "Hippocampus" },
-                        { name: "Fill in the Blank", type: "Recall", brain: "Prefrontal" },
-                        { name: "Word Scramble", type: "Pattern", brain: "Language Center" },
-                        { name: "Crossword Clues", type: "Logic", brain: "Frontal Lobe" },
-                        { name: "Own Words", type: "Creation", brain: "Motor Cortex" },
-                        { name: "Brain Dump", type: "Free Recall", brain: "Hippocampus" },
-                        { name: "Picture Match", type: "Visual", brain: "Occipital Lobe" },
-                        { name: "Mnemonic Builder", type: "Creative", brain: "Limbic System" },
+                        { name: "Matching Game", type: "Visual", brain: "Visual Cortex", color: cognitiveColors.vision },
+                        { name: "Flashcard Drill", type: "Recall", brain: "Hippocampus", color: cognitiveColors.recall },
+                        { name: "Fill in the Blank", type: "Recall", brain: "Prefrontal", color: cognitiveColors.recall },
+                        { name: "Word Scramble", type: "Logic", brain: "Language Center", color: cognitiveColors.logic },
+                        { name: "Crossword Clues", type: "Logic", brain: "Frontal Lobe", color: cognitiveColors.logic },
+                        { name: "Own Words", type: "Motor", brain: "Motor Cortex", color: cognitiveColors.motor },
+                        { name: "Brain Dump", type: "Recall", brain: "Hippocampus", color: cognitiveColors.recall },
+                        { name: "Picture Match", type: "Visual", brain: "Occipital Lobe", color: cognitiveColors.vision },
+                        { name: "Mnemonic Builder", type: "Creative", brain: "Limbic System", color: cognitiveColors.creative },
                       ].map((row, i) => (
                         <tr key={i} className="border-t" style={{ borderColor: "hsl(262 10% 92%)" }}>
                           <td className="px-5 py-2.5 font-medium" style={{ color: c.heading }}>
