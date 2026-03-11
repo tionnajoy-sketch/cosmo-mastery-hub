@@ -25,6 +25,7 @@ import PretestResultsPage from "./pages/PretestResultsPage";
 import PosttestPage from "./pages/PosttestPage";
 import PosttestResultsPage from "./pages/PosttestResultsPage";
 import AnatomyMapPage from "./pages/AnatomyMapPage";
+import SkinMapPage from "./pages/SkinMapPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
