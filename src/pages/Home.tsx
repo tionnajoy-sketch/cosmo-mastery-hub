@@ -63,7 +63,8 @@ const PIE_COLORS = ["hsl(346 45% 56%)", "hsl(30 20% 88%)"];
 const Home = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
-  const { questionsToday, goalMet, currentStreak, longestStreak, loading: trackerLoading } = useStudyTracker();
+  const { questionsToday, goalMet, currentStreak, longestStreak, dailyGoal, setDailyGoal, loading: trackerLoading } = useStudyTracker();
+  const [showGoalPicker, setShowGoalPicker] = useState(false);
   const [sections, setSections] = useState<Section[]>([]);
   const [progressMap, setProgressMap] = useState<Map<string, SectionProgress>>(new Map());
   const [totalQuestions, setTotalQuestions] = useState(0);
