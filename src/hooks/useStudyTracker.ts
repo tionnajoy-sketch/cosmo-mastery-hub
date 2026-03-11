@@ -123,7 +123,7 @@ export const useStudyTracker = () => {
 
     const newQuestions = (existing?.questions_answered || 0) + count;
     const newActivities = existing?.activities_completed || 0;
-    const goalMet = newQuestions >= DAILY_QUESTION_GOAL || newActivities >= 1;
+    const goalMet = newQuestions >= dailyGoal || newActivities >= 1;
 
     if (existing) {
       await supabase
