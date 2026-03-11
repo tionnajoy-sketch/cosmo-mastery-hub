@@ -396,6 +396,7 @@ const Home = () => {
 
       <AppFooter />
       <PopUpReview />
+      <RandomQuizPopup />
       <DailyPopQuestion />
     </div>
   );

@@ -58,6 +58,7 @@ const App = () => (
             <Route path="/post-test" element={<ProtectedRoute><PosttestPage /></ProtectedRoute>} />
             <Route path="/post-test-results" element={<ProtectedRoute><PosttestResultsPage /></ProtectedRoute>} />
             <Route path="/anatomy-map" element={<ProtectedRoute><AnatomyMapPage /></ProtectedRoute>} />
+            <Route path="/skin-map" element={<ProtectedRoute><SkinMapPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
