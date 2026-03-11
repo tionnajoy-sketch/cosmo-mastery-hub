@@ -67,24 +67,24 @@ const tabData = [
   { key: "nerves", label: "Nerves & Systems", terms: nerveTerms, accent: "hsl(200 65% 48%)", accentLight: "hsl(200 55% 92%)" },
 ];
 
-/* ─── SVG Body Diagram ─── */
-const regionPaths: Record<string, string> = {
-  head: "M85 18 C85 8 95 2 105 2 C115 2 125 8 125 18 L125 40 C125 48 118 55 105 55 C92 55 85 48 85 40 Z",
-  skull: "M85 18 C85 8 95 2 105 2 C115 2 125 8 125 18 L125 40 C125 48 118 55 105 55 C92 55 85 48 85 40 Z",
-  brain: "M90 12 C90 7 97 4 105 4 C113 4 120 7 120 12 L120 30 C120 36 114 40 105 40 C96 40 90 36 90 30 Z",
-  face: "M90 30 C90 28 92 26 105 26 C118 26 120 28 120 30 L120 48 C120 52 115 55 105 55 C95 55 90 52 90 48 Z",
-  neck: "M97 55 L97 68 L113 68 L113 55 Z",
-  shoulder: "M60 68 L97 68 L97 78 L60 78 Z M113 68 L150 68 L150 78 L113 78 Z",
-  chest: "M72 78 L138 78 L138 120 L72 120 Z",
-  torso: "M72 78 L138 78 L138 155 L72 155 Z",
-  abdomen: "M75 120 L135 120 L135 155 L75 155 Z",
-  spine: "M103 55 L107 55 L107 160 L103 160 Z",
-  arm: "M50 78 L72 78 L72 85 L62 130 L55 170 L45 170 L52 130 L50 85 Z M138 78 L160 78 L160 85 L158 130 L165 170 L155 170 L148 130 L138 85 Z",
-  hand: "M42 170 L58 170 L60 190 L40 190 Z M152 170 L168 170 L170 190 L150 190 Z",
-  pelvis: "M75 155 L135 155 L140 175 L70 175 Z",
-  leg: "M75 175 L100 175 L95 270 L70 270 Z M110 175 L135 175 L140 270 L115 270 Z",
-  foot: "M65 270 L100 270 L102 285 L63 285 Z M110 270 L145 270 L147 285 L108 285 Z",
-  full: "M85 2 C115 2 125 8 125 18 L125 55 L150 68 L160 78 L165 170 L170 190 L150 190 L138 85 L138 155 L140 175 L145 270 L147 285 L108 285 L110 175 L105 155 L100 175 L100 270 L102 285 L63 285 L70 270 L75 175 L72 155 L72 85 L60 190 L40 190 L45 170 L50 78 L60 68 L85 55 L85 18 Z",
+/* ─── Clickable regions mapped as percentage-based zones on the skeleton image ─── */
+const regionZones: Record<string, { top: string; left: string; width: string; height: string }> = {
+  head: { top: "0%", left: "30%", width: "40%", height: "10%" },
+  skull: { top: "0%", left: "30%", width: "40%", height: "8%" },
+  brain: { top: "1%", left: "33%", width: "34%", height: "6%" },
+  face: { top: "5%", left: "32%", width: "36%", height: "7%" },
+  neck: { top: "11%", left: "38%", width: "24%", height: "4%" },
+  shoulder: { top: "14%", left: "18%", width: "64%", height: "5%" },
+  chest: { top: "19%", left: "28%", width: "44%", height: "14%" },
+  torso: { top: "19%", left: "28%", width: "44%", height: "25%" },
+  abdomen: { top: "33%", left: "30%", width: "40%", height: "12%" },
+  spine: { top: "15%", left: "45%", width: "10%", height: "35%" },
+  arm: { top: "19%", left: "8%", width: "18%", height: "30%" },
+  hand: { top: "49%", left: "3%", width: "15%", height: "8%" },
+  pelvis: { top: "44%", left: "28%", width: "44%", height: "8%" },
+  leg: { top: "52%", left: "25%", width: "50%", height: "35%" },
+  foot: { top: "88%", left: "22%", width: "56%", height: "10%" },
+  full: { top: "0%", left: "5%", width: "90%", height: "100%" },
 };
 
 interface DiagramProps {
