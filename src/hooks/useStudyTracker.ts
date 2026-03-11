@@ -166,5 +166,11 @@ export const useStudyTracker = () => {
     fetchStats();
   }, [user, fetchStats]);
 
-  return { ...stats, trackQuestions, trackActivity };
+  const setDailyGoal = useCallback((goal: number) => {
+    setDailyGoalState(goal);
+    localStorage.setItem(GOAL_STORAGE_KEY, String(goal));
+    setStats(prev => ({ ...prev, dailyGoal: goal }));
+  }, []);
+
+  return { ...stats, trackQuestions, trackActivity, setDailyGoal };
 };
