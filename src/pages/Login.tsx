@@ -33,7 +33,7 @@ const Login = () => {
     if (error) {
       toast({ title: "Oops!", description: error.message, variant: "destructive" });
     } else {
-      navigate("/welcome");
+      navigate("/");
     }
   };
 
