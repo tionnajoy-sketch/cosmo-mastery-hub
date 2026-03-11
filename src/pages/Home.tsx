@@ -15,6 +15,7 @@ import {
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
 import PopUpReview from "@/components/PopUpReview";
+import RandomQuizPopup from "@/components/RandomQuizPopup";
 import DailyPopQuestion from "@/components/DailyPopQuestion";
 import StudentContract from "@/components/StudentContract";
 import AppFooter from "@/components/AppFooter";
