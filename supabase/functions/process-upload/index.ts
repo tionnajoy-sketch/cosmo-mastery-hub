@@ -176,6 +176,7 @@ Use topic_group to label which section/heading each term belongs to (e.g., "Veno
         tool_choice: { type: "function", function: { name: "create_tj_blocks" } },
       }),
     });
+    clearTimeout(timeout);
 
     if (!response.ok) {
       const status = response.status;
