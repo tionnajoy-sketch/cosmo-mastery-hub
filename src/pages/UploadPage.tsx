@@ -175,7 +175,8 @@ const UploadPage = () => {
         }
 
         // Chunk the pages for multi-pass processing
-        const pageChunks = chunkPages(parsed.pages, 10000);
+        // Chunk pages — send 3-5 pages per chunk for strict 1:1 slide-to-block mapping
+        const pageChunks = chunkPages(parsed.pages, 6000);
         contentChunks = pageChunks.map((chunk) =>
           chunk.map((p) => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n")
         );
