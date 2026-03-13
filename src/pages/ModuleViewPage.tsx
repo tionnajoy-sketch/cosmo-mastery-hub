@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Loader2, Brain, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, Loader2, Brain, CheckCircle2, XCircle, Sparkles, Dumbbell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { pageColors } from "@/lib/colors";
 import { blockAccentColors } from "@/lib/colors";
@@ -26,6 +26,7 @@ const ModuleViewPage = () => {
   const [miniQuizIdx, setMiniQuizIdx] = useState(0);
   const [miniQuizSelected, setMiniQuizSelected] = useState<string | null>(null);
   const [miniQuizRevealed, setMiniQuizRevealed] = useState(false);
+  const [completedBlocks, setCompletedBlocks] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!id) return;
@@ -49,23 +50,34 @@ const ModuleViewPage = () => {
           quiz_answer_3: b.quiz_answer_3 || "",
         })));
       }
+
+      // Fetch completed quiz blocks
+      if (user) {
+        const { data: quizResults } = await supabase
+          .from("uploaded_quiz_results")
+          .select("block_number")
+          .eq("module_id", id)
+          .eq("user_id", user.id);
+        if (quizResults) {
+          setCompletedBlocks(new Set(quizResults.map((r) => r.block_number)));
+        }
+      }
+
       setLoading(false);
     };
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
   const handleNotesChange = useCallback((blockId: string, notes: string) => {
     setBlocks((prev) => prev.map((b) => b.id === blockId ? { ...b, user_notes: notes } : b));
   }, []);
 
-  // Group blocks by block_number
   const blockGroups: Record<number, UploadedBlock[]> = {};
   blocks.forEach((b) => {
     if (!blockGroups[b.block_number]) blockGroups[b.block_number] = [];
     blockGroups[b.block_number].push(b);
   });
 
-  // Mini quiz: collect all quiz questions from a block group
   const getMiniQuizQuestions = (groupBlocks: UploadedBlock[]) => {
     const questions: { question: string; options: string[]; answer: string; term: string }[] = [];
     groupBlocks.forEach((b) => {
@@ -101,15 +113,21 @@ const ModuleViewPage = () => {
           const accent = blockAccentColors[groupIdx % blockAccentColors.length];
           const miniQuestions = getMiniQuizQuestions(groupBlocks);
           const isQuizOpen = miniQuizBlock === Number(blockNum);
+          const hasCompletedQuiz = completedBlocks.has(Number(blockNum));
 
           return (
             <motion.div key={blockNum} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-1 h-8 rounded-full" style={{ background: accent.stripe }} />
-                <div>
-                  <h2 className="font-display text-lg font-semibold" style={{ color: c.heading }}>
-                    Block {blockNum}
-                  </h2>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-display text-lg font-semibold" style={{ color: c.heading }}>
+                      Block {blockNum}
+                    </h2>
+                    {hasCompletedQuiz && (
+                      <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(145 50% 42%)" }} />
+                    )}
+                  </div>
                   <p className="text-xs" style={{ color: c.subtext }}>
                     {groupBlocks.map((b) => b.term_title).join(" · ")}
                   </p>
@@ -122,16 +140,36 @@ const ModuleViewPage = () => {
                 ))}
               </div>
 
+              {/* Block Navigation Buttons */}
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <Button
+                  className="w-full gap-2 py-5"
+                  variant="outline"
+                  onClick={() => navigate(`/module/${id}/activity/${blockNum}`)}
+                  style={{ borderColor: accent.stripe, color: accent.stripe }}
+                >
+                  <Dumbbell className="h-4 w-4" /> Practice Activities
+                </Button>
+                <Button
+                  className="w-full gap-2 py-5"
+                  onClick={() => navigate(`/module/${id}/quiz/${blockNum}`)}
+                  style={{ background: accent.stripe, color: "hsl(0 0% 100%)" }}
+                >
+                  <Sparkles className="h-4 w-4" /> Quiz Me
+                </Button>
+              </div>
+
               {/* Mini Block Quiz */}
               {miniQuestions.length > 0 && (
-                <div className="mt-4">
+                <div className="mt-3">
                   {!isQuizOpen ? (
                     <Button
                       onClick={() => { setMiniQuizBlock(Number(blockNum)); setMiniQuizIdx(0); setMiniQuizSelected(null); setMiniQuizRevealed(false); }}
                       className="w-full gap-2"
-                      style={{ background: accent.stripe, color: "hsl(0 0% 100%)" }}
+                      variant="outline"
+                      style={{ borderColor: accent.stripe, color: accent.stripe }}
                     >
-                      <Brain className="h-4 w-4" /> Mini Block Quiz ({miniQuestions.length} questions)
+                      <Brain className="h-4 w-4" /> Quick Review ({miniQuestions.length} questions)
                     </Button>
                   ) : (
                     <Card className="border-0 shadow-md" style={{ background: accent.bg }}>
