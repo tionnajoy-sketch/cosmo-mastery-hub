@@ -8,9 +8,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import {
-  BookOpen, LogOut, ArrowRight, Target, TrendingUp,
+  BookOpen, ArrowRight, Target, TrendingUp,
   Info, CheckCircle2, Flame, BarChart3, Heart, Shield,
-  Star, Brain, Sparkles, Eye, Award, Menu, Upload, Gamepad2, MessageCircle
+  Star, Brain, Sparkles, Eye, Award, Upload,
+  Pen, MessageSquare, GraduationCap,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
@@ -18,13 +19,8 @@ import PopUpReview from "@/components/PopUpReview";
 import RandomQuizPopup from "@/components/RandomQuizPopup";
 import DailyPopQuestion from "@/components/DailyPopQuestion";
 import StudentContract from "@/components/StudentContract";
+import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const c = pageColors.home;
 
@@ -42,12 +38,29 @@ interface SectionProgress {
 }
 
 const outcomes = [
-  { icon: Shield, label: "Confidence to pass your state boards", color: "hsl(185 45% 42%)" },
-  { icon: Brain, label: "Deep understanding of theory, not just memorization", color: "hsl(265 40% 55%)" },
-  { icon: Target, label: "Test-taking strategies that actually work", color: "hsl(25 65% 50%)" },
-  { icon: Heart, label: "Inner confidence that radiates outward", color: "hsl(346 45% 56%)" },
-  { icon: Eye, label: "The feeling of being seen, supported, and understood", color: "hsl(145 40% 40%)" },
-  { icon: Award, label: "Knowledge that stays with you for your entire career", color: "hsl(42 55% 48%)" },
+  { icon: Shield, label: "Confidence to pass your state board exam", color: "hsl(185 45% 42%)" },
+  { icon: Brain, label: "Deep understanding of cosmetology theory", color: "hsl(265 40% 55%)" },
+  { icon: Target, label: "Test taking strategies that work", color: "hsl(25 65% 50%)" },
+  { icon: Heart, label: "Knowledge that stays with you throughout your career", color: "hsl(346 45% 56%)" },
+];
+
+const methodLayers = [
+  { icon: BookOpen, label: "Definition", desc: "Understand the concept in clear language.", color: "hsl(200 55% 48%)" },
+  { icon: Eye, label: "Visualize", desc: "See the structure or process in a simple image.", color: "hsl(270 45% 55%)" },
+  { icon: Sparkles, label: "Metaphor", desc: "Connect the concept to something familiar.", color: "hsl(25 65% 52%)" },
+  { icon: Heart, label: "Affirmation", desc: "Train your brain to believe you can master it.", color: "hsl(346 45% 56%)" },
+  { icon: MessageSquare, label: "Reflection", desc: "Process the idea in your own words.", color: "hsl(145 45% 40%)" },
+  { icon: Pen, label: "Journal", desc: "Strengthen memory through writing.", color: "hsl(195 50% 42%)" },
+  { icon: GraduationCap, label: "Quiz", desc: "Practice state board style questions.", color: "hsl(42 55% 48%)" },
+];
+
+const howToSteps = [
+  "Start a Study Block",
+  "Review the Definition and Visualization",
+  "Connect the Metaphor",
+  "Repeat the Affirmation",
+  "Write your Reflection",
+  "Take the Quiz",
 ];
 
 const getStatusLabel = (percent: number) => {
@@ -72,11 +85,9 @@ const Home = () => {
   const [uploadedModules, setUploadedModules] = useState<{id: string; title: string; status: string; created_at: string}[]>([]);
 
   useEffect(() => {
-    const fetchSections = async () => {
-      const { data } = await supabase.from("sections").select("*").order("order");
+    supabase.from("sections").select("*").order("order").then(({ data }) => {
       if (data) setSections(data);
-    };
-    fetchSections();
+    });
   }, []);
 
   useEffect(() => {
@@ -93,7 +104,6 @@ const Home = () => {
         supabase.from("terms").select("section_id, block_number"),
         supabase.from("quiz_results").select("section_id, block_number, score, total_questions").eq("user_id", user.id),
       ]);
-
       const terms = termsRes.data;
       const results = resultsRes.data;
       const map = new Map<string, SectionProgress>();
@@ -105,7 +115,6 @@ const Home = () => {
           if (!blocksBySection.has(t.section_id)) blocksBySection.set(t.section_id, new Set());
           blocksBySection.get(t.section_id)!.add(t.block_number);
         });
-
         const completedBySection = new Map<string, Set<number>>();
         if (results) {
           results.forEach((r) => {
@@ -115,7 +124,6 @@ const Home = () => {
             tc += r.score;
           });
         }
-
         blocksBySection.forEach((blocks, sectionId) => {
           const completed = completedBySection.get(sectionId)?.size ?? 0;
           map.set(sectionId, { totalBlocks: blocks.size, completedBlocks: completed });
@@ -132,60 +140,24 @@ const Home = () => {
   const firstName = profile?.name?.split(" ")[0] || "Beautiful";
   const overallPercent = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
   const status = getStatusLabel(overallPercent);
-
   const pieData = [
     { name: "Correct", value: totalCorrect || 0 },
     { name: "Remaining", value: Math.max((totalQuestions || 1) - (totalCorrect || 0), 0) },
   ];
 
+  // Learning style tip
+  const learningStyle = profile?.learning_style || "visual";
+  const styleTips: Record<string, string> = {
+    visual: "Based on your learning style, you may benefit most from the Visualize and Metaphor sections inside each study block.",
+    reading: "Based on your learning style, you may benefit most from the Definition, Reflection, and Journal sections inside each study block.",
+    kinesthetic: "Based on your learning style, you may benefit most from the Practice activities and Quiz sections inside each study block.",
+    auditory: "Based on your learning style, you may benefit most from the Metaphor and Affirmation sections inside each study block.",
+  };
+  const styleTip = styleTips[learningStyle] || styleTips.visual;
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: c.gradient }}>
-      {/* ── Professional Header ── */}
-      <header className="sticky top-0 z-50 border-b border-border/30 backdrop-blur-md" style={{ background: "hsl(30 25% 97% / 0.9)" }}>
-        <div className="flex items-center justify-between px-4 py-3 max-w-2xl mx-auto">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-primary" />
-            <span className="font-display text-lg font-bold text-foreground">CosmoPrep</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate("/")}>
-                  <BookOpen className="h-4 w-4 mr-2" /> Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {
-                  document.getElementById("study-sections")?.scrollIntoView({ behavior: "smooth" });
-                }}>
-                  <Brain className="h-4 w-4 mr-2" /> TJ Learning Modules
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/progress")}>
-                  <BarChart3 className="h-4 w-4 mr-2" /> Progress Tracker
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/upload")}>
-                  <Upload className="h-4 w-4 mr-2" /> Upload to TJ Blocks
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/my-modules")}>
-                  <Sparkles className="h-4 w-4 mr-2" /> My TJ Study Modules
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/strategy")}>
-                  <Target className="h-4 w-4 mr-2" /> Strategy
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/terms")}>
-                  <Shield className="h-4 w-4 mr-2" /> Terms of Use
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={signOut}>
-                  <LogOut className="h-4 w-4 mr-2" /> Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
       {/* ── Hero Welcome ── */}
       <div className="px-4 pt-8 pb-2 max-w-2xl mx-auto w-full">
@@ -194,7 +166,7 @@ const Home = () => {
             Welcome back, {firstName} ✨
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed mb-2">
-            You are building something powerful. Every term you study, every question you answer, brings you closer to the professional you are becoming. We see you. We believe in you.
+            You are building something powerful. Every concept you study brings you closer to the professional you are becoming.
           </p>
         </motion.div>
       </div>
@@ -202,40 +174,28 @@ const Home = () => {
       {/* ── Main Content ── */}
       <div className="flex-1 px-4 pb-6 max-w-2xl mx-auto w-full space-y-8">
 
+        {/* ── Learning Style Tip ── */}
+        {profile?.has_completed_pretest && (
+          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+            <Card className="border-0 shadow-sm" style={{ background: "hsl(270 20% 96%)" }}>
+              <CardContent className="p-4 flex items-start gap-3">
+                <Sparkles className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "hsl(270 40% 52%)" }} />
+                <p className="text-sm leading-relaxed" style={{ color: "hsl(270 25% 30%)" }}>
+                  {styleTip}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.section>
+        )}
+
         {/* ── Student Contract ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
           <StudentContract />
         </motion.section>
 
-        {/* ── What You'll Walk Away With ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
-          <h2 className="font-display text-lg font-semibold text-foreground mb-4">
-            What You Will Walk Away With
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {outcomes.map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + i * 0.06 }}
-              >
-                <Card className="border-0 shadow-sm hover:shadow-md transition-shadow" style={{ background: "hsl(30 30% 99%)" }}>
-                  <CardContent className="p-4 flex items-start gap-3">
-                    <div className="p-1.5 rounded-lg flex-shrink-0" style={{ background: `${item.color}15` }}>
-                      <item.icon className="h-4 w-4" style={{ color: item.color }} />
-                    </div>
-                    <p className="text-sm text-foreground/80 leading-snug">{item.label}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
         {/* ── Daily Goal + Streak ── */}
         {!trackerLoading && (
-          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <Card className="border-0 shadow-md" style={{ background: goalMet ? "hsl(145 40% 96%)" : "hsl(42 60% 96%)" }}>
               <CardContent className="p-5">
                 <div className="flex items-center gap-2 mb-2">
@@ -249,46 +209,28 @@ const Home = () => {
                   </h3>
                 </div>
                 {goalMet ? (
-                  <p className="text-sm" style={{ color: "hsl(145 30% 30%)" }}>
-                    Goal complete for today. Beautiful work. ✓
-                  </p>
+                  <p className="text-sm" style={{ color: "hsl(145 30% 30%)" }}>Goal complete for today. Beautiful work. ✓</p>
                 ) : (
                   <>
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-xs" style={{ color: "hsl(42 25% 35%)" }}>
                         Complete one activity or answer {dailyGoal} questions to meet today's goal.
                       </p>
-                      <button
-                        onClick={() => setShowGoalPicker(!showGoalPicker)}
-                        className="text-xs font-medium underline ml-2 flex-shrink-0"
-                        style={{ color: "hsl(42 50% 45%)" }}
-                      >
-                        Edit
-                      </button>
+                      <button onClick={() => setShowGoalPicker(!showGoalPicker)} className="text-xs font-medium underline ml-2 flex-shrink-0" style={{ color: "hsl(42 50% 45%)" }}>Edit</button>
                     </div>
                     {showGoalPicker && (
                       <div className="flex items-center gap-2 mb-3 p-2 rounded-lg" style={{ background: "hsl(42 40% 92%)" }}>
                         <span className="text-xs" style={{ color: "hsl(42 25% 35%)" }}>Daily question goal:</span>
                         {[5, 10, 15, 20, 25].map(g => (
-                          <button
-                            key={g}
-                            onClick={() => { setDailyGoal(g); setShowGoalPicker(false); }}
+                          <button key={g} onClick={() => { setDailyGoal(g); setShowGoalPicker(false); }}
                             className="px-2 py-1 rounded-full text-xs font-medium transition-all"
-                            style={{
-                              background: dailyGoal === g ? "hsl(42 55% 48%)" : "white",
-                              color: dailyGoal === g ? "white" : "hsl(42 30% 35%)",
-                            }}
-                          >
-                            {g}
-                          </button>
+                            style={{ background: dailyGoal === g ? "hsl(42 55% 48%)" : "white", color: dailyGoal === g ? "white" : "hsl(42 30% 35%)" }}>{g}</button>
                         ))}
                       </div>
                     )}
                     <div className="flex items-center gap-2">
                       <Progress value={Math.min((questionsToday / dailyGoal) * 100, 100)} className="h-1.5 flex-1" />
-                      <span className="text-xs font-medium" style={{ color: "hsl(42 35% 40%)" }}>
-                        {questionsToday}/{dailyGoal}
-                      </span>
+                      <span className="text-xs font-medium" style={{ color: "hsl(42 35% 40%)" }}>{questionsToday}/{dailyGoal}</span>
                     </div>
                   </>
                 )}
@@ -304,9 +246,64 @@ const Home = () => {
           </motion.section>
         )}
 
-        {/* ── Progress Dashboard with Pie Chart ── */}
+        {/* ── What You Will Walk Away With ── */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
+          <h2 className="font-display text-lg font-semibold text-foreground mb-4">What You Will Walk Away With</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {outcomes.map((item, i) => (
+              <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.06 }}>
+                <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-card">
+                  <CardContent className="p-4 flex items-start gap-3">
+                    <div className="p-1.5 rounded-lg flex-shrink-0" style={{ background: `${item.color}15` }}>
+                      <item.icon className="h-4 w-4" style={{ color: item.color }} />
+                    </div>
+                    <p className="text-sm text-foreground/80 leading-snug">{item.label}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* ── The TJ Anderson Layer Method™ ── */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
+          <h2 className="font-display text-lg font-semibold text-foreground mb-2">The TJ Anderson Layer Method™</h2>
+          <p className="text-sm text-muted-foreground mb-4">Each concept is studied through multiple layers so the information stays in your memory.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {methodLayers.map((layer, i) => (
+              <motion.div key={layer.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.04 }}>
+                <Card className="border-0 shadow-sm h-full bg-card">
+                  <CardContent className="p-4 text-center">
+                    <div className="w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{ background: `${layer.color}15` }}>
+                      <layer.icon className="h-5 w-5" style={{ color: layer.color }} />
+                    </div>
+                    <p className="text-sm font-semibold text-foreground mb-1">{layer.label}</p>
+                    <p className="text-xs text-muted-foreground leading-snug">{layer.desc}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* ── How to Use the App ── */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+          <h2 className="font-display text-lg font-semibold text-foreground mb-4">How to Use the App</h2>
+          <div className="space-y-3">
+            {howToSteps.map((step, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 bg-primary text-primary-foreground">
+                  {i + 1}
+                </div>
+                <p className="text-sm text-foreground/80">{step}</p>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* ── Progress Dashboard ── */}
         {totalQuestions > 0 && (
-          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}>
             <Card className="border-0 shadow-md" style={{ background: c.card }}>
               <CardContent className="p-5">
                 <div className="flex items-center gap-2 mb-4">
@@ -341,33 +338,19 @@ const Home = () => {
           </motion.section>
         )}
 
-        {/* ── Strategy Shortcut ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}>
-          <Card
-            className="border-0 shadow-md cursor-pointer hover:shadow-lg transition-shadow"
-            style={{ background: "hsl(185 30% 95%)" }}
-            onClick={() => navigate("/strategy")}
+        {/* ── Continue Studying ── */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
+          <Button
+            className="w-full py-6 text-base font-display font-semibold gap-2 shadow-lg"
+            onClick={() => document.getElementById("study-sections")?.scrollIntoView({ behavior: "smooth" })}
           >
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="p-2 rounded-xl" style={{ background: "hsl(185 30% 88%)" }}>
-                <Target className="h-5 w-5" style={{ color: "hsl(185 45% 35%)" }} />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-display text-sm font-semibold" style={{ color: "hsl(185 35% 22%)" }}>
-                  TJ Anderson Layer Method™
-                </h3>
-                <p className="text-xs" style={{ color: "hsl(185 20% 45%)" }}>
-                  Learn the 5-layer framework for deep, lasting understanding
-                </p>
-              </div>
-              <ArrowRight className="h-4 w-4" style={{ color: "hsl(185 35% 50%)" }} />
-            </CardContent>
-          </Card>
+            <BookOpen className="h-5 w-5" /> Continue Learning
+          </Button>
         </motion.section>
 
         {/* ── Study Sections ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-          <h2 id="study-sections" className="font-display text-lg font-semibold text-foreground mb-4">Study Sections</h2>
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65 }}>
+          <h2 id="study-sections" className="font-display text-lg font-semibold text-foreground mb-4">Study Modules</h2>
           <div className="space-y-4">
             {sections.map((section, i) => {
               const progress = progressMap.get(section.id);
@@ -375,37 +358,20 @@ const Home = () => {
               const pct = progress && progress.totalBlocks > 0 ? Math.round((progress.completedBlocks / progress.totalBlocks) * 100) : 0;
               const sectionStatus = getStatusLabel(pct);
               return (
-                <motion.div
-                  key={section.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.65 + i * 0.08 }}
-                >
-                  <Card
-                    className="border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow overflow-hidden"
-                    style={{ background: c.card }}
-                    onClick={() => navigate(`/section/${section.id}`)}
-                  >
+                <motion.div key={section.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 + i * 0.08 }}>
+                  <Card className="border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow overflow-hidden bg-card" onClick={() => navigate(`/section/${section.id}`)}>
                     <div className="flex">
                       <div className="w-2 flex-shrink-0" style={{ background: accent.bg }} />
                       <CardContent className="p-6 flex-1">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h3 className="font-display text-xl font-semibold mb-1" style={{ color: accent.text }}>
-                              {section.name}
-                            </h3>
-                            <p className="text-sm leading-relaxed mb-3 text-muted-foreground">
-                              {section.description}
-                            </p>
+                            <h3 className="font-display text-xl font-semibold mb-1" style={{ color: accent.text }}>{section.name}</h3>
+                            <p className="text-sm leading-relaxed mb-3 text-muted-foreground">{section.description}</p>
                             {progress && progress.totalBlocks > 0 && (
                               <div>
                                 <div className="flex items-center justify-between mb-1">
-                                  <span className="text-xs text-muted-foreground">
-                                    {progress.completedBlocks}/{progress.totalBlocks} blocks completed
-                                  </span>
-                                  <span className="text-xs font-medium" style={{ color: sectionStatus.color }}>
-                                    {sectionStatus.label}
-                                  </span>
+                                  <span className="text-xs text-muted-foreground">{progress.completedBlocks}/{progress.totalBlocks} blocks completed</span>
+                                  <span className="text-xs font-medium" style={{ color: sectionStatus.color }}>{sectionStatus.label}</span>
                                 </div>
                                 <Progress value={pct} className="h-1.5" />
                               </div>
@@ -419,28 +385,20 @@ const Home = () => {
                 </motion.div>
               );
             })}
-            {sections.length === 0 && (
-              <p className="text-center text-muted-foreground py-12">Loading sections...</p>
-            )}
+            {sections.length === 0 && <p className="text-center text-muted-foreground py-12">Loading sections...</p>}
           </div>
         </motion.section>
 
         {/* ── My TJ Study Modules ── */}
         {uploadedModules.length > 0 && (
-          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65 }}>
+          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75 }}>
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-display text-lg font-semibold text-foreground">My TJ Study Modules</h2>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/my-modules")} className="text-xs">
-                View All
-              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/my-modules")} className="text-xs">View All</Button>
             </div>
             <div className="space-y-2">
               {uploadedModules.map((mod) => (
-                <Card
-                  key={mod.id}
-                  className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => mod.status === "ready" ? navigate(`/module/${mod.id}`) : null}
-                >
+                <Card key={mod.id} className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => mod.status === "ready" ? navigate(`/module/${mod.id}`) : null}>
                   <CardContent className="p-3 flex items-center gap-3">
                     <div className="p-2 rounded-lg" style={{ background: "hsl(270 25% 94%)" }}>
                       <Sparkles className="h-4 w-4" style={{ color: "hsl(270 40% 52%)" }} />
@@ -458,23 +416,15 @@ const Home = () => {
         )}
 
         {/* ── Upload Shortcut ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>
-          <Card
-            className="border-0 shadow-md cursor-pointer hover:shadow-lg transition-shadow"
-            style={{ background: "hsl(270 20% 96%)" }}
-            onClick={() => navigate("/upload")}
-          >
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
+          <Card className="border-0 shadow-md cursor-pointer hover:shadow-lg transition-shadow" style={{ background: "hsl(270 20% 96%)" }} onClick={() => navigate("/upload")}>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-2 rounded-xl" style={{ background: "hsl(270 25% 90%)" }}>
                 <Upload className="h-5 w-5" style={{ color: "hsl(270 40% 52%)" }} />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-sm font-semibold" style={{ color: "hsl(270 30% 25%)" }}>
-                  Upload to TJ Blocks
-                </h3>
-                <p className="text-xs" style={{ color: "hsl(270 15% 50%)" }}>
-                  Convert your notes and slides into structured learning blocks
-                </p>
+                <h3 className="font-display text-sm font-semibold" style={{ color: "hsl(270 30% 25%)" }}>Upload to TJ Blocks</h3>
+                <p className="text-xs" style={{ color: "hsl(270 15% 50%)" }}>Convert your notes and slides into structured learning blocks</p>
               </div>
               <ArrowRight className="h-4 w-4" style={{ color: "hsl(270 25% 55%)" }} />
             </CardContent>
@@ -486,12 +436,8 @@ const Home = () => {
           <CardContent className="p-4 flex items-start gap-3">
             <Info className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "hsl(42 50% 45%)" }} />
             <div>
-              <p className="text-sm font-medium" style={{ color: "hsl(42 35% 28%)" }}>
-                More sections coming soon
-              </p>
-              <p className="text-xs leading-relaxed mt-1" style={{ color: "hsl(42 20% 45%)" }}>
-                Hair, Nails, Safety &amp; Sanitation, and more. For now, master the foundation.
-              </p>
+              <p className="text-sm font-medium" style={{ color: "hsl(42 35% 28%)" }}>More sections coming soon</p>
+              <p className="text-xs leading-relaxed mt-1" style={{ color: "hsl(42 20% 45%)" }}>Hair, Nails, Safety &amp; Sanitation, and more. For now, master the foundation.</p>
             </div>
           </CardContent>
         </Card>
