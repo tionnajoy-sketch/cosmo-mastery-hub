@@ -1,103 +1,82 @@
 
 
-## Plan: Build Skin Structure and Growth Module
+# Upgrade Uploaded Modules to Match Native TJ Block Experience
 
-This is a significant expansion that replaces the existing 5-term "Skin" section with a full 35-term module, adds new UI features, and introduces two quiz modes.
+## Problem
+Currently, uploaded modules display in a simplified collapsible layout (`ModuleViewPage.tsx`) that doesn't match the rich, tabbed, interactive experience of the native study modules (`StudyPage.tsx` + `TermCard.tsx`). The user wants uploaded content to look and behave identically to built-in modules.
 
-### Scope overview
+## Approach
 
-```text
-Current state:
-  1 section ("Skin") → 5 terms (Block 1) → 5 questions (Block 1)
+Rather than duplicating all native module infrastructure (which uses separate `terms`, `questions`, `bookmarks`, `reflections`, `journal_notes` tables), the most effective approach is to **rebuild ModuleViewPage to render each uploaded block using the same tabbed card UI as TermCard**, adapting it to work with the `uploaded_module_blocks` table.
 
-Target state:
-  1 section ("Skin Structure and Growth") → 35 terms (7 blocks of 5) → 35+ questions (5+ per block)
-  + bookmarking table + progress indicators + 2 quiz modes
-```
+### 1. Add `pronunciation` column to `uploaded_module_blocks` table
+**Migration** — add a field for phonetic pronunciation text so the AI can generate it during processing.
 
-### 1. Database schema changes (migration)
+### 2. Update Edge Function (`process-upload/index.ts`)
+Expand the AI prompt and tool schema to also generate:
+- `pronunciation` — phonetic spelling of the term
+- `practice_scenario` — a scenario-based practice activity
+- `quiz_options_2` / `quiz_question_2` / `quiz_answer_2` — second reinforcement quiz question
+- `quiz_options_3` / `quiz_question_3` / `quiz_answer_3` — third reinforcement quiz question
 
-**New table: `bookmarks`**
-- `id` (uuid, PK, default gen_random_uuid())
-- `user_id` (uuid, NOT NULL, references profiles.id)
-- `term_id` (uuid, NOT NULL, references terms.id)
-- `created_at` (timestamptz, default now())
-- Unique constraint on (user_id, term_id)
-- RLS: users can SELECT/INSERT/DELETE their own bookmarks
+These additional fields get stored in the `uploaded_module_blocks` table.
 
-No other schema changes needed. The existing `terms`, `questions`, `sections`, and `quiz_results` tables already support everything else.
+### 3. Database Migration
+Add columns to `uploaded_module_blocks`:
+- `pronunciation` (text, default '')
+- `practice_scenario` (text, default '')
+- `quiz_question_2`, `quiz_options_2`, `quiz_answer_2`
+- `quiz_question_3`, `quiz_options_3`, `quiz_answer_3`
 
-### 2. Data operations (insert tool, not migrations)
+### 4. Rebuild `ModuleViewPage.tsx`
+Replace the current collapsible section layout with a **full TermCard-style tabbed interface** per block:
 
-**Step 2a: Update the section**
-- UPDATE the existing "Skin" section to rename it "Skin Structure and Growth" with a new description reflecting the TJ Anderson Layer Method voice.
+**Tabs per block (matching native TermCard):**
+1. **Definition** — with SpeakButton
+2. **Pronunciation** — phonetic text + SpeakButton for audio playback
+3. **Visualize** — shows `visualization_desc`; future: extract/generate images
+4. **Metaphor** — with SpeakButton
+5. **Affirmation** — with SpeakButton
+6. **Reflection** — editable textarea with SpeechToTextButton, saves to `uploaded_module_blocks.user_notes` or a dedicated field
+7. **Practice** — displays the practice scenario
+8. **Quiz** — interactive quiz with the primary question (select answer, show feedback)
+9. **Journal** — editable notes textarea with auto-save and SpeechToTextButton
 
-**Step 2b: Delete existing terms and questions**
-- DELETE the 5 existing questions (Block 1)
-- DELETE the 5 existing terms (Block 1)
+**Additional per-block features:**
+- SpeakButton on term title
+- Bookmark toggle (using existing bookmarks table or local state)
 
-**Step 2c: Insert 35 terms across 7 blocks**
+**Block group level:**
+- "Mini Block Quiz" button per block group — shows 2-3 reinforcement questions
+- "Practice Activities" button per block group — links to activity-style exercises
+- AIMentorChat integration at bottom
 
-Each term gets a Definition, Metaphor, and Affirmation written in the TJ Anderson Layer Method voice, following all the rules specified (no dashes, no slang, warm professional tone, vocabulary reinforcement in metaphors, grounding "I" statements for affirmations).
+### 5. Add Module Study/Block Routes
+Add routes for block-level navigation within uploaded modules:
+- `/module/:id/block/:block` — study view for a specific block group
 
-Block layout (5 terms each):
+Or keep single-page with scroll-to-block anchors (simpler).
 
-| Block | Terms |
-|-------|-------|
-| 1 | Epidermis, Dermis, Subcutaneous Tissue, Subcutaneous Layer, Dermal Epidermal Junction |
-| 2 | Stratum Corneum, Stratum Lucidum, Stratum Granulosum, Stratum Spinosum, Stratum Germinativum |
-| 3 | Papillary Layer, Reticular Layer, Dermal Papillae, Collagen, Elastin |
-| 4 | Keratin, Melanin, Melanocytes, Eumelanin, Pheomelanin |
-| 5 | Sebaceous Glands, Sebum, Sudoriferous Glands, Sweat Glands, Secretory Coil |
-| 6 | Arrector Pili Muscles, Hair Papillae, Barrier Function, Broad Spectrum Sunscreen, Tactile Corpuscles |
-| 7 | Sensory Nerve Fibers, Motor Nerve Fibers, Secretory Nerve Fibers, Dermatologist, Dermatology |
+### 6. Create `UploadedTermCard` Component
+A new component `src/components/UploadedTermCard.tsx` that mirrors `TermCard.tsx` but reads from `uploaded_module_blocks` fields instead of the `terms` table. This keeps the native TermCard clean while providing identical UI.
 
-**Step 2d: Insert quiz questions (5 per block = 35 questions)**
-- State board exam paragraph style stems with realistic client scenarios
-- 4 options (A/B/C/D), one best answer, one plausible distractor, two clearly wrong
-- Warm supportive explanation field
-- Each question linked to its related_term_id
+---
 
-Due to the volume (35 terms + 35 questions), this will require multiple data insertion steps.
+## Files
 
-### 3. Frontend changes
+**New files:**
+- `src/components/UploadedTermCard.tsx` — tabbed card matching TermCard UI for uploaded blocks
 
-**3a. Section page (`SectionPage.tsx`)**
-- Add a supportive TJ voice welcome message at the top: encouraging the learner to take their time and focus on understanding
-- Add progress indicators per block showing completion status (uses `quiz_results` to check if block was completed and score)
+**Modified files:**
+- `src/pages/ModuleViewPage.tsx` — complete rebuild using UploadedTermCard, block groups, mini quizzes, activities
+- `supabase/functions/process-upload/index.ts` — expanded AI prompt with pronunciation, practice scenario, extra quiz questions
 
-**3b. Study page (`StudyPage.tsx`)**
-- Add bookmark toggle (heart/bookmark icon) on each TermCard, wired to the new `bookmarks` table
-- Add a brief supportive message at the top of each block encouraging slow, intentional learning
+**Migration:**
+- Add `pronunciation`, `practice_scenario`, `quiz_question_2`, `quiz_options_2`, `quiz_answer_2`, `quiz_question_3`, `quiz_options_3`, `quiz_answer_3` columns to `uploaded_module_blocks`
 
-**3c. Quiz page (`QuizPage.tsx`)**
-- Add mode selection before quiz starts: "Practice Mode" (standard exam prep) and "Confidence Builder Mode" (extra encouragement, gentler feedback on wrong answers, reinforces that mistakes are part of learning)
-- In Confidence Builder Mode, wrong-answer feedback includes additional reassurance text
-- Answer is hidden until selection (already implemented)
-
-**3d. Results page (`ResultsPage.tsx`)**
-- Differentiate messaging based on quiz mode
-- Confidence Builder Mode shows more nurturing feedback regardless of score
-
-**3e. Home page (`Home.tsx`)**
-- Add overall progress indicator for the section (e.g., "3/7 blocks completed")
-
-### 4. Implementation order
-
-1. Create `bookmarks` table (migration)
-2. Update section data, delete old terms/questions, insert all 35 terms (data tool, multiple batches)
-3. Insert all 35 questions (data tool, multiple batches)
-4. Update `SectionPage.tsx` with supportive message and progress indicators
-5. Update `StudyPage.tsx` with bookmark toggle and supportive header
-6. Update `QuizPage.tsx` with mode selection (Practice / Confidence Builder)
-7. Update `ResultsPage.tsx` with mode-aware messaging
-8. Update `Home.tsx` with section progress
-
-### Technical details
-
-- Bookmarks use optimistic UI updates via local state, with background Supabase insert/delete
-- Progress is computed by querying `quiz_results` for the current user and section, checking which block_numbers have entries
-- Quiz mode is passed as URL query param or route state (no schema change needed)
-- All 35 terms will be written with complete Definition, Metaphor, and Affirmation content in the TJ Anderson Layer Method voice before insertion
-- Content follows all stated rules: no dashes, no slang, no sarcasm, professional warmth, vocabulary reinforcement in metaphors, grounding "I" statements in affirmations
+## Implementation Order
+1. Database migration (add columns)
+2. Update edge function prompt
+3. Create UploadedTermCard component
+4. Rebuild ModuleViewPage
 
