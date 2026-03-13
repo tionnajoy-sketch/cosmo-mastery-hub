@@ -139,7 +139,7 @@ Each quiz question should have exactly one best answer, one plausible distractor
                         "quiz_question", "quiz_options", "quiz_answer",
                         "quiz_question_2", "quiz_options_2", "quiz_answer_2",
                         "quiz_question_3", "quiz_options_3", "quiz_answer_3",
-                        "slide_type", "instructor_notes",
+                        "slide_type", "instructor_notes", "topic_group",
                       ],
                     },
                   },
