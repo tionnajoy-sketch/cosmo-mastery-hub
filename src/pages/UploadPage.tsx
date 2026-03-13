@@ -564,6 +564,10 @@ const UploadPage = () => {
                     <p className="text-xs text-muted-foreground">TJ Blocks Created</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-3">
+                    <p className="text-2xl font-bold text-primary">{summary.totalTerms}</p>
+                    <p className="text-xs text-muted-foreground">Total Terms Extracted</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
                     <p className="text-2xl font-bold text-foreground">{summary.quizBankCreated}</p>
                     <p className="text-xs text-muted-foreground">Quiz Bank Questions</p>
                   </div>
