@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import {
   BookOpen, LogOut, ArrowRight, Target, TrendingUp,
   Info, CheckCircle2, Flame, BarChart3, Heart, Shield,
-  Star, Brain, Sparkles, Eye, Award, Menu
+  Star, Brain, Sparkles, Eye, Award, Menu, Upload, Gamepad2, MessageCircle
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
