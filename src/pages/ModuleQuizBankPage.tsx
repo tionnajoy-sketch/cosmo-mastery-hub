@@ -317,7 +317,7 @@ const ModuleQuizBankPage = () => {
                   </CardContent>
                 </Card>
 
-                <Button onClick={handleNext} className="w-full mt-4 py-5" style={{ background: c.nextButton, color: c.nextButtonText }}>
+                <Button onClick={handleNext} className="w-full mt-4 py-5" style={{ background: c.nextButton, color: "hsl(0 0% 100%)" }}>
                   {isLastQuestion ? "See Results" : "Next Question"}
                 </Button>
               </motion.div>
