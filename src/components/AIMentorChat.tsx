@@ -28,7 +28,7 @@ const quickActions = [
   { label: "Encourage me", prompt: "I need some encouragement right now. Remind me why I'm capable of passing the state board exam." },
 ];
 
-const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorChatProps) => {
+const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyle }: AIMentorChatProps) => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
