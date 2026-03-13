@@ -15,6 +15,14 @@ export const sectionObjectivesMap: Record<string, string[]> = {
     "Use the TJ Anderson Layer Method to build deep understanding through definition, metaphor, affirmation, and reflection.",
     "Answer State Board–style anatomy and physiology questions with confidence.",
   ],
+  // Infection Control
+  "c3d4e5f6-a7b8-9012-cdef-ab3456789012": [
+    "Identify the types of microorganisms relevant to cosmetology including bacteria, viruses, fungi, and parasites.",
+    "Explain the differences between pathogenic and nonpathogenic bacteria and the three bacterial shapes.",
+    "Describe the levels of decontamination from cleaning to sterilization.",
+    "Identify bloodborne pathogens and explain universal precautions for salon safety.",
+    "Answer State Board–style infection control questions with confidence.",
+  ],
 };
 
 export const blockObjectivesMap: Record<string, Record<number, string[]>> = {
@@ -54,6 +62,33 @@ export const blockObjectivesMap: Record<string, Record<number, string[]>> = {
       "Recognize common skin conditions and growth patterns.",
       "Explain factors that affect skin health and regeneration.",
       "Apply your understanding to State Board questions about skin conditions.",
+    ],
+  },
+  // Infection Control
+  "c3d4e5f6-a7b8-9012-cdef-ab3456789012": {
+    1: [
+      "Identify the five major types of microorganisms: bacteria, viruses, fungi, parasites, and pathogens.",
+      "Explain how each type of microorganism can spread in a salon environment.",
+    ],
+    2: [
+      "Distinguish between pathogenic and nonpathogenic bacteria.",
+      "Identify the three bacterial shapes: cocci, bacilli, and spirilla.",
+    ],
+    3: [
+      "Explain the role of flagella in bacterial movement.",
+      "Define infection, contagious disease, inflammation, and pus.",
+    ],
+    4: [
+      "Identify bloodborne pathogens including hepatitis and HIV.",
+      "Explain the difference between cleaning and sanitation.",
+    ],
+    5: [
+      "Describe the levels of decontamination: cleaning, sanitation, disinfection, and sterilization.",
+      "Explain universal precautions and when to use tuberculocidal disinfectants.",
+    ],
+    6: [
+      "Define exposure incident and explain proper response procedures.",
+      "Identify the purpose of Safety Data Sheets and Material Safety Data Sheets.",
     ],
   },
   // General Anatomy and Physiology

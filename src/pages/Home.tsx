@@ -11,8 +11,15 @@ import {
   BookOpen, ArrowRight, Target, TrendingUp,
   Info, CheckCircle2, Flame, BarChart3, Heart, Shield,
   Star, Brain, Sparkles, Eye, Award, Upload,
-  Pen, MessageSquare, GraduationCap, RefreshCw,
+  Pen, MessageSquare, GraduationCap, RefreshCw, ChevronDown, Lock,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
 import PopUpReview from "@/components/PopUpReview";
@@ -356,9 +363,47 @@ const Home = () => {
           </Button>
         </motion.section>
 
-        {/* ── Study Sections ── */}
+        {/* ── Study Modules Selector ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65 }}>
           <h2 id="study-sections" className="font-display text-lg font-semibold text-foreground mb-4">Study Modules</h2>
+
+          {/* Dropdown Selector */}
+          <Select onValueChange={(val) => { if (val.startsWith("section:")) navigate(`/section/${val.replace("section:", "")}`); }}>
+            <SelectTrigger className="w-full mb-4 h-12 text-base font-display font-semibold border-0 shadow-md bg-card">
+              <SelectValue placeholder="Choose a section to study..." />
+            </SelectTrigger>
+            <SelectContent>
+              {sections.map((section, i) => {
+                const accent = sectionAccentColors[i % sectionAccentColors.length];
+                return (
+                  <SelectItem key={section.id} value={`section:${section.id}`}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: accent.bg }} />
+                      <span>{section.name}</span>
+                      <span className="text-xs font-medium px-1.5 py-0.5 rounded-full ml-1" style={{ background: "hsl(145 40% 92%)", color: "hsl(145 50% 32%)" }}>Complete</span>
+                    </div>
+                  </SelectItem>
+                );
+              })}
+              {/* Coming Soon sections */}
+              {[
+                { name: "Hair Structure and Growth", color: "hsl(25 70% 55%)" },
+                { name: "Chemistry Basics", color: "hsl(200 65% 48%)" },
+                { name: "Electricity Basics", color: "hsl(48 75% 50%)" },
+                { name: "State Board Strategy", color: "hsl(270 50% 52%)" },
+              ].map((cs) => (
+                <SelectItem key={cs.name} value={`coming:${cs.name}`} disabled>
+                  <div className="flex items-center gap-2 opacity-50">
+                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: cs.color }} />
+                    <span>{cs.name}</span>
+                    <span className="text-xs font-medium px-1.5 py-0.5 rounded-full ml-1" style={{ background: "hsl(42 50% 92%)", color: "hsl(42 40% 40%)" }}>Coming Soon</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Section Cards (still visible for progress) */}
           <div className="space-y-4">
             {sections.map((section, i) => {
               const progress = progressMap.get(section.id);
@@ -445,7 +490,7 @@ const Home = () => {
             <Info className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "hsl(42 50% 45%)" }} />
             <div>
               <p className="text-sm font-medium" style={{ color: "hsl(42 35% 28%)" }}>More sections coming soon</p>
-              <p className="text-xs leading-relaxed mt-1" style={{ color: "hsl(42 20% 45%)" }}>Hair, Nails, Safety &amp; Sanitation, and more. For now, master the foundation.</p>
+              <p className="text-xs leading-relaxed mt-1" style={{ color: "hsl(42 20% 45%)" }}>Hair Structure and Growth, Chemistry Basics, Electricity Basics, and State Board Strategy are in development.</p>
             </div>
           </CardContent>
         </Card>
