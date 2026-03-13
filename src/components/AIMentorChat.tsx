@@ -216,26 +216,33 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
 
             {/* Input */}
             <div className="px-3 py-3 border-t flex-shrink-0" style={{ borderColor: "hsl(270 15% 90%)" }}>
-              <div className="flex gap-2">
-                <Textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      sendMessage();
-                    }
-                  }}
-                  placeholder="Ask about this section..."
-                  className="resize-none text-sm min-h-[40px] max-h-[80px] border-0 focus-visible:ring-1"
-                  style={{ background: "hsl(270 15% 97%)" }}
-                  rows={1}
-                />
+              <div className="flex gap-2 items-end">
+                <div className="flex-1 relative">
+                  <Textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    }}
+                    placeholder="Ask about this section..."
+                    className="resize-none text-sm min-h-[40px] max-h-[80px] border-0 focus-visible:ring-1 pr-9"
+                    style={{ background: "hsl(270 15% 97%)" }}
+                    rows={1}
+                  />
+                  <div className="absolute right-0.5 bottom-0.5">
+                    <SpeechToTextButton
+                      onTranscript={(text) => setInput((prev) => prev ? `${prev} ${text}` : text)}
+                    />
+                  </div>
+                </div>
                 <Button
                   size="sm"
                   onClick={() => sendMessage()}
                   disabled={!input.trim() || loading}
-                  className="self-end px-3"
+                  className="px-3"
                   style={{ background: "hsl(270 50% 52%)", color: "white" }}
                 >
                   <Send className="h-4 w-4" />
