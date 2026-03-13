@@ -12,9 +12,34 @@ serve(async (req) => {
   }
 
   try {
-    const { content, moduleId, filename, chunkIndex, totalChunks } = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch (parseErr) {
+      console.error("Failed to parse request body:", parseErr);
+      return new Response(JSON.stringify({ error: "Invalid request body. Could not parse JSON." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { content, moduleId, filename, chunkIndex, totalChunks } = body;
+    
+    if (!content || typeof content !== "string") {
+      return new Response(JSON.stringify({ error: "Missing or invalid 'content' field." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Truncate content if too long to avoid token limits
+    const maxContentLength = 30000;
+    const truncatedContent = content.length > maxContentLength 
+      ? content.slice(0, maxContentLength) + "\n\n[Content truncated for processing]"
+      : content;
 
     const systemPrompt = `You are TJ Anderson, a cosmetology education expert. You write and speak as if you are personally teaching each concept to a student sitting in your classroom. Your tone is conversational, encouraging, and clear. You never sound robotic or overly academic. Your explanations should feel like a warm, supportive teacher breaking things down so the student truly understands.
 
@@ -66,10 +91,10 @@ Each quiz question should have exactly one best answer, one plausible distractor
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Please analyze the following study material from "${filename}"${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}. Convert it into TJ Anderson Layer Method learning blocks. Classify each section as concept, visual, quiz, or handwritten_note:\n\n${content}` },
+          { role: "user", content: `Please analyze the following study material from "${filename}"${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}. Convert it into TJ Anderson Layer Method learning blocks. Classify each section as concept, visual, quiz, or handwritten_note:\n\n${truncatedContent}` },
         ],
         tools: [
           {
@@ -147,6 +172,8 @@ Each quiz question should have exactly one best answer, one plausible distractor
 
     if (!response.ok) {
       const status = response.status;
+      const t = await response.text();
+      console.error("AI gateway error:", status, t);
       if (status === 429) {
         return new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
           status: 429,
@@ -159,9 +186,7 @@ Each quiz question should have exactly one best answer, one plausible distractor
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const t = await response.text();
-      console.error("AI gateway error:", status, t);
-      throw new Error("AI gateway error");
+      throw new Error(`AI gateway error: ${status}`);
     }
 
     const data = await response.json();
@@ -171,9 +196,24 @@ Each quiz question should have exactly one best answer, one plausible distractor
     let quiz_bank_questions: any[] = [];
     
     if (toolCall?.function?.arguments) {
-      const parsed = JSON.parse(toolCall.function.arguments);
-      blocks = parsed.blocks || [];
-      quiz_bank_questions = parsed.quiz_bank_questions || [];
+      try {
+        const parsed = JSON.parse(toolCall.function.arguments);
+        blocks = parsed.blocks || [];
+        quiz_bank_questions = parsed.quiz_bank_questions || [];
+      } catch (jsonErr) {
+        console.error("Failed to parse tool call arguments:", jsonErr);
+        // Try to salvage partial JSON
+        const raw = toolCall.function.arguments;
+        try {
+          // Attempt to find complete blocks array
+          const blocksMatch = raw.match(/"blocks"\s*:\s*\[([\s\S]*?)\]\s*,\s*"quiz/);
+          if (blocksMatch) {
+            blocks = JSON.parse(`[${blocksMatch[1]}]`);
+          }
+        } catch {
+          console.error("Could not salvage partial JSON");
+        }
+      }
     } else {
       const content_resp = data.choices?.[0]?.message?.content || "";
       try {
