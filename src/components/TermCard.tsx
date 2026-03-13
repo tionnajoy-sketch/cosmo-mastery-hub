@@ -54,7 +54,7 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     { key: "metaphor", label: "Metaphor" },
     { key: "affirmation", label: "Affirmation" },
     { key: "reflection", label: "Reflection" },
-    ...(buildExercise ? [{ key: "build" as TabType, label: "🧩 Build" }] : []),
+    ...(buildExercise ? [{ key: "build" as TabType, label: "Practice" }] : []),
     { key: "journal", label: "Journal" },
   ];
 

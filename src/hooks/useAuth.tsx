@@ -10,6 +10,7 @@ interface Profile {
   program: string | null;
   language: string;
   has_completed_pretest: boolean;
+  learning_style: string;
 }
 
 interface AuthContextType {
