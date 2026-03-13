@@ -175,7 +175,8 @@ const UploadPage = () => {
         }
 
         // Chunk the pages for multi-pass processing
-        const pageChunks = chunkPages(parsed.pages, 10000);
+        // Chunk pages — send 3-5 pages per chunk for strict 1:1 slide-to-block mapping
+        const pageChunks = chunkPages(parsed.pages, 6000);
         contentChunks = pageChunks.map((chunk) =>
           chunk.map((p) => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n")
         );
@@ -255,53 +256,19 @@ const UploadPage = () => {
       setProgress(85);
       setProgressMessage("Saving TJ Blocks...");
 
-      // Step 4: Group terms into blocks by topic_group, falling back to groups of 5
-      let blockNumber = 1;
+      // Step 4: 1:1 slide-to-block mapping — each block gets its page number
       if (allBlocks.length > 0) {
-        // Check if AI provided topic_group labels
-        const hasTopicGroups = allBlocks.some((b: any) => b.topic_group && b.topic_group.trim() !== "");
-        
-        let blocksToInsert: any[] = [];
-        
-        if (hasTopicGroups) {
-          // Group by topic_group, preserving order of first appearance
-          const topicOrder: string[] = [];
-          const topicMap: Record<string, any[]> = {};
-          
-          for (const block of allBlocks) {
-            const group = (block.topic_group || "General").trim();
-            if (!topicMap[group]) {
-              topicMap[group] = [];
-              topicOrder.push(group);
-            }
-            topicMap[group].push(block);
-          }
-          
-          // If any topic group has more than 8 terms, split it into sub-blocks
-          for (const topic of topicOrder) {
-            const terms = topicMap[topic];
-            for (let i = 0; i < terms.length; i += 7) {
-              const chunk = terms.slice(i, i + 7);
-              for (const term of chunk) {
-                blocksToInsert.push(makeBlockInsert(term, moduleData.id, blockNumber));
-              }
-              blockNumber++;
-            }
-          }
-        } else {
-          // Fallback: group every 5 terms into a block
-          for (let i = 0; i < allBlocks.length; i++) {
-            const bn = Math.floor(i / 5) + 1;
-            blocksToInsert.push(makeBlockInsert(allBlocks[i], moduleData.id, bn));
-          }
-          blockNumber = Math.floor((allBlocks.length - 1) / 5) + 2;
-        }
+        const blocksToInsert = allBlocks.map((block: any) => {
+          // Use page_number from AI response as the block_number (1:1 mapping)
+          const pageNum = block.page_number || 1;
+          return makeBlockInsert(block, moduleData.id, pageNum);
+        });
 
         const { error: insertError } = await supabase.from("uploaded_module_blocks").insert(blocksToInsert);
         if (insertError) throw insertError;
       }
       
-      const actualBlockCount = blockNumber - 1;
+      const actualBlockCount = allBlocks.length;
 
       // Insert quiz bank questions
       if (allQuizBankQuestions.length > 0) {
