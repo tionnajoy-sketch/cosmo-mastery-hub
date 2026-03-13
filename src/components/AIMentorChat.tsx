@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import SpeechToTextButton from "@/components/SpeechToTextButton";
 
 interface Message {
   role: "user" | "assistant";
