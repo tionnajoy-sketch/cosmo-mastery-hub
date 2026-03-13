@@ -431,7 +431,7 @@ const Home = () => {
                 <Upload className="h-5 w-5" style={{ color: "hsl(270 40% 52%)" }} />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-sm font-semibold" style={{ color: "hsl(270 30% 25%)" }}>Upload to TJ Blocks</h3>
+                <h3 className="font-display text-sm font-semibold" style={{ color: "hsl(270 30% 25%)" }}>Create Study Blocks</h3>
                 <p className="text-xs" style={{ color: "hsl(270 15% 50%)" }}>Convert your notes and slides into structured learning blocks</p>
               </div>
               <ArrowRight className="h-4 w-4" style={{ color: "hsl(270 25% 55%)" }} />
