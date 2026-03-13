@@ -28,7 +28,7 @@ const SectionPage = () => {
     const fetchData = async () => {
       const [sectionRes, termsRes, resultsRes] = await Promise.all([
         supabase.from("sections").select("*").eq("id", id).single(),
-        supabase.from("terms").select("block_number").eq("section_id", id),
+        supabase.from("terms").select("block_number, term").eq("section_id", id),
         user
           ? supabase.from("quiz_results").select("block_number, score, total_questions").eq("section_id", id).eq("user_id", user.id)
           : Promise.resolve({ data: [] }),
