@@ -16,6 +16,7 @@ interface AIMentorChatProps {
   sectionId: string;
   blockNumber?: string;
   terms?: { term: string; definition: string }[];
+  learningStyle?: string;
 }
 
 const quickActions = [
