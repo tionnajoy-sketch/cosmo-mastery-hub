@@ -18,35 +18,28 @@ serve(async (req) => {
 
     const systemPrompt = `You are TJ Anderson, a cosmetology education expert. Your task is to analyze study material and extract key terms and concepts, then convert each into a structured TJ Anderson Layer Method™ learning block.
 
-For each key term or concept you identify, generate:
+For each key term or concept you identify, generate ALL of the following fields:
 1. term_title: The name of the term or concept
-2. definition: A clear, professional definition in warm mentor tone
-3. visualization_desc: A description of what a visual diagram or image would show for this concept
-4. metaphor: A TJ-style metaphor connecting the concept to everyday beauty or life experiences. Reinforce vocabulary within the metaphor. No dashes, no slang.
-5. affirmation: A grounding "I" statement that builds confidence. Example: "I understand the layers of the skin and can explain them with confidence."
-6. reflection_prompt: A thought-provoking question that encourages the student to connect this concept to their career
-7. quiz_question: A state board exam style question with a realistic client scenario
-8. quiz_options: An array of 4 answer choices (A, B, C, D)
-9. quiz_answer: The correct answer text (must match one of the quiz_options exactly)
+2. pronunciation: Phonetic pronunciation of the term (e.g., "ep-ih-DER-mis" for Epidermis)
+3. definition: A clear, professional definition in warm mentor tone
+4. visualization_desc: A detailed description of what a visual diagram or image would show for this concept, including labels and anatomical/structural details
+5. metaphor: A TJ-style metaphor connecting the concept to everyday beauty or life experiences. Reinforce vocabulary within the metaphor. No dashes, no slang.
+6. affirmation: A grounding "I" statement that builds confidence. Example: "I understand the layers of the skin and can explain them with confidence."
+7. reflection_prompt: A thought-provoking question that encourages the student to connect this concept to their career
+8. practice_scenario: A realistic salon or client scenario that requires the student to apply this concept. Write it as a short situation followed by a question. Example: "A client comes in with dry, flaky skin on her hands after winter. She asks what layer of skin is being affected and what she can do. What would you tell her, and why?"
+9. quiz_question: A state board exam style question with a realistic client scenario
+10. quiz_options: An array of 4 answer choices
+11. quiz_answer: The correct answer text (must match one of quiz_options exactly)
+12. quiz_question_2: A second reinforcement question testing the same concept from a different angle
+13. quiz_options_2: An array of 4 answer choices for question 2
+14. quiz_answer_2: The correct answer for question 2
+15. quiz_question_3: A third reinforcement question for deeper recall
+16. quiz_options_3: An array of 4 answer choices for question 3
+17. quiz_answer_3: The correct answer for question 3
 
-Group terms into blocks of 5. Return valid JSON with this structure:
-{
-  "blocks": [
-    {
-      "term_title": "...",
-      "definition": "...",
-      "visualization_desc": "...",
-      "metaphor": "...",
-      "affirmation": "...",
-      "reflection_prompt": "...",
-      "quiz_question": "...",
-      "quiz_options": ["A", "B", "C", "D"],
-      "quiz_answer": "A"
-    }
-  ]
-}
-
-Extract 10-20 key terms from the material. Be thorough but focused on the most important concepts.`;
+Group terms into blocks of 5. Return valid JSON.
+Extract 10-20 key terms from the material. Be thorough but focused on the most important concepts.
+Each quiz question should have exactly one best answer, one plausible distractor, and two clearly incorrect options.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -75,16 +68,30 @@ Extract 10-20 key terms from the material. Be thorough but focused on the most i
                       type: "object",
                       properties: {
                         term_title: { type: "string" },
+                        pronunciation: { type: "string" },
                         definition: { type: "string" },
                         visualization_desc: { type: "string" },
                         metaphor: { type: "string" },
                         affirmation: { type: "string" },
                         reflection_prompt: { type: "string" },
+                        practice_scenario: { type: "string" },
                         quiz_question: { type: "string" },
                         quiz_options: { type: "array", items: { type: "string" } },
                         quiz_answer: { type: "string" },
+                        quiz_question_2: { type: "string" },
+                        quiz_options_2: { type: "array", items: { type: "string" } },
+                        quiz_answer_2: { type: "string" },
+                        quiz_question_3: { type: "string" },
+                        quiz_options_3: { type: "array", items: { type: "string" } },
+                        quiz_answer_3: { type: "string" },
                       },
-                      required: ["term_title", "definition", "metaphor", "affirmation", "reflection_prompt", "quiz_question", "quiz_options", "quiz_answer"],
+                      required: [
+                        "term_title", "pronunciation", "definition", "visualization_desc",
+                        "metaphor", "affirmation", "reflection_prompt", "practice_scenario",
+                        "quiz_question", "quiz_options", "quiz_answer",
+                        "quiz_question_2", "quiz_options_2", "quiz_answer_2",
+                        "quiz_question_3", "quiz_options_3", "quiz_answer_3",
+                      ],
                     },
                   },
                 },
@@ -118,7 +125,6 @@ Extract 10-20 key terms from the material. Be thorough but focused on the most i
 
     const data = await response.json();
     
-    // Extract from tool call response
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     let blocks: any[] = [];
     
@@ -126,7 +132,6 @@ Extract 10-20 key terms from the material. Be thorough but focused on the most i
       const parsed = JSON.parse(toolCall.function.arguments);
       blocks = parsed.blocks || [];
     } else {
-      // Fallback: try to parse content directly
       const content_resp = data.choices?.[0]?.message?.content || "";
       try {
         const jsonMatch = content_resp.match(/\{[\s\S]*\}/);
