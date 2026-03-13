@@ -56,7 +56,7 @@ const SectionPage = () => {
             .map(([key, term_count]) => {
               const block_number = Number(key);
               const result = resultsByBlock[block_number];
-              return { block_number, term_count, completed: !!result, bestScore: result?.score ?? null, bestTotal: result?.total ?? null };
+              return { block_number, term_count, completed: !!result, bestScore: result?.score ?? null, bestTotal: result?.total ?? null, termNames: blockTermNames[block_number] || [] };
             })
             .sort((a, b) => a.block_number - b.block_number)
         );

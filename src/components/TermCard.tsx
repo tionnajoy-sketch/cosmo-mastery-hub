@@ -50,7 +50,7 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
 
   const tabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Definition" },
-    { key: "picture", label: "Picture" },
+    { key: "picture", label: "Visualize" },
     { key: "metaphor", label: "Metaphor" },
     { key: "affirmation", label: "Affirmation" },
     { key: "reflection", label: "Reflection" },

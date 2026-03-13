@@ -359,7 +359,7 @@ const Home = () => {
 
         {/* ── Study Sections ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-          <h2 className="font-display text-lg font-semibold text-foreground mb-4">Study Sections</h2>
+          <h2 id="study-sections" className="font-display text-lg font-semibold text-foreground mb-4">Study Sections</h2>
           <div className="space-y-4">
             {sections.map((section, i) => {
               const progress = progressMap.get(section.id);
