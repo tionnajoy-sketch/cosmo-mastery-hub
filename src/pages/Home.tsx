@@ -11,7 +11,7 @@ import {
   BookOpen, ArrowRight, Target, TrendingUp,
   Info, CheckCircle2, Flame, BarChart3, Heart, Shield,
   Star, Brain, Sparkles, Eye, Award, Upload,
-  Pen, MessageSquare, GraduationCap,
+  Pen, MessageSquare, GraduationCap, RefreshCw,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
@@ -168,6 +168,14 @@ const Home = () => {
           <p className="text-sm text-muted-foreground leading-relaxed mb-2">
             You are building something powerful. Every concept you study brings you closer to the professional you are becoming.
           </p>
+          <div className="flex items-center gap-3 mt-3">
+            <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground" onClick={() => navigate("/welcome")}>
+              <BookOpen className="h-3.5 w-3.5" /> View Welcome Guide
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground" onClick={() => navigate("/pretest")}>
+              <RefreshCw className="h-3.5 w-3.5" /> Retake Learning Style Quiz
+            </Button>
+          </div>
         </motion.div>
       </div>
 
@@ -423,7 +431,7 @@ const Home = () => {
                 <Upload className="h-5 w-5" style={{ color: "hsl(270 40% 52%)" }} />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-sm font-semibold" style={{ color: "hsl(270 30% 25%)" }}>Upload to TJ Blocks</h3>
+                <h3 className="font-display text-sm font-semibold" style={{ color: "hsl(270 30% 25%)" }}>Create Study Blocks</h3>
                 <p className="text-xs" style={{ color: "hsl(270 15% 50%)" }}>Convert your notes and slides into structured learning blocks</p>
               </div>
               <ArrowRight className="h-4 w-4" style={{ color: "hsl(270 25% 55%)" }} />
