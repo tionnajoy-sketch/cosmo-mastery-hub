@@ -149,7 +149,7 @@ const UploadPage = () => {
         }
 
         // Chunk the pages for multi-pass processing
-        const pageChunks = chunkPages(parsed.pages, 40000);
+        const pageChunks = chunkPages(parsed.pages, 25000);
         contentChunks = pageChunks.map((chunk) =>
           chunk.map((p) => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n")
         );
