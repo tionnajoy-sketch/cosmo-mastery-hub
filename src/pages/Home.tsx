@@ -168,6 +168,14 @@ const Home = () => {
           <p className="text-sm text-muted-foreground leading-relaxed mb-2">
             You are building something powerful. Every concept you study brings you closer to the professional you are becoming.
           </p>
+          <div className="flex items-center gap-3 mt-3">
+            <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground" onClick={() => navigate("/welcome")}>
+              <BookOpen className="h-3.5 w-3.5" /> View Welcome Guide
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground" onClick={() => navigate("/pretest")}>
+              <RefreshCw className="h-3.5 w-3.5" /> Retake Learning Style Quiz
+            </Button>
+          </div>
         </motion.div>
       </div>
 
