@@ -132,6 +132,7 @@ Each quiz question should have exactly one best answer, one plausible distractor
                         slide_type: { type: "string", enum: ["concept", "visual"] },
                         instructor_notes: { type: "string" },
                         image_description: { type: "string" },
+                        topic_group: { type: "string", description: "Short topic/section label to group related terms together" },
                       },
                       required: [
                         "term_title", "pronunciation", "definition", "visualization_desc",
