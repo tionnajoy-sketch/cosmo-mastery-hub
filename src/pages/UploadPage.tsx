@@ -230,36 +230,53 @@ const UploadPage = () => {
       setProgress(85);
       setProgressMessage("Saving TJ Blocks...");
 
-      // Step 4: Insert all blocks
+      // Step 4: Group terms into blocks by topic_group, falling back to groups of 5
+      let blockNumber = 1;
       if (allBlocks.length > 0) {
-        const blocksToInsert = allBlocks.map((block: any, index: number) => ({
-          module_id: moduleData.id,
-          block_number: Math.floor(index / 5) + 1,
-          term_title: block.term_title || block.title || `Term ${index + 1}`,
-          pronunciation: block.pronunciation || "",
-          definition: block.definition || "",
-          visualization_desc: block.visualization_desc || "",
-          metaphor: block.metaphor || "",
-          affirmation: block.affirmation || "",
-          reflection_prompt: block.reflection_prompt || "",
-          practice_scenario: block.practice_scenario || "",
-          quiz_question: block.quiz_question || "",
-          quiz_options: block.quiz_options || [],
-          quiz_answer: block.quiz_answer || "",
-          quiz_question_2: block.quiz_question_2 || "",
-          quiz_options_2: block.quiz_options_2 || [],
-          quiz_answer_2: block.quiz_answer_2 || "",
-          quiz_question_3: block.quiz_question_3 || "",
-          quiz_options_3: block.quiz_options_3 || [],
-          quiz_answer_3: block.quiz_answer_3 || "",
-          slide_type: block.slide_type || "concept",
-          instructor_notes: block.instructor_notes || "",
-          image_url: block.image_url || "",
-        }));
+        // Check if AI provided topic_group labels
+        const hasTopicGroups = allBlocks.some((b: any) => b.topic_group && b.topic_group.trim() !== "");
+        
+        let blocksToInsert: any[] = [];
+        
+        if (hasTopicGroups) {
+          // Group by topic_group, preserving order of first appearance
+          const topicOrder: string[] = [];
+          const topicMap: Record<string, any[]> = {};
+          
+          for (const block of allBlocks) {
+            const group = (block.topic_group || "General").trim();
+            if (!topicMap[group]) {
+              topicMap[group] = [];
+              topicOrder.push(group);
+            }
+            topicMap[group].push(block);
+          }
+          
+          // If any topic group has more than 8 terms, split it into sub-blocks
+          for (const topic of topicOrder) {
+            const terms = topicMap[topic];
+            for (let i = 0; i < terms.length; i += 7) {
+              const chunk = terms.slice(i, i + 7);
+              for (const term of chunk) {
+                blocksToInsert.push(makeBlockInsert(term, moduleData.id, blockNumber));
+              }
+              blockNumber++;
+            }
+          }
+        } else {
+          // Fallback: group every 5 terms into a block
+          for (let i = 0; i < allBlocks.length; i++) {
+            const bn = Math.floor(i / 5) + 1;
+            blocksToInsert.push(makeBlockInsert(allBlocks[i], moduleData.id, bn));
+          }
+          blockNumber = Math.floor((allBlocks.length - 1) / 5) + 2;
+        }
 
         const { error: insertError } = await supabase.from("uploaded_module_blocks").insert(blocksToInsert);
         if (insertError) throw insertError;
       }
+      
+      const actualBlockCount = blockNumber - 1;
 
       // Insert quiz bank questions
       if (allQuizBankQuestions.length > 0) {
