@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Loader2, Brain, CheckCircle2, XCircle, Sparkles, Dumbbell } from "lucide-react";
+import { ArrowLeft, Loader2, Brain, CheckCircle2, XCircle, Sparkles, Dumbbell, Library } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { pageColors } from "@/lib/colors";
 import { blockAccentColors } from "@/lib/colors";
