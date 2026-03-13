@@ -151,6 +151,15 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
       case "visualize":
         return (
           <div className="space-y-3">
+            {imageUrl ? (
+              <img src={imageUrl} alt={`Visual diagram for ${block.term_title}`} className="w-full rounded-lg mb-3" />
+            ) : (
+              <div className="flex justify-center mb-3">
+                <Button size="sm" variant="outline" onClick={generateImage} disabled={imageLoading} className="gap-2">
+                  {imageLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : "Generate Visual Diagram"}
+                </Button>
+              </div>
+            )}
             <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.visualization_desc}</p>
             <BrainNote text="Visualizing a concept creates a mental picture that strengthens recall. Close your eyes and imagine this image." />
           </div>
