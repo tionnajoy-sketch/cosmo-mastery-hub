@@ -11,7 +11,7 @@ import {
   BookOpen, ArrowRight, Target, TrendingUp,
   Info, CheckCircle2, Flame, BarChart3, Heart, Shield,
   Star, Brain, Sparkles, Eye, Award, Upload,
-  Pen, MessageSquare, GraduationCap,
+  Pen, MessageSquare, GraduationCap, RefreshCw,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
