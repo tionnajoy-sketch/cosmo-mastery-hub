@@ -36,7 +36,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     // Truncate content if too long to avoid token limits
-    const maxContentLength = 30000;
+    const maxContentLength = 12000;
     const truncatedContent = content.length > maxContentLength 
       ? content.slice(0, maxContentLength) + "\n\n[Content truncated for processing]"
       : content;
@@ -86,7 +86,11 @@ Extract ALL key terms and concepts from the material — be thorough. A multi-pa
 Each quiz question should have exactly one best answer, one plausible distractor, and two clearly incorrect options.
 Use topic_group to label which section/heading each term belongs to (e.g., "Venous Disorders", "Arterial Disease", "Heart Failure"). Terms with the same topic_group will be grouped into the same TJ Block.`;
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 55000); // 55s timeout
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      signal: controller.signal,
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -172,6 +176,7 @@ Use topic_group to label which section/heading each term belongs to (e.g., "Veno
         tool_choice: { type: "function", function: { name: "create_tj_blocks" } },
       }),
     });
+    clearTimeout(timeout);
 
     if (!response.ok) {
       const status = response.status;
