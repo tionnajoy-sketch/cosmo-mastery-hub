@@ -11,8 +11,15 @@ import {
   BookOpen, ArrowRight, Target, TrendingUp,
   Info, CheckCircle2, Flame, BarChart3, Heart, Shield,
   Star, Brain, Sparkles, Eye, Award, Upload,
-  Pen, MessageSquare, GraduationCap, RefreshCw,
+  Pen, MessageSquare, GraduationCap, RefreshCw, ChevronDown, Lock,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
 import PopUpReview from "@/components/PopUpReview";
