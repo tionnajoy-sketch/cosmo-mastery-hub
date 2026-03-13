@@ -114,14 +114,22 @@ const UploadPage = () => {
           module_id: moduleData.id,
           block_number: Math.floor(index / 5) + 1,
           term_title: block.term_title || block.title || `Term ${index + 1}`,
+          pronunciation: block.pronunciation || "",
           definition: block.definition || "",
           visualization_desc: block.visualization_desc || "",
           metaphor: block.metaphor || "",
           affirmation: block.affirmation || "",
           reflection_prompt: block.reflection_prompt || "",
+          practice_scenario: block.practice_scenario || "",
           quiz_question: block.quiz_question || "",
           quiz_options: block.quiz_options || [],
           quiz_answer: block.quiz_answer || "",
+          quiz_question_2: block.quiz_question_2 || "",
+          quiz_options_2: block.quiz_options_2 || [],
+          quiz_answer_2: block.quiz_answer_2 || "",
+          quiz_question_3: block.quiz_question_3 || "",
+          quiz_options_3: block.quiz_options_3 || [],
+          quiz_answer_3: block.quiz_answer_3 || "",
         }));
 
         const { error: insertError } = await supabase.from("uploaded_module_blocks").insert(blocksToInsert);

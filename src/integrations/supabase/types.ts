@@ -578,9 +578,17 @@ export type Database = {
           id: string
           metaphor: string
           module_id: string
+          practice_scenario: string
+          pronunciation: string
           quiz_answer: string
+          quiz_answer_2: string
+          quiz_answer_3: string
           quiz_options: Json
+          quiz_options_2: Json
+          quiz_options_3: Json
           quiz_question: string
+          quiz_question_2: string
+          quiz_question_3: string
           reflection_prompt: string
           term_title: string
           user_notes: string
@@ -594,9 +602,17 @@ export type Database = {
           id?: string
           metaphor?: string
           module_id: string
+          practice_scenario?: string
+          pronunciation?: string
           quiz_answer?: string
+          quiz_answer_2?: string
+          quiz_answer_3?: string
           quiz_options?: Json
+          quiz_options_2?: Json
+          quiz_options_3?: Json
           quiz_question?: string
+          quiz_question_2?: string
+          quiz_question_3?: string
           reflection_prompt?: string
           term_title?: string
           user_notes?: string
@@ -610,9 +626,17 @@ export type Database = {
           id?: string
           metaphor?: string
           module_id?: string
+          practice_scenario?: string
+          pronunciation?: string
           quiz_answer?: string
+          quiz_answer_2?: string
+          quiz_answer_3?: string
           quiz_options?: Json
+          quiz_options_2?: Json
+          quiz_options_3?: Json
           quiz_question?: string
+          quiz_question_2?: string
+          quiz_question_3?: string
           reflection_prompt?: string
           term_title?: string
           user_notes?: string
