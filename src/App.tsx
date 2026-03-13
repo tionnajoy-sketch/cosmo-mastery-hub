@@ -29,6 +29,7 @@ import SkinMapPage from "./pages/SkinMapPage";
 import UploadPage from "./pages/UploadPage";
 import MyModulesPage from "./pages/MyModulesPage";
 import ModuleViewPage from "./pages/ModuleViewPage";
+import InsightsPage from "./pages/InsightsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
