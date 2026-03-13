@@ -52,7 +52,7 @@ const UploadPage = () => {
 
   const convertToBlocks = async () => {
     if (!user || !file) return;
-      if (mode as string === "instructor") {
+      if (mode === "instructor") {
         toast({ title: "License Required", description: "Instructor Mode requires a school license. Contact us at hello@tjandersonmethod.com for details." });
         return;
       }
