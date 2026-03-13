@@ -1,103 +1,118 @@
 
 
-## Plan: Build Skin Structure and Growth Module
+# Smart Slide Classification & Enhanced Upload Processing
 
-This is a significant expansion that replaces the existing 5-term "Skin" section with a full 35-term module, adds new UI features, and introduces two quiz modes.
+## Overview
+Upgrade the upload pipeline so the AI classifies each slide/section as one of three types — **concept**, **visual/diagram**, or **quiz question** — then routes each accordingly: concepts become full TJ Blocks, visuals get preserved in the Visualize tab, quiz slides feed a Quiz Bank, and handwritten annotations become "Instructor Notes" or "Student Insights."
 
-### Scope overview
+## Current Limitation
+The current system sends raw text to the AI as a single blob. It cannot:
+- Distinguish slide types (concept vs diagram vs quiz)
+- Extract or preserve images from uploaded files
+- Detect handwritten annotations
+- Route quiz-style slides to a separate quiz bank
 
-```text
-Current state:
-  1 section ("Skin") → 5 terms (Block 1) → 5 questions (Block 1)
+## Changes
 
-Target state:
-  1 section ("Skin Structure and Growth") → 35 terms (7 blocks of 5) → 35+ questions (5+ per block)
-  + bookmarking table + progress indicators + 2 quiz modes
+### 1. Database Migration — New columns + Quiz Bank table
+
+**New table: `uploaded_module_quiz_bank`**
+Stores exam-style questions detected on slides (separate from TJ Block quiz questions).
+
+```sql
+CREATE TABLE public.uploaded_module_quiz_bank (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  module_id uuid REFERENCES public.uploaded_modules(id) ON DELETE CASCADE NOT NULL,
+  question_text text NOT NULL DEFAULT '',
+  option_a text NOT NULL DEFAULT '',
+  option_b text NOT NULL DEFAULT '',
+  option_c text NOT NULL DEFAULT '',
+  option_d text NOT NULL DEFAULT '',
+  correct_option text NOT NULL DEFAULT 'A',
+  explanation text NOT NULL DEFAULT '',
+  source_slide integer,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.uploaded_module_quiz_bank ENABLE ROW LEVEL SECURITY;
+-- RLS via parent module ownership
+CREATE POLICY "Users can view own quiz bank" ON public.uploaded_module_quiz_bank
+  FOR SELECT USING (EXISTS (SELECT 1 FROM uploaded_modules WHERE id = module_id AND user_id = auth.uid()));
+CREATE POLICY "Users can insert own quiz bank" ON public.uploaded_module_quiz_bank
+  FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM uploaded_modules WHERE id = module_id AND user_id = auth.uid()));
+CREATE POLICY "Users can delete own quiz bank" ON public.uploaded_module_quiz_bank
+  FOR DELETE USING (EXISTS (SELECT 1 FROM uploaded_modules WHERE id = module_id AND user_id = auth.uid()));
 ```
 
-### 1. Database schema changes (migration)
+**New columns on `uploaded_module_blocks`:**
+- `image_url text DEFAULT ''` — stores extracted or generated diagram URL
+- `instructor_notes text DEFAULT ''` — stores detected handwritten annotations
+- `slide_type text DEFAULT 'concept'` — classification: concept, visual, quiz
 
-**New table: `bookmarks`**
-- `id` (uuid, PK, default gen_random_uuid())
-- `user_id` (uuid, NOT NULL, references profiles.id)
-- `term_id` (uuid, NOT NULL, references terms.id)
-- `created_at` (timestamptz, default now())
-- Unique constraint on (user_id, term_id)
-- RLS: users can SELECT/INSERT/DELETE their own bookmarks
+### 2. Edge Function — `process-upload/index.ts` (Major Rewrite)
 
-No other schema changes needed. The existing `terms`, `questions`, `sections`, and `quiz_results` tables already support everything else.
+The updated prompt instructs the AI to classify each section/slide:
 
-### 2. Data operations (insert tool, not migrations)
+**Classification rules in the system prompt:**
+- **concept**: Terminology, bullet-point explanations → generate full TJ Block
+- **visual**: Charts, diagrams, comparison tables → generate TJ Block with enhanced `visualization_desc` preserving the chart structure, plus a practice question about the visual
+- **quiz**: Multiple-choice review questions → extract into structured quiz bank format (question, 4 options, correct answer, explanation)
+- **handwritten_note**: Annotations like "could be asymptomatic" → stored as `instructor_notes` on the nearest related concept block
 
-**Step 2a: Update the section**
-- UPDATE the existing "Skin" section to rename it "Skin Structure and Growth" with a new description reflecting the TJ Anderson Layer Method voice.
+**Updated tool schema** adds:
+- `slide_type` field on each block (concept/visual)
+- `instructor_notes` field for detected handwritten content
+- `image_description` field (detailed description of any diagram for later AI image generation)
+- New `quiz_bank_questions` array at the top level for detected exam questions
 
-**Step 2b: Delete existing terms and questions**
-- DELETE the 5 existing questions (Block 1)
-- DELETE the 5 existing terms (Block 1)
+**Response structure:**
+```json
+{
+  "blocks": [...],           // concept + visual blocks → TJ Blocks
+  "quiz_bank_questions": [   // quiz slides → Quiz Bank
+    { "question_text", "option_a/b/c/d", "correct_option", "explanation", "source_slide" }
+  ]
+}
+```
 
-**Step 2c: Insert 35 terms across 7 blocks**
+### 3. `UploadPage.tsx` — Handle new response shape
 
-Each term gets a Definition, Metaphor, and Affirmation written in the TJ Anderson Layer Method voice, following all the rules specified (no dashes, no slang, warm professional tone, vocabulary reinforcement in metaphors, grounding "I" statements for affirmations).
+After calling `process-upload`:
+- Insert `blocks` into `uploaded_module_blocks` (same as now, plus new fields)
+- Insert `quiz_bank_questions` into `uploaded_module_quiz_bank`
+- Show toast summary: "Created X TJ Blocks and added Y questions to your Quiz Bank"
 
-Block layout (5 terms each):
+### 4. `UploadedTermCard.tsx` — Show instructor notes + image generation
 
-| Block | Terms |
-|-------|-------|
-| 1 | Epidermis, Dermis, Subcutaneous Tissue, Subcutaneous Layer, Dermal Epidermal Junction |
-| 2 | Stratum Corneum, Stratum Lucidum, Stratum Granulosum, Stratum Spinosum, Stratum Germinativum |
-| 3 | Papillary Layer, Reticular Layer, Dermal Papillae, Collagen, Elastin |
-| 4 | Keratin, Melanin, Melanocytes, Eumelanin, Pheomelanin |
-| 5 | Sebaceous Glands, Sebum, Sudoriferous Glands, Sweat Glands, Secretory Coil |
-| 6 | Arrector Pili Muscles, Hair Papillae, Barrier Function, Broad Spectrum Sunscreen, Tactile Corpuscles |
-| 7 | Sensory Nerve Fibers, Motor Nerve Fibers, Secretory Nerve Fibers, Dermatologist, Dermatology |
+- If `instructor_notes` is not empty, display a collapsible "Instructor Notes" or "Student Insight" callout (with a notebook icon) below the term title
+- In the Visualize tab: if `image_url` is set, show the image; otherwise trigger auto-generation via `generate-term-image` (existing pattern)
 
-**Step 2d: Insert quiz questions (5 per block = 35 questions)**
-- State board exam paragraph style stems with realistic client scenarios
-- 4 options (A/B/C/D), one best answer, one plausible distractor, two clearly wrong
-- Warm supportive explanation field
-- Each question linked to its related_term_id
+### 5. `ModuleViewPage.tsx` — Quiz Bank access
 
-Due to the volume (35 terms + 35 questions), this will require multiple data insertion steps.
+- Add a "Quiz Bank" button/section at the bottom of the module view
+- Shows count of quiz bank questions available
+- Links to a quiz experience using `uploaded_module_quiz_bank` questions
 
-### 3. Frontend changes
+### 6. New: `ModuleQuizBankPage.tsx`
 
-**3a. Section page (`SectionPage.tsx`)**
-- Add a supportive TJ voice welcome message at the top: encouraging the learner to take their time and focus on understanding
-- Add progress indicators per block showing completion status (uses `quiz_results` to check if block was completed and score)
+- Fetches questions from `uploaded_module_quiz_bank` for the module
+- Presents them in the same quiz UI as `ModuleQuizPage` (mode selection, strategy steps, score tracking)
+- Saves results to `uploaded_quiz_results` with a distinct mode like `"quiz_bank"`
 
-**3b. Study page (`StudyPage.tsx`)**
-- Add bookmark toggle (heart/bookmark icon) on each TermCard, wired to the new `bookmarks` table
-- Add a brief supportive message at the top of each block encouraging slow, intentional learning
+### 7. Routes — `App.tsx`
 
-**3c. Quiz page (`QuizPage.tsx`)**
-- Add mode selection before quiz starts: "Practice Mode" (standard exam prep) and "Confidence Builder Mode" (extra encouragement, gentler feedback on wrong answers, reinforces that mistakes are part of learning)
-- In Confidence Builder Mode, wrong-answer feedback includes additional reassurance text
-- Answer is hidden until selection (already implemented)
+Add: `/module/:id/quiz-bank` → `ModuleQuizBankPage`
 
-**3d. Results page (`ResultsPage.tsx`)**
-- Differentiate messaging based on quiz mode
-- Confidence Builder Mode shows more nurturing feedback regardless of score
+## Implementation Order
+1. Database migration (quiz bank table + new columns on blocks)
+2. Rewrite `process-upload` edge function with classification prompt
+3. Update `UploadPage.tsx` to handle new response (blocks + quiz bank)
+4. Update `UploadedTermCard.tsx` for instructor notes + image support
+5. Update `ModuleViewPage.tsx` with Quiz Bank section
+6. Create `ModuleQuizBankPage.tsx`
+7. Add route in `App.tsx`
 
-**3e. Home page (`Home.tsx`)**
-- Add overall progress indicator for the section (e.g., "3/7 blocks completed")
-
-### 4. Implementation order
-
-1. Create `bookmarks` table (migration)
-2. Update section data, delete old terms/questions, insert all 35 terms (data tool, multiple batches)
-3. Insert all 35 questions (data tool, multiple batches)
-4. Update `SectionPage.tsx` with supportive message and progress indicators
-5. Update `StudyPage.tsx` with bookmark toggle and supportive header
-6. Update `QuizPage.tsx` with mode selection (Practice / Confidence Builder)
-7. Update `ResultsPage.tsx` with mode-aware messaging
-8. Update `Home.tsx` with section progress
-
-### Technical details
-
-- Bookmarks use optimistic UI updates via local state, with background Supabase insert/delete
-- Progress is computed by querying `quiz_results` for the current user and section, checking which block_numbers have entries
-- Quiz mode is passed as URL query param or route state (no schema change needed)
-- All 35 terms will be written with complete Definition, Metaphor, and Affirmation content in the TJ Anderson Layer Method voice before insertion
-- Content follows all stated rules: no dashes, no slang, no sarcasm, professional warmth, vocabulary reinforcement in metaphors, grounding "I" statements in affirmations
+## Files Summary
+- **New**: `src/pages/ModuleQuizBankPage.tsx`
+- **Modified**: `supabase/functions/process-upload/index.ts`, `src/pages/UploadPage.tsx`, `src/components/UploadedTermCard.tsx`, `src/pages/ModuleViewPage.tsx`, `src/App.tsx`
+- **Migration**: New `uploaded_module_quiz_bank` table + new columns on `uploaded_module_blocks`
 
