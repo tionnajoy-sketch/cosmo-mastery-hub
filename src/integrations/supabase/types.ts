@@ -690,6 +690,47 @@ export type Database = {
           },
         ]
       }
+      uploaded_quiz_results: {
+        Row: {
+          block_number: number
+          completed_at: string
+          id: string
+          mode: string
+          module_id: string
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          block_number?: number
+          completed_at?: string
+          id?: string
+          mode?: string
+          module_id: string
+          score?: number
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          block_number?: number
+          completed_at?: string
+          id?: string
+          mode?: string
+          module_id?: string
+          score?: number
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploaded_quiz_results_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "uploaded_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wrong_answers: {
         Row: {
           block_number: number
