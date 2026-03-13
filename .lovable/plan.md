@@ -1,175 +1,103 @@
 
 
-# Upload to TJ Blocks + Navigation Overhaul + Ask TJ Improvements + Block Titles
+## Plan: Build Skin Structure and Growth Module
 
-This is a large scope request spanning multiple systems. Here is the implementation plan broken into phases.
+This is a significant expansion that replaces the existing 5-term "Skin" section with a full 35-term module, adds new UI features, and introduces two quiz modes.
 
----
-
-## Phase 1: Updated Navigation Menu
-
-Update the header dropdown in `Home.tsx` to match the new menu structure:
-
-- Dashboard (Home)
-- TJ Learning Modules (sections list — current home scroll)
-- TJ Practice Lab (links to activity pages)
-- Ask TJ Mentor (dedicated page)
-- Upload to TJ Blocks (new page)
-- Progress Tracker (existing `/progress`)
-- Settings (placeholder)
-
----
-
-## Phase 2: Block Title Labels
-
-Currently blocks show "Block 1", "Block 2" etc. with no topic context.
-
-**Change**: Fetch the first few term names per block from the `terms` table and display them as a subtitle under each block heading.
-
-Example: **Block 1** — *Epidermis, Dermis, Subcutaneous*
-
-Files modified: `SectionPage.tsx` (fetch term names per block, display under block title), `StudyPage.tsx` (show block title in header).
-
----
-
-## Phase 3: TermCard Tab Rename
-
-Rename tabs to match the TJ Layer Method terminology:
-- Definition → Definition
-- Picture → Visualize
-- Metaphor → Metaphor
-- Affirmation → Affirmation
-- Reflection → Reflection
-- Build → Build
-- Journal → Journal
-
-The quiz tab lives on QuizPage already, so "Recall Quiz" is the quiz step.
-
-File modified: `TermCard.tsx` (rename "Picture" to "Visualize").
-
----
-
-## Phase 4: Ask TJ Mentor Improvements
-
-Add quick action buttons above the message input in `AIMentorChat.tsx`:
-
-- Explain this simply
-- Give me a metaphor
-- Quiz me on this topic
-- Break this down TJ style
-- Why does this matter in cosmetology
-- Encourage me
-
-Each button pre-fills a prompt and sends it. "Break this down TJ style" instructs the AI to return a full TJ block (Definition, Visual, Metaphor, Affirmation, Reflection, Quiz).
-
-Update the edge function system prompt to recognize these action types and respond appropriately.
-
-Also add a welcome header with subtext explaining the mentor's purpose.
-
----
-
-## Phase 5: Upload to TJ Blocks
-
-### Database
-
-New tables:
-- `uploaded_modules` — id, user_id, title, status (uploading/processing/ready), source_filename, created_at, is_instructor_mode boolean
-- `uploaded_module_blocks` — id, module_id, block_number, title, definition, visualization_desc, metaphor, affirmation, reflection_prompt, quiz_question, quiz_options (jsonb), quiz_answer, user_notes, created_at
-
-RLS: users can CRUD their own modules and blocks.
-
-### New Edge Function: `process-upload`
-
-- Accepts file content (text extracted client-side for .txt; for PDF/DOCX, use the `document--parse_document` approach via a client-side parser or accept pasted text initially)
-- Sends content to Lovable AI (Gemini) with instructions to:
-  1. Identify key terms and concepts
-  2. For each term, generate: definition, visual description, TJ-style metaphor, affirmation, reflection prompt, quiz question with 3 options
-  3. Group terms into blocks of 6-10
-  4. Return structured JSON
-- Returns the generated blocks
-
-### New Pages
-
-**`UploadPage.tsx`** (`/upload`):
-- File upload area (drag-and-drop + click)
-- Accept: .pdf, .pptx, .docx, .txt
-- Client-side text extraction for .txt files
-- For binary formats: use file upload to storage, then edge function processes
-- "Convert to TJ Blocks" button appears after upload
-- Progress indicator during AI processing
-- Two mode toggle: Student Mode / Instructor Mode (instructor mode requires future license check)
-
-**`MyModulesPage.tsx`** (`/my-modules`):
-- Lists all user's uploaded modules under "My TJ Study Modules"
-- Each module card shows title, block count, date created
-- Click to view/edit blocks
-
-**`ModuleViewPage.tsx`** (`/module/:id`):
-- View generated TJ blocks
-- Edit any field (definition, metaphor, affirmation, etc.)
-- Regenerate individual fields via Ask TJ
-- Add notes, images
-- Save changes
-- Ask TJ integration scoped to uploaded content
-
-### Home Page Integration
-
-Add a "My TJ Study Modules" section on the dashboard showing user's uploaded modules, with a link to `/upload`.
-
----
-
-## Phase 6: Instructor Upload Mode
-
-For now, Instructor Mode will show a "License Required" message with contact info. This placeholder prepares for future school licensing.
-
----
-
-## Technical Architecture
+### Scope overview
 
 ```text
-Client                          Edge Function              AI Gateway
-──────                          ─────────────              ──────────
-Upload file ──→ Extract text ──→ process-upload ──→ Gemini 3 Flash
-                                      │
-                                      ▼
-                              Parse JSON response
-                                      │
-                                      ▼
-                              Save to uploaded_module_blocks
+Current state:
+  1 section ("Skin") → 5 terms (Block 1) → 5 questions (Block 1)
+
+Target state:
+  1 section ("Skin Structure and Growth") → 35 terms (7 blocks of 5) → 35+ questions (5+ per block)
+  + bookmarking table + progress indicators + 2 quiz modes
 ```
 
----
+### 1. Database schema changes (migration)
 
-## Implementation Order
+**New table: `bookmarks`**
+- `id` (uuid, PK, default gen_random_uuid())
+- `user_id` (uuid, NOT NULL, references profiles.id)
+- `term_id` (uuid, NOT NULL, references terms.id)
+- `created_at` (timestamptz, default now())
+- Unique constraint on (user_id, term_id)
+- RLS: users can SELECT/INSERT/DELETE their own bookmarks
 
-1. Database migration (uploaded_modules, uploaded_module_blocks)
-2. Navigation menu update
-3. Block titles on SectionPage
-4. TermCard tab rename (Picture → Visualize)
-5. Ask TJ quick action buttons
-6. Upload page + process-upload edge function
-7. My Modules listing + Module view/edit page
-8. Dashboard integration
+No other schema changes needed. The existing `terms`, `questions`, `sections`, and `quiz_results` tables already support everything else.
 
----
+### 2. Data operations (insert tool, not migrations)
 
-## New Files
+**Step 2a: Update the section**
+- UPDATE the existing "Skin" section to rename it "Skin Structure and Growth" with a new description reflecting the TJ Anderson Layer Method voice.
 
-```text
-src/pages/UploadPage.tsx
-src/pages/MyModulesPage.tsx
-src/pages/ModuleViewPage.tsx
-supabase/functions/process-upload/index.ts
-```
+**Step 2b: Delete existing terms and questions**
+- DELETE the 5 existing questions (Block 1)
+- DELETE the 5 existing terms (Block 1)
 
-## Modified Files
+**Step 2c: Insert 35 terms across 7 blocks**
 
-```text
-src/pages/Home.tsx — new nav items, My Modules section
-src/pages/SectionPage.tsx — block title labels
-src/components/TermCard.tsx — tab rename
-src/components/AIMentorChat.tsx — quick action buttons
-src/App.tsx — new routes
-supabase/config.toml — new edge function
-```
+Each term gets a Definition, Metaphor, and Affirmation written in the TJ Anderson Layer Method voice, following all the rules specified (no dashes, no slang, warm professional tone, vocabulary reinforcement in metaphors, grounding "I" statements for affirmations).
+
+Block layout (5 terms each):
+
+| Block | Terms |
+|-------|-------|
+| 1 | Epidermis, Dermis, Subcutaneous Tissue, Subcutaneous Layer, Dermal Epidermal Junction |
+| 2 | Stratum Corneum, Stratum Lucidum, Stratum Granulosum, Stratum Spinosum, Stratum Germinativum |
+| 3 | Papillary Layer, Reticular Layer, Dermal Papillae, Collagen, Elastin |
+| 4 | Keratin, Melanin, Melanocytes, Eumelanin, Pheomelanin |
+| 5 | Sebaceous Glands, Sebum, Sudoriferous Glands, Sweat Glands, Secretory Coil |
+| 6 | Arrector Pili Muscles, Hair Papillae, Barrier Function, Broad Spectrum Sunscreen, Tactile Corpuscles |
+| 7 | Sensory Nerve Fibers, Motor Nerve Fibers, Secretory Nerve Fibers, Dermatologist, Dermatology |
+
+**Step 2d: Insert quiz questions (5 per block = 35 questions)**
+- State board exam paragraph style stems with realistic client scenarios
+- 4 options (A/B/C/D), one best answer, one plausible distractor, two clearly wrong
+- Warm supportive explanation field
+- Each question linked to its related_term_id
+
+Due to the volume (35 terms + 35 questions), this will require multiple data insertion steps.
+
+### 3. Frontend changes
+
+**3a. Section page (`SectionPage.tsx`)**
+- Add a supportive TJ voice welcome message at the top: encouraging the learner to take their time and focus on understanding
+- Add progress indicators per block showing completion status (uses `quiz_results` to check if block was completed and score)
+
+**3b. Study page (`StudyPage.tsx`)**
+- Add bookmark toggle (heart/bookmark icon) on each TermCard, wired to the new `bookmarks` table
+- Add a brief supportive message at the top of each block encouraging slow, intentional learning
+
+**3c. Quiz page (`QuizPage.tsx`)**
+- Add mode selection before quiz starts: "Practice Mode" (standard exam prep) and "Confidence Builder Mode" (extra encouragement, gentler feedback on wrong answers, reinforces that mistakes are part of learning)
+- In Confidence Builder Mode, wrong-answer feedback includes additional reassurance text
+- Answer is hidden until selection (already implemented)
+
+**3d. Results page (`ResultsPage.tsx`)**
+- Differentiate messaging based on quiz mode
+- Confidence Builder Mode shows more nurturing feedback regardless of score
+
+**3e. Home page (`Home.tsx`)**
+- Add overall progress indicator for the section (e.g., "3/7 blocks completed")
+
+### 4. Implementation order
+
+1. Create `bookmarks` table (migration)
+2. Update section data, delete old terms/questions, insert all 35 terms (data tool, multiple batches)
+3. Insert all 35 questions (data tool, multiple batches)
+4. Update `SectionPage.tsx` with supportive message and progress indicators
+5. Update `StudyPage.tsx` with bookmark toggle and supportive header
+6. Update `QuizPage.tsx` with mode selection (Practice / Confidence Builder)
+7. Update `ResultsPage.tsx` with mode-aware messaging
+8. Update `Home.tsx` with section progress
+
+### Technical details
+
+- Bookmarks use optimistic UI updates via local state, with background Supabase insert/delete
+- Progress is computed by querying `quiz_results` for the current user and section, checking which block_numbers have entries
+- Quiz mode is passed as URL query param or route state (no schema change needed)
+- All 35 terms will be written with complete Definition, Metaphor, and Affirmation content in the TJ Anderson Layer Method voice before insertion
+- Content follows all stated rules: no dashes, no slang, no sarcasm, professional warmth, vocabulary reinforcement in metaphors, grounding "I" statements in affirmations
 

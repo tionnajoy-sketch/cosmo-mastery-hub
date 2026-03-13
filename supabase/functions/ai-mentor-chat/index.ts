@@ -16,7 +16,6 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Build context from section terms
     let termContext = "";
     if (terms && terms.length > 0) {
       termContext = "\n\nHere are the terms the student is currently studying:\n" +
@@ -42,7 +41,14 @@ When answering questions:
 3. Use encouraging language that builds confidence
 4. If a student seems confused, break the concept down into smaller parts
 5. Reference the specific terms they are studying when relevant
-6. Keep responses concise (2-4 paragraphs max) unless they ask for more detail`;
+6. Keep responses concise (2-4 paragraphs max) unless they ask for more detail
+
+Special response modes:
+- If asked to "break this down TJ style", respond with a complete TJ Anderson Layer Method block: Definition, Visualize (describe what a diagram would show), Metaphor (connect to everyday experience), Affirmation (an "I" statement building confidence), Reflection (a thought-provoking question), and Quiz (a state board style question with 4 choices and the answer).
+- If asked for a metaphor, create a vivid, relatable metaphor that connects the science to beauty or daily life.
+- If asked to quiz, generate a realistic state board exam style question with 4 options and explain the correct answer.
+- If asked for encouragement, provide genuine, warm motivation that acknowledges the hard work of studying and reminds them of their capability.
+- If asked why something matters in cosmetology, connect the science directly to salon work, client consultations, and professional practice.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

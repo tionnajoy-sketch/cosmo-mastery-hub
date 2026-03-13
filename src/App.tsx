@@ -26,6 +26,9 @@ import PosttestPage from "./pages/PosttestPage";
 import PosttestResultsPage from "./pages/PosttestResultsPage";
 import AnatomyMapPage from "./pages/AnatomyMapPage";
 import SkinMapPage from "./pages/SkinMapPage";
+import UploadPage from "./pages/UploadPage";
+import MyModulesPage from "./pages/MyModulesPage";
+import ModuleViewPage from "./pages/ModuleViewPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +62,9 @@ const App = () => (
             <Route path="/post-test-results" element={<ProtectedRoute><PosttestResultsPage /></ProtectedRoute>} />
             <Route path="/anatomy-map" element={<ProtectedRoute><AnatomyMapPage /></ProtectedRoute>} />
             <Route path="/skin-map" element={<ProtectedRoute><SkinMapPage /></ProtectedRoute>} />
+            <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
+            <Route path="/my-modules" element={<ProtectedRoute><MyModulesPage /></ProtectedRoute>} />
+            <Route path="/module/:id" element={<ProtectedRoute><ModuleViewPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -566,6 +566,103 @@ export type Database = {
           },
         ]
       }
+      uploaded_module_blocks: {
+        Row: {
+          affirmation: string
+          block_number: number
+          created_at: string
+          definition: string
+          id: string
+          metaphor: string
+          module_id: string
+          quiz_answer: string
+          quiz_options: Json
+          quiz_question: string
+          reflection_prompt: string
+          term_title: string
+          user_notes: string
+          visualization_desc: string
+        }
+        Insert: {
+          affirmation?: string
+          block_number?: number
+          created_at?: string
+          definition?: string
+          id?: string
+          metaphor?: string
+          module_id: string
+          quiz_answer?: string
+          quiz_options?: Json
+          quiz_question?: string
+          reflection_prompt?: string
+          term_title?: string
+          user_notes?: string
+          visualization_desc?: string
+        }
+        Update: {
+          affirmation?: string
+          block_number?: number
+          created_at?: string
+          definition?: string
+          id?: string
+          metaphor?: string
+          module_id?: string
+          quiz_answer?: string
+          quiz_options?: Json
+          quiz_question?: string
+          reflection_prompt?: string
+          term_title?: string
+          user_notes?: string
+          visualization_desc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploaded_module_blocks_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "uploaded_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uploaded_modules: {
+        Row: {
+          created_at: string
+          id: string
+          is_instructor_mode: boolean
+          source_filename: string
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_instructor_mode?: boolean
+          source_filename?: string
+          status?: string
+          title?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_instructor_mode?: boolean
+          source_filename?: string
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploaded_modules_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wrong_answers: {
         Row: {
           block_number: number

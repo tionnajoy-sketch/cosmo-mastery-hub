@@ -18,6 +18,15 @@ interface AIMentorChatProps {
   terms?: { term: string; definition: string }[];
 }
 
+const quickActions = [
+  { label: "Explain this simply", prompt: "Explain the current topic to me in simple, beginner-friendly language." },
+  { label: "Give me a metaphor", prompt: "Give me a TJ-style metaphor to help me understand the current topic better." },
+  { label: "Quiz me", prompt: "Quiz me on this topic with a state board style question. Include 4 answer choices." },
+  { label: "Break it down TJ style", prompt: "Break this down TJ style. Give me a full TJ Anderson Layer Method block: Definition, Visual explanation, Metaphor, Affirmation, Reflection question, and a Quiz question with answer choices." },
+  { label: "Why does this matter?", prompt: "Why does this matter in cosmetology? Connect it to real salon work and client experiences." },
+  { label: "Encourage me", prompt: "I need some encouragement right now. Remind me why I'm capable of passing the state board exam." },
+];
+
 const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorChatProps) => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -31,9 +40,10 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorCh
     }
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return;
-    const userMsg: Message = { role: "user", content: input.trim() };
+  const sendMessage = async (text?: string) => {
+    const messageText = text || input.trim();
+    if (!messageText || loading) return;
+    const userMsg: Message = { role: "user", content: messageText };
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
     setInput("");
@@ -103,8 +113,8 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorCh
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
-            style={{ background: "hsl(0 0% 100%)", height: "500px", maxHeight: "70vh" }}
+            className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+            style={{ background: "hsl(0 0% 100%)", height: "540px", maxHeight: "75vh" }}
           >
             {/* Header */}
             <div
@@ -114,7 +124,7 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorCh
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-white/90" />
                 <div>
-                  <p className="text-white font-semibold text-sm">TJ Anderson — AI Mentor</p>
+                  <p className="text-white font-semibold text-sm">Ask TJ Mentor</p>
                   <p className="text-white/70 text-xs">{sectionName}{blockNumber ? ` · Block ${blockNumber}` : ""}</p>
                 </div>
               </div>
@@ -126,14 +136,33 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorCh
             {/* Messages */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
               {messages.length === 0 && (
-                <div className="text-center py-8">
-                  <Sparkles className="h-8 w-8 mx-auto mb-3" style={{ color: "hsl(270 45% 65%)" }} />
-                  <p className="text-sm font-medium" style={{ color: "hsl(270 30% 30%)" }}>
-                    Hi! I'm your AI study mentor.
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: "hsl(270 15% 55%)" }}>
-                    Ask me anything about {sectionName}. I'm here to help you understand the material better.
-                  </p>
+                <div className="py-4">
+                  <div className="text-center mb-4">
+                    <Sparkles className="h-8 w-8 mx-auto mb-3" style={{ color: "hsl(270 45% 65%)" }} />
+                    <p className="text-sm font-medium" style={{ color: "hsl(270 30% 30%)" }}>
+                      Your personal study guide
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: "hsl(270 15% 55%)" }}>
+                      Ask questions, get metaphors, practice quizzes, or deeper explanations about {sectionName}.
+                    </p>
+                  </div>
+                  {/* Quick Actions */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {quickActions.map((action) => (
+                      <button
+                        key={action.label}
+                        onClick={() => sendMessage(action.prompt)}
+                        className="text-xs px-3 py-1.5 rounded-full transition-all hover:shadow-sm"
+                        style={{
+                          background: "hsl(270 20% 95%)",
+                          color: "hsl(270 30% 40%)",
+                          border: "1px solid hsl(270 15% 88%)",
+                        }}
+                      >
+                        {action.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
               {messages.map((msg, i) => (
@@ -165,6 +194,23 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorCh
               )}
             </div>
 
+            {/* Quick actions when conversation is active */}
+            {messages.length > 0 && (
+              <div className="px-3 py-1.5 flex gap-1 overflow-x-auto flex-shrink-0" style={{ borderTop: "1px solid hsl(270 15% 92%)" }}>
+                {quickActions.slice(0, 4).map((action) => (
+                  <button
+                    key={action.label}
+                    onClick={() => sendMessage(action.prompt)}
+                    disabled={loading}
+                    className="text-[10px] px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0 transition-colors disabled:opacity-50"
+                    style={{ background: "hsl(270 15% 95%)", color: "hsl(270 25% 45%)" }}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Input */}
             <div className="px-3 py-3 border-t flex-shrink-0" style={{ borderColor: "hsl(270 15% 90%)" }}>
               <div className="flex gap-2">
@@ -184,7 +230,7 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorCh
                 />
                 <Button
                   size="sm"
-                  onClick={sendMessage}
+                  onClick={() => sendMessage()}
                   disabled={!input.trim() || loading}
                   className="self-end px-3"
                   style={{ background: "hsl(270 50% 52%)", color: "white" }}

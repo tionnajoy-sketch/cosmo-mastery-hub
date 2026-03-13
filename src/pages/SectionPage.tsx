@@ -14,7 +14,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 const c = pageColors.section;
 
 interface Section { id: string; name: string; description: string; }
-interface BlockInfo { block_number: number; term_count: number; completed: boolean; bestScore: number | null; bestTotal: number | null; }
+interface BlockInfo { block_number: number; term_count: number; completed: boolean; bestScore: number | null; bestTotal: number | null; termNames: string[]; }
 
 const SectionPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,7 +28,7 @@ const SectionPage = () => {
     const fetchData = async () => {
       const [sectionRes, termsRes, resultsRes] = await Promise.all([
         supabase.from("sections").select("*").eq("id", id).single(),
-        supabase.from("terms").select("block_number").eq("section_id", id),
+        supabase.from("terms").select("block_number, term").eq("section_id", id),
         user
           ? supabase.from("quiz_results").select("block_number, score, total_questions").eq("section_id", id).eq("user_id", user.id)
           : Promise.resolve({ data: [] }),
@@ -36,7 +36,12 @@ const SectionPage = () => {
       if (sectionRes.data) setSection(sectionRes.data);
       if (termsRes.data) {
         const blockMap: Record<number, number> = {};
-        termsRes.data.forEach((t) => { blockMap[t.block_number] = (blockMap[t.block_number] || 0) + 1; });
+        const blockTermNames: Record<number, string[]> = {};
+        termsRes.data.forEach((t: any) => {
+          blockMap[t.block_number] = (blockMap[t.block_number] || 0) + 1;
+          if (!blockTermNames[t.block_number]) blockTermNames[t.block_number] = [];
+          blockTermNames[t.block_number].push(t.term);
+        });
 
         const resultsByBlock: Record<number, { score: number; total: number }> = {};
         if (resultsRes.data) {
@@ -51,7 +56,7 @@ const SectionPage = () => {
             .map(([key, term_count]) => {
               const block_number = Number(key);
               const result = resultsByBlock[block_number];
-              return { block_number, term_count, completed: !!result, bestScore: result?.score ?? null, bestTotal: result?.total ?? null };
+              return { block_number, term_count, completed: !!result, bestScore: result?.score ?? null, bestTotal: result?.total ?? null, termNames: blockTermNames[block_number] || [] };
             })
             .sort((a, b) => a.block_number - b.block_number)
         );
@@ -266,7 +271,14 @@ const SectionPage = () => {
                           <td className="px-5 py-3 font-medium" style={{ color: c.cardHeading }}>
                             <div className="flex items-center gap-2">
                               <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: blockAccentColors[i % blockAccentColors.length].stripe }} />
-                              Block {block.block_number}
+                              <div>
+                                <span>Block {block.block_number}</span>
+                                {block.termNames.length > 0 && (
+                                  <p className="text-xs font-normal text-muted-foreground truncate max-w-[200px]">
+                                    {block.termNames.slice(0, 3).join(", ")}{block.termNames.length > 3 ? "…" : ""}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </td>
                           <td className="text-center px-3 py-3" style={{ color: c.cardText }}>{block.term_count}</td>
@@ -310,7 +322,12 @@ const SectionPage = () => {
                           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: accent.bg || accent.stripe + "22", color: accent.stripe }}>
                             {block.block_number}
                           </div>
-                          <h3 className="font-display text-lg font-semibold" style={{ color: c.cardHeading }}>Block {block.block_number}</h3>
+                          <div>
+                            <h3 className="font-display text-lg font-semibold" style={{ color: c.cardHeading }}>Block {block.block_number}</h3>
+                            {block.termNames.length > 0 && (
+                              <p className="text-xs text-muted-foreground mt-0.5">{block.termNames.join(", ")}</p>
+                            )}
+                          </div>
                           {block.completed && <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(145 50% 40%)" }} />}
                         </div>
                         <div className="text-right">
