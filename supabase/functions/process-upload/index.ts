@@ -192,7 +192,26 @@ Use topic_group to label which section/heading each term belongs to (e.g., "Veno
       throw new Error(`AI gateway error: ${status}`);
     }
 
-    const data = await response.json();
+    // Read as text first to avoid "Unexpected end of JSON input" on truncated responses
+    const rawText = await response.text();
+    let data: any;
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseErr) {
+      console.error("Failed to parse AI response JSON, length:", rawText.length, "preview:", rawText.slice(0, 200));
+      // Try to salvage blocks from partial JSON
+      let blocks: any[] = [];
+      let quiz_bank_questions: any[] = [];
+      try {
+        const blocksMatch = rawText.match(/"blocks"\s*:\s*(\[[\s\S]*?\])\s*[,}]/);
+        if (blocksMatch) {
+          blocks = JSON.parse(blocksMatch[1]);
+        }
+      } catch { /* ignore */ }
+      return new Response(JSON.stringify({ blocks, quiz_bank_questions }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     let blocks: any[] = [];
@@ -200,21 +219,22 @@ Use topic_group to label which section/heading each term belongs to (e.g., "Veno
     
     if (toolCall?.function?.arguments) {
       try {
-        const parsed = JSON.parse(toolCall.function.arguments);
+        const parsed = typeof toolCall.function.arguments === "string" 
+          ? JSON.parse(toolCall.function.arguments) 
+          : toolCall.function.arguments;
         blocks = parsed.blocks || [];
         quiz_bank_questions = parsed.quiz_bank_questions || [];
       } catch (jsonErr) {
-        console.error("Failed to parse tool call arguments:", jsonErr);
-        // Try to salvage partial JSON
-        const raw = toolCall.function.arguments;
+        console.error("Failed to parse tool call arguments, length:", 
+          typeof toolCall.function.arguments === "string" ? toolCall.function.arguments.length : 0);
+        const raw = typeof toolCall.function.arguments === "string" ? toolCall.function.arguments : "";
         try {
-          // Attempt to find complete blocks array
-          const blocksMatch = raw.match(/"blocks"\s*:\s*\[([\s\S]*?)\]\s*,\s*"quiz/);
+          const blocksMatch = raw.match(/"blocks"\s*:\s*(\[[\s\S]*?\])\s*[,}]/);
           if (blocksMatch) {
-            blocks = JSON.parse(`[${blocksMatch[1]}]`);
+            blocks = JSON.parse(blocksMatch[1]);
           }
         } catch {
-          console.error("Could not salvage partial JSON");
+          console.error("Could not salvage partial JSON from tool call");
         }
       }
     } else {
