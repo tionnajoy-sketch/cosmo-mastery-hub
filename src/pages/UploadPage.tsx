@@ -184,7 +184,7 @@ const UploadPage = () => {
         totalPagesInDoc = 1;
         processedPageNumbers = [1];
         // Chunk long text files
-        const chunkSize = 25000;
+        const chunkSize = 10000;
         for (let i = 0; i < text.length; i += chunkSize) {
           contentChunks.push(text.slice(i, i + chunkSize));
         }

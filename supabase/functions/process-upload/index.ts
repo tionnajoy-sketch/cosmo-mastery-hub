@@ -36,7 +36,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     // Truncate content if too long to avoid token limits
-    const maxContentLength = 30000;
+    const maxContentLength = 12000;
     const truncatedContent = content.length > maxContentLength 
       ? content.slice(0, maxContentLength) + "\n\n[Content truncated for processing]"
       : content;
