@@ -132,6 +132,7 @@ const StudyPage = () => {
         sectionId={id!}
         blockNumber={block}
         terms={terms.map((t) => ({ term: t.term, definition: t.definition }))}
+        learningStyle={profile?.learning_style}
       />
     </div>
   );
