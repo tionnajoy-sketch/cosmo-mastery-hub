@@ -146,12 +146,23 @@ const Home = () => {
                   <Menu className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem onClick={() => navigate("/")}>
-                  <BookOpen className="h-4 w-4 mr-2" /> Home
+                  <BookOpen className="h-4 w-4 mr-2" /> Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {
+                  document.getElementById("study-sections")?.scrollIntoView({ behavior: "smooth" });
+                }}>
+                  <Brain className="h-4 w-4 mr-2" /> TJ Learning Modules
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/progress")}>
-                  <BarChart3 className="h-4 w-4 mr-2" /> Progress
+                  <BarChart3 className="h-4 w-4 mr-2" /> Progress Tracker
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/upload")}>
+                  <Upload className="h-4 w-4 mr-2" /> Upload to TJ Blocks
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/my-modules")}>
+                  <Sparkles className="h-4 w-4 mr-2" /> My TJ Study Modules
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/strategy")}>
                   <Target className="h-4 w-4 mr-2" /> Strategy
