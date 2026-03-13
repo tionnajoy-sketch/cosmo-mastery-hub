@@ -10,6 +10,8 @@ import { pageColors } from "@/lib/colors";
 import { getBuildExercise } from "@/lib/buildExercises";
 import BuildTheBody from "@/components/BuildTheBody";
 import BrainNote from "@/components/BrainNote";
+import SpeakButton from "@/components/SpeakButton";
+import SpeechToTextButton from "@/components/SpeechToTextButton";
 
 const c = pageColors.study;
 
@@ -21,7 +23,6 @@ const generateReflectionPrompt = (term: string, definition: string): string => {
     `Think about ${term}. Why does understanding this concept matter for your career?`,
     `How does ${term} relate to what you see or do in the salon? Describe the connection.`,
   ];
-  // Deterministic selection based on term name length
   return prompts[term.length % prompts.length];
 };
 
@@ -122,6 +123,16 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     setReflectionSubmitted(true);
   }, [user, term.id, reflectionText]);
 
+  // Build full speak text for each tab
+  const getSpeakText = () => {
+    switch (activeTab) {
+      case "definition": return `${term.term}. ${term.definition}`;
+      case "metaphor": return `${term.term}. ${term.metaphor}`;
+      case "affirmation": return term.affirmation;
+      default: return term.term;
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "definition":
@@ -163,14 +174,26 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
             <p className="text-sm font-medium leading-relaxed" style={{ color: c.termHeading }}>
               {reflectionPrompt}
             </p>
-            <Textarea
-              placeholder="Take a moment to pause and reflect... Write 1–2 sentences."
-              value={reflectionText}
-              onChange={(e) => { setReflectionText(e.target.value); setReflectionSubmitted(false); }}
-              disabled={reflectionSubmitted}
-              className="min-h-[90px] text-sm resize-none"
-              style={{ color: c.bodyText }}
-            />
+            <div className="relative">
+              <Textarea
+                placeholder="Take a moment to pause and reflect... Write 1–2 sentences."
+                value={reflectionText}
+                onChange={(e) => { setReflectionText(e.target.value); setReflectionSubmitted(false); }}
+                disabled={reflectionSubmitted}
+                className="min-h-[90px] text-sm resize-none pr-10"
+                style={{ color: c.bodyText }}
+              />
+              {!reflectionSubmitted && (
+                <div className="absolute right-1 bottom-1">
+                  <SpeechToTextButton
+                    onTranscript={(text) => {
+                      setReflectionText((prev) => prev ? `${prev} ${text}` : text);
+                      setReflectionSubmitted(false);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
             {!reflectionSubmitted ? (
               <Button
                 size="sm"
@@ -204,13 +227,20 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
       case "journal":
         return (
           <div>
-            <Textarea
-              placeholder="Write your notes about this term here... How does it connect to what you already know?"
-              value={journalNote}
-              onChange={(e) => setJournalNote(e.target.value)}
-              className="min-h-[100px] border-0 bg-transparent resize-none focus-visible:ring-0 text-base"
-              style={{ color: c.bodyText }}
-            />
+            <div className="relative">
+              <Textarea
+                placeholder="Write your notes about this term here... How does it connect to what you already know?"
+                value={journalNote}
+                onChange={(e) => setJournalNote(e.target.value)}
+                className="min-h-[100px] border-0 bg-transparent resize-none focus-visible:ring-0 text-base pr-10"
+                style={{ color: c.bodyText }}
+              />
+              <div className="absolute right-1 bottom-1">
+                <SpeechToTextButton
+                  onTranscript={(text) => setJournalNote((prev) => prev ? `${prev} ${text}` : text)}
+                />
+              </div>
+            </div>
             {journalSaving && <p className="text-xs mt-1" style={{ color: c.subtext }}>Saving...</p>}
             {!journalSaving && journalNote && <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
           </div>
@@ -218,11 +248,16 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     }
   };
 
+  const showSpeakButton = ["definition", "metaphor", "affirmation"].includes(activeTab);
+
   return (
     <Card className="border-0 shadow-md overflow-hidden" style={{ background: c.card }}>
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-xl font-semibold" style={{ color: c.termHeading }}>{term.term}</h3>
+          <div className="flex items-center gap-1">
+            <h3 className="font-display text-xl font-semibold" style={{ color: c.termHeading }}>{term.term}</h3>
+            <SpeakButton text={term.term} />
+          </div>
           <button
             onClick={() => onToggleBookmark(term.id)}
             className="p-1.5 rounded-full transition-colors"
@@ -253,6 +288,11 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
 
         <AnimatePresence mode="wait">
           <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+            {showSpeakButton && (
+              <div className="flex justify-end mb-2">
+                <SpeakButton text={getSpeakText()} label="Listen" size="sm" />
+              </div>
+            )}
             {renderContent()}
           </motion.div>
         </AnimatePresence>
