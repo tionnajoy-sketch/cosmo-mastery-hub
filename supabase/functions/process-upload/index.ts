@@ -36,58 +36,44 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     // Truncate content if too long to avoid token limits
-    const maxContentLength = 12000;
+    const maxContentLength = 15000;
     const truncatedContent = content.length > maxContentLength 
       ? content.slice(0, maxContentLength) + "\n\n[Content truncated for processing]"
       : content;
 
-    const systemPrompt = `You are TJ Anderson, a cosmetology education expert. You write and speak as if you are personally teaching each concept to a student sitting in your classroom. Your tone is conversational, encouraging, and clear. You never sound robotic or overly academic. Your explanations should feel like a warm, supportive teacher breaking things down so the student truly understands.
+    const systemPrompt = `You are TJ Anderson, a cosmetology education expert. You write and speak as if you are personally teaching each concept to a student sitting in your classroom. Your tone is conversational, encouraging, and clear.
 
-Your task is to analyze study material and classify each section or slide into one of these categories:
+CRITICAL RULE — ONE SLIDE = ONE TJ BLOCK:
+Each page/slide in the document MUST produce exactly ONE TJ Block. Do NOT merge, combine, or summarize multiple slides into a single block. Do NOT skip any slide. Every slide gets its own block.
 
-CLASSIFICATION RULES:
-1. **concept** — Terminology slides with bullet-point explanations, definitions, or descriptive content. Convert these into full TJ Anderson Layer Method™ study blocks.
-2. **visual** — Slides containing charts, diagrams, comparison tables, category breakdowns, or visual learning aids. Convert these into TJ Blocks with an enhanced visualization_desc that preserves the chart/diagram structure in text form, plus generate a practice question about the visual.
-3. **quiz** — Slides containing exam-style questions, multiple choice review questions, or test prep questions. Extract these into structured quiz bank format. Do NOT convert quiz slides into TJ Blocks.
-4. **handwritten_note** — Any annotations, handwritten notes, or informal comments detected on slides (e.g., "could be asymptomatic", "remember this!", instructor margin notes). Attach these as instructor_notes to the nearest related concept block.
+The content you receive is formatted with "--- Page X ---" headers. For EACH page:
+1. Create exactly ONE block with page_number matching that page number.
+2. Use the slide's title (the first heading or top line) as the term_title. Keep the original title exactly.
+3. Use ONLY content from that specific slide — never mix in content from other slides.
 
-For each CONCEPT or VISUAL block, generate:
-1. term_title: The name of the term or concept
-2. pronunciation: Phonetic pronunciation (e.g., "ep-ih-DER-mis")
-3. definition: A clear, professional definition in warm mentor tone
-4. visualization_desc: A detailed description of what a visual diagram or image would show. For visual slides, preserve the chart/diagram structure in rich detail.
-5. metaphor: A TJ-style metaphor connecting the concept to everyday beauty or life experiences. Reinforce vocabulary within the metaphor. No dashes, no slang.
-6. affirmation: A grounding "I" statement that builds confidence.
-7. reflection_prompt: A thought-provoking question connecting the concept to their career
-8. practice_scenario: A realistic salon or client scenario requiring the student to apply this concept
-9. quiz_question: A state board exam style question with a realistic client scenario
-10. quiz_options: An array of 4 answer choices
-11. quiz_answer: The correct answer text (must match one of quiz_options exactly)
-12. quiz_question_2: A second reinforcement question from a different angle
-13. quiz_options_2: An array of 4 answer choices for question 2
-14. quiz_answer_2: The correct answer for question 2
-15. quiz_question_3: A third reinforcement question for deeper recall
-16. quiz_options_3: An array of 4 answer choices for question 3
-17. quiz_answer_3: The correct answer for question 3
-18. slide_type: "concept" or "visual"
-19. instructor_notes: Any detected handwritten annotations or margin notes related to this concept. Leave empty string if none.
-20. image_description: A detailed description of a diagram that should be generated for this concept, including labels, anatomical details, and structural relationships.
-21. topic_group: A short label for the topic/section this term belongs to (e.g., "Venous Disorders", "Heart Failure", "Dysrhythmias", "Shock"). Group related terms under the same topic_group label. Use slide headings or section titles from the source material when available.
+For each block, populate ALL TJ Anderson Layer Method™ fields using the slide's content plus your generative expertise:
+- term_title: The slide title exactly as it appears
+- pronunciation: Phonetic pronunciation of the key term (e.g., "ep-ih-DER-mis")
+- definition: A clear, warm definition based on the slide's bullet points and content
+- visualization_desc: A detailed description of what a visual diagram would show for this slide's content
+- metaphor: A TJ-style metaphor connecting the concept to everyday beauty or life experiences
+- affirmation: A grounding "I" statement that builds confidence
+- reflection_prompt: A thought-provoking question connecting the concept to their career
+- practice_scenario: A realistic salon or client scenario requiring the student to apply this concept
+- page_number: The exact page/slide number from the document
 
-For each QUIZ slide, extract into quiz_bank_questions:
-- question_text: The question as written
-- option_a, option_b, option_c, option_d: The four answer choices
-- correct_option: The letter of the correct answer (A, B, C, or D)
-- explanation: A warm, supportive explanation of why the correct answer is right
-- source_slide: The approximate slide number if detectable
+PRACTICE ACTIVITIES:
+- If the slide already contains a question, case study, or review item, use that as the basis for quiz_question.
+- If the slide is purely informational, generate recall-based quiz questions from its content.
+- Every block MUST have at least quiz_question with quiz_options and quiz_answer.
 
-Group concept/visual terms by their topic_group label. Return valid JSON.
-Extract ALL key terms and concepts from the material — be thorough. A multi-page lecture should yield 15-40+ terms. Do not limit yourself to just 5 terms. Cover every major concept, condition, disease, procedure, or key vocabulary term.
-Each quiz question should have exactly one best answer, one plausible distractor, and two clearly incorrect options.
-Use topic_group to label which section/heading each term belongs to (e.g., "Venous Disorders", "Arterial Disease", "Heart Failure"). Terms with the same topic_group will be grouped into the same TJ Block.`;
+QUIZ SLIDES:
+- If a slide contains ONLY exam-style questions (no teaching content), still create a TJ Block for it AND extract the questions into quiz_bank_questions with the page_number.
+
+Return valid JSON. The number of blocks MUST equal the number of pages/slides provided.`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 55000); // 55s timeout
+    const timeout = setTimeout(() => controller.abort(), 55000);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       signal: controller.signal,
@@ -100,24 +86,25 @@ Use topic_group to label which section/heading each term belongs to (e.g., "Veno
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Please analyze the following study material from "${filename}"${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}. Convert it into TJ Anderson Layer Method learning blocks. Classify each section as concept, visual, quiz, or handwritten_note:\n\n${truncatedContent}` },
+          { role: "user", content: `Analyze the following study material from "${filename}"${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}. Create exactly ONE TJ Block per page/slide. Do NOT merge slides.\n\n${truncatedContent}` },
         ],
         tools: [
           {
             type: "function",
             function: {
               name: "create_tj_blocks",
-              description: "Create structured TJ Anderson Layer Method learning blocks and extract quiz bank questions from study material",
+              description: "Create exactly one TJ Anderson Layer Method learning block per slide/page. The number of blocks must match the number of pages provided.",
               parameters: {
                 type: "object",
                 properties: {
                   blocks: {
                     type: "array",
-                    description: "Concept and visual blocks converted into TJ learning blocks",
+                    description: "One block per slide/page. Array length MUST equal number of pages in the input.",
                     items: {
                       type: "object",
                       properties: {
-                        term_title: { type: "string" },
+                        term_title: { type: "string", description: "The slide title exactly as it appears on the slide" },
+                        page_number: { type: "integer", description: "The page/slide number from the document" },
                         pronunciation: { type: "string" },
                         definition: { type: "string" },
                         visualization_desc: { type: "string" },
@@ -134,18 +121,17 @@ Use topic_group to label which section/heading each term belongs to (e.g., "Veno
                         quiz_question_3: { type: "string" },
                         quiz_options_3: { type: "array", items: { type: "string" } },
                         quiz_answer_3: { type: "string" },
-                        slide_type: { type: "string", enum: ["concept", "visual"] },
+                        slide_type: { type: "string", enum: ["concept", "visual", "quiz"] },
                         instructor_notes: { type: "string" },
                         image_description: { type: "string" },
-                        topic_group: { type: "string", description: "Short topic/section label to group related terms together" },
                       },
                       required: [
-                        "term_title", "pronunciation", "definition", "visualization_desc",
+                        "term_title", "page_number", "pronunciation", "definition", "visualization_desc",
                         "metaphor", "affirmation", "reflection_prompt", "practice_scenario",
                         "quiz_question", "quiz_options", "quiz_answer",
                         "quiz_question_2", "quiz_options_2", "quiz_answer_2",
                         "quiz_question_3", "quiz_options_3", "quiz_answer_3",
-                        "slide_type", "instructor_notes", "topic_group",
+                        "slide_type", "instructor_notes",
                       ],
                     },
                   },
@@ -197,14 +183,12 @@ Use topic_group to label which section/heading each term belongs to (e.g., "Veno
       throw new Error(`AI gateway error: ${status}`);
     }
 
-    // Read as text first to avoid "Unexpected end of JSON input" on truncated responses
     const rawText = await response.text();
     let data: any;
     try {
       data = JSON.parse(rawText);
     } catch (parseErr) {
       console.error("Failed to parse AI response JSON, length:", rawText.length, "preview:", rawText.slice(0, 200));
-      // Try to salvage blocks from partial JSON
       let blocks: any[] = [];
       let quiz_bank_questions: any[] = [];
       try {
