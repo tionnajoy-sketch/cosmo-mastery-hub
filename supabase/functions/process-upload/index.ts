@@ -72,6 +72,7 @@ For each CONCEPT or VISUAL block, generate:
 18. slide_type: "concept" or "visual"
 19. instructor_notes: Any detected handwritten annotations or margin notes related to this concept. Leave empty string if none.
 20. image_description: A detailed description of a diagram that should be generated for this concept, including labels, anatomical details, and structural relationships.
+21. topic_group: A short label for the topic/section this term belongs to (e.g., "Venous Disorders", "Heart Failure", "Dysrhythmias", "Shock"). Group related terms under the same topic_group label. Use slide headings or section titles from the source material when available.
 
 For each QUIZ slide, extract into quiz_bank_questions:
 - question_text: The question as written
