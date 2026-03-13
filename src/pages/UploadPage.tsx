@@ -149,7 +149,7 @@ const UploadPage = () => {
         }
 
         // Chunk the pages for multi-pass processing
-        const pageChunks = chunkPages(parsed.pages, 40000);
+        const pageChunks = chunkPages(parsed.pages, 25000);
         contentChunks = pageChunks.map((chunk) =>
           chunk.map((p) => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n")
         );
@@ -158,7 +158,7 @@ const UploadPage = () => {
         totalPagesInDoc = 1;
         processedPageNumbers = [1];
         // Chunk long text files
-        const chunkSize = 40000;
+        const chunkSize = 25000;
         for (let i = 0; i < text.length; i += chunkSize) {
           contentChunks.push(text.slice(i, i + chunkSize));
         }
