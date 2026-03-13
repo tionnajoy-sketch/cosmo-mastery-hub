@@ -37,6 +37,7 @@ interface ConversionSummary {
   pagesProcessed: number[];
   pagesSkipped: number[];
   blocksCreated: number;
+  totalTerms: number;
   quizBankCreated: number;
   chunksProcessed: number;
   totalChunks: number;
