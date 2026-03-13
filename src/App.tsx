@@ -32,6 +32,7 @@ import ModuleViewPage from "./pages/ModuleViewPage";
 import ModuleQuizPage from "./pages/ModuleQuizPage";
 import ModuleResultsPage from "./pages/ModuleResultsPage";
 import ModuleActivityPage from "./pages/ModuleActivityPage";
+import ModuleQuizBankPage from "./pages/ModuleQuizBankPage";
 import InsightsPage from "./pages/InsightsPage";
 import NotFound from "./pages/NotFound";
 
