@@ -27,6 +27,7 @@ const ModuleViewPage = () => {
   const [miniQuizSelected, setMiniQuizSelected] = useState<string | null>(null);
   const [miniQuizRevealed, setMiniQuizRevealed] = useState(false);
   const [completedBlocks, setCompletedBlocks] = useState<Set<number>>(new Set());
+  const [quizBankCount, setQuizBankCount] = useState(0);
 
   useEffect(() => {
     if (!id) return;
