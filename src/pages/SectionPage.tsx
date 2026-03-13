@@ -322,7 +322,12 @@ const SectionPage = () => {
                           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: accent.bg || accent.stripe + "22", color: accent.stripe }}>
                             {block.block_number}
                           </div>
-                          <h3 className="font-display text-lg font-semibold" style={{ color: c.cardHeading }}>Block {block.block_number}</h3>
+                          <div>
+                            <h3 className="font-display text-lg font-semibold" style={{ color: c.cardHeading }}>Block {block.block_number}</h3>
+                            {block.termNames.length > 0 && (
+                              <p className="text-xs text-muted-foreground mt-0.5">{block.termNames.join(", ")}</p>
+                            )}
+                          </div>
                           {block.completed && <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(145 50% 40%)" }} />}
                         </div>
                         <div className="text-right">
