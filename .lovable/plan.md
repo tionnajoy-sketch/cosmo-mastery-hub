@@ -1,103 +1,94 @@
 
 
-## Plan: Build Skin Structure and Growth Module
+# Full Upload-to-TJ-Blocks System Upgrade
 
-This is a significant expansion that replaces the existing 5-term "Skin" section with a full 35-term module, adds new UI features, and introduces two quiz modes.
+## Overview
+Enhance the upload processing pipeline and module viewing experience so uploaded content produces and displays full-fidelity TJ Anderson Layer Method blocks identical to native study modules. Add module management (rename, duplicate, delete), a dedicated module quiz page, and block-level navigation with activities.
 
-### Scope overview
+## Changes
 
-```text
-Current state:
-  1 section ("Skin") → 5 terms (Block 1) → 5 questions (Block 1)
+### 1. MyModulesPage — Module Management Menu
+**File: `src/pages/MyModulesPage.tsx`**
+- Add a `DropdownMenu` (three-dot icon) on each module card with options: View, Rename, Duplicate, Delete.
+- **Rename**: Inline edit or dialog that updates `uploaded_modules.title`.
+- **Duplicate**: Creates a new `uploaded_modules` row + copies all `uploaded_module_blocks` rows.
+- **Delete**: Confirmation `AlertDialog` warning that all blocks, notes, reflections, and quiz progress will be permanently removed. On confirm, deletes from `uploaded_modules` (cascade deletes blocks).
 
-Target state:
-  1 section ("Skin Structure and Growth") → 35 terms (7 blocks of 5) → 35+ questions (5+ per block)
-  + bookmarking table + progress indicators + 2 quiz modes
+### 2. ModuleViewPage — Block-Level Navigation
+**File: `src/pages/ModuleViewPage.tsx`**
+- After each block group's term cards, add two navigation buttons matching `SectionPage` style:
+  - **Practice Activities** → navigates to `/module/:id/activity/:block`
+  - **Quiz Me** → navigates to `/module/:id/quiz/:block`
+- Keep existing Mini Block Quiz as an inline option.
+- Add block-level progress indicators (completed quiz badge) similar to `SectionPage`.
+
+### 3. New: Module Quiz Page
+**File: `src/pages/ModuleQuizPage.tsx`** (new)
+- Replicates the full `QuizPage.tsx` experience (mode selection, strategy mode, calming messages, pie chart stats) but sources questions from `uploaded_module_blocks` quiz fields.
+- Pulls all quiz questions (q1, q2, q3) from blocks in the selected block group.
+- Formats them as `{ question_text, option_a/b/c/d, correct_option, explanation }` to match native quiz structure.
+- On completion, navigates to a results view showing score, mode, and wrong answers.
+- Store results in a new `uploaded_quiz_results` table.
+
+### 4. New: Module Activity Page
+**File: `src/pages/ModuleActivityPage.tsx`** (new)
+- Mirrors `ActivityPage.tsx` but sources terms from `uploaded_module_blocks`.
+- Maps block fields to the `Term` interface: `{ id, term: term_title, definition }`.
+- Includes matching game, flashcard drill, fill-in-the-blank, word scramble, crossword clues, own words, brain dump, picture match, and mnemonic builder — same activity components.
+
+### 5. Database Migration
+Add table for uploaded module quiz results:
+```sql
+CREATE TABLE public.uploaded_quiz_results (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  module_id uuid REFERENCES public.uploaded_modules(id) ON DELETE CASCADE NOT NULL,
+  block_number integer NOT NULL DEFAULT 1,
+  score integer NOT NULL DEFAULT 0,
+  total_questions integer NOT NULL DEFAULT 0,
+  mode text NOT NULL DEFAULT 'practice',
+  completed_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.uploaded_quiz_results ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can insert own results" ON public.uploaded_quiz_results
+  FOR INSERT TO public WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can view own results" ON public.uploaded_quiz_results
+  FOR SELECT TO public USING (auth.uid() = user_id);
 ```
 
-### 1. Database schema changes (migration)
+### 6. Routes
+**File: `src/App.tsx`**
+Add three new routes:
+- `/module/:id/quiz/:block` → `ModuleQuizPage`
+- `/module/:id/results/:block` → `ModuleResultsPage`
+- `/module/:id/activity/:block` → `ModuleActivityPage`
 
-**New table: `bookmarks`**
-- `id` (uuid, PK, default gen_random_uuid())
-- `user_id` (uuid, NOT NULL, references profiles.id)
-- `term_id` (uuid, NOT NULL, references terms.id)
-- `created_at` (timestamptz, default now())
-- Unique constraint on (user_id, term_id)
-- RLS: users can SELECT/INSERT/DELETE their own bookmarks
+### 7. New: Module Results Page
+**File: `src/pages/ModuleResultsPage.tsx`** (new)
+- Mirrors `ResultsPage.tsx` styling (sunset gradient, score display, wrong answer review).
+- Sources data from route state (score, total, mode, wrongCount).
+- Saves results to `uploaded_quiz_results` table.
+- Navigation back to module view.
 
-No other schema changes needed. The existing `terms`, `questions`, `sections`, and `quiz_results` tables already support everything else.
+### 8. Edge Function — Already Updated
+The `process-upload` edge function already generates all required fields (pronunciation, practice_scenario, 3 quiz questions). No changes needed.
 
-### 2. Data operations (insert tool, not migrations)
+### 9. UploadedTermCard — Minor Enhancement
+- The Visualize tab currently shows text only. Add auto-generation of images using the existing `generate-term-image` edge function when the Visualize tab is opened (same pattern as native `TermCard`).
 
-**Step 2a: Update the section**
-- UPDATE the existing "Skin" section to rename it "Skin Structure and Growth" with a new description reflecting the TJ Anderson Layer Method voice.
+## Implementation Order
+1. Database migration (uploaded_quiz_results table)
+2. MyModulesPage module management (rename/duplicate/delete)
+3. ModuleViewPage block navigation buttons
+4. ModuleActivityPage
+5. ModuleQuizPage + ModuleResultsPage
+6. App.tsx route additions
+7. UploadedTermCard visualize image generation
 
-**Step 2b: Delete existing terms and questions**
-- DELETE the 5 existing questions (Block 1)
-- DELETE the 5 existing terms (Block 1)
-
-**Step 2c: Insert 35 terms across 7 blocks**
-
-Each term gets a Definition, Metaphor, and Affirmation written in the TJ Anderson Layer Method voice, following all the rules specified (no dashes, no slang, warm professional tone, vocabulary reinforcement in metaphors, grounding "I" statements for affirmations).
-
-Block layout (5 terms each):
-
-| Block | Terms |
-|-------|-------|
-| 1 | Epidermis, Dermis, Subcutaneous Tissue, Subcutaneous Layer, Dermal Epidermal Junction |
-| 2 | Stratum Corneum, Stratum Lucidum, Stratum Granulosum, Stratum Spinosum, Stratum Germinativum |
-| 3 | Papillary Layer, Reticular Layer, Dermal Papillae, Collagen, Elastin |
-| 4 | Keratin, Melanin, Melanocytes, Eumelanin, Pheomelanin |
-| 5 | Sebaceous Glands, Sebum, Sudoriferous Glands, Sweat Glands, Secretory Coil |
-| 6 | Arrector Pili Muscles, Hair Papillae, Barrier Function, Broad Spectrum Sunscreen, Tactile Corpuscles |
-| 7 | Sensory Nerve Fibers, Motor Nerve Fibers, Secretory Nerve Fibers, Dermatologist, Dermatology |
-
-**Step 2d: Insert quiz questions (5 per block = 35 questions)**
-- State board exam paragraph style stems with realistic client scenarios
-- 4 options (A/B/C/D), one best answer, one plausible distractor, two clearly wrong
-- Warm supportive explanation field
-- Each question linked to its related_term_id
-
-Due to the volume (35 terms + 35 questions), this will require multiple data insertion steps.
-
-### 3. Frontend changes
-
-**3a. Section page (`SectionPage.tsx`)**
-- Add a supportive TJ voice welcome message at the top: encouraging the learner to take their time and focus on understanding
-- Add progress indicators per block showing completion status (uses `quiz_results` to check if block was completed and score)
-
-**3b. Study page (`StudyPage.tsx`)**
-- Add bookmark toggle (heart/bookmark icon) on each TermCard, wired to the new `bookmarks` table
-- Add a brief supportive message at the top of each block encouraging slow, intentional learning
-
-**3c. Quiz page (`QuizPage.tsx`)**
-- Add mode selection before quiz starts: "Practice Mode" (standard exam prep) and "Confidence Builder Mode" (extra encouragement, gentler feedback on wrong answers, reinforces that mistakes are part of learning)
-- In Confidence Builder Mode, wrong-answer feedback includes additional reassurance text
-- Answer is hidden until selection (already implemented)
-
-**3d. Results page (`ResultsPage.tsx`)**
-- Differentiate messaging based on quiz mode
-- Confidence Builder Mode shows more nurturing feedback regardless of score
-
-**3e. Home page (`Home.tsx`)**
-- Add overall progress indicator for the section (e.g., "3/7 blocks completed")
-
-### 4. Implementation order
-
-1. Create `bookmarks` table (migration)
-2. Update section data, delete old terms/questions, insert all 35 terms (data tool, multiple batches)
-3. Insert all 35 questions (data tool, multiple batches)
-4. Update `SectionPage.tsx` with supportive message and progress indicators
-5. Update `StudyPage.tsx` with bookmark toggle and supportive header
-6. Update `QuizPage.tsx` with mode selection (Practice / Confidence Builder)
-7. Update `ResultsPage.tsx` with mode-aware messaging
-8. Update `Home.tsx` with section progress
-
-### Technical details
-
-- Bookmarks use optimistic UI updates via local state, with background Supabase insert/delete
-- Progress is computed by querying `quiz_results` for the current user and section, checking which block_numbers have entries
-- Quiz mode is passed as URL query param or route state (no schema change needed)
-- All 35 terms will be written with complete Definition, Metaphor, and Affirmation content in the TJ Anderson Layer Method voice before insertion
-- Content follows all stated rules: no dashes, no slang, no sarcasm, professional warmth, vocabulary reinforcement in metaphors, grounding "I" statements in affirmations
+## Files Summary
+- **New**: `ModuleQuizPage.tsx`, `ModuleActivityPage.tsx`, `ModuleResultsPage.tsx`
+- **Modified**: `MyModulesPage.tsx`, `ModuleViewPage.tsx`, `UploadedTermCard.tsx`, `App.tsx`
+- **Migration**: `uploaded_quiz_results` table with RLS
 
