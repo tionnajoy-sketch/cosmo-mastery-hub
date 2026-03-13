@@ -14,7 +14,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 const c = pageColors.section;
 
 interface Section { id: string; name: string; description: string; }
-interface BlockInfo { block_number: number; term_count: number; completed: boolean; bestScore: number | null; bestTotal: number | null; }
+interface BlockInfo { block_number: number; term_count: number; completed: boolean; bestScore: number | null; bestTotal: number | null; termNames: string[]; }
 
 const SectionPage = () => {
   const { id } = useParams<{ id: string }>();
