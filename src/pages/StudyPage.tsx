@@ -74,6 +74,11 @@ const StudyPage = () => {
           <h1 className="font-display text-3xl font-bold mb-1" style={{ color: c.heading }}>
             {sectionName} — Block {block}
           </h1>
+          {terms.length > 0 && (
+            <p className="text-xs font-medium mb-1" style={{ color: c.subtext }}>
+              {terms.map(t => t.term).join(", ")}
+            </p>
+          )}
           <p className="text-sm mb-4 leading-relaxed" style={{ color: c.subtext }}>
             Explore each term through five perspectives. Take your time.
           </p>
