@@ -72,6 +72,7 @@ For each CONCEPT or VISUAL block, generate:
 18. slide_type: "concept" or "visual"
 19. instructor_notes: Any detected handwritten annotations or margin notes related to this concept. Leave empty string if none.
 20. image_description: A detailed description of a diagram that should be generated for this concept, including labels, anatomical details, and structural relationships.
+21. topic_group: A short label for the topic/section this term belongs to (e.g., "Venous Disorders", "Heart Failure", "Dysrhythmias", "Shock"). Group related terms under the same topic_group label. Use slide headings or section titles from the source material when available.
 
 For each QUIZ slide, extract into quiz_bank_questions:
 - question_text: The question as written
@@ -80,9 +81,10 @@ For each QUIZ slide, extract into quiz_bank_questions:
 - explanation: A warm, supportive explanation of why the correct answer is right
 - source_slide: The approximate slide number if detectable
 
-Group concept/visual terms into blocks of 5. Return valid JSON.
-Extract 10-20 key terms from the material. Be thorough but focused on the most important concepts.
-Each quiz question should have exactly one best answer, one plausible distractor, and two clearly incorrect options.`;
+Group concept/visual terms by their topic_group label. Return valid JSON.
+Extract ALL key terms and concepts from the material — be thorough. A multi-page lecture should yield 15-40+ terms. Do not limit yourself to just 5 terms. Cover every major concept, condition, disease, procedure, or key vocabulary term.
+Each quiz question should have exactly one best answer, one plausible distractor, and two clearly incorrect options.
+Use topic_group to label which section/heading each term belongs to (e.g., "Venous Disorders", "Arterial Disease", "Heart Failure"). Terms with the same topic_group will be grouped into the same TJ Block.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -131,6 +133,7 @@ Each quiz question should have exactly one best answer, one plausible distractor
                         slide_type: { type: "string", enum: ["concept", "visual"] },
                         instructor_notes: { type: "string" },
                         image_description: { type: "string" },
+                        topic_group: { type: "string", description: "Short topic/section label to group related terms together" },
                       },
                       required: [
                         "term_title", "pronunciation", "definition", "visualization_desc",
@@ -138,7 +141,7 @@ Each quiz question should have exactly one best answer, one plausible distractor
                         "quiz_question", "quiz_options", "quiz_answer",
                         "quiz_question_2", "quiz_options_2", "quiz_answer_2",
                         "quiz_question_3", "quiz_options_3", "quiz_answer_3",
-                        "slide_type", "instructor_notes",
+                        "slide_type", "instructor_notes", "topic_group",
                       ],
                     },
                   },
