@@ -490,7 +490,7 @@ const Home = () => {
             <Info className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "hsl(42 50% 45%)" }} />
             <div>
               <p className="text-sm font-medium" style={{ color: "hsl(42 35% 28%)" }}>More sections coming soon</p>
-              <p className="text-xs leading-relaxed mt-1" style={{ color: "hsl(42 20% 45%)" }}>Hair, Nails, Safety &amp; Sanitation, and more. For now, master the foundation.</p>
+              <p className="text-xs leading-relaxed mt-1" style={{ color: "hsl(42 20% 45%)" }}>Hair Structure and Growth, Chemistry Basics, Electricity Basics, and State Board Strategy are in development.</p>
             </div>
           </CardContent>
         </Card>

@@ -64,6 +64,33 @@ export const blockObjectivesMap: Record<string, Record<number, string[]>> = {
       "Apply your understanding to State Board questions about skin conditions.",
     ],
   },
+  // Infection Control
+  "c3d4e5f6-a7b8-9012-cdef-ab3456789012": {
+    1: [
+      "Identify the five major types of microorganisms: bacteria, viruses, fungi, parasites, and pathogens.",
+      "Explain how each type of microorganism can spread in a salon environment.",
+    ],
+    2: [
+      "Distinguish between pathogenic and nonpathogenic bacteria.",
+      "Identify the three bacterial shapes: cocci, bacilli, and spirilla.",
+    ],
+    3: [
+      "Explain the role of flagella in bacterial movement.",
+      "Define infection, contagious disease, inflammation, and pus.",
+    ],
+    4: [
+      "Identify bloodborne pathogens including hepatitis and HIV.",
+      "Explain the difference between cleaning and sanitation.",
+    ],
+    5: [
+      "Describe the levels of decontamination: cleaning, sanitation, disinfection, and sterilization.",
+      "Explain universal precautions and when to use tuberculocidal disinfectants.",
+    ],
+    6: [
+      "Define exposure incident and explain proper response procedures.",
+      "Identify the purpose of Safety Data Sheets and Material Safety Data Sheets.",
+    ],
+  },
   // General Anatomy and Physiology
   "b2c3d4e5-f6a7-8901-bcde-fa2345678901": {
     1: [
