@@ -576,6 +576,8 @@ export type Database = {
           created_at: string
           definition: string
           id: string
+          image_url: string
+          instructor_notes: string
           metaphor: string
           module_id: string
           practice_scenario: string
@@ -590,6 +592,7 @@ export type Database = {
           quiz_question_2: string
           quiz_question_3: string
           reflection_prompt: string
+          slide_type: string
           term_title: string
           user_notes: string
           visualization_desc: string
@@ -600,6 +603,8 @@ export type Database = {
           created_at?: string
           definition?: string
           id?: string
+          image_url?: string
+          instructor_notes?: string
           metaphor?: string
           module_id: string
           practice_scenario?: string
@@ -614,6 +619,7 @@ export type Database = {
           quiz_question_2?: string
           quiz_question_3?: string
           reflection_prompt?: string
+          slide_type?: string
           term_title?: string
           user_notes?: string
           visualization_desc?: string
@@ -624,6 +630,8 @@ export type Database = {
           created_at?: string
           definition?: string
           id?: string
+          image_url?: string
+          instructor_notes?: string
           metaphor?: string
           module_id?: string
           practice_scenario?: string
@@ -638,6 +646,7 @@ export type Database = {
           quiz_question_2?: string
           quiz_question_3?: string
           reflection_prompt?: string
+          slide_type?: string
           term_title?: string
           user_notes?: string
           visualization_desc?: string
@@ -645,6 +654,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "uploaded_module_blocks_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "uploaded_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uploaded_module_quiz_bank: {
+        Row: {
+          correct_option: string
+          created_at: string
+          explanation: string
+          id: string
+          module_id: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question_text: string
+          source_slide: number | null
+        }
+        Insert: {
+          correct_option?: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          module_id: string
+          option_a?: string
+          option_b?: string
+          option_c?: string
+          option_d?: string
+          question_text?: string
+          source_slide?: number | null
+        }
+        Update: {
+          correct_option?: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          module_id?: string
+          option_a?: string
+          option_b?: string
+          option_c?: string
+          option_d?: string
+          question_text?: string
+          source_slide?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploaded_module_quiz_bank_module_id_fkey"
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "uploaded_modules"

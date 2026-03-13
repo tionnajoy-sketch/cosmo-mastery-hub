@@ -32,6 +32,7 @@ import ModuleViewPage from "./pages/ModuleViewPage";
 import ModuleQuizPage from "./pages/ModuleQuizPage";
 import ModuleResultsPage from "./pages/ModuleResultsPage";
 import ModuleActivityPage from "./pages/ModuleActivityPage";
+import ModuleQuizBankPage from "./pages/ModuleQuizBankPage";
 import InsightsPage from "./pages/InsightsPage";
 import NotFound from "./pages/NotFound";
 
@@ -72,6 +73,7 @@ const App = () => (
             <Route path="/module/:id/quiz/:block" element={<ProtectedRoute><ModuleQuizPage /></ProtectedRoute>} />
             <Route path="/module/:id/results/:block" element={<ProtectedRoute><ModuleResultsPage /></ProtectedRoute>} />
             <Route path="/module/:id/activity/:block" element={<ProtectedRoute><ModuleActivityPage /></ProtectedRoute>} />
+            <Route path="/module/:id/quiz-bank" element={<ProtectedRoute><ModuleQuizBankPage /></ProtectedRoute>} />
             <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

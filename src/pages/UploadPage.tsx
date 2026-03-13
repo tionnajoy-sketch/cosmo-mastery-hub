@@ -109,8 +109,11 @@ const UploadPage = () => {
 
       setProgress(80);
 
-      if (data?.blocks && Array.isArray(data.blocks)) {
-        const blocksToInsert = data.blocks.map((block: any, index: number) => ({
+      const blocks = data?.blocks || [];
+      const quizBankQuestions = data?.quiz_bank_questions || [];
+
+      if (Array.isArray(blocks) && blocks.length > 0) {
+        const blocksToInsert = blocks.map((block: any, index: number) => ({
           module_id: moduleData.id,
           block_number: Math.floor(index / 5) + 1,
           term_title: block.term_title || block.title || `Term ${index + 1}`,
@@ -130,16 +133,41 @@ const UploadPage = () => {
           quiz_question_3: block.quiz_question_3 || "",
           quiz_options_3: block.quiz_options_3 || [],
           quiz_answer_3: block.quiz_answer_3 || "",
+          slide_type: block.slide_type || "concept",
+          instructor_notes: block.instructor_notes || "",
+          image_url: block.image_url || "",
         }));
 
         const { error: insertError } = await supabase.from("uploaded_module_blocks").insert(blocksToInsert);
         if (insertError) throw insertError;
-
-        await supabase.from("uploaded_modules").update({ status: "ready" }).eq("id", moduleData.id);
       }
 
+      // Insert quiz bank questions if any
+      if (Array.isArray(quizBankQuestions) && quizBankQuestions.length > 0) {
+        const qbToInsert = quizBankQuestions.map((q: any) => ({
+          module_id: moduleData.id,
+          question_text: q.question_text || "",
+          option_a: q.option_a || "",
+          option_b: q.option_b || "",
+          option_c: q.option_c || "",
+          option_d: q.option_d || "",
+          correct_option: q.correct_option || "A",
+          explanation: q.explanation || "",
+          source_slide: q.source_slide || null,
+        }));
+
+        await supabase.from("uploaded_module_quiz_bank").insert(qbToInsert);
+      }
+
+      await supabase.from("uploaded_modules").update({ status: "ready" }).eq("id", moduleData.id);
+
       setProgress(100);
-      toast({ title: "Conversion complete!", description: "Your TJ Blocks are ready to explore." });
+      const qbCount = quizBankQuestions.length;
+      const blockCount = blocks.length;
+      const desc = qbCount > 0
+        ? `Created ${blockCount} TJ Blocks and added ${qbCount} questions to your Quiz Bank.`
+        : `Created ${blockCount} TJ Blocks. Ready to explore!`;
+      toast({ title: "Conversion complete!", description: desc });
       setTimeout(() => navigate(`/module/${moduleData.id}`), 800);
     } catch (e: any) {
       console.error("Conversion error:", e);

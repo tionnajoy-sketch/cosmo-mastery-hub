@@ -18,26 +18,44 @@ serve(async (req) => {
 
     const systemPrompt = `You are TJ Anderson, a cosmetology education expert. You write and speak as if you are personally teaching each concept to a student sitting in your classroom. Your tone is conversational, encouraging, and clear. You never sound robotic or overly academic. Your explanations should feel like a warm, supportive teacher breaking things down so the student truly understands.
 
-Your task is to analyze study material and extract key terms and concepts, then convert each into a structured TJ Anderson Layer Method™ learning block.
+Your task is to analyze study material and classify each section or slide into one of these categories:
+
+CLASSIFICATION RULES:
+1. **concept** — Terminology slides with bullet-point explanations, definitions, or descriptive content. Convert these into full TJ Anderson Layer Method™ study blocks.
+2. **visual** — Slides containing charts, diagrams, comparison tables, category breakdowns, or visual learning aids. Convert these into TJ Blocks with an enhanced visualization_desc that preserves the chart/diagram structure in text form, plus generate a practice question about the visual.
+3. **quiz** — Slides containing exam-style questions, multiple choice review questions, or test prep questions. Extract these into structured quiz bank format. Do NOT convert quiz slides into TJ Blocks.
+4. **handwritten_note** — Any annotations, handwritten notes, or informal comments detected on slides (e.g., "could be asymptomatic", "remember this!", instructor margin notes). Attach these as instructor_notes to the nearest related concept block.
+
+For each CONCEPT or VISUAL block, generate:
 1. term_title: The name of the term or concept
-2. pronunciation: Phonetic pronunciation of the term (e.g., "ep-ih-DER-mis" for Epidermis)
+2. pronunciation: Phonetic pronunciation (e.g., "ep-ih-DER-mis")
 3. definition: A clear, professional definition in warm mentor tone
-4. visualization_desc: A detailed description of what a visual diagram or image would show for this concept, including labels and anatomical/structural details
+4. visualization_desc: A detailed description of what a visual diagram or image would show. For visual slides, preserve the chart/diagram structure in rich detail.
 5. metaphor: A TJ-style metaphor connecting the concept to everyday beauty or life experiences. Reinforce vocabulary within the metaphor. No dashes, no slang.
-6. affirmation: A grounding "I" statement that builds confidence. Example: "I understand the layers of the skin and can explain them with confidence."
-7. reflection_prompt: A thought-provoking question that encourages the student to connect this concept to their career
-8. practice_scenario: A realistic salon or client scenario that requires the student to apply this concept. Write it as a short situation followed by a question. Example: "A client comes in with dry, flaky skin on her hands after winter. She asks what layer of skin is being affected and what she can do. What would you tell her, and why?"
+6. affirmation: A grounding "I" statement that builds confidence.
+7. reflection_prompt: A thought-provoking question connecting the concept to their career
+8. practice_scenario: A realistic salon or client scenario requiring the student to apply this concept
 9. quiz_question: A state board exam style question with a realistic client scenario
 10. quiz_options: An array of 4 answer choices
 11. quiz_answer: The correct answer text (must match one of quiz_options exactly)
-12. quiz_question_2: A second reinforcement question testing the same concept from a different angle
+12. quiz_question_2: A second reinforcement question from a different angle
 13. quiz_options_2: An array of 4 answer choices for question 2
 14. quiz_answer_2: The correct answer for question 2
 15. quiz_question_3: A third reinforcement question for deeper recall
 16. quiz_options_3: An array of 4 answer choices for question 3
 17. quiz_answer_3: The correct answer for question 3
+18. slide_type: "concept" or "visual"
+19. instructor_notes: Any detected handwritten annotations or margin notes related to this concept. Leave empty string if none.
+20. image_description: A detailed description of a diagram that should be generated for this concept, including labels, anatomical details, and structural relationships.
 
-Group terms into blocks of 5. Return valid JSON.
+For each QUIZ slide, extract into quiz_bank_questions:
+- question_text: The question as written
+- option_a, option_b, option_c, option_d: The four answer choices
+- correct_option: The letter of the correct answer (A, B, C, or D)
+- explanation: A warm, supportive explanation of why the correct answer is right
+- source_slide: The approximate slide number if detectable
+
+Group concept/visual terms into blocks of 5. Return valid JSON.
 Extract 10-20 key terms from the material. Be thorough but focused on the most important concepts.
 Each quiz question should have exactly one best answer, one plausible distractor, and two clearly incorrect options.`;
 
@@ -51,19 +69,20 @@ Each quiz question should have exactly one best answer, one plausible distractor
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Please analyze the following study material from "${filename}" and convert it into TJ Anderson Layer Method learning blocks:\n\n${content}` },
+          { role: "user", content: `Please analyze the following study material from "${filename}" and convert it into TJ Anderson Layer Method learning blocks. Classify each section as concept, visual, quiz, or handwritten_note:\n\n${content}` },
         ],
         tools: [
           {
             type: "function",
             function: {
               name: "create_tj_blocks",
-              description: "Create structured TJ Anderson Layer Method learning blocks from study material",
+              description: "Create structured TJ Anderson Layer Method learning blocks and extract quiz bank questions from study material",
               parameters: {
                 type: "object",
                 properties: {
                   blocks: {
                     type: "array",
+                    description: "Concept and visual blocks converted into TJ learning blocks",
                     items: {
                       type: "object",
                       properties: {
@@ -84,6 +103,9 @@ Each quiz question should have exactly one best answer, one plausible distractor
                         quiz_question_3: { type: "string" },
                         quiz_options_3: { type: "array", items: { type: "string" } },
                         quiz_answer_3: { type: "string" },
+                        slide_type: { type: "string", enum: ["concept", "visual"] },
+                        instructor_notes: { type: "string" },
+                        image_description: { type: "string" },
                       },
                       required: [
                         "term_title", "pronunciation", "definition", "visualization_desc",
@@ -91,11 +113,30 @@ Each quiz question should have exactly one best answer, one plausible distractor
                         "quiz_question", "quiz_options", "quiz_answer",
                         "quiz_question_2", "quiz_options_2", "quiz_answer_2",
                         "quiz_question_3", "quiz_options_3", "quiz_answer_3",
+                        "slide_type", "instructor_notes",
                       ],
                     },
                   },
+                  quiz_bank_questions: {
+                    type: "array",
+                    description: "Exam-style questions detected on quiz slides, routed to the Quiz Bank",
+                    items: {
+                      type: "object",
+                      properties: {
+                        question_text: { type: "string" },
+                        option_a: { type: "string" },
+                        option_b: { type: "string" },
+                        option_c: { type: "string" },
+                        option_d: { type: "string" },
+                        correct_option: { type: "string", enum: ["A", "B", "C", "D"] },
+                        explanation: { type: "string" },
+                        source_slide: { type: "integer" },
+                      },
+                      required: ["question_text", "option_a", "option_b", "option_c", "option_d", "correct_option", "explanation"],
+                    },
+                  },
                 },
-                required: ["blocks"],
+                required: ["blocks", "quiz_bank_questions"],
               },
             },
           },
@@ -127,10 +168,12 @@ Each quiz question should have exactly one best answer, one plausible distractor
     
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     let blocks: any[] = [];
+    let quiz_bank_questions: any[] = [];
     
     if (toolCall?.function?.arguments) {
       const parsed = JSON.parse(toolCall.function.arguments);
       blocks = parsed.blocks || [];
+      quiz_bank_questions = parsed.quiz_bank_questions || [];
     } else {
       const content_resp = data.choices?.[0]?.message?.content || "";
       try {
@@ -138,11 +181,12 @@ Each quiz question should have exactly one best answer, one plausible distractor
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           blocks = parsed.blocks || [];
+          quiz_bank_questions = parsed.quiz_bank_questions || [];
         }
       } catch { /* ignore */ }
     }
 
-    return new Response(JSON.stringify({ blocks }), {
+    return new Response(JSON.stringify({ blocks, quiz_bank_questions }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

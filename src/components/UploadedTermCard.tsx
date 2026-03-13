@@ -5,8 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, StickyNote, Loader2 } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import SpeakButton from "@/components/SpeakButton";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
 import BrainNote from "@/components/BrainNote";
@@ -34,6 +35,9 @@ export interface UploadedBlock {
   quiz_options_3: string[];
   quiz_answer_3: string;
   user_notes: string;
+  image_url?: string;
+  instructor_notes?: string;
+  slide_type?: string;
 }
 
 type TabType = "definition" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
@@ -147,6 +151,15 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
       case "visualize":
         return (
           <div className="space-y-3">
+            {imageUrl ? (
+              <img src={imageUrl} alt={`Visual diagram for ${block.term_title}`} className="w-full rounded-lg mb-3" />
+            ) : (
+              <div className="flex justify-center mb-3">
+                <Button size="sm" variant="outline" onClick={generateImage} disabled={imageLoading} className="gap-2">
+                  {imageLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : "Generate Visual Diagram"}
+                </Button>
+              </div>
+            )}
             <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.visualization_desc}</p>
             <BrainNote text="Visualizing a concept creates a mental picture that strengthens recall. Close your eyes and imagine this image." />
           </div>
@@ -247,13 +260,48 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
     }
   };
 
+  const [imageUrl, setImageUrl] = useState(block.image_url || "");
+  const [imageLoading, setImageLoading] = useState(false);
+
+  const generateImage = async () => {
+    if (imageUrl || imageLoading) return;
+    setImageLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-term-image", {
+        body: { termId: block.id, term: block.term_title, definition: block.definition, metaphor: block.metaphor },
+      });
+      if (data?.imageUrl) {
+        setImageUrl(data.imageUrl);
+        await supabase.from("uploaded_module_blocks").update({ image_url: data.imageUrl }).eq("id", block.id);
+      }
+    } catch (e) {
+      console.error("Image generation failed:", e);
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
   return (
     <Card className="border-0 shadow-md overflow-hidden" style={{ background: c.card }}>
       <CardContent className="p-5">
-        <div className="flex items-center gap-1 mb-4">
+        <div className="flex items-center gap-1 mb-1">
           <h3 className="font-display text-xl font-semibold" style={{ color: c.termHeading }}>{block.term_title}</h3>
           <SpeakButton text={block.term_title} />
         </div>
+
+        {block.instructor_notes && (
+          <Collapsible className="mb-3">
+            <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium px-2 py-1 rounded-md hover:bg-muted/60 transition-colors" style={{ color: "hsl(42 55% 45%)" }}>
+              <StickyNote className="h-3.5 w-3.5" />
+              Instructor Notes
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-1 px-3 py-2 rounded-lg text-sm italic leading-relaxed" style={{ background: "hsl(42 50% 96%)", color: "hsl(42 30% 28%)" }}>
+                {block.instructor_notes}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
           {tabs.map((tab) => (

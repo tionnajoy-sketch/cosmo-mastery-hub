@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Loader2, Brain, CheckCircle2, XCircle, Sparkles, Dumbbell } from "lucide-react";
+import { ArrowLeft, Loader2, Brain, CheckCircle2, XCircle, Sparkles, Dumbbell, Library } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { pageColors } from "@/lib/colors";
 import { blockAccentColors } from "@/lib/colors";
@@ -27,6 +27,7 @@ const ModuleViewPage = () => {
   const [miniQuizSelected, setMiniQuizSelected] = useState<string | null>(null);
   const [miniQuizRevealed, setMiniQuizRevealed] = useState(false);
   const [completedBlocks, setCompletedBlocks] = useState<Set<number>>(new Set());
+  const [quizBankCount, setQuizBankCount] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -51,16 +52,16 @@ const ModuleViewPage = () => {
         })));
       }
 
-      // Fetch completed quiz blocks
+      // Fetch completed quiz blocks and quiz bank count
       if (user) {
-        const { data: quizResults } = await supabase
-          .from("uploaded_quiz_results")
-          .select("block_number")
-          .eq("module_id", id)
-          .eq("user_id", user.id);
-        if (quizResults) {
-          setCompletedBlocks(new Set(quizResults.map((r) => r.block_number)));
+        const [quizRes, qbRes] = await Promise.all([
+          supabase.from("uploaded_quiz_results").select("block_number").eq("module_id", id).eq("user_id", user.id),
+          supabase.from("uploaded_module_quiz_bank").select("id", { count: "exact", head: true }).eq("module_id", id),
+        ]);
+        if (quizRes.data) {
+          setCompletedBlocks(new Set(quizRes.data.map((r) => r.block_number)));
         }
+        setQuizBankCount(qbRes.count || 0);
       }
 
       setLoading(false);
@@ -230,6 +231,26 @@ const ModuleViewPage = () => {
             </motion.div>
           );
         })}
+
+        {/* Quiz Bank Section */}
+        {quizBankCount > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+            <Card className="border-2 shadow-md" style={{ borderColor: "hsl(var(--primary))", background: "hsl(var(--card))" }}>
+              <CardContent className="p-5">
+                <div className="flex items-center gap-3 mb-2">
+                  <Library className="h-6 w-6" style={{ color: "hsl(var(--primary))" }} />
+                  <div>
+                    <h3 className="font-display text-lg font-semibold" style={{ color: c.heading }}>Quiz Bank</h3>
+                    <p className="text-xs" style={{ color: c.subtext }}>{quizBankCount} exam-style questions from your uploaded materials</p>
+                  </div>
+                </div>
+                <Button className="w-full mt-3 gap-2" onClick={() => navigate(`/module/${id}/quiz-bank`)}>
+                  <Library className="h-4 w-4" /> Practice Quiz Bank
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
 
       <AIMentorChat sectionName={moduleTitle} sectionId={id!} />
