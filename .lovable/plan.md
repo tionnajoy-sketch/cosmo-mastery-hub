@@ -1,142 +1,103 @@
 
 
-# Comprehensive App Restructure: Navigation, Homepage, Onboarding, My TJ Insights
+## Plan: Build Skin Structure and Growth Module
 
-This is a large restructure covering navigation, homepage redesign, new pages, and onboarding improvements. Here is the implementation plan.
+This is a significant expansion that replaces the existing 5-term "Skin" section with a full 35-term module, adds new UI features, and introduces two quiz modes.
 
----
+### Scope overview
 
-## 1. Navigation Menu Overhaul
+```text
+Current state:
+  1 section ("Skin") → 5 terms (Block 1) → 5 questions (Block 1)
 
-Update the dropdown menu in `Home.tsx` header to:
+Target state:
+  1 section ("Skin Structure and Growth") → 35 terms (7 blocks of 5) → 35+ questions (5+ per block)
+  + bookmarking table + progress indicators + 2 quiz modes
+```
 
-- Dashboard
-- Study Modules (scrolls to modules or navigates to a dedicated page)
-- Practice Lab
-- Progress Tracker
-- Ask TJ Mentor (placeholder page)
-- My TJ Insights (new page — all notes/reflections/journal)
-- Upload to TJ Blocks
-- My Study Modules
-- Settings (placeholder)
-- Terms of Use
-- Sign Out
+### 1. Database schema changes (migration)
 
-This header will be extracted into a reusable `AppHeader.tsx` component used across all pages.
+**New table: `bookmarks`**
+- `id` (uuid, PK, default gen_random_uuid())
+- `user_id` (uuid, NOT NULL, references profiles.id)
+- `term_id` (uuid, NOT NULL, references terms.id)
+- `created_at` (timestamptz, default now())
+- Unique constraint on (user_id, term_id)
+- RLS: users can SELECT/INSERT/DELETE their own bookmarks
 
----
+No other schema changes needed. The existing `terms`, `questions`, `sections`, and `quiz_results` tables already support everything else.
 
-## 2. Homepage Redesign (`Home.tsx`)
+### 2. Data operations (insert tool, not migrations)
 
-Restructure into clear sections:
+**Step 2a: Update the section**
+- UPDATE the existing "Skin" section to rename it "Skin Structure and Growth" with a new description reflecting the TJ Anderson Layer Method voice.
 
-1. **Welcome** — personalized greeting + motivational message
-2. **Daily Study Goal** — streak, progress bar, editable goal (existing)
-3. **What You Will Walk Away With** — outcome cards (existing)
-4. **The TJ Anderson Layer Method** — visual explanation with icons for each layer (Definition, Visualize, Metaphor, Affirmation, Reflection, Journal, Quiz)
-5. **How to Use the App** — 6 numbered steps
-6. **Continue Studying** button — navigates to study modules section
-7. **Study Modules** — section cards (existing)
-8. **My TJ Study Modules** — uploaded modules (existing)
+**Step 2b: Delete existing terms and questions**
+- DELETE the 5 existing questions (Block 1)
+- DELETE the 5 existing terms (Block 1)
 
-Remove redundant sections; keep existing progress dashboard.
+**Step 2c: Insert 35 terms across 7 blocks**
 
----
+Each term gets a Definition, Metaphor, and Affirmation written in the TJ Anderson Layer Method voice, following all the rules specified (no dashes, no slang, warm professional tone, vocabulary reinforcement in metaphors, grounding "I" statements for affirmations).
 
-## 3. Rename "Build" Tab to "Practice"
+Block layout (5 terms each):
 
-In `TermCard.tsx`, rename the "Build" tab label from "🧩 Build" to "Practice".
+| Block | Terms |
+|-------|-------|
+| 1 | Epidermis, Dermis, Subcutaneous Tissue, Subcutaneous Layer, Dermal Epidermal Junction |
+| 2 | Stratum Corneum, Stratum Lucidum, Stratum Granulosum, Stratum Spinosum, Stratum Germinativum |
+| 3 | Papillary Layer, Reticular Layer, Dermal Papillae, Collagen, Elastin |
+| 4 | Keratin, Melanin, Melanocytes, Eumelanin, Pheomelanin |
+| 5 | Sebaceous Glands, Sebum, Sudoriferous Glands, Sweat Glands, Secretory Coil |
+| 6 | Arrector Pili Muscles, Hair Papillae, Barrier Function, Broad Spectrum Sunscreen, Tactile Corpuscles |
+| 7 | Sensory Nerve Fibers, Motor Nerve Fibers, Secretory Nerve Fibers, Dermatologist, Dermatology |
 
----
+**Step 2d: Insert quiz questions (5 per block = 35 questions)**
+- State board exam paragraph style stems with realistic client scenarios
+- 4 options (A/B/C/D), one best answer, one plausible distractor, two clearly wrong
+- Warm supportive explanation field
+- Each question linked to its related_term_id
 
-## 4. Welcome/Onboarding Page Redesign (`WelcomePage.tsx`)
+Due to the volume (35 terms + 35 questions), this will require multiple data insertion steps.
 
-Restructure into the 7 sections described:
+### 3. Frontend changes
 
-1. Header: "Welcome to CosmoPrep" + "Powered by The TJ Anderson Layer Method™"
-2. Who I Am section
-3. Why I Created This Platform
-4. How the TJ Anderson Layer Method Works — visual blocks with icons for each layer (Definition, Pronunciation, Visualize, Metaphor, Affirmation, Reflection, Journal, Quiz)
-5. How to Use the App — 4 steps
-6. Student Outcomes — bullet boxes
-7. "Start My Study Journey" button → dashboard
+**3a. Section page (`SectionPage.tsx`)**
+- Add a supportive TJ voice welcome message at the top: encouraging the learner to take their time and focus on understanding
+- Add progress indicators per block showing completion status (uses `quiz_results` to check if block was completed and score)
 
-This page shows only on first login (check `has_completed_pretest` or a new profile flag). After completion, users go straight to dashboard.
+**3b. Study page (`StudyPage.tsx`)**
+- Add bookmark toggle (heart/bookmark icon) on each TermCard, wired to the new `bookmarks` table
+- Add a brief supportive message at the top of each block encouraging slow, intentional learning
 
----
+**3c. Quiz page (`QuizPage.tsx`)**
+- Add mode selection before quiz starts: "Practice Mode" (standard exam prep) and "Confidence Builder Mode" (extra encouragement, gentler feedback on wrong answers, reinforces that mistakes are part of learning)
+- In Confidence Builder Mode, wrong-answer feedback includes additional reassurance text
+- Answer is hidden until selection (already implemented)
 
-## 5. My TJ Insights Page (New)
+**3d. Results page (`ResultsPage.tsx`)**
+- Differentiate messaging based on quiz mode
+- Confidence Builder Mode shows more nurturing feedback regardless of score
 
-New page at `/insights` with:
+**3e. Home page (`Home.tsx`)**
+- Add overall progress indicator for the section (e.g., "3/7 blocks completed")
 
-- **Search bar** — full-text search across reflections, journal notes
-- **Filters** — by module, block, term, date
-- **Insight cards** — each showing term name, module, the reflection/journal text, date
-- Click card → navigates to original study block
+### 4. Implementation order
 
-Data sources: `reflections` table, `journal_notes` table. Join with `terms` and `sections` tables to get context.
+1. Create `bookmarks` table (migration)
+2. Update section data, delete old terms/questions, insert all 35 terms (data tool, multiple batches)
+3. Insert all 35 questions (data tool, multiple batches)
+4. Update `SectionPage.tsx` with supportive message and progress indicators
+5. Update `StudyPage.tsx` with bookmark toggle and supportive header
+6. Update `QuizPage.tsx` with mode selection (Practice / Confidence Builder)
+7. Update `ResultsPage.tsx` with mode-aware messaging
+8. Update `Home.tsx` with section progress
 
----
+### Technical details
 
-## 6. Learning Style Discovery Improvements
-
-The existing `PretestPage.tsx` already has a learning style quiz. Enhancements:
-
-- Add a `learning_style` field display on the dashboard (from `pretest_results`)
-- Show personalized tip on homepage: "Based on your learning style, focus on Visualization and Reflection sections"
-- Pass learning style to Ask TJ Mentor edge function so it can personalize responses
-
-Database: `pretest_results` already stores `learning_style`. Add `learning_style` to the `profiles` table for quick access.
-
----
-
-## 7. Updated Footer
-
-Update `AppFooter.tsx` to match the new copyright text:
-
-> Copyright © 2026 Tionna Anderson
-> The TJ Anderson Layer Method™ is a proprietary learning framework created by Tionna Anderson. Unauthorized reproduction, distribution, or instructional replication is prohibited.
-
----
-
-## 8. Database Migration
-
-Add `learning_style` column to `profiles` table so it's readily accessible without joining `pretest_results`.
-
----
-
-## Files
-
-**New files:**
-- `src/components/AppHeader.tsx` — reusable nav header
-- `src/pages/InsightsPage.tsx` — My TJ Insights page
-
-**Modified files:**
-- `src/pages/Home.tsx` — redesigned layout, use AppHeader
-- `src/pages/WelcomePage.tsx` — restructured onboarding
-- `src/pages/StudyPage.tsx` — use AppHeader
-- `src/pages/SectionPage.tsx` — use AppHeader
-- `src/components/TermCard.tsx` — rename Build → Practice
-- `src/components/AppFooter.tsx` — updated copyright
-- `src/components/AIMentorChat.tsx` — no changes needed (already has quick actions)
-- `src/App.tsx` — add `/insights` route
-- `src/hooks/useAuth.tsx` — add learning_style to Profile interface
-- `supabase/functions/ai-mentor-chat/index.ts` — accept learning_style in body, personalize responses
-
-**Migration:**
-- Add `learning_style` column to `profiles` table
-
----
-
-## Implementation Order
-
-1. Database migration (add learning_style to profiles)
-2. AppHeader component
-3. AppFooter update
-4. TermCard tab rename
-5. Homepage redesign
-6. WelcomePage restructure
-7. My TJ Insights page + route
-8. Learning style dashboard integration
-9. AI mentor learning style awareness
+- Bookmarks use optimistic UI updates via local state, with background Supabase insert/delete
+- Progress is computed by querying `quiz_results` for the current user and section, checking which block_numbers have entries
+- Quiz mode is passed as URL query param or route state (no schema change needed)
+- All 35 terms will be written with complete Definition, Metaphor, and Affirmation content in the TJ Anderson Layer Method voice before insertion
+- Content follows all stated rules: no dashes, no slang, no sarcasm, professional warmth, vocabulary reinforcement in metaphors, grounding "I" statements in affirmations
 

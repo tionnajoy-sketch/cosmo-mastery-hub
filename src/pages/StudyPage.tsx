@@ -18,7 +18,7 @@ interface Term { id: string; term: string; definition: string; metaphor: string;
 const StudyPage = () => {
   const { id, block } = useParams<{ id: string; block: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [sectionName, setSectionName] = useState("");
   const [terms, setTerms] = useState<Term[]>([]);
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
@@ -132,6 +132,7 @@ const StudyPage = () => {
         sectionId={id!}
         blockNumber={block}
         terms={terms.map((t) => ({ term: t.term, definition: t.definition }))}
+        learningStyle={profile?.learning_style}
       />
     </div>
   );

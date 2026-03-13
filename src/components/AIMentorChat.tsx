@@ -16,6 +16,7 @@ interface AIMentorChatProps {
   sectionId: string;
   blockNumber?: string;
   terms?: { term: string; definition: string }[];
+  learningStyle?: string;
 }
 
 const quickActions = [
@@ -27,7 +28,7 @@ const quickActions = [
   { label: "Encourage me", prompt: "I need some encouragement right now. Remind me why I'm capable of passing the state board exam." },
 ];
 
-const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorChatProps) => {
+const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyle }: AIMentorChatProps) => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -57,6 +58,7 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms }: AIMentorCh
           sectionId,
           blockNumber,
           terms: terms?.slice(0, 20),
+          learningStyle,
         },
       });
 

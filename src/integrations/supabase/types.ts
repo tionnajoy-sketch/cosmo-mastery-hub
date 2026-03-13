@@ -208,6 +208,7 @@ export type Database = {
           has_completed_pretest: boolean
           id: string
           language: string
+          learning_style: string
           name: string
           program: string | null
           state: string | null
@@ -218,6 +219,7 @@ export type Database = {
           has_completed_pretest?: boolean
           id: string
           language?: string
+          learning_style?: string
           name?: string
           program?: string | null
           state?: string | null
@@ -228,6 +230,7 @@ export type Database = {
           has_completed_pretest?: boolean
           id?: string
           language?: string
+          learning_style?: string
           name?: string
           program?: string | null
           state?: string | null

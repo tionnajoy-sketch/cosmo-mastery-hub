@@ -29,6 +29,7 @@ import SkinMapPage from "./pages/SkinMapPage";
 import UploadPage from "./pages/UploadPage";
 import MyModulesPage from "./pages/MyModulesPage";
 import ModuleViewPage from "./pages/ModuleViewPage";
+import InsightsPage from "./pages/InsightsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,7 @@ const App = () => (
             <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
             <Route path="/my-modules" element={<ProtectedRoute><MyModulesPage /></ProtectedRoute>} />
             <Route path="/module/:id" element={<ProtectedRoute><ModuleViewPage /></ProtectedRoute>} />
+            <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
