@@ -52,16 +52,16 @@ const ModuleViewPage = () => {
         })));
       }
 
-      // Fetch completed quiz blocks
+      // Fetch completed quiz blocks and quiz bank count
       if (user) {
-        const { data: quizResults } = await supabase
-          .from("uploaded_quiz_results")
-          .select("block_number")
-          .eq("module_id", id)
-          .eq("user_id", user.id);
-        if (quizResults) {
-          setCompletedBlocks(new Set(quizResults.map((r) => r.block_number)));
+        const [quizRes, qbRes] = await Promise.all([
+          supabase.from("uploaded_quiz_results").select("block_number").eq("module_id", id).eq("user_id", user.id),
+          supabase.from("uploaded_module_quiz_bank").select("id", { count: "exact", head: true }).eq("module_id", id),
+        ]);
+        if (quizRes.data) {
+          setCompletedBlocks(new Set(quizRes.data.map((r) => r.block_number)));
         }
+        setQuizBankCount(qbRes.count || 0);
       }
 
       setLoading(false);
