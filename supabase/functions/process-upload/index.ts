@@ -81,9 +81,10 @@ For each QUIZ slide, extract into quiz_bank_questions:
 - explanation: A warm, supportive explanation of why the correct answer is right
 - source_slide: The approximate slide number if detectable
 
-Group concept/visual terms into blocks of 5. Return valid JSON.
-Extract 10-20 key terms from the material. Be thorough but focused on the most important concepts.
-Each quiz question should have exactly one best answer, one plausible distractor, and two clearly incorrect options.`;
+Group concept/visual terms by their topic_group label. Return valid JSON.
+Extract ALL key terms and concepts from the material — be thorough. A multi-page lecture should yield 15-40+ terms. Do not limit yourself to just 5 terms. Cover every major concept, condition, disease, procedure, or key vocabulary term.
+Each quiz question should have exactly one best answer, one plausible distractor, and two clearly incorrect options.
+Use topic_group to label which section/heading each term belongs to (e.g., "Venous Disorders", "Arterial Disease", "Heart Failure"). Terms with the same topic_group will be grouped into the same TJ Block.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
