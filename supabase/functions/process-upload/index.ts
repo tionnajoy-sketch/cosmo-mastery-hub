@@ -69,7 +69,7 @@ Each quiz question should have exactly one best answer, one plausible distractor
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Please analyze the following study material from "${filename}" and convert it into TJ Anderson Layer Method learning blocks. Classify each section as concept, visual, quiz, or handwritten_note:\n\n${content}` },
+          { role: "user", content: `Please analyze the following study material from "${filename}"${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}. Convert it into TJ Anderson Layer Method learning blocks. Classify each section as concept, visual, quiz, or handwritten_note:\n\n${content}` },
         ],
         tools: [
           {
