@@ -271,7 +271,14 @@ const SectionPage = () => {
                           <td className="px-5 py-3 font-medium" style={{ color: c.cardHeading }}>
                             <div className="flex items-center gap-2">
                               <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: blockAccentColors[i % blockAccentColors.length].stripe }} />
-                              Block {block.block_number}
+                              <div>
+                                <span>Block {block.block_number}</span>
+                                {block.termNames.length > 0 && (
+                                  <p className="text-xs font-normal text-muted-foreground truncate max-w-[200px]">
+                                    {block.termNames.slice(0, 3).join(", ")}{block.termNames.length > 3 ? "…" : ""}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </td>
                           <td className="text-center px-3 py-3" style={{ color: c.cardText }}>{block.term_count}</td>
