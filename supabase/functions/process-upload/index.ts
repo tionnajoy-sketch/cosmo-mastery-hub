@@ -86,7 +86,11 @@ Extract ALL key terms and concepts from the material — be thorough. A multi-pa
 Each quiz question should have exactly one best answer, one plausible distractor, and two clearly incorrect options.
 Use topic_group to label which section/heading each term belongs to (e.g., "Venous Disorders", "Arterial Disease", "Heart Failure"). Terms with the same topic_group will be grouped into the same TJ Block.`;
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 55000); // 55s timeout
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      signal: controller.signal,
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
