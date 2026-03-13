@@ -329,7 +329,8 @@ const UploadPage = () => {
         totalPagesInDoc,
         pagesProcessed: processedPageNumbers,
         pagesSkipped: skippedPages,
-        blocksCreated: allBlocks.length,
+        blocksCreated: actualBlockCount,
+        totalTerms: allBlocks.length,
         quizBankCreated: allQuizBankQuestions.length,
         chunksProcessed: totalChunks,
         totalChunks,
@@ -338,7 +339,7 @@ const UploadPage = () => {
 
       toast({
         title: "Conversion complete!",
-        description: `Created ${allBlocks.length} TJ Blocks from ${processedPageNumbers.length} pages.`,
+        description: `Created ${actualBlockCount} TJ Blocks with ${allBlocks.length} terms from ${processedPageNumbers.length} pages.`,
       });
 
       // Don't auto-navigate so user can see the summary
