@@ -80,6 +80,13 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
+    if (!user) return;
+    supabase.from("uploaded_modules").select("id, title, status, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(3).then(({ data }) => {
+      if (data) setUploadedModules(data);
+    });
+  }, [user]);
+
+  useEffect(() => {
     if (!user || sections.length === 0) return;
     const fetchProgress = async () => {
       const [termsRes, resultsRes] = await Promise.all([
