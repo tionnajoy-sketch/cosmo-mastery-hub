@@ -84,7 +84,7 @@ const UploadPage = () => {
           title: file.name.replace(/\.[^/.]+$/, ""),
           status: "processing",
           source_filename: file.name,
-          is_instructor_mode: mode === "instructor",
+          is_instructor_mode: false,
         })
         .select()
         .single();
