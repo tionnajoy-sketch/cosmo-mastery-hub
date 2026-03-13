@@ -58,6 +58,7 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
           sectionId,
           blockNumber,
           terms: terms?.slice(0, 20),
+          learningStyle,
         },
       });
 
