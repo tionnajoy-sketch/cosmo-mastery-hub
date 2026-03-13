@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -12,14 +14,33 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Upload, FileText, Loader2, Sparkles, Lock,
   BookOpen, Eye, Lightbulb, Heart, MessageCircle, Brain,
   Search, Layers, Wand2, CheckCircle2, Mail, ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AppHeader from "@/components/AppHeader";
+import { extractPdfText, chunkPages, type ParsedPage } from "@/lib/pdfParser";
+
+interface ConversionSummary {
+  totalPagesInDoc: number;
+  pagesProcessed: number[];
+  pagesSkipped: number[];
+  blocksCreated: number;
+  quizBankCreated: number;
+  chunksProcessed: number;
+  totalChunks: number;
+}
 
 const UploadPage = () => {
   const navigate = useNavigate();
@@ -30,8 +51,18 @@ const UploadPage = () => {
   const [selectedMode, setSelectedMode] = useState<"student" | null>("student");
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState("");
   const [textContent, setTextContent] = useState("");
   const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
+
+  // Page range options
+  const [pageMode, setPageMode] = useState<"all" | "range">("all");
+  const [pageStart, setPageStart] = useState(1);
+  const [pageEnd, setPageEnd] = useState(999);
+  const [detectedPageCount, setDetectedPageCount] = useState<number | null>(null);
+
+  // Post-conversion summary
+  const [summary, setSummary] = useState<ConversionSummary | null>(null);
 
   const acceptedTypes = [
     "application/pdf",
@@ -48,11 +79,25 @@ const UploadPage = () => {
       return;
     }
     setFile(selectedFile);
+    setSummary(null);
+
     if (selectedFile.type === "text/plain" || selectedFile.name.endsWith(".txt")) {
       const text = await selectedFile.text();
       setTextContent(text);
+      setDetectedPageCount(null);
+    } else if (selectedFile.type === "application/pdf") {
+      setTextContent("");
+      // Detect page count for PDFs
+      try {
+        const result = await extractPdfText(selectedFile, { start: 1, end: 1 });
+        setDetectedPageCount(result.totalPages);
+        setPageEnd(result.totalPages);
+      } catch {
+        setDetectedPageCount(null);
+      }
     } else {
       setTextContent("");
+      setDetectedPageCount(null);
     }
   };
 
@@ -66,21 +111,73 @@ const UploadPage = () => {
     if (!user || !file) return;
 
     setProcessing(true);
-    setProgress(10);
+    setProgress(5);
+    setProgressMessage("Preparing document...");
+    setSummary(null);
 
     try {
-      let content = textContent;
+      const isPdf = file.type === "application/pdf";
+      const isText = file.type === "text/plain" || file.name.endsWith(".txt");
 
-      if (!content) {
-        setProgress(20);
+      // Step 1: Parse content
+      let contentChunks: string[] = [];
+      let totalPagesInDoc = 0;
+      let processedPageNumbers: number[] = [];
+      let skippedPages: number[] = [];
+
+      if (isPdf) {
+        setProgressMessage("Extracting text from PDF pages...");
+        setProgress(10);
+
+        const range = pageMode === "range" ? { start: pageStart, end: pageEnd } : undefined;
+        const parsed = await extractPdfText(file, range);
+        totalPagesInDoc = parsed.totalPages;
+
+        if (parsed.pages.length === 0) {
+          throw new Error("No text could be extracted from this PDF. It may be image-based or scanned. Try a text-based PDF.");
+        }
+
+        processedPageNumbers = parsed.pages.map((p) => p.pageNumber);
+
+        // Figure out which pages were skipped (had no text)
+        const startP = range ? range.start : 1;
+        const endP = range ? Math.min(range.end, totalPagesInDoc) : totalPagesInDoc;
+        for (let i = startP; i <= endP; i++) {
+          if (!processedPageNumbers.includes(i)) {
+            skippedPages.push(i);
+          }
+        }
+
+        // Chunk the pages for multi-pass processing
+        const pageChunks = chunkPages(parsed.pages, 40000);
+        contentChunks = pageChunks.map((chunk) =>
+          chunk.map((p) => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n")
+        );
+      } else if (isText) {
+        const text = textContent || (await file.text());
+        totalPagesInDoc = 1;
+        processedPageNumbers = [1];
+        // Chunk long text files
+        const chunkSize = 40000;
+        for (let i = 0; i < text.length; i += chunkSize) {
+          contentChunks.push(text.slice(i, i + chunkSize));
+        }
+      } else {
+        // Non-PDF, non-text: upload to storage and send reference
+        setProgress(15);
+        setProgressMessage("Uploading document...");
         const filePath = `${user.id}/${Date.now()}_${file.name}`;
         const { error: uploadError } = await supabase.storage.from("uploads").upload(filePath, file);
         if (uploadError) throw uploadError;
-        content = `[FILE:${filePath}] ${file.name}`;
+        contentChunks = [`[FILE:${filePath}] ${file.name}`];
+        totalPagesInDoc = 1;
+        processedPageNumbers = [1];
       }
 
-      setProgress(30);
+      setProgress(25);
+      setProgressMessage("Creating module...");
 
+      // Step 2: Create module record
       const { data: moduleData, error: moduleError } = await supabase
         .from("uploaded_modules")
         .insert({
@@ -95,25 +192,46 @@ const UploadPage = () => {
 
       if (moduleError) throw moduleError;
 
-      setProgress(50);
+      // Step 3: Process each chunk through the AI
+      const allBlocks: any[] = [];
+      const allQuizBankQuestions: any[] = [];
+      const totalChunks = contentChunks.length;
 
-      const { data, error } = await supabase.functions.invoke("process-upload", {
-        body: {
-          content: content.slice(0, 50000),
-          moduleId: moduleData.id,
-          filename: file.name,
-        },
-      });
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+        const chunkProgress = 30 + Math.floor(((chunkIndex + 1) / totalChunks) * 50);
+        setProgress(chunkProgress);
+        setProgressMessage(
+          `Analyzing content... (pass ${chunkIndex + 1} of ${totalChunks})`
+        );
 
-      if (error) throw error;
+        const { data, error } = await supabase.functions.invoke("process-upload", {
+          body: {
+            content: contentChunks[chunkIndex],
+            moduleId: moduleData.id,
+            filename: file.name,
+            chunkIndex: chunkIndex + 1,
+            totalChunks,
+          },
+        });
 
-      setProgress(80);
+        if (error) {
+          console.error(`Chunk ${chunkIndex + 1} failed:`, error);
+          // Continue processing remaining chunks instead of failing entirely
+          continue;
+        }
 
-      const blocks = data?.blocks || [];
-      const quizBankQuestions = data?.quiz_bank_questions || [];
+        const blocks = data?.blocks || [];
+        const quizQ = data?.quiz_bank_questions || [];
+        allBlocks.push(...blocks);
+        allQuizBankQuestions.push(...quizQ);
+      }
 
-      if (Array.isArray(blocks) && blocks.length > 0) {
-        const blocksToInsert = blocks.map((block: any, index: number) => ({
+      setProgress(85);
+      setProgressMessage("Saving TJ Blocks...");
+
+      // Step 4: Insert all blocks
+      if (allBlocks.length > 0) {
+        const blocksToInsert = allBlocks.map((block: any, index: number) => ({
           module_id: moduleData.id,
           block_number: Math.floor(index / 5) + 1,
           term_title: block.term_title || block.title || `Term ${index + 1}`,
@@ -142,9 +260,9 @@ const UploadPage = () => {
         if (insertError) throw insertError;
       }
 
-      // Insert quiz bank questions if any
-      if (Array.isArray(quizBankQuestions) && quizBankQuestions.length > 0) {
-        const qbToInsert = quizBankQuestions.map((q: any) => ({
+      // Insert quiz bank questions
+      if (allQuizBankQuestions.length > 0) {
+        const qbToInsert = allQuizBankQuestions.map((q: any) => ({
           module_id: moduleData.id,
           question_text: q.question_text || "",
           option_a: q.option_a || "",
@@ -162,13 +280,25 @@ const UploadPage = () => {
       await supabase.from("uploaded_modules").update({ status: "ready" }).eq("id", moduleData.id);
 
       setProgress(100);
-      const qbCount = quizBankQuestions.length;
-      const blockCount = blocks.length;
-      const desc = qbCount > 0
-        ? `Created ${blockCount} TJ Blocks and added ${qbCount} questions to your Quiz Bank.`
-        : `Created ${blockCount} TJ Blocks. Ready to explore!`;
-      toast({ title: "Conversion complete!", description: desc });
-      setTimeout(() => navigate(`/module/${moduleData.id}`), 800);
+      setProgressMessage("Complete!");
+
+      const convSummary: ConversionSummary = {
+        totalPagesInDoc,
+        pagesProcessed: processedPageNumbers,
+        pagesSkipped: skippedPages,
+        blocksCreated: allBlocks.length,
+        quizBankCreated: allQuizBankQuestions.length,
+        chunksProcessed: totalChunks,
+        totalChunks,
+      };
+      setSummary(convSummary);
+
+      toast({
+        title: "Conversion complete!",
+        description: `Created ${allBlocks.length} TJ Blocks from ${processedPageNumbers.length} pages.`,
+      });
+
+      // Don't auto-navigate so user can see the summary
     } catch (e: any) {
       console.error("Conversion error:", e);
       toast({ title: "Conversion failed", description: e.message || "Please try again.", variant: "destructive" });
@@ -179,8 +309,8 @@ const UploadPage = () => {
 
   const howItWorksSteps = [
     { icon: Upload, title: "Upload", desc: "Upload your notes, slides, or study materials." },
-    { icon: Search, title: "Analyze", desc: "The system identifies important concepts, key terms, and definitions." },
-    { icon: Layers, title: "Transform", desc: "Each concept is converted into a TJ Anderson learning block." },
+    { icon: Search, title: "Analyze", desc: "The system reads every page of your document and extracts key concepts." },
+    { icon: Layers, title: "Transform", desc: "Each concept is converted into a TJ Anderson learning block across multiple passes if needed." },
     { icon: Wand2, title: "Complete", desc: "Each TJ Block automatically includes structured learning layers." },
   ];
 
@@ -192,6 +322,8 @@ const UploadPage = () => {
     { icon: MessageCircle, label: "Reflection prompt", color: "hsl(195 55% 45%)" },
     { icon: Brain, label: "Recall quiz question", color: "hsl(145 45% 42%)" },
   ];
+
+  const isPdf = file?.type === "application/pdf";
 
   return (
     <div className="min-h-screen bg-background">
@@ -210,7 +342,6 @@ const UploadPage = () => {
         {/* Mode Selection */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="mb-8">
           <div className="grid grid-cols-2 gap-3">
-            {/* Student Mode */}
             <button
               onClick={() => setSelectedMode("student")}
               className="p-5 rounded-xl text-left transition-all border-2"
@@ -228,7 +359,6 @@ const UploadPage = () => {
               </p>
             </button>
 
-            {/* Instructor Mode */}
             <button
               onClick={() => setIsLicenseModalOpen(true)}
               className="p-5 rounded-xl text-left transition-all border-2 relative"
@@ -269,7 +399,9 @@ const UploadPage = () => {
                   <FileText className="h-10 w-10 mb-3" style={{ color: "hsl(145 50% 42%)" }} />
                   <p className="text-sm font-semibold text-foreground">{file.name}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB · Click or drop to replace
+                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                    {detectedPageCount && ` · ${detectedPageCount} pages`}
+                    {" "}· Click or drop to replace
                   </p>
                 </>
               ) : (
@@ -290,20 +422,70 @@ const UploadPage = () => {
           />
         </motion.div>
 
+        {/* Page Range Option (PDF only) */}
+        {isPdf && !processing && !summary && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+            <Card className="border bg-card">
+              <CardContent className="p-4">
+                <p className="text-sm font-semibold text-foreground mb-3">Page Selection</p>
+                <Select value={pageMode} onValueChange={(v) => setPageMode(v as "all" | "range")}>
+                  <SelectTrigger className="w-full mb-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      Convert entire document{detectedPageCount ? ` (${detectedPageCount} pages)` : ""}
+                    </SelectItem>
+                    <SelectItem value="range">Convert specific page range</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {pageMode === "range" && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <Label className="text-xs text-muted-foreground">Start page</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={detectedPageCount || 999}
+                        value={pageStart}
+                        onChange={(e) => setPageStart(parseInt(e.target.value) || 1)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <span className="text-muted-foreground mt-5">–</span>
+                    <div className="flex-1">
+                      <Label className="text-xs text-muted-foreground">End page</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={detectedPageCount || 999}
+                        value={pageEnd}
+                        onChange={(e) => setPageEnd(parseInt(e.target.value) || 1)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Convert Button + Progress */}
-        {file && (
+        {file && !summary && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
             {processing ? (
               <Card className="border-0 shadow-md bg-muted/50">
                 <CardContent className="p-5">
                   <div className="flex items-center gap-3 mb-3">
                     <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                    <p className="text-sm font-medium text-foreground">
-                      {progress < 30 ? "Uploading document..." : progress < 60 ? "Analyzing content..." : progress < 90 ? "Building TJ Blocks..." : "Finishing up..."}
-                    </p>
+                    <p className="text-sm font-medium text-foreground">{progressMessage}</p>
                   </div>
                   <Progress value={progress} className="h-2" />
-                  <p className="text-xs text-muted-foreground mt-2">This may take a minute depending on the document size.</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    This may take a few minutes for large documents. Every page is being processed.
+                  </p>
                 </CardContent>
               </Card>
             ) : (
@@ -311,6 +493,82 @@ const UploadPage = () => {
                 <Sparkles className="h-5 w-5" /> Convert to TJ Blocks
               </Button>
             )}
+          </motion.div>
+        )}
+
+        {/* Post-Conversion Summary */}
+        {summary && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+            <Card className="border-2 border-primary/30 shadow-lg">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <CheckCircle2 className="h-6 w-6 text-primary" />
+                  <h3 className="text-lg font-bold text-foreground">Conversion Summary</h3>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <p className="text-2xl font-bold text-foreground">{summary.totalPagesInDoc}</p>
+                    <p className="text-xs text-muted-foreground">Total Pages in PDF</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <p className="text-2xl font-bold text-foreground">{summary.pagesProcessed.length}</p>
+                    <p className="text-xs text-muted-foreground">Pages Processed</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <p className="text-2xl font-bold text-primary">{summary.blocksCreated}</p>
+                    <p className="text-xs text-muted-foreground">TJ Blocks Created</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <p className="text-2xl font-bold text-foreground">{summary.quizBankCreated}</p>
+                    <p className="text-xs text-muted-foreground">Quiz Bank Questions</p>
+                  </div>
+                </div>
+
+                {summary.totalChunks > 1 && (
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Document was processed in {summary.totalChunks} passes to ensure full coverage.
+                  </p>
+                )}
+
+                {summary.pagesSkipped.length > 0 && (
+                  <div className="bg-accent/20 rounded-lg p-3 mb-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <AlertTriangle className="h-4 w-4 text-accent-foreground" />
+                      <p className="text-sm font-semibold text-foreground">Pages with no extractable text</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Pages {summary.pagesSkipped.join(", ")} had no text content (may be images or blank).
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <Button
+                    className="flex-1 gap-2"
+                    onClick={() => {
+                      // Find module ID from the URL we would have navigated to
+                      navigate("/my-modules");
+                    }}
+                  >
+                    <BookOpen className="h-4 w-4" /> View My Modules
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => {
+                      setFile(null);
+                      setSummary(null);
+                      setProgress(0);
+                      setDetectedPageCount(null);
+                      setPageMode("all");
+                    }}
+                  >
+                    Convert Another
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
 
