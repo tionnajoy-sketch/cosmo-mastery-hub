@@ -251,13 +251,48 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
     }
   };
 
+  const [imageUrl, setImageUrl] = useState(block.image_url || "");
+  const [imageLoading, setImageLoading] = useState(false);
+
+  const generateImage = async () => {
+    if (imageUrl || imageLoading) return;
+    setImageLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-term-image", {
+        body: { termId: block.id, term: block.term_title, definition: block.definition, metaphor: block.metaphor },
+      });
+      if (data?.imageUrl) {
+        setImageUrl(data.imageUrl);
+        await supabase.from("uploaded_module_blocks").update({ image_url: data.imageUrl }).eq("id", block.id);
+      }
+    } catch (e) {
+      console.error("Image generation failed:", e);
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
   return (
     <Card className="border-0 shadow-md overflow-hidden" style={{ background: c.card }}>
       <CardContent className="p-5">
-        <div className="flex items-center gap-1 mb-4">
+        <div className="flex items-center gap-1 mb-1">
           <h3 className="font-display text-xl font-semibold" style={{ color: c.termHeading }}>{block.term_title}</h3>
           <SpeakButton text={block.term_title} />
         </div>
+
+        {block.instructor_notes && (
+          <Collapsible className="mb-3">
+            <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium px-2 py-1 rounded-md hover:bg-muted/60 transition-colors" style={{ color: "hsl(42 55% 45%)" }}>
+              <StickyNote className="h-3.5 w-3.5" />
+              Instructor Notes
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-1 px-3 py-2 rounded-lg text-sm italic leading-relaxed" style={{ background: "hsl(42 50% 96%)", color: "hsl(42 30% 28%)" }}>
+                {block.instructor_notes}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
           {tabs.map((tab) => (
