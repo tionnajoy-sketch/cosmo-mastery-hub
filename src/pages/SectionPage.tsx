@@ -36,7 +36,12 @@ const SectionPage = () => {
       if (sectionRes.data) setSection(sectionRes.data);
       if (termsRes.data) {
         const blockMap: Record<number, number> = {};
-        termsRes.data.forEach((t) => { blockMap[t.block_number] = (blockMap[t.block_number] || 0) + 1; });
+        const blockTermNames: Record<number, string[]> = {};
+        termsRes.data.forEach((t: any) => {
+          blockMap[t.block_number] = (blockMap[t.block_number] || 0) + 1;
+          if (!blockTermNames[t.block_number]) blockTermNames[t.block_number] = [];
+          blockTermNames[t.block_number].push(t.term);
+        });
 
         const resultsByBlock: Record<number, { score: number; total: number }> = {};
         if (resultsRes.data) {
