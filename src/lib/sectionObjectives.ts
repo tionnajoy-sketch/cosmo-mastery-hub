@@ -15,6 +15,14 @@ export const sectionObjectivesMap: Record<string, string[]> = {
     "Use the TJ Anderson Layer Method to build deep understanding through definition, metaphor, affirmation, and reflection.",
     "Answer State Board–style anatomy and physiology questions with confidence.",
   ],
+  // Infection Control
+  "c3d4e5f6-a7b8-9012-cdef-ab3456789012": [
+    "Identify the types of microorganisms relevant to cosmetology including bacteria, viruses, fungi, and parasites.",
+    "Explain the differences between pathogenic and nonpathogenic bacteria and the three bacterial shapes.",
+    "Describe the levels of decontamination from cleaning to sterilization.",
+    "Identify bloodborne pathogens and explain universal precautions for salon safety.",
+    "Answer State Board–style infection control questions with confidence.",
+  ],
 };
 
 export const blockObjectivesMap: Record<string, Record<number, string[]>> = {
