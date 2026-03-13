@@ -34,6 +34,9 @@ export interface UploadedBlock {
   quiz_options_3: string[];
   quiz_answer_3: string;
   user_notes: string;
+  image_url?: string;
+  instructor_notes?: string;
+  slide_type?: string;
 }
 
 type TabType = "definition" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
