@@ -313,7 +313,7 @@ const ModuleQuizBankPage = () => {
                         <><XCircle className="h-5 w-5" style={{ color: c.wrongBorder }} /><p className="font-semibold" style={{ color: c.wrongBorder }}>{getWrongFeedback()}</p></>
                       )}
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{currentQuestion.explanation}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: c.cardText }}>{currentQuestion.explanation}</p>
                   </CardContent>
                 </Card>
 
