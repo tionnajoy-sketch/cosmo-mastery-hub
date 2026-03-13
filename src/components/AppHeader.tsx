@@ -48,7 +48,7 @@ const AppHeader = () => {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate("/upload")}>
-              <Upload className="h-4 w-4 mr-2" /> Upload to TJ Blocks
+              <Upload className="h-4 w-4 mr-2" /> Create Study Blocks
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/my-modules")}>
               <Sparkles className="h-4 w-4 mr-2" /> My Study Modules
