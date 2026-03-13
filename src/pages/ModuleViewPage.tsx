@@ -231,7 +231,6 @@ const ModuleViewPage = () => {
             </motion.div>
           );
         })}
-      </div>
 
         {/* Quiz Bank Section */}
         {quizBankCount > 0 && (
