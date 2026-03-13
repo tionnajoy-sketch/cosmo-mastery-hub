@@ -248,7 +248,7 @@ const ModuleQuizBankPage = () => {
               }}
             >
               <CardContent className="p-6">
-                <p className="text-base font-medium leading-relaxed" style={{ color: c.questionText }}>
+                <p className="text-base font-medium leading-relaxed" style={{ color: c.cardText }}>
                   {currentQuestion.question_text}
                 </p>
               </CardContent>
