@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import SpeakButton from "@/components/SpeakButton";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
 import BrainNote from "@/components/BrainNote";
+import VideoPlayer from "@/components/VideoPlayer";
 
 const c = pageColors.study;
 
