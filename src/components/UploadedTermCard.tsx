@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, StickyNote, Loader2, BookOpen, Eye, Lightbulb, Heart, PenLine, Wrench, GraduationCap, Mic, HelpCircle } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import { fireBlockCompleteConfetti } from "@/lib/confetti";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import SpeakButton from "@/components/SpeakButton";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
