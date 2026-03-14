@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle, Brain, Heart, Target, Eye, BookOpen, Sparkles, Shield } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { useCoins } from "@/hooks/useCoins";
 
 const c = pageColors.quiz;
 
