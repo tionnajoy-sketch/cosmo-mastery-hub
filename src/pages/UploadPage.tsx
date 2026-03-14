@@ -345,11 +345,8 @@ const UploadPage = () => {
           <h1 className="font-display text-2xl sm:text-3xl font-bold mb-3 text-foreground">
             Turn Your Notes Into TJ Anderson Study Blocks
           </h1>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
             Upload your notes, slides, or documents and the system will transform them into structured TJ Anderson Layer Method™ learning blocks designed to help you understand and retain key concepts.
-          </p>
-          <p className="text-xs italic mb-8" style={{ color: "hsl(270 30% 55%)" }}>
-            You're in a safe place to learn, not to be perfect. Take your time.
           </p>
         </motion.div>
 

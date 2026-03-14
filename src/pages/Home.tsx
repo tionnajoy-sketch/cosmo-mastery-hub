@@ -89,7 +89,7 @@ const Home = () => {
   const [progressMap, setProgressMap] = useState<Map<string, SectionProgress>>(new Map());
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [totalCorrect, setTotalCorrect] = useState(0);
-  const [uploadedModules] = useState<{id: string; title: string; status: string; created_at: string}[]>([]);
+  const [uploadedModules, setUploadedModules] = useState<{id: string; title: string; status: string; created_at: string}[]>([]);
 
   useEffect(() => {
     supabase.from("sections").select("*").order("order").then(({ data }) => {
@@ -97,6 +97,12 @@ const Home = () => {
     });
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("uploaded_modules").select("id, title, status, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(3).then(({ data }) => {
+      if (data) setUploadedModules(data);
+    });
+  }, [user]);
 
   useEffect(() => {
     if (!user || sections.length === 0) return;
@@ -436,6 +442,31 @@ const Home = () => {
           </div>
         </motion.section>
 
+        {/* ── My TJ Study Modules ── */}
+        {uploadedModules.length > 0 && (
+          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75 }}>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-display text-lg font-semibold text-foreground">My TJ Study Modules</h2>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/my-modules")} className="text-xs">View All</Button>
+            </div>
+            <div className="space-y-2">
+              {uploadedModules.map((mod) => (
+                <Card key={mod.id} className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => mod.status === "ready" ? navigate(`/module/${mod.id}`) : null}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="p-2 rounded-lg" style={{ background: "hsl(270 25% 94%)" }}>
+                      <Sparkles className="h-4 w-4" style={{ color: "hsl(270 40% 52%)" }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{mod.title}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(mod.created_at).toLocaleDateString()}</p>
+                    </div>
+                    {mod.status === "ready" && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </motion.section>
+        )}
 
         {/* ── Upload Shortcut ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
