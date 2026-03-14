@@ -105,8 +105,11 @@ const ModuleViewPage = () => {
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display text-3xl font-bold mb-1" style={{ color: c.heading }}>{moduleTitle}</h1>
-          <p className="text-sm mb-6" style={{ color: c.subtext }}>
+          <p className="text-sm mb-2" style={{ color: c.subtext }}>
             {blocks.length} terms across {sortedGroups.length} block{sortedGroups.length !== 1 ? "s" : ""}
+          </p>
+          <p className="text-xs italic mb-6" style={{ color: "hsl(270 30% 55%)" }}>
+            Welcome to your study space. Breathe, learn, and let it stick. ✨
           </p>
         </motion.div>
 

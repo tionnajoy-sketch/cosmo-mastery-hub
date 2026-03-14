@@ -34,6 +34,7 @@ import ModuleResultsPage from "./pages/ModuleResultsPage";
 import ModuleActivityPage from "./pages/ModuleActivityPage";
 import ModuleQuizBankPage from "./pages/ModuleQuizBankPage";
 import InsightsPage from "./pages/InsightsPage";
+import StudyModulesPage from "./pages/StudyModulesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -75,6 +76,7 @@ const App = () => (
             <Route path="/module/:id/activity/:block" element={<ProtectedRoute><ModuleActivityPage /></ProtectedRoute>} />
             <Route path="/module/:id/quiz-bank" element={<ProtectedRoute><ModuleQuizBankPage /></ProtectedRoute>} />
             <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
+            <Route path="/study-modules" element={<ProtectedRoute><StudyModulesPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

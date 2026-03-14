@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   BookOpen, Menu, LogOut, BarChart3, Upload, Sparkles,
-  Shield, Brain, Gamepad2, MessageCircle, Lightbulb, Settings,
+  Shield, Brain, Gamepad2, Lightbulb, GraduationCap,
 } from "lucide-react";
 
 const AppHeader = () => {
@@ -37,8 +37,8 @@ const AppHeader = () => {
             <DropdownMenuItem onClick={() => navigate("/")}>
               <BookOpen className="h-4 w-4 mr-2" /> Dashboard
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/")}>
-              <Brain className="h-4 w-4 mr-2" /> Study Modules
+            <DropdownMenuItem onClick={() => navigate("/study-modules")}>
+              <GraduationCap className="h-4 w-4 mr-2" /> Study Modules
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/strategy")}>
               <Gamepad2 className="h-4 w-4 mr-2" /> Practice Lab
