@@ -172,8 +172,11 @@ const Home = () => {
           <h1 className="font-display text-3xl font-bold mb-2 text-foreground">
             Welcome back, {firstName} ✨
           </h1>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+          <p className="text-sm text-muted-foreground leading-relaxed mb-1">
             You are building something powerful. Every concept you study brings you closer to the professional you are becoming.
+          </p>
+          <p className="text-xs italic" style={{ color: "hsl(185 30% 50%)" }}>
+            CosmoPrep is your calm, encouraging study space — breathe, learn, and let it stick.
           </p>
           <div className="flex items-center gap-3 mt-3">
             <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground" onClick={() => navigate("/welcome")}>
