@@ -49,6 +49,7 @@ const QuizPage = () => {
   const [preQuizMessage] = useState(() => preQuizMessages[Math.floor(Math.random() * preQuizMessages.length)]);
   const [calmMessage] = useState(() => calmingQuizMessages[Math.floor(Math.random() * calmingQuizMessages.length)]);
   const [previousBest, setPreviousBest] = useState<{ score: number; total: number } | null>(null);
+  const { addCoins } = useCoins();
   const [totalAttempts, setTotalAttempts] = useState(0);
 
   useEffect(() => {
