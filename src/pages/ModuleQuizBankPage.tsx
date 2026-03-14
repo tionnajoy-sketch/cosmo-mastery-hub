@@ -47,6 +47,7 @@ const ModuleQuizBankPage = () => {
   const [eliminated, setEliminated] = useState<Set<string>>(new Set());
   const [preQuizMessage] = useState(() => preQuizMessages[Math.floor(Math.random() * preQuizMessages.length)]);
   const [resultsSaved, setResultsSaved] = useState(false);
+  const { addCoins } = useCoins();
 
   useEffect(() => {
     if (!id) return;
