@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle, Brain, Heart, Target, Eye, BookOpen, Sparkles, Shield } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { useCoins } from "@/hooks/useCoins";
 
 const c = pageColors.quiz;
 
@@ -48,6 +49,7 @@ const ModuleQuizPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(0);
+  const { addCoins } = useCoins();
   const [wrongCount, setWrongCount] = useState(0);
   const [mode, setMode] = useState<QuizMode | null>(null);
   const [strategyMode, setStrategyMode] = useState(false);
@@ -147,6 +149,8 @@ const ModuleQuizPage = () => {
     setSelectedAnswer(option);
     if (option === currentQuestion.correct_option) {
       setScore((s) => s + 1);
+      // First attempt = no prior wrong on this question in this session
+      addCoins(10, "correct");
     } else {
       setWrongCount((cnt) => cnt + 1);
     }
