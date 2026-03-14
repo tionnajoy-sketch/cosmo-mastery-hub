@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, BookOpen, Target, Eye, XCircle, CheckCircle2, Lightbulb } from "lucide-react";
 import BrainNote from "@/components/BrainNote";
 import { pageColors } from "@/lib/colors";
+import AppHeader from "@/components/AppHeader";
 
 const c = pageColors.strategy;
 

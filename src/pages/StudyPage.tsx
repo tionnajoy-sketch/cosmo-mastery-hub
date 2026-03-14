@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Brain, Gamepad2, GraduationCap } from "lucide-react";
 import TermCard from "@/components/TermCard";
 import AIMentorChat from "@/components/AIMentorChat";
+import AppHeader from "@/components/AppHeader";
 import { pageColors } from "@/lib/colors";
 import { blockObjectivesMap } from "@/lib/sectionObjectives";
 

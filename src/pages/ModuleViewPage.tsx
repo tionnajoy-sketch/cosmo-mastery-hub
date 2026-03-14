@@ -11,6 +11,7 @@ import { pageColors } from "@/lib/colors";
 import { blockAccentColors } from "@/lib/colors";
 import AIMentorChat from "@/components/AIMentorChat";
 import UploadedTermCard, { type UploadedBlock } from "@/components/UploadedTermCard";
+import AppHeader from "@/components/AppHeader";
 
 const c = pageColors.study;
 

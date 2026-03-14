@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { ArrowLeft, BarChart3, Target, BookOpen, Brain, Gamepad2, Sparkles } from "lucide-react";
+import AppHeader from "@/components/AppHeader";
 
 const c = {
   gradient: "linear-gradient(180deg, hsl(220 35% 92%), hsl(230 25% 95%), hsl(240 20% 97%))",
