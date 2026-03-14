@@ -67,13 +67,25 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["definition"]));
 
   // Personalized tab ordering based on learning style
+  const uploadedTabIcons: Record<TabType, React.ReactNode> = {
+    definition: <BookOpen className="h-3.5 w-3.5" />,
+    pronunciation: <Mic className="h-3.5 w-3.5" />,
+    visualize: <Eye className="h-3.5 w-3.5" />,
+    metaphor: <Lightbulb className="h-3.5 w-3.5" />,
+    affirmation: <Heart className="h-3.5 w-3.5" />,
+    reflection: <PenLine className="h-3.5 w-3.5" />,
+    practice: <Wrench className="h-3.5 w-3.5" />,
+    quiz: <HelpCircle className="h-3.5 w-3.5" />,
+    journal: <GraduationCap className="h-3.5 w-3.5" />,
+  };
+
   const allTabs: { key: TabType; label: string }[] = [
-    { key: "definition", label: "Definition" },
+    { key: "definition", label: "Define" },
     { key: "pronunciation", label: "Pronounce" },
     { key: "visualize", label: "Visualize" },
     { key: "metaphor", label: "Metaphor" },
-    { key: "affirmation", label: "Affirmation" },
-    { key: "reflection", label: "Reflection" },
+    { key: "affirmation", label: "Affirm" },
+    { key: "reflection", label: "Reflect" },
     ...(block.practice_scenario ? [{ key: "practice" as TabType, label: "Practice" }] : []),
     { key: "quiz", label: "Quiz" },
     { key: "journal", label: "Journal" },
