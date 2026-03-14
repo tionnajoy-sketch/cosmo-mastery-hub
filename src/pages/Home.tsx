@@ -363,137 +363,21 @@ const Home = () => {
           </Button>
         </motion.section>
 
-        {/* ── Study Modules Selector ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65 }}>
-          <h2 id="study-sections" className="font-display text-lg font-semibold text-foreground mb-4">Study Modules</h2>
-
-          {/* Dropdown Selector */}
-          <Select onValueChange={(val) => { if (val.startsWith("section:")) navigate(`/section/${val.replace("section:", "")}`); }}>
-            <SelectTrigger className="w-full mb-4 h-12 text-base font-display font-semibold border-0 shadow-md bg-card">
-              <SelectValue placeholder="Choose a section to study..." />
-            </SelectTrigger>
-            <SelectContent>
-              {sections.map((section, i) => {
-                const accent = sectionAccentColors[i % sectionAccentColors.length];
-                return (
-                  <SelectItem key={section.id} value={`section:${section.id}`}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: accent.bg }} />
-                      <span>{section.name}</span>
-                      <span className="text-xs font-medium px-1.5 py-0.5 rounded-full ml-1" style={{ background: "hsl(145 40% 92%)", color: "hsl(145 50% 32%)" }}>Complete</span>
-                    </div>
-                  </SelectItem>
-                );
-              })}
-              {/* Coming Soon sections */}
-              {[
-                { name: "Hair Structure and Growth", color: "hsl(25 70% 55%)" },
-                { name: "Chemistry Basics", color: "hsl(200 65% 48%)" },
-                { name: "Electricity Basics", color: "hsl(48 75% 50%)" },
-                { name: "State Board Strategy", color: "hsl(270 50% 52%)" },
-              ].map((cs) => (
-                <SelectItem key={cs.name} value={`coming:${cs.name}`} disabled>
-                  <div className="flex items-center gap-2 opacity-50">
-                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: cs.color }} />
-                    <span>{cs.name}</span>
-                    <span className="text-xs font-medium px-1.5 py-0.5 rounded-full ml-1" style={{ background: "hsl(42 50% 92%)", color: "hsl(42 40% 40%)" }}>Coming Soon</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Section Cards (still visible for progress) */}
-          <div className="space-y-4">
-            {sections.map((section, i) => {
-              const progress = progressMap.get(section.id);
-              const accent = sectionAccentColors[i % sectionAccentColors.length];
-              const pct = progress && progress.totalBlocks > 0 ? Math.round((progress.completedBlocks / progress.totalBlocks) * 100) : 0;
-              const sectionStatus = getStatusLabel(pct);
-              return (
-                <motion.div key={section.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 + i * 0.08 }}>
-                  <Card className="border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow overflow-hidden bg-card" onClick={() => navigate(`/section/${section.id}`)}>
-                    <div className="flex">
-                      <div className="w-2 flex-shrink-0" style={{ background: accent.bg }} />
-                      <CardContent className="p-6 flex-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h3 className="font-display text-xl font-semibold mb-1" style={{ color: accent.text }}>{section.name}</h3>
-                            <p className="text-sm leading-relaxed mb-3 text-muted-foreground">{section.description}</p>
-                            {progress && progress.totalBlocks > 0 && (
-                              <div>
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-xs text-muted-foreground">{progress.completedBlocks}/{progress.totalBlocks} blocks completed</span>
-                                  <span className="text-xs font-medium" style={{ color: sectionStatus.color }}>{sectionStatus.label}</span>
-                                </div>
-                                <Progress value={pct} className="h-1.5" />
-                              </div>
-                            )}
-                          </div>
-                          <ArrowRight className="h-5 w-5 ml-4 flex-shrink-0" style={{ color: accent.bg }} />
-                        </div>
-                      </CardContent>
-                    </div>
-                  </Card>
-                </motion.div>
-              );
-            })}
-            {sections.length === 0 && <p className="text-center text-muted-foreground py-12">Loading sections...</p>}
-          </div>
-        </motion.section>
-
-        {/* ── My TJ Study Modules ── */}
-        {uploadedModules.length > 0 && (
-          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75 }}>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-display text-lg font-semibold text-foreground">My TJ Study Modules</h2>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/my-modules")} className="text-xs">View All</Button>
-            </div>
-            <div className="space-y-2">
-              {uploadedModules.map((mod) => (
-                <Card key={mod.id} className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => mod.status === "ready" ? navigate(`/module/${mod.id}`) : null}>
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="p-2 rounded-lg" style={{ background: "hsl(270 25% 94%)" }}>
-                      <Sparkles className="h-4 w-4" style={{ color: "hsl(270 40% 52%)" }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{mod.title}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(mod.created_at).toLocaleDateString()}</p>
-                    </div>
-                    {mod.status === "ready" && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </motion.section>
-        )}
-
-        {/* ── Upload Shortcut ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-          <Card className="border-0 shadow-md cursor-pointer hover:shadow-lg transition-shadow" style={{ background: "hsl(270 20% 96%)" }} onClick={() => navigate("/upload")}>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="p-2 rounded-xl" style={{ background: "hsl(270 25% 90%)" }}>
-                <Upload className="h-5 w-5" style={{ color: "hsl(270 40% 52%)" }} />
+        {/* ── Study Modules CTA ── */}
+        <motion.section id="study-sections" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65 }}>
+          <Card className="border-0 shadow-md cursor-pointer hover:shadow-lg transition-shadow bg-card" onClick={() => navigate("/study-modules")}>
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="p-2.5 rounded-xl" style={{ background: "hsl(185 30% 92%)" }}>
+                <BookOpen className="h-5 w-5" style={{ color: "hsl(185 45% 42%)" }} />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-sm font-semibold" style={{ color: "hsl(270 30% 25%)" }}>Create Study Blocks</h3>
-                <p className="text-xs" style={{ color: "hsl(270 15% 50%)" }}>Convert your notes and slides into structured learning blocks</p>
+                <h3 className="font-display text-base font-semibold text-foreground">Study Modules</h3>
+                <p className="text-xs text-muted-foreground">Browse all available sections and continue learning</p>
               </div>
-              <ArrowRight className="h-4 w-4" style={{ color: "hsl(270 25% 55%)" }} />
+              <ArrowRight className="h-5 w-5 text-muted-foreground" />
             </CardContent>
           </Card>
         </motion.section>
-
-        {/* ── Coming Soon ── */}
-        <Card className="border-2 border-dashed" style={{ borderColor: "hsl(42 40% 75%)", background: "hsl(42 50% 97%)" }}>
-          <CardContent className="p-4 flex items-start gap-3">
-            <Info className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "hsl(42 50% 45%)" }} />
-            <div>
-              <p className="text-sm font-medium" style={{ color: "hsl(42 35% 28%)" }}>More sections coming soon</p>
-              <p className="text-xs leading-relaxed mt-1" style={{ color: "hsl(42 20% 45%)" }}>Hair Structure and Growth, Chemistry Basics, Electricity Basics, and State Board Strategy are in development.</p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       <AppFooter />
