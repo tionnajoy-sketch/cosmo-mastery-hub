@@ -14,7 +14,7 @@ import {
   Pen, MessageSquare, GraduationCap, RefreshCw,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
-import { pageColors, sectionAccentColors } from "@/lib/colors";
+import { pageColors } from "@/lib/colors";
 import PopUpReview from "@/components/PopUpReview";
 import RandomQuizPopup from "@/components/RandomQuizPopup";
 import DailyPopQuestion from "@/components/DailyPopQuestion";
