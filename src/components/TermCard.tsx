@@ -126,7 +126,27 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     );
     setReflectionSaving(false);
     setReflectionSubmitted(true);
-  }, [user, term.id, reflectionText]);
+    if (!reflectionCoinAwarded.current) {
+      reflectionCoinAwarded.current = true;
+      addCoins(3, "reflection");
+    }
+  }, [user, term.id, reflectionText, addCoins]);
+
+  // Award coins for journal (first meaningful save)
+  useEffect(() => {
+    if (journalNote.length >= 10 && !journalCoinAwarded.current) {
+      journalCoinAwarded.current = true;
+      addCoins(3, "reflection");
+    }
+  }, [journalNote, addCoins]);
+
+  const handleAudioComplete = useCallback(() => {
+    const key = `${term.id}-${activeTab}`;
+    if (!audioCoinAwarded.current.has(key)) {
+      audioCoinAwarded.current.add(key);
+      addCoins(2, "audio");
+    }
+  }, [term.id, activeTab, addCoins]);
 
   // Build full speak text for each tab
   const getSpeakText = () => {
