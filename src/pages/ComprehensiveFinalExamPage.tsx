@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
-import { ArrowLeft, CheckCircle2, XCircle, Clock, Target, Shield, Brain } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, Clock, Target, Shield } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 
 const c = pageColors.quiz;
@@ -56,7 +56,6 @@ const ComprehensiveFinalExamPage = () => {
 
       const sectionMap = new Map(sections.map((s: any) => [s.id, s.name]));
 
-      // Group by section, pick questions evenly
       const bySection = new Map<string, Question[]>();
       allQuestions.forEach((q: any) => {
         const sName = sectionMap.get(q.section_id) || "Unknown";
@@ -65,9 +64,8 @@ const ComprehensiveFinalExamPage = () => {
       });
 
       const selected: Question[] = [];
-      bySection.forEach((qs, sectionName) => {
+      bySection.forEach((qs) => {
         const shuffled = [...qs].sort(() => Math.random() - 0.5);
-        // Take up to 10 per section for a comprehensive exam
         selected.push(...shuffled.slice(0, Math.min(10, qs.length)));
       });
 
@@ -98,7 +96,7 @@ const ComprehensiveFinalExamPage = () => {
 
   const startExam = () => {
     setStarted(true);
-    setTimeLeft(questions.length * 75); // 75 seconds per question — state board pacing
+    setTimeLeft(questions.length * 75);
   };
 
   const finishExam = () => {
@@ -140,7 +138,7 @@ const ComprehensiveFinalExamPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ background: c.bg }}>
+      <div className="min-h-screen" style={{ background: c.gradient }}>
         <AppHeader />
         <div className="flex items-center justify-center py-20">
           <p style={{ color: c.subtext }}>Loading comprehensive exam...</p>
@@ -149,23 +147,22 @@ const ComprehensiveFinalExamPage = () => {
     );
   }
 
-  // Results screen
   if (done) {
     return (
-      <div className="min-h-screen" style={{ background: c.bg }}>
+      <div className="min-h-screen" style={{ background: c.gradient }}>
         <AppHeader />
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
             <Card className="border-0 shadow-lg" style={{ background: c.card }}>
               <CardContent className="p-6 text-center space-y-4">
                 <div className="text-5xl">{passed ? "🎓" : "📚"}</div>
-                <h2 className="font-display text-2xl font-bold" style={{ color: c.termHeading }}>
+                <h2 className="font-display text-2xl font-bold" style={{ color: c.cardText }}>
                   {passed ? "You're State Board Ready!" : "Keep Studying — You're Getting There!"}
                 </h2>
                 <div className="text-4xl font-bold" style={{ color: passed ? "hsl(145 40% 45%)" : "hsl(25 80% 55%)" }}>
                   {overallPercent}%
                 </div>
-                <p style={{ color: c.bodyText }}>{score} of {questions.length} correct</p>
+                <p style={{ color: c.optionText }}>{score} of {questions.length} correct</p>
                 {passed && <p className="text-sm" style={{ color: "hsl(145 40% 45%)" }}>+25 coins earned! 🪙</p>}
               </CardContent>
             </Card>
@@ -173,12 +170,12 @@ const ComprehensiveFinalExamPage = () => {
 
           <Card className="border-0 shadow-md" style={{ background: c.card }}>
             <CardContent className="p-5 space-y-3">
-              <h3 className="font-display font-semibold" style={{ color: c.termHeading }}>Section Breakdown</h3>
+              <h3 className="font-display font-semibold" style={{ color: c.cardText }}>Section Breakdown</h3>
               {Array.from(sectionScores.entries()).map(([section, { correct, total }]) => {
                 const pct = Math.round((correct / total) * 100);
                 return (
                   <div key={section} className="flex items-center justify-between py-2 border-b border-border/20">
-                    <span className="text-sm font-medium" style={{ color: c.bodyText }}>{section}</span>
+                    <span className="text-sm font-medium" style={{ color: c.optionText }}>{section}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold" style={{ color: pct >= 70 ? "hsl(145 40% 45%)" : "hsl(0 60% 50%)" }}>
                         {pct}%
@@ -193,7 +190,7 @@ const ComprehensiveFinalExamPage = () => {
 
           <div className="flex gap-3">
             <Button onClick={() => navigate("/")} className="flex-1" variant="outline">Dashboard</Button>
-            <Button onClick={() => window.location.reload()} className="flex-1" style={{ background: c.tabActive, color: c.tabActiveText }}>
+            <Button onClick={() => window.location.reload()} className="flex-1" style={{ background: c.accent, color: "hsl(0 0% 100%)" }}>
               Retake Exam
             </Button>
           </div>
@@ -203,46 +200,45 @@ const ComprehensiveFinalExamPage = () => {
     );
   }
 
-  // Pre-exam screen
   if (!started) {
     return (
-      <div className="min-h-screen" style={{ background: c.bg }}>
+      <div className="min-h-screen" style={{ background: c.gradient }}>
         <AppHeader />
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-2">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-2" style={{ color: c.backButton }}>
             <ArrowLeft className="h-4 w-4" /> Dashboard
           </Button>
 
           <Card className="border-0 shadow-lg" style={{ background: c.card }}>
             <CardContent className="p-6 space-y-5 text-center">
-              <Shield className="h-12 w-12 mx-auto" style={{ color: c.tabActive }} />
-              <h1 className="font-display text-2xl font-bold" style={{ color: c.termHeading }}>
+              <Shield className="h-12 w-12 mx-auto" style={{ color: c.accent }} />
+              <h1 className="font-display text-2xl font-bold" style={{ color: c.cardText }}>
                 Comprehensive State Board Exam
               </h1>
-              <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+              <p className="text-sm leading-relaxed" style={{ color: c.optionText }}>
                 This exam pulls questions from <strong>every section</strong> you've studied — just like the real cosmetology state board.
                 It's timed, challenging, and designed to test if you're truly ready.
               </p>
               <div className="grid grid-cols-3 gap-3 py-3">
                 <div className="text-center">
-                  <div className="text-2xl font-bold" style={{ color: c.termHeading }}>{questions.length}</div>
+                  <div className="text-2xl font-bold" style={{ color: c.cardText }}>{questions.length}</div>
                   <div className="text-xs" style={{ color: c.subtext }}>Questions</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold" style={{ color: c.termHeading }}>{formatTime(questions.length * 75)}</div>
+                  <div className="text-2xl font-bold" style={{ color: c.cardText }}>{formatTime(questions.length * 75)}</div>
                   <div className="text-xs" style={{ color: c.subtext }}>Time Limit</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold" style={{ color: c.termHeading }}>70%</div>
+                  <div className="text-2xl font-bold" style={{ color: c.cardText }}>70%</div>
                   <div className="text-xs" style={{ color: c.subtext }}>To Pass</div>
                 </div>
               </div>
-              <div className="p-3 rounded-lg" style={{ background: c.tabInactive }}>
-                <p className="text-xs italic" style={{ color: c.subtext }}>
+              <div className="p-3 rounded-lg" style={{ background: c.practiceBg }}>
+                <p className="text-xs italic" style={{ color: c.practiceText }}>
                   💡 <strong>State Board Tip:</strong> Read the answer choices FIRST, then the question stem. Eliminate two wrong answers before choosing. Stay calm — your nervous system performs best when balanced.
                 </p>
               </div>
-              <Button onClick={startExam} className="w-full" style={{ background: c.tabActive, color: c.tabActiveText }}>
+              <Button onClick={startExam} className="w-full" style={{ background: c.accent, color: "hsl(0 0% 100%)" }}>
                 <Target className="h-4 w-4 mr-2" /> Begin Exam
               </Button>
             </CardContent>
@@ -253,18 +249,17 @@ const ComprehensiveFinalExamPage = () => {
     );
   }
 
-  // Exam in progress
   return (
-    <div className="min-h-screen" style={{ background: c.bg }}>
+    <div className="min-h-screen" style={{ background: c.gradient }}>
       <AppHeader />
       <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium" style={{ color: c.bodyText }}>
+          <span className="text-sm font-medium" style={{ color: c.heading }}>
             Question {currentIndex + 1} of {questions.length}
           </span>
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4" style={{ color: timeLeft < 60 ? "hsl(0 60% 50%)" : c.subtext }} />
-            <span className="text-sm font-mono font-bold" style={{ color: timeLeft < 60 ? "hsl(0 60% 50%)" : c.bodyText }}>
+            <span className="text-sm font-mono font-bold" style={{ color: timeLeft < 60 ? "hsl(0 60% 50%)" : c.heading }}>
               {formatTime(timeLeft)}
             </span>
           </div>
@@ -277,11 +272,11 @@ const ComprehensiveFinalExamPage = () => {
               <Card className="border-0 shadow-md" style={{ background: c.card }}>
                 <CardContent className="p-5 space-y-4">
                   {currentQ.section_name && (
-                    <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ background: c.tabInactive, color: c.subtext }}>
+                    <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ background: c.practiceBg, color: c.practiceText }}>
                       {currentQ.section_name}
                     </span>
                   )}
-                  <p className="text-base font-medium leading-relaxed" style={{ color: c.termHeading }}>
+                  <p className="text-base font-medium leading-relaxed" style={{ color: c.cardText }}>
                     {currentQ.question_text}
                   </p>
                   <div className="space-y-2">
@@ -296,9 +291,9 @@ const ComprehensiveFinalExamPage = () => {
                           onClick={() => handleAnswer(letter)}
                           className="w-full text-left p-3 rounded-lg text-sm transition-all"
                           style={{
-                            background: isSelected ? c.tabActive : c.tabInactive,
-                            color: isSelected ? c.tabActiveText : c.bodyText,
-                            border: `2px solid ${isSelected ? c.tabActive : "transparent"}`,
+                            background: isSelected ? c.accent : c.optionBg,
+                            color: isSelected ? "hsl(0 0% 100%)" : c.optionText,
+                            border: `2px solid ${isSelected ? c.accent : c.optionBorder}`,
                           }}
                         >
                           <span className="font-semibold mr-2">{letter})</span> {optText}
@@ -325,7 +320,7 @@ const ComprehensiveFinalExamPage = () => {
             <Button
               onClick={() => { setCurrentIndex((i) => i + 1); setSelectedAnswer(null); }}
               className="flex-1"
-              style={{ background: c.tabActive, color: c.tabActiveText }}
+              style={{ background: c.nextButton, color: "hsl(0 0% 100%)" }}
             >
               Next
             </Button>
@@ -333,14 +328,13 @@ const ComprehensiveFinalExamPage = () => {
             <Button
               onClick={finishExam}
               className="flex-1"
-              style={{ background: "hsl(145 40% 45%)", color: "white" }}
+              style={{ background: "hsl(145 40% 45%)", color: "hsl(0 0% 100%)" }}
             >
               Submit Exam
             </Button>
           )}
         </div>
 
-        {/* Question navigator */}
         <div className="flex flex-wrap gap-1.5 justify-center pt-2">
           {questions.map((_, i) => (
             <button
@@ -348,8 +342,8 @@ const ComprehensiveFinalExamPage = () => {
               onClick={() => { setCurrentIndex(i); setSelectedAnswer(null); }}
               className="w-7 h-7 rounded-full text-xs font-medium transition-all"
               style={{
-                background: i === currentIndex ? c.tabActive : examAnswers.has(i) ? "hsl(145 40% 90%)" : c.tabInactive,
-                color: i === currentIndex ? c.tabActiveText : c.bodyText,
+                background: i === currentIndex ? c.accent : examAnswers.has(i) ? "hsl(145 40% 90%)" : c.optionBg,
+                color: i === currentIndex ? "hsl(0 0% 100%)" : c.optionText,
               }}
             >
               {i + 1}
