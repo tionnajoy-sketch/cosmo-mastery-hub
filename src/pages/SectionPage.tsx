@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target, GraduationCap, Circle, Map } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
 import AIMentorChat from "@/components/AIMentorChat";
+import AppHeader from "@/components/AppHeader";
 import { sectionObjectivesMap, blockObjectivesMap } from "@/lib/sectionObjectives";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
