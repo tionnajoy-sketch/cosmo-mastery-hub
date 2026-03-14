@@ -38,6 +38,7 @@ interface TermCardProps {
 
 const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const { user } = useAuth();
+  const { addCoins } = useCoins();
   const [activeTab, setActiveTab] = useState<TabType>("definition");
   const [journalNote, setJournalNote] = useState("");
   const [journalSaving, setJournalSaving] = useState(false);
@@ -46,6 +47,9 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const [reflectionText, setReflectionText] = useState("");
   const [reflectionSaving, setReflectionSaving] = useState(false);
   const [reflectionSubmitted, setReflectionSubmitted] = useState(false);
+  const journalCoinAwarded = useRef(false);
+  const reflectionCoinAwarded = useRef(false);
+  const audioCoinAwarded = useRef<Set<string>>(new Set());
 
   const buildExercise = useMemo(() => getBuildExercise(term.term), [term.term]);
   const reflectionPrompt = useMemo(() => generateReflectionPrompt(term.term, term.definition), [term.term, term.definition]);
