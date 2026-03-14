@@ -203,37 +203,52 @@ export type Database = {
       }
       profiles: {
         Row: {
+          birth_month: number | null
+          birth_year: number | null
           created_at: string
           exam_date: string | null
           has_completed_pretest: boolean
           id: string
           language: string
+          leaderboard_preference: string | null
           learning_style: string
           name: string
           program: string | null
+          sex: string | null
           state: string | null
+          tone_preference: string | null
         }
         Insert: {
+          birth_month?: number | null
+          birth_year?: number | null
           created_at?: string
           exam_date?: string | null
           has_completed_pretest?: boolean
           id: string
           language?: string
+          leaderboard_preference?: string | null
           learning_style?: string
           name?: string
           program?: string | null
+          sex?: string | null
           state?: string | null
+          tone_preference?: string | null
         }
         Update: {
+          birth_month?: number | null
+          birth_year?: number | null
           created_at?: string
           exam_date?: string | null
           has_completed_pretest?: boolean
           id?: string
           language?: string
+          leaderboard_preference?: string | null
           learning_style?: string
           name?: string
           program?: string | null
+          sex?: string | null
           state?: string | null
+          tone_preference?: string | null
         }
         Relationships: []
       }

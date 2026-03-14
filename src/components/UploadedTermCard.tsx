@@ -48,7 +48,7 @@ interface UploadedTermCardProps {
 }
 
 const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("definition");
   const [journalNote, setJournalNote] = useState(block.user_notes || "");
   const [journalSaving, setJournalSaving] = useState(false);
@@ -57,7 +57,8 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const [quizSelected, setQuizSelected] = useState<string | null>(null);
   const [quizRevealed, setQuizRevealed] = useState(false);
 
-  const tabs: { key: TabType; label: string }[] = [
+  // Personalized tab ordering based on learning style
+  const allTabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Definition" },
     { key: "pronunciation", label: "Pronounce" },
     { key: "visualize", label: "Visualize" },
@@ -68,6 +69,24 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
     { key: "quiz", label: "Quiz" },
     { key: "journal", label: "Journal" },
   ];
+
+  const learningStyle = (profile as any)?.learning_style || "visual";
+  const priorityMap: Record<string, TabType[]> = {
+    visual: ["visualize", "metaphor", "definition"],
+    reading: ["definition", "reflection", "journal"],
+    kinesthetic: ["practice", "quiz", "definition"],
+    auditory: ["metaphor", "affirmation", "definition"],
+  };
+  const priority = priorityMap[learningStyle] || priorityMap.visual;
+  
+  const tabs = [...allTabs].sort((a, b) => {
+    const aIdx = priority.indexOf(a.key);
+    const bIdx = priority.indexOf(b.key);
+    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+    if (aIdx !== -1) return -1;
+    if (bIdx !== -1) return 1;
+    return 0;
+  });
 
   // Auto-save journal notes
   useEffect(() => {

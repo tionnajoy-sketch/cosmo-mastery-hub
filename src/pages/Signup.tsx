@@ -22,6 +22,16 @@ const US_STATES = [
   "South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"
 ];
 
+const MONTHS = [
+  { value: "1", label: "January" }, { value: "2", label: "February" }, { value: "3", label: "March" },
+  { value: "4", label: "April" }, { value: "5", label: "May" }, { value: "6", label: "June" },
+  { value: "7", label: "July" }, { value: "8", label: "August" }, { value: "9", label: "September" },
+  { value: "10", label: "October" }, { value: "11", label: "November" }, { value: "12", label: "December" },
+];
+
+const currentYear = new Date().getFullYear();
+const YEARS = Array.from({ length: 60 }, (_, i) => String(currentYear - 16 - i));
+
 const Signup = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
@@ -31,6 +41,11 @@ const Signup = () => {
   const [examDate, setExamDate] = useState("");
   const [program, setProgram] = useState("");
   const [language, setLanguage] = useState("en");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [sex, setSex] = useState("");
+  const [tonePreference, setTonePreference] = useState("gentle");
+  const [leaderboardPreference, setLeaderboardPreference] = useState("private");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -59,7 +74,12 @@ const Signup = () => {
         exam_date: examDate || null,
         program: program || null,
         language,
-      }).eq("id", data.user.id);
+        birth_month: birthMonth ? parseInt(birthMonth) : null,
+        birth_year: birthYear ? parseInt(birthYear) : null,
+        sex: sex || "prefer_not_to_say",
+        tone_preference: tonePreference,
+        leaderboard_preference: leaderboardPreference,
+      } as any).eq("id", data.user.id);
     }
 
     setLoading(false);
@@ -83,7 +103,7 @@ const Signup = () => {
             <Sparkles className="h-6 w-6" style={{ color: c.heading }} />
             <span className="font-display text-2xl font-bold" style={{ color: c.heading }}>CosmoPrep</span>
           </div>
-          <p className="text-sm" style={{ color: c.subtext }}>Your journey to passing boards starts here.</p>
+          <p className="text-sm" style={{ color: c.subtext }}>Your calm, encouraging study space — breathe, learn, and let it stick.</p>
         </div>
 
         <Card className="border-0 shadow-2xl" style={{ background: c.card }}>
@@ -105,6 +125,72 @@ const Signup = () => {
                 <Label htmlFor="password">Password</Label>
                 <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" required minLength={6} />
               </div>
+
+              {/* Birth Month & Year */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Birth Month</Label>
+                  <Select value={birthMonth} onValueChange={setBirthMonth}>
+                    <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                    <SelectContent>
+                      {MONTHS.map((m) => (
+                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Birth Year</Label>
+                  <Select value={birthYear} onValueChange={setBirthYear}>
+                    <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
+                    <SelectContent>
+                      {YEARS.map((y) => (
+                        <SelectItem key={y} value={y}>{y}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Sex */}
+              <div className="space-y-2">
+                <Label>Sex</Label>
+                <Select value={sex} onValueChange={setSex}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Tone Preference */}
+              <div className="space-y-2">
+                <Label>Tone Preference</Label>
+                <Select value={tonePreference} onValueChange={setTonePreference}>
+                  <SelectTrigger><SelectValue placeholder="How should we talk to you?" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gentle">🌿 Gentle</SelectItem>
+                    <SelectItem value="hype_coach">🔥 Hype‑Coach</SelectItem>
+                    <SelectItem value="straight">🎯 Straight‑to‑the‑Point</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Leaderboard Preference */}
+              <div className="space-y-2">
+                <Label>Leaderboard Preference</Label>
+                <Select value={leaderboardPreference} onValueChange={setLeaderboardPreference}>
+                  <SelectTrigger><SelectValue placeholder="Who sees your progress?" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="private">🔒 Private</SelectItem>
+                    <SelectItem value="friends">👯 Friends Only</SelectItem>
+                    <SelectItem value="global">🌍 Global</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label>Preferred Language</Label>
                 <Select value={language} onValueChange={setLanguage}>
