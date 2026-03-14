@@ -82,20 +82,12 @@ const Home = () => {
   const [progressMap, setProgressMap] = useState<Map<string, SectionProgress>>(new Map());
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [totalCorrect, setTotalCorrect] = useState(0);
-  const [uploadedModules, setUploadedModules] = useState<{id: string; title: string; status: string; created_at: string}[]>([]);
 
   useEffect(() => {
     supabase.from("sections").select("*").order("order").then(({ data }) => {
       if (data) setSections(data);
     });
   }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    supabase.from("uploaded_modules").select("id, title, status, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(3).then(({ data }) => {
-      if (data) setUploadedModules(data);
-    });
-  }, [user]);
 
   useEffect(() => {
     if (!user || sections.length === 0) return;
