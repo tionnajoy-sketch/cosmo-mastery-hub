@@ -63,6 +63,8 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const reflectionCoinAwarded = useRef(false);
   const journalCoinAwarded = useRef(false);
   const audioCoinAwarded = useRef<Set<string>>(new Set());
+  const blockCompleteAwarded = useRef(false);
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["definition"]));
 
   // Personalized tab ordering based on learning style
   const allTabs: { key: TabType; label: string }[] = [
