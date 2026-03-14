@@ -56,6 +56,9 @@ const AppHeader = () => {
               <DropdownMenuItem onClick={() => navigate("/progress")}>
                 <BarChart3 className="h-4 w-4 mr-2" /> Progress Tracker
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/leaderboard")}>
+                <Trophy className="h-4 w-4 mr-2" /> Leaderboard
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/upload")}>
                 <Upload className="h-4 w-4 mr-2" /> Create Study Blocks
