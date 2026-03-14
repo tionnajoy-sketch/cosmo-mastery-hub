@@ -410,31 +410,41 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
           </Collapsible>
         )}
 
-        <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => {
-                setActiveTab(tab.key);
-                setVisitedTabs((prev) => {
-                  const next = new Set(prev);
-                  next.add(tab.key);
-                  if (!blockCompleteAwarded.current && tabs.every((t) => next.has(t.key))) {
-                    blockCompleteAwarded.current = true;
-                    addCoins(15, "block_complete");
-                  }
-                  return next;
-                });
-              }}
-              className="px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
-              style={{
-                background: activeTab === tab.key ? c.tabActive : c.tabInactive,
-                color: activeTab === tab.key ? c.tabActiveText : c.tabInactiveText,
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Icon grid tabs */}
+        <div className="grid grid-cols-5 gap-1.5 mb-4">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.key;
+            const isVisited = visitedTabs.has(tab.key);
+            return (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  setVisitedTabs((prev) => {
+                    const next = new Set(prev);
+                    next.add(tab.key);
+                    if (!blockCompleteAwarded.current && tabs.every((t) => next.has(t.key))) {
+                      blockCompleteAwarded.current = true;
+                      addCoins(15, "block_complete");
+                    }
+                    return next;
+                  });
+                }}
+                className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl text-[10px] font-medium transition-all relative"
+                style={{
+                  background: isActive ? c.tabActive : c.tabInactive,
+                  color: isActive ? c.tabActiveText : c.tabInactiveText,
+                  boxShadow: isActive ? "0 2px 8px hsla(42, 58%, 48%, 0.25)" : "none",
+                }}
+              >
+                {uploadedTabIcons[tab.key]}
+                {tab.label}
+                {isVisited && !isActive && (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: "hsl(145 50% 50%)" }} />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <AnimatePresence mode="wait">
