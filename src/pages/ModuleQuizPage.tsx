@@ -49,6 +49,7 @@ const ModuleQuizPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(0);
+  const { addCoins } = useCoins();
   const [wrongCount, setWrongCount] = useState(0);
   const [mode, setMode] = useState<QuizMode | null>(null);
   const [strategyMode, setStrategyMode] = useState(false);
