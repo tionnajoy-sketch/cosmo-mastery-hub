@@ -52,6 +52,7 @@ interface UploadedTermCardProps {
 
 const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const { user, profile } = useAuth();
+  const { addCoins } = useCoins();
   const [activeTab, setActiveTab] = useState<TabType>("definition");
   const [journalNote, setJournalNote] = useState(block.user_notes || "");
   const [journalSaving, setJournalSaving] = useState(false);
@@ -59,6 +60,9 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const [reflectionSubmitted, setReflectionSubmitted] = useState(false);
   const [quizSelected, setQuizSelected] = useState<string | null>(null);
   const [quizRevealed, setQuizRevealed] = useState(false);
+  const reflectionCoinAwarded = useRef(false);
+  const journalCoinAwarded = useRef(false);
+  const audioCoinAwarded = useRef<Set<string>>(new Set());
 
   // Personalized tab ordering based on learning style
   const allTabs: { key: TabType; label: string }[] = [
