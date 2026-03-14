@@ -1,103 +1,121 @@
 
 
-## Plan: Build Skin Structure and Growth Module
+# CosmoPrep – TJ Anderson Layer Method Implementation Plan
 
-This is a significant expansion that replaces the existing 5-term "Skin" section with a full 35-term module, adds new UI features, and introduces two quiz modes.
+This is a large-scope spec covering 8 major areas. I'll organize it into phases to keep implementation manageable.
 
-### Scope overview
+---
 
-```text
-Current state:
-  1 section ("Skin") → 5 terms (Block 1) → 5 questions (Block 1)
+## Phase 1: Navigation & Menu Restructure
 
-Target state:
-  1 section ("Skin Structure and Growth") → 35 terms (7 blocks of 5) → 35+ questions (5+ per block)
-  + bookmarking table + progress indicators + 2 quiz modes
-```
+**AppHeader.tsx** — Update the dropdown menu to include a "Study Modules" submenu that lists available sections (Anatomy & Physiology, Skin & Growth, Infection Control) and Coming Soon items. "Study Modules" in the menu currently just navigates to `/` — change it to open a sub-list or navigate to a new `/study-modules` page.
 
-### 1. Database schema changes (migration)
+**Home.tsx** — Remove the "My TJ Study Modules" section from the dashboard body. Keep the upload shortcut. The Study Modules selector dropdown and section cards remain (they show progress), but "My Study Modules" moves to menu-only access.
 
-**New table: `bookmarks`**
-- `id` (uuid, PK, default gen_random_uuid())
-- `user_id` (uuid, NOT NULL, references profiles.id)
-- `term_id` (uuid, NOT NULL, references terms.id)
-- `created_at` (timestamptz, default now())
-- Unique constraint on (user_id, term_id)
-- RLS: users can SELECT/INSERT/DELETE their own bookmarks
+**Calm microcopy** — Add encouraging reminder text at quiz start and new module entry points:
+- UploadPage: "You're in a safe place to learn, not to be perfect."
+- QuizPage: calm reminder before quiz begins
+- ModuleViewPage: gentle welcome text
 
-No other schema changes needed. The existing `terms`, `questions`, `sections`, and `quiz_results` tables already support everything else.
+---
 
-### 2. Data operations (insert tool, not migrations)
+## Phase 2: User Profile & Personalization
 
-**Step 2a: Update the section**
-- UPDATE the existing "Skin" section to rename it "Skin Structure and Growth" with a new description reflecting the TJ Anderson Layer Method voice.
+**Database migration** — Add columns to `profiles` table:
+- `birth_month` (integer, nullable)
+- `birth_year` (integer, nullable)  
+- `sex` (text, nullable — 'female'/'male'/'prefer_not_to_say')
+- `tone_preference` (text, default 'gentle' — 'gentle'/'hype_coach'/'straight')
+- `leaderboard_preference` (text, default 'private' — 'private'/'friends'/'global')
 
-**Step 2b: Delete existing terms and questions**
-- DELETE the 5 existing questions (Block 1)
-- DELETE the 5 existing terms (Block 1)
+**Signup.tsx** — Add fields for birth month/year, sex, tone preference.
 
-**Step 2c: Insert 35 terms across 7 blocks**
+**Personalization logic** — The existing `learning_style` already drives study tips. Extend this so:
+- UploadedTermCard and TermCard reorder tabs based on learning style (visual → Visualize first, kinesthetic → Practice first, etc.)
+- All layers remain available; only default tab order changes
 
-Each term gets a Definition, Metaphor, and Affirmation written in the TJ Anderson Layer Method voice, following all the rules specified (no dashes, no slang, warm professional tone, vocabulary reinforcement in metaphors, grounding "I" statements for affirmations).
+---
 
-Block layout (5 terms each):
+## Phase 3: Upload Engine Improvements
 
-| Block | Terms |
-|-------|-------|
-| 1 | Epidermis, Dermis, Subcutaneous Tissue, Subcutaneous Layer, Dermal Epidermal Junction |
-| 2 | Stratum Corneum, Stratum Lucidum, Stratum Granulosum, Stratum Spinosum, Stratum Germinativum |
-| 3 | Papillary Layer, Reticular Layer, Dermal Papillae, Collagen, Elastin |
-| 4 | Keratin, Melanin, Melanocytes, Eumelanin, Pheomelanin |
-| 5 | Sebaceous Glands, Sebum, Sudoriferous Glands, Sweat Glands, Secretory Coil |
-| 6 | Arrector Pili Muscles, Hair Papillae, Barrier Function, Broad Spectrum Sunscreen, Tactile Corpuscles |
-| 7 | Sensory Nerve Fibers, Motor Nerve Fibers, Secretory Nerve Fibers, Dermatologist, Dermatology |
+**process-upload/index.ts** — Update the system prompt to:
+1. **Primary concept per slide** — Pick one main concept as Block title; supporting terms become bullets under Definition or quiz fodder
+2. **Merge duplicates** — Add post-processing client-side: before inserting blocks, check if `term_title` already exists in the module and merge content
+3. **Real-life metaphors** — Update prompt: "Write a real-world, everyday-life analogy (money, time, relationships, social media, family). Explicitly connect it to the definition using buzz words from the definition. Salon examples are allowed but not required."
+4. **Cosmetology State Board quiz style** — Update prompt: "Generate 4-option cosmetology State Board–style multiple choice questions using proper Board phrasing and difficulty."
+5. **Source tag** — Add `"Source: Slide X of Y"` to `instructor_notes` for each block
+6. **Slide type detection** — Improve prompt to detect case-question slides vs bullet slides vs comparison tables
 
-**Step 2d: Insert quiz questions (5 per block = 35 questions)**
-- State board exam paragraph style stems with realistic client scenarios
-- 4 options (A/B/C/D), one best answer, one plausible distractor, two clearly wrong
-- Warm supportive explanation field
-- Each question linked to its related_term_id
+**UploadPage.tsx** — Add client-side deduplication: after all chunks are processed, merge blocks with identical or very similar `term_title` values before inserting.
 
-Due to the volume (35 terms + 35 questions), this will require multiple data insertion steps.
+---
 
-### 3. Frontend changes
+## Phase 4: Video Support
 
-**3a. Section page (`SectionPage.tsx`)**
-- Add a supportive TJ voice welcome message at the top: encouraging the learner to take their time and focus on understanding
-- Add progress indicators per block showing completion status (uses `quiz_results` to check if block was completed and score)
+**Database migration** — Add `video_url` column (text, default '') to `uploaded_module_blocks` table.
 
-**3b. Study page (`StudyPage.tsx`)**
-- Add bookmark toggle (heart/bookmark icon) on each TermCard, wired to the new `bookmarks` table
-- Add a brief supportive message at the top of each block encouraging slow, intentional learning
+**UploadedTermCard.tsx** — For each layer tab, if `video_url` is set, render a small embedded video player below the text. No autoplay. Add a "watched" tracking mechanism that counts toward block completion.
 
-**3c. Quiz page (`QuizPage.tsx`)**
-- Add mode selection before quiz starts: "Practice Mode" (standard exam prep) and "Confidence Builder Mode" (extra encouragement, gentler feedback on wrong answers, reinforces that mistakes are part of learning)
-- In Confidence Builder Mode, wrong-answer feedback includes additional reassurance text
-- Answer is hidden until selection (already implemented)
+**process-upload/index.ts** — Add `video_url` to the tool schema (optional field, empty string default).
 
-**3d. Results page (`ResultsPage.tsx`)**
-- Differentiate messaging based on quiz mode
-- Confidence Builder Mode shows more nurturing feedback regardless of score
+---
 
-**3e. Home page (`Home.tsx`)**
-- Add overall progress indicator for the section (e.g., "3/7 blocks completed")
+## Phase 5: Gamification — Coins, Sounds, Leaderboard
 
-### 4. Implementation order
+**Database migration** — Create `user_coins` table:
+- `id` (uuid, PK)
+- `user_id` (uuid, NOT NULL)
+- `coins` (integer, default 0)
+- `updated_at` (timestamptz)
 
-1. Create `bookmarks` table (migration)
-2. Update section data, delete old terms/questions, insert all 35 terms (data tool, multiple batches)
-3. Insert all 35 questions (data tool, multiple batches)
-4. Update `SectionPage.tsx` with supportive message and progress indicators
-5. Update `StudyPage.tsx` with bookmark toggle and supportive header
-6. Update `QuizPage.tsx` with mode selection (Practice / Confidence Builder)
-7. Update `ResultsPage.tsx` with mode-aware messaging
-8. Update `Home.tsx` with section progress
+Add RLS policies for users to read/update their own coins.
 
-### Technical details
+**New hook: `useCoins.ts`** — Manages coin state, provides `addCoins(amount, reason)` function. Updates database and triggers UI animation.
 
-- Bookmarks use optimistic UI updates via local state, with background Supabase insert/delete
-- Progress is computed by querying `quiz_results` for the current user and section, checking which block_numbers have entries
-- Quiz mode is passed as URL query param or route state (no schema change needed)
-- All 35 terms will be written with complete Definition, Metaphor, and Affirmation content in the TJ Anderson Layer Method voice before insertion
-- Content follows all stated rules: no dashes, no slang, no sarcasm, professional warmth, vocabulary reinforcement in metaphors, grounding "I" statements in affirmations
+**Sound system** — Add small audio files for correct-answer "coin" sound and block-complete "level-up" sound. Global toggle in a settings context (stored in localStorage).
+
+**Integration points:**
+- QuizPage / ModuleQuizPage: +10 first attempt, +5 second attempt
+- Reflection/Journal save: +3
+- Audio listen completion: +2  
+- All layers completed in a block: +15
+
+**Leaderboard** — Uses `leaderboard_preference` from profile. New `LeaderboardPage.tsx` showing total coins, streak, blocks mastered. Only shows users who opted in to 'global'.
+
+---
+
+## Phase 6: Study Modules Page
+
+**New page: `StudyModulesPage.tsx`** — Lists all available sections organized as:
+- **Available Now**: Anatomy & Physiology, Skin Structure & Growth, Infection Control (clickable, opens section)
+- **Coming Soon**: Product Knowledge, Chemical Services, Haircutting & Styling, Business & Professionalism (shows friendly "Notify me" message)
+
+**AppHeader.tsx** — "Study Modules" menu item navigates to `/study-modules` instead of `/`.
+
+**App.tsx** — Add route for `/study-modules`.
+
+---
+
+## Implementation Order
+
+Given the scope, I recommend implementing in this order:
+
+1. **Phase 1** (Navigation + calm microcopy) — quickest, highest UX impact
+2. **Phase 3** (Upload engine improvements) — addresses core content quality
+3. **Phase 2** (Profile personalization) — database + signup + tab reordering
+4. **Phase 6** (Study Modules page) — new page + menu update
+5. **Phase 4** (Video support) — database + UI addition
+6. **Phase 5** (Gamification) — largest scope, most new tables/logic
+
+---
+
+## Technical Notes
+
+- Profile columns added via database migration tool
+- New tables (`user_coins`) need RLS policies scoped to `auth.uid() = user_id`
+- Upload prompt changes are the most impactful for content quality — the metaphor and quiz style instructions go into the edge function system prompt
+- Tab reordering for personalization is purely client-side based on `profile.learning_style`
+- Sound files can be small base64-encoded or hosted in storage bucket
+
+Shall I proceed with Phase 1 first, or would you prefer a different starting point?
 
