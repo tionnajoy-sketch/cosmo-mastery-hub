@@ -107,6 +107,22 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
     return () => clearTimeout(timeout);
   }, [journalNote, block.id, block.user_notes, onNotesChange]);
 
+  // Award coins for journal (first meaningful save)
+  useEffect(() => {
+    if (journalNote.length >= 10 && !journalCoinAwarded.current) {
+      journalCoinAwarded.current = true;
+      addCoins(3, "reflection");
+    }
+  }, [journalNote, addCoins]);
+
+  const handleAudioComplete = useCallback(() => {
+    const key = `${block.id}-${activeTab}`;
+    if (!audioCoinAwarded.current.has(key)) {
+      audioCoinAwarded.current.add(key);
+      addCoins(2, "audio");
+    }
+  }, [block.id, activeTab, addCoins]);
+
   const getSpeakText = () => {
     switch (activeTab) {
       case "definition": return `${block.term_title}. ${block.definition}`;
