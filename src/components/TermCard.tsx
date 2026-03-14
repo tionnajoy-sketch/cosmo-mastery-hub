@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useCoins } from "@/hooks/useCoins";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ interface TermCardProps {
 
 const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const { user } = useAuth();
+  const { addCoins } = useCoins();
   const [activeTab, setActiveTab] = useState<TabType>("definition");
   const [journalNote, setJournalNote] = useState("");
   const [journalSaving, setJournalSaving] = useState(false);
@@ -45,6 +47,9 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const [reflectionText, setReflectionText] = useState("");
   const [reflectionSaving, setReflectionSaving] = useState(false);
   const [reflectionSubmitted, setReflectionSubmitted] = useState(false);
+  const journalCoinAwarded = useRef(false);
+  const reflectionCoinAwarded = useRef(false);
+  const audioCoinAwarded = useRef<Set<string>>(new Set());
 
   const buildExercise = useMemo(() => getBuildExercise(term.term), [term.term]);
   const reflectionPrompt = useMemo(() => generateReflectionPrompt(term.term, term.definition), [term.term, term.definition]);
@@ -121,7 +126,27 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     );
     setReflectionSaving(false);
     setReflectionSubmitted(true);
-  }, [user, term.id, reflectionText]);
+    if (!reflectionCoinAwarded.current) {
+      reflectionCoinAwarded.current = true;
+      addCoins(3, "reflection");
+    }
+  }, [user, term.id, reflectionText, addCoins]);
+
+  // Award coins for journal (first meaningful save)
+  useEffect(() => {
+    if (journalNote.length >= 10 && !journalCoinAwarded.current) {
+      journalCoinAwarded.current = true;
+      addCoins(3, "reflection");
+    }
+  }, [journalNote, addCoins]);
+
+  const handleAudioComplete = useCallback(() => {
+    const key = `${term.id}-${activeTab}`;
+    if (!audioCoinAwarded.current.has(key)) {
+      audioCoinAwarded.current.add(key);
+      addCoins(2, "audio");
+    }
+  }, [term.id, activeTab, addCoins]);
 
   // Build full speak text for each tab
   const getSpeakText = () => {
@@ -290,7 +315,7 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
           <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
             {showSpeakButton && (
               <div className="flex justify-end mb-2">
-                <SpeakButton text={getSpeakText()} label="Listen" size="sm" />
+                <SpeakButton text={getSpeakText()} label="Listen" size="sm" onComplete={handleAudioComplete} />
               </div>
             )}
             {renderContent()}

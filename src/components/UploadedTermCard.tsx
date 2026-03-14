@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useCoins } from "@/hooks/useCoins";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ interface UploadedTermCardProps {
 
 const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const { user, profile } = useAuth();
+  const { addCoins } = useCoins();
   const [activeTab, setActiveTab] = useState<TabType>("definition");
   const [journalNote, setJournalNote] = useState(block.user_notes || "");
   const [journalSaving, setJournalSaving] = useState(false);
@@ -58,6 +60,9 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const [reflectionSubmitted, setReflectionSubmitted] = useState(false);
   const [quizSelected, setQuizSelected] = useState<string | null>(null);
   const [quizRevealed, setQuizRevealed] = useState(false);
+  const reflectionCoinAwarded = useRef(false);
+  const journalCoinAwarded = useRef(false);
+  const audioCoinAwarded = useRef<Set<string>>(new Set());
 
   // Personalized tab ordering based on learning style
   const allTabs: { key: TabType; label: string }[] = [
@@ -101,6 +106,22 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
     }, 1000);
     return () => clearTimeout(timeout);
   }, [journalNote, block.id, block.user_notes, onNotesChange]);
+
+  // Award coins for journal (first meaningful save)
+  useEffect(() => {
+    if (journalNote.length >= 10 && !journalCoinAwarded.current) {
+      journalCoinAwarded.current = true;
+      addCoins(3, "reflection");
+    }
+  }, [journalNote, addCoins]);
+
+  const handleAudioComplete = useCallback(() => {
+    const key = `${block.id}-${activeTab}`;
+    if (!audioCoinAwarded.current.has(key)) {
+      audioCoinAwarded.current.add(key);
+      addCoins(2, "audio");
+    }
+  }, [block.id, activeTab, addCoins]);
 
   const getSpeakText = () => {
     switch (activeTab) {
@@ -225,7 +246,13 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
             {!reflectionSubmitted ? (
               <Button
                 size="sm"
-                onClick={() => setReflectionSubmitted(true)}
+                onClick={() => {
+                  setReflectionSubmitted(true);
+                  if (!reflectionCoinAwarded.current) {
+                    reflectionCoinAwarded.current = true;
+                    addCoins(3, "reflection");
+                  }
+                }}
                 disabled={!reflectionText.trim()}
                 className="w-full"
                 style={{ background: c.tabActive, color: c.tabActiveText }}
@@ -350,7 +377,7 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
           <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
             {showSpeakButton && activeTab !== "pronunciation" && (
               <div className="flex justify-end mb-2">
-                <SpeakButton text={getSpeakText()} label="Listen" size="sm" />
+                <SpeakButton text={getSpeakText()} label="Listen" size="sm" onComplete={handleAudioComplete} />
               </div>
             )}
             {renderContent()}

@@ -7,9 +7,10 @@ interface SpeakButtonProps {
   label?: string;
   size?: "sm" | "icon" | "default";
   className?: string;
+  onComplete?: () => void;
 }
 
-const SpeakButton = ({ text, label, size = "icon", className = "" }: SpeakButtonProps) => {
+const SpeakButton = ({ text, label, size = "icon", className = "", onComplete }: SpeakButtonProps) => {
   const [speaking, setSpeaking] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
@@ -26,12 +27,15 @@ const SpeakButton = ({ text, label, size = "icon", className = "" }: SpeakButton
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.9;
     utterance.pitch = 1;
-    utterance.onend = () => setSpeaking(false);
+    utterance.onend = () => {
+      setSpeaking(false);
+      onComplete?.();
+    };
     utterance.onerror = () => setSpeaking(false);
     utteranceRef.current = utterance;
     setSpeaking(true);
     window.speechSynthesis.speak(utterance);
-  }, [text, speaking]);
+  }, [text, speaking, onComplete]);
 
   if (!("speechSynthesis" in window)) return null;
 
