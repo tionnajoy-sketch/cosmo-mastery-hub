@@ -377,7 +377,7 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
           <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
             {showSpeakButton && activeTab !== "pronunciation" && (
               <div className="flex justify-end mb-2">
-                <SpeakButton text={getSpeakText()} label="Listen" size="sm" />
+                <SpeakButton text={getSpeakText()} label="Listen" size="sm" onComplete={handleAudioComplete} />
               </div>
             )}
             {renderContent()}
