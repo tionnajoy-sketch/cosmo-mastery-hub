@@ -89,7 +89,7 @@ const Home = () => {
   const [progressMap, setProgressMap] = useState<Map<string, SectionProgress>>(new Map());
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [totalCorrect, setTotalCorrect] = useState(0);
-  const [uploadedModules, setUploadedModules] = useState<{id: string; title: string; status: string; created_at: string}[]>([]);
+  const [uploadedModules] = useState<{id: string; title: string; status: string; created_at: string}[]>([]);
 
   useEffect(() => {
     supabase.from("sections").select("*").order("order").then(({ data }) => {
