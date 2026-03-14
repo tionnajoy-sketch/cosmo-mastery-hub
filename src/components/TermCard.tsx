@@ -47,6 +47,8 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const [reflectionText, setReflectionText] = useState("");
   const [reflectionSaving, setReflectionSaving] = useState(false);
   const [reflectionSubmitted, setReflectionSubmitted] = useState(false);
+  const [videoSuggestions, setVideoSuggestions] = useState<{ label: string; url: string }[]>([]);
+  const [videoLoading, setVideoLoading] = useState(false);
   const journalCoinAwarded = useRef(false);
   const reflectionCoinAwarded = useRef(false);
   const audioCoinAwarded = useRef<Set<string>>(new Set());
