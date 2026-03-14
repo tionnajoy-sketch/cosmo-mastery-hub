@@ -34,6 +34,7 @@ import ModuleResultsPage from "./pages/ModuleResultsPage";
 import ModuleActivityPage from "./pages/ModuleActivityPage";
 import ModuleQuizBankPage from "./pages/ModuleQuizBankPage";
 import InsightsPage from "./pages/InsightsPage";
+import StudyModulesPage from "./pages/StudyModulesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
