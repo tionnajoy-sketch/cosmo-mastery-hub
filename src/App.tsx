@@ -37,6 +37,7 @@ import ModuleQuizBankPage from "./pages/ModuleQuizBankPage";
 import InsightsPage from "./pages/InsightsPage";
 import StudyModulesPage from "./pages/StudyModulesPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
+import ComprehensiveFinalExamPage from "./pages/ComprehensiveFinalExamPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -81,6 +82,7 @@ const App = () => (
               <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
               <Route path="/study-modules" element={<ProtectedRoute><StudyModulesPage /></ProtectedRoute>} />
               <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
+              <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </CoinProvider>

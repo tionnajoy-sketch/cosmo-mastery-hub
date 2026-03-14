@@ -12,7 +12,7 @@ import {
 import {
   BookOpen, Menu, LogOut, BarChart3, Upload, Sparkles,
   Shield, Brain, Gamepad2, Lightbulb, Settings, Library,
-  Volume2, VolumeX, Trophy,
+  Volume2, VolumeX, Trophy, GraduationCap, MessageCircle,
 } from "lucide-react";
 import CoinDisplay from "@/components/CoinDisplay";
 
@@ -59,7 +59,16 @@ const AppHeader = () => {
               <DropdownMenuItem onClick={() => navigate("/leaderboard")}>
                 <Trophy className="h-4 w-4 mr-2" /> Leaderboard
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/comprehensive-exam")}>
+                <GraduationCap className="h-4 w-4 mr-2" /> State Board Final Exam
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => {
+                const askTjBtn = document.querySelector('[data-ask-tj-trigger]') as HTMLElement;
+                if (askTjBtn) askTjBtn.click();
+              }}>
+                <MessageCircle className="h-4 w-4 mr-2" /> Ask TJ
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/upload")}>
                 <Upload className="h-4 w-4 mr-2" /> Create Study Blocks
               </DropdownMenuItem>

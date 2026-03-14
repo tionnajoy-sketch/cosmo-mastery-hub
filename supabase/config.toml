@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.process-upload]
 verify_jwt = false
+
+[functions.suggest-video]
+verify_jwt = false
