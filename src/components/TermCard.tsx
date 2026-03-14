@@ -167,6 +167,17 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
       case "definition":
         return <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{term.definition}</p>;
       case "picture":
+        const fetchVideos = async () => {
+          if (videoSuggestions.length || videoLoading) return;
+          setVideoLoading(true);
+          try {
+            const { data } = await supabase.functions.invoke("suggest-video", {
+              body: { term: term.term, definition: term.definition },
+            });
+            if (data?.videos) setVideoSuggestions(data.videos);
+          } catch (e) { console.error(e); }
+          finally { setVideoLoading(false); }
+        };
         return (
           <div className="flex flex-col items-center">
             {imageLoading ? (
@@ -191,6 +202,23 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
                 <p className="text-sm" style={{ color: c.subtext }}>Image will generate automatically...</p>
               </div>
             )}
+            {videoSuggestions.length > 0 && (
+              <div className="w-full space-y-2 pt-3">
+                <p className="text-xs font-medium" style={{ color: c.subtext }}>📹 Suggested Videos:</p>
+                {videoSuggestions.map((v, i) => (
+                  <a key={i} href={v.url} target="_blank" rel="noopener noreferrer"
+                    className="block text-sm underline" style={{ color: c.tabActive }}>
+                    {v.label}
+                  </a>
+                ))}
+              </div>
+            )}
+            {!videoSuggestions.length && !videoLoading && (
+              <Button size="sm" variant="ghost" onClick={fetchVideos} className="gap-1 text-xs mt-2" style={{ color: c.subtext }}>
+                🎬 Find Related Videos
+              </Button>
+            )}
+            {videoLoading && <p className="text-xs mt-2" style={{ color: c.subtext }}>Finding videos...</p>}
           </div>
         );
       case "metaphor":
