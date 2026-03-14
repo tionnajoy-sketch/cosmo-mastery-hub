@@ -63,6 +63,8 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const reflectionCoinAwarded = useRef(false);
   const journalCoinAwarded = useRef(false);
   const audioCoinAwarded = useRef<Set<string>>(new Set());
+  const blockCompleteAwarded = useRef(false);
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["definition"]));
 
   // Personalized tab ordering based on learning style
   const allTabs: { key: TabType; label: string }[] = [
@@ -361,7 +363,18 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => {
+                setActiveTab(tab.key);
+                setVisitedTabs((prev) => {
+                  const next = new Set(prev);
+                  next.add(tab.key);
+                  if (!blockCompleteAwarded.current && tabs.every((t) => next.has(t.key))) {
+                    blockCompleteAwarded.current = true;
+                    addCoins(15, "block_complete");
+                  }
+                  return next;
+                });
+              }}
               className="px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
               style={{
                 background: activeTab === tab.key ? c.tabActive : c.tabInactive,

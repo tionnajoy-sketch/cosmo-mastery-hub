@@ -50,6 +50,8 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const journalCoinAwarded = useRef(false);
   const reflectionCoinAwarded = useRef(false);
   const audioCoinAwarded = useRef<Set<string>>(new Set());
+  const blockCompleteAwarded = useRef(false);
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["definition"]));
 
   const buildExercise = useMemo(() => getBuildExercise(term.term), [term.term]);
   const reflectionPrompt = useMemo(() => generateReflectionPrompt(term.term, term.definition), [term.term, term.definition]);
@@ -299,7 +301,18 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => {
+                setActiveTab(tab.key);
+                setVisitedTabs((prev) => {
+                  const next = new Set(prev);
+                  next.add(tab.key);
+                  if (!blockCompleteAwarded.current && tabs.every((t) => next.has(t.key))) {
+                    blockCompleteAwarded.current = true;
+                    addCoins(15, "block_complete");
+                  }
+                  return next;
+                });
+              }}
               className="px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
               style={{
                 background: activeTab === tab.key ? c.tabActive : c.tabInactive,
