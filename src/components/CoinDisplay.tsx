@@ -19,7 +19,7 @@ const CoinDisplay = ({ coins, showAnimation, lastAdded }: CoinDisplayProps) => {
             animate={{ opacity: 0, y: -24 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2 }}
-            className="absolute -top-1 -right-6 text-xs font-bold text-amber-500"
+            className="absolute -top-1 -right-6 text-xs font-bold" style={{ color: "hsl(42 55% 48%)" }}
           >
             +{lastAdded}
           </motion.span>
