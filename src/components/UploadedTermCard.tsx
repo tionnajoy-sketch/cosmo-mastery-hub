@@ -202,15 +202,37 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
           <div className="space-y-3">
             {imageUrl ? (
               <img src={imageUrl} alt={`Visual diagram for ${block.term_title}`} className="w-full rounded-lg mb-3" />
+            ) : imageLoading ? (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <Loader2 className="h-8 w-8 animate-spin" style={{ color: c.tabActive }} />
+                <p className="text-sm" style={{ color: c.subtext }}>Generating your illustration...</p>
+              </div>
             ) : (
               <div className="flex justify-center mb-3">
                 <Button size="sm" variant="outline" onClick={generateImage} disabled={imageLoading} className="gap-2">
-                  {imageLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : "Generate Visual Diagram"}
+                  Generate Visual Diagram
                 </Button>
               </div>
             )}
             <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.visualization_desc}</p>
             {block.video_url && <VideoPlayer url={block.video_url} />}
+            {videoSuggestions.length > 0 && (
+              <div className="space-y-2 pt-2">
+                <p className="text-xs font-medium" style={{ color: c.subtext }}>📹 Suggested Videos:</p>
+                {videoSuggestions.map((v, i) => (
+                  <a key={i} href={v.url} target="_blank" rel="noopener noreferrer"
+                    className="block text-sm underline" style={{ color: c.tabActive }}>
+                    {v.label}
+                  </a>
+                ))}
+              </div>
+            )}
+            {!videoSuggestions.length && !videoLoading && (
+              <Button size="sm" variant="ghost" onClick={fetchVideoSuggestions} className="gap-1 text-xs" style={{ color: c.subtext }}>
+                🎬 Find Related Videos
+              </Button>
+            )}
+            {videoLoading && <p className="text-xs" style={{ color: c.subtext }}>Finding videos...</p>}
             <BrainNote text="Visualizing a concept creates a mental picture that strengthens recall. Close your eyes and imagine this image." />
           </div>
         );
