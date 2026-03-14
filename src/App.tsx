@@ -38,6 +38,7 @@ import InsightsPage from "./pages/InsightsPage";
 import StudyModulesPage from "./pages/StudyModulesPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ComprehensiveFinalExamPage from "./pages/ComprehensiveFinalExamPage";
+import AIMentorChat from "./components/AIMentorChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
