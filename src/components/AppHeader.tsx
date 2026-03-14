@@ -12,7 +12,7 @@ import {
 import {
   BookOpen, Menu, LogOut, BarChart3, Upload, Sparkles,
   Shield, Brain, Gamepad2, Lightbulb, Settings, Library,
-  Volume2, VolumeX,
+  Volume2, VolumeX, Trophy,
 } from "lucide-react";
 import CoinDisplay from "@/components/CoinDisplay";
 
@@ -55,6 +55,9 @@ const AppHeader = () => {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/progress")}>
                 <BarChart3 className="h-4 w-4 mr-2" /> Progress Tracker
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/leaderboard")}>
+                <Trophy className="h-4 w-4 mr-2" /> Leaderboard
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/upload")}>
