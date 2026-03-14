@@ -86,6 +86,7 @@ const App = () => (
               <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <AIMentorChat />
           </CoinProvider>
         </AuthProvider>
       </BrowserRouter>

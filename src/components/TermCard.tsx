@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bookmark, Loader2, CheckCircle2 } from "lucide-react";
+import { Bookmark, Loader2, CheckCircle2, BookOpen, Eye, Lightbulb, Heart, PenLine, Wrench, GraduationCap } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import { getBuildExercise } from "@/lib/buildExercises";
 import BuildTheBody from "@/components/BuildTheBody";
@@ -29,6 +29,16 @@ const generateReflectionPrompt = (term: string, definition: string): string => {
 
 interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; }
 type TabType = "definition" | "picture" | "metaphor" | "affirmation" | "reflection" | "journal" | "build";
+
+const tabIcons: Record<TabType, React.ReactNode> = {
+  definition: <BookOpen className="h-3.5 w-3.5" />,
+  picture: <Eye className="h-3.5 w-3.5" />,
+  metaphor: <Lightbulb className="h-3.5 w-3.5" />,
+  affirmation: <Heart className="h-3.5 w-3.5" />,
+  reflection: <PenLine className="h-3.5 w-3.5" />,
+  build: <Wrench className="h-3.5 w-3.5" />,
+  journal: <GraduationCap className="h-3.5 w-3.5" />,
+};
 
 interface TermCardProps {
   term: Term;
@@ -59,11 +69,11 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const reflectionPrompt = useMemo(() => generateReflectionPrompt(term.term, term.definition), [term.term, term.definition]);
 
   const tabs: { key: TabType; label: string }[] = [
-    { key: "definition", label: "Definition" },
+    { key: "definition", label: "Define" },
     { key: "picture", label: "Visualize" },
     { key: "metaphor", label: "Metaphor" },
-    { key: "affirmation", label: "Affirmation" },
-    { key: "reflection", label: "Reflection" },
+    { key: "affirmation", label: "Affirm" },
+    { key: "reflection", label: "Reflect" },
     ...(buildExercise ? [{ key: "build" as TabType, label: "Practice" }] : []),
     { key: "journal", label: "Journal" },
   ];
@@ -136,7 +146,6 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     }
   }, [user, term.id, reflectionText, addCoins]);
 
-  // Award coins for journal (first meaningful save)
   useEffect(() => {
     if (journalNote.length >= 10 && !journalCoinAwarded.current) {
       journalCoinAwarded.current = true;
@@ -152,7 +161,6 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     }
   }, [term.id, activeTab, addCoins]);
 
-  // Build full speak text for each tab
   const getSpeakText = () => {
     switch (activeTab) {
       case "definition": return `${term.term}. ${term.definition}`;
@@ -242,12 +250,7 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
               />
               {!reflectionSubmitted && (
                 <div className="absolute right-1 bottom-1">
-                  <SpeechToTextButton
-                    onTranscript={(text) => {
-                      setReflectionText((prev) => prev ? `${prev} ${text}` : text);
-                      setReflectionSubmitted(false);
-                    }}
-                  />
+                  <SpeechToTextButton onTranscript={(text) => { setReflectionText((prev) => prev ? `${prev} ${text}` : text); setReflectionSubmitted(false); }} />
                 </div>
               )}
             </div>
@@ -307,6 +310,19 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
 
   const showSpeakButton = ["definition", "metaphor", "affirmation"].includes(activeTab);
 
+  const handleTabClick = (key: TabType) => {
+    setActiveTab(key);
+    setVisitedTabs((prev) => {
+      const next = new Set(prev);
+      next.add(key);
+      if (!blockCompleteAwarded.current && tabs.every((t) => next.has(t.key))) {
+        blockCompleteAwarded.current = true;
+        addCoins(15, "block_complete");
+      }
+      return next;
+    });
+  };
+
   return (
     <Card className="border-0 shadow-md overflow-hidden" style={{ background: c.card }}>
       <CardContent className="p-5">
@@ -327,31 +343,29 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
           </button>
         </div>
 
-        <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => {
-                setActiveTab(tab.key);
-                setVisitedTabs((prev) => {
-                  const next = new Set(prev);
-                  next.add(tab.key);
-                  if (!blockCompleteAwarded.current && tabs.every((t) => next.has(t.key))) {
-                    blockCompleteAwarded.current = true;
-                    addCoins(15, "block_complete");
-                  }
-                  return next;
-                });
-              }}
-              className="px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
-              style={{
-                background: activeTab === tab.key ? c.tabActive : c.tabInactive,
-                color: activeTab === tab.key ? c.tabActiveText : c.tabInactiveText,
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.key;
+            const isVisited = visitedTabs.has(tab.key);
+            return (
+              <button
+                key={tab.key}
+                onClick={() => handleTabClick(tab.key)}
+                className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl text-[10px] font-medium transition-all relative"
+                style={{
+                  background: isActive ? c.tabActive : c.tabInactive,
+                  color: isActive ? c.tabActiveText : c.tabInactiveText,
+                  boxShadow: isActive ? "0 2px 8px hsla(42, 58%, 48%, 0.25)" : "none",
+                }}
+              >
+                {tabIcons[tab.key]}
+                {tab.label}
+                {isVisited && !isActive && (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: "hsl(145 50% 50%)" }} />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <AnimatePresence mode="wait">
