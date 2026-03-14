@@ -12,7 +12,7 @@ import {
 import {
   BookOpen, Menu, LogOut, BarChart3, Upload, Sparkles,
   Shield, Brain, Gamepad2, Lightbulb, Settings, Library,
-  Volume2, VolumeX, Trophy,
+  Volume2, VolumeX, Trophy, GraduationCap, MessageCircle,
 } from "lucide-react";
 import CoinDisplay from "@/components/CoinDisplay";
 
