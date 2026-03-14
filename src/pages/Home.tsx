@@ -9,17 +9,10 @@ import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import {
   BookOpen, ArrowRight, Target, TrendingUp,
-  Info, CheckCircle2, Flame, BarChart3, Heart, Shield,
-  Star, Brain, Sparkles, Eye, Award, Upload,
-  Pen, MessageSquare, GraduationCap, RefreshCw, ChevronDown, Lock,
+  CheckCircle2, Flame, Heart, Shield,
+  Brain, Sparkles, Eye, Upload,
+  Pen, MessageSquare, GraduationCap, RefreshCw,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors, sectionAccentColors } from "@/lib/colors";
 import PopUpReview from "@/components/PopUpReview";
