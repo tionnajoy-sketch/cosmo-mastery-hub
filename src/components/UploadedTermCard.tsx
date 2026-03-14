@@ -153,7 +153,12 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const renderContent = () => {
     switch (activeTab) {
       case "definition":
-        return <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>;
+        return (
+          <div>
+            <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
+            {block.video_url && <VideoPlayer url={block.video_url} />}
+          </div>
+        );
 
       case "pronunciation":
         return (
