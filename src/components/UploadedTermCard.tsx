@@ -39,6 +39,7 @@ export interface UploadedBlock {
   image_url?: string;
   instructor_notes?: string;
   slide_type?: string;
+  video_url?: string;
 }
 
 type TabType = "definition" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
