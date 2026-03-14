@@ -99,6 +99,7 @@ const ModuleViewPage = () => {
 
   return (
     <div className="min-h-screen" style={{ background: c.gradient }}>
+      <AppHeader />
       <div className="max-w-2xl mx-auto px-4 py-6">
         <Button variant="ghost" onClick={() => navigate("/my-modules")} className="mb-4 gap-2" style={{ color: c.subtext }}>
           <ArrowLeft className="h-4 w-4" /> My Modules

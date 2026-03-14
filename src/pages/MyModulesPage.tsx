@@ -110,6 +110,7 @@ const MyModulesPage = () => {
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(135deg, hsl(270 20% 97%), hsl(325 15% 96%))" }}>
+      <AppHeader />
       <div className="max-w-2xl mx-auto px-4 py-6">
         <Button variant="ghost" onClick={() => navigate("/")} className="mb-4 gap-2 text-muted-foreground">
           <ArrowLeft className="h-4 w-4" /> Dashboard
