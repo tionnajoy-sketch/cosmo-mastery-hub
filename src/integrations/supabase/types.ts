@@ -610,6 +610,7 @@ export type Database = {
           slide_type: string
           term_title: string
           user_notes: string
+          video_url: string
           visualization_desc: string
         }
         Insert: {
@@ -637,6 +638,7 @@ export type Database = {
           slide_type?: string
           term_title?: string
           user_notes?: string
+          video_url?: string
           visualization_desc?: string
         }
         Update: {
@@ -664,6 +666,7 @@ export type Database = {
           slide_type?: string
           term_title?: string
           user_notes?: string
+          video_url?: string
           visualization_desc?: string
         }
         Relationships: [
@@ -804,6 +807,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_coins: {
+        Row: {
+          blocks_mastered: number
+          coins: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          blocks_mastered?: number
+          coins?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          blocks_mastered?: number
+          coins?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       wrong_answers: {
         Row: {

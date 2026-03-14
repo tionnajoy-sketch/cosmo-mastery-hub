@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { ArrowLeft, BarChart3, Target, BookOpen, Brain, Gamepad2, Sparkles } from "lucide-react";
+import AppHeader from "@/components/AppHeader";
 
 const c = {
   gradient: "linear-gradient(180deg, hsl(220 35% 92%), hsl(230 25% 95%), hsl(240 20% 97%))",
@@ -94,6 +95,7 @@ const ProgressPage = () => {
 
   return (
     <div className="min-h-screen" style={{ background: c.gradient }}>
+      <AppHeader />
       <div className="max-w-2xl mx-auto px-4 py-6">
         <Button variant="ghost" onClick={() => navigate("/")} className="mb-4 gap-2 text-muted-foreground">
           <ArrowLeft className="h-4 w-4" /> Home

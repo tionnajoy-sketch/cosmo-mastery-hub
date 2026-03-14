@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import SpeakButton from "@/components/SpeakButton";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
 import BrainNote from "@/components/BrainNote";
+import VideoPlayer from "@/components/VideoPlayer";
 
 const c = pageColors.study;
 
@@ -38,6 +39,7 @@ export interface UploadedBlock {
   image_url?: string;
   instructor_notes?: string;
   slide_type?: string;
+  video_url?: string;
 }
 
 type TabType = "definition" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
@@ -151,7 +153,12 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const renderContent = () => {
     switch (activeTab) {
       case "definition":
-        return <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>;
+        return (
+          <div>
+            <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
+            {block.video_url && <VideoPlayer url={block.video_url} />}
+          </div>
+        );
 
       case "pronunciation":
         return (
@@ -180,6 +187,7 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
               </div>
             )}
             <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.visualization_desc}</p>
+            {block.video_url && <VideoPlayer url={block.video_url} />}
             <BrainNote text="Visualizing a concept creates a mental picture that strengthens recall. Close your eyes and imagine this image." />
           </div>
         );

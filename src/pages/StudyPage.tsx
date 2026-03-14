@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Brain, Gamepad2, GraduationCap } from "lucide-react";
 import TermCard from "@/components/TermCard";
 import AIMentorChat from "@/components/AIMentorChat";
+import AppHeader from "@/components/AppHeader";
 import { pageColors } from "@/lib/colors";
 import { blockObjectivesMap } from "@/lib/sectionObjectives";
 
@@ -65,6 +66,7 @@ const StudyPage = () => {
 
   return (
     <div className="min-h-screen" style={{ background: c.gradient }}>
+      <AppHeader />
       <div className="max-w-2xl mx-auto px-4 py-6">
         <Button variant="ghost" onClick={() => navigate(`/section/${id}`)} className="mb-4 gap-2 text-muted-foreground">
           <ArrowLeft className="h-4 w-4" /> Back to {sectionName || "Section"}
