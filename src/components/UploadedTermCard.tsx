@@ -246,7 +246,13 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
             {!reflectionSubmitted ? (
               <Button
                 size="sm"
-                onClick={() => setReflectionSubmitted(true)}
+                onClick={() => {
+                  setReflectionSubmitted(true);
+                  if (!reflectionCoinAwarded.current) {
+                    reflectionCoinAwarded.current = true;
+                    addCoins(3, "reflection");
+                  }
+                }}
                 disabled={!reflectionText.trim()}
                 className="w-full"
                 style={{ background: c.tabActive, color: c.tabActiveText }}
