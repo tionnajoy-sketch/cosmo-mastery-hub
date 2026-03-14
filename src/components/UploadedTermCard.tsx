@@ -340,6 +340,8 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
 
   const [imageUrl, setImageUrl] = useState(block.image_url || "");
   const [imageLoading, setImageLoading] = useState(false);
+  const [videoSuggestions, setVideoSuggestions] = useState<{ label: string; url: string }[]>([]);
+  const [videoLoading, setVideoLoading] = useState(false);
 
   const generateImage = async () => {
     if (imageUrl || imageLoading) return;
@@ -348,14 +350,29 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
       const { data, error } = await supabase.functions.invoke("generate-term-image", {
         body: { termId: block.id, term: block.term_title, definition: block.definition, metaphor: block.metaphor },
       });
-      if (data?.imageUrl) {
-        setImageUrl(data.imageUrl);
-        await supabase.from("uploaded_module_blocks").update({ image_url: data.imageUrl }).eq("id", block.id);
+      const url = data?.image_url || data?.imageUrl;
+      if (url) {
+        setImageUrl(url);
+        await supabase.from("uploaded_module_blocks").update({ image_url: url }).eq("id", block.id);
       }
     } catch (e) {
       console.error("Image generation failed:", e);
     } finally {
       setImageLoading(false);
+    }
+  };
+
+  const fetchVideoSuggestions = async () => {
+    setVideoLoading(true);
+    try {
+      const { data } = await supabase.functions.invoke("suggest-video", {
+        body: { term: block.term_title, definition: block.definition },
+      });
+      if (data?.videos) setVideoSuggestions(data.videos);
+    } catch (e) {
+      console.error("Video suggestion failed:", e);
+    } finally {
+      setVideoLoading(false);
     }
   };
 

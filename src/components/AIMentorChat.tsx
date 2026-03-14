@@ -100,6 +100,7 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onClick={() => setOpen(true)}
+            data-ask-tj-trigger
             className="fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl flex items-center gap-2"
             style={{ background: "linear-gradient(135deg, hsl(270 50% 52%), hsl(325 55% 52%))" }}
           >
