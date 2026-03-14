@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, XCircle, StickyNote, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, StickyNote, Loader2, BookOpen, Eye, Lightbulb, Heart, PenLine, Wrench, GraduationCap, Mic, HelpCircle } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import SpeakButton from "@/components/SpeakButton";
@@ -67,13 +67,25 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["definition"]));
 
   // Personalized tab ordering based on learning style
+  const uploadedTabIcons: Record<TabType, React.ReactNode> = {
+    definition: <BookOpen className="h-3.5 w-3.5" />,
+    pronunciation: <Mic className="h-3.5 w-3.5" />,
+    visualize: <Eye className="h-3.5 w-3.5" />,
+    metaphor: <Lightbulb className="h-3.5 w-3.5" />,
+    affirmation: <Heart className="h-3.5 w-3.5" />,
+    reflection: <PenLine className="h-3.5 w-3.5" />,
+    practice: <Wrench className="h-3.5 w-3.5" />,
+    quiz: <HelpCircle className="h-3.5 w-3.5" />,
+    journal: <GraduationCap className="h-3.5 w-3.5" />,
+  };
+
   const allTabs: { key: TabType; label: string }[] = [
-    { key: "definition", label: "Definition" },
+    { key: "definition", label: "Define" },
     { key: "pronunciation", label: "Pronounce" },
     { key: "visualize", label: "Visualize" },
     { key: "metaphor", label: "Metaphor" },
-    { key: "affirmation", label: "Affirmation" },
-    { key: "reflection", label: "Reflection" },
+    { key: "affirmation", label: "Affirm" },
+    { key: "reflection", label: "Reflect" },
     ...(block.practice_scenario ? [{ key: "practice" as TabType, label: "Practice" }] : []),
     { key: "quiz", label: "Quiz" },
     { key: "journal", label: "Journal" },
@@ -398,31 +410,41 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
           </Collapsible>
         )}
 
-        <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => {
-                setActiveTab(tab.key);
-                setVisitedTabs((prev) => {
-                  const next = new Set(prev);
-                  next.add(tab.key);
-                  if (!blockCompleteAwarded.current && tabs.every((t) => next.has(t.key))) {
-                    blockCompleteAwarded.current = true;
-                    addCoins(15, "block_complete");
-                  }
-                  return next;
-                });
-              }}
-              className="px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
-              style={{
-                background: activeTab === tab.key ? c.tabActive : c.tabInactive,
-                color: activeTab === tab.key ? c.tabActiveText : c.tabInactiveText,
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Icon grid tabs */}
+        <div className="grid grid-cols-5 gap-1.5 mb-4">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.key;
+            const isVisited = visitedTabs.has(tab.key);
+            return (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  setVisitedTabs((prev) => {
+                    const next = new Set(prev);
+                    next.add(tab.key);
+                    if (!blockCompleteAwarded.current && tabs.every((t) => next.has(t.key))) {
+                      blockCompleteAwarded.current = true;
+                      addCoins(15, "block_complete");
+                    }
+                    return next;
+                  });
+                }}
+                className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl text-[10px] font-medium transition-all relative"
+                style={{
+                  background: isActive ? c.tabActive : c.tabInactive,
+                  color: isActive ? c.tabActiveText : c.tabInactiveText,
+                  boxShadow: isActive ? "0 2px 8px hsla(42, 58%, 48%, 0.25)" : "none",
+                }}
+              >
+                {uploadedTabIcons[tab.key]}
+                {tab.label}
+                {isVisited && !isActive && (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: "hsl(145 50% 50%)" }} />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <AnimatePresence mode="wait">

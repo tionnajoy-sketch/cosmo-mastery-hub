@@ -13,8 +13,8 @@ interface Message {
 }
 
 interface AIMentorChatProps {
-  sectionName: string;
-  sectionId: string;
+  sectionName?: string;
+  sectionId?: string;
   blockNumber?: string;
   terms?: { term: string; definition: string }[];
   learningStyle?: string;

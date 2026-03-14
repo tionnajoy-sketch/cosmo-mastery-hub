@@ -38,6 +38,7 @@ import InsightsPage from "./pages/InsightsPage";
 import StudyModulesPage from "./pages/StudyModulesPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ComprehensiveFinalExamPage from "./pages/ComprehensiveFinalExamPage";
+import AIMentorChat from "./components/AIMentorChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <AIMentorChat />
           </CoinProvider>
         </AuthProvider>
       </BrowserRouter>
