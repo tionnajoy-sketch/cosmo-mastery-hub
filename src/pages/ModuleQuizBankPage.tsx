@@ -86,6 +86,7 @@ const ModuleQuizBankPage = () => {
     setSelectedAnswer(option);
     if (option === currentQuestion.correct_option) {
       setScore((s) => s + 1);
+      addCoins(10, "correct");
     } else {
       setWrongCount((cnt) => cnt + 1);
     }

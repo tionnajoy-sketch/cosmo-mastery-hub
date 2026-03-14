@@ -149,6 +149,8 @@ const ModuleQuizPage = () => {
     setSelectedAnswer(option);
     if (option === currentQuestion.correct_option) {
       setScore((s) => s + 1);
+      // First attempt = no prior wrong on this question in this session
+      addCoins(10, "correct");
     } else {
       setWrongCount((cnt) => cnt + 1);
     }
