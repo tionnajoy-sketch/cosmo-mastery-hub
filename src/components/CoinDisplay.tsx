@@ -10,7 +10,7 @@ interface CoinDisplayProps {
 const CoinDisplay = ({ coins, showAnimation, lastAdded }: CoinDisplayProps) => {
   return (
     <div className="relative flex items-center gap-1.5">
-      <Coins className="h-4 w-4 text-amber-500" />
+      <Coins className="h-4 w-4" style={{ color: "hsl(42 55% 48%)" }} />
       <span className="text-sm font-semibold text-foreground">{coins}</span>
       <AnimatePresence>
         {showAnimation && lastAdded > 0 && (
