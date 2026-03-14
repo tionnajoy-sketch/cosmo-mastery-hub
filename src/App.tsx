@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ScrollToTop from "@/components/ScrollToTop";
 import { AuthProvider } from "@/hooks/useAuth";
+import { CoinProvider } from "@/hooks/useCoins";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -47,40 +48,42 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <ScrollToTop />
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-            <Route path="/welcome" element={<ProtectedRoute><WelcomePage /></ProtectedRoute>} />
-            <Route path="/section/:id" element={<ProtectedRoute><SectionPage /></ProtectedRoute>} />
-            <Route path="/section/:id/study/:block" element={<ProtectedRoute><StudyPage /></ProtectedRoute>} />
-            <Route path="/section/:id/activity/:block" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
-            <Route path="/section/:id/quiz/:block" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
-            <Route path="/section/:id/results/:block" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
-            <Route path="/section/:id/pop-quiz" element={<ProtectedRoute><PopQuizPage /></ProtectedRoute>} />
-            <Route path="/section/:id/final-exam" element={<ProtectedRoute><FinalExamPage /></ProtectedRoute>} />
-            <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
-            <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/pretest" element={<ProtectedRoute><PretestPage /></ProtectedRoute>} />
-            <Route path="/pretest-results" element={<ProtectedRoute><PretestResultsPage /></ProtectedRoute>} />
-            <Route path="/post-test" element={<ProtectedRoute><PosttestPage /></ProtectedRoute>} />
-            <Route path="/post-test-results" element={<ProtectedRoute><PosttestResultsPage /></ProtectedRoute>} />
-            <Route path="/anatomy-map" element={<ProtectedRoute><AnatomyMapPage /></ProtectedRoute>} />
-            <Route path="/skin-map" element={<ProtectedRoute><SkinMapPage /></ProtectedRoute>} />
-            <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
-            <Route path="/my-modules" element={<ProtectedRoute><MyModulesPage /></ProtectedRoute>} />
-            <Route path="/module/:id" element={<ProtectedRoute><ModuleViewPage /></ProtectedRoute>} />
-            <Route path="/module/:id/quiz/:block" element={<ProtectedRoute><ModuleQuizPage /></ProtectedRoute>} />
-            <Route path="/module/:id/results/:block" element={<ProtectedRoute><ModuleResultsPage /></ProtectedRoute>} />
-            <Route path="/module/:id/activity/:block" element={<ProtectedRoute><ModuleActivityPage /></ProtectedRoute>} />
-            <Route path="/module/:id/quiz-bank" element={<ProtectedRoute><ModuleQuizBankPage /></ProtectedRoute>} />
-            <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
-            <Route path="/study-modules" element={<ProtectedRoute><StudyModulesPage /></ProtectedRoute>} />
-            <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <CoinProvider>
+            <ScrollToTop />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+              <Route path="/welcome" element={<ProtectedRoute><WelcomePage /></ProtectedRoute>} />
+              <Route path="/section/:id" element={<ProtectedRoute><SectionPage /></ProtectedRoute>} />
+              <Route path="/section/:id/study/:block" element={<ProtectedRoute><StudyPage /></ProtectedRoute>} />
+              <Route path="/section/:id/activity/:block" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
+              <Route path="/section/:id/quiz/:block" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
+              <Route path="/section/:id/results/:block" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
+              <Route path="/section/:id/pop-quiz" element={<ProtectedRoute><PopQuizPage /></ProtectedRoute>} />
+              <Route path="/section/:id/final-exam" element={<ProtectedRoute><FinalExamPage /></ProtectedRoute>} />
+              <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
+              <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/pretest" element={<ProtectedRoute><PretestPage /></ProtectedRoute>} />
+              <Route path="/pretest-results" element={<ProtectedRoute><PretestResultsPage /></ProtectedRoute>} />
+              <Route path="/post-test" element={<ProtectedRoute><PosttestPage /></ProtectedRoute>} />
+              <Route path="/post-test-results" element={<ProtectedRoute><PosttestResultsPage /></ProtectedRoute>} />
+              <Route path="/anatomy-map" element={<ProtectedRoute><AnatomyMapPage /></ProtectedRoute>} />
+              <Route path="/skin-map" element={<ProtectedRoute><SkinMapPage /></ProtectedRoute>} />
+              <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
+              <Route path="/my-modules" element={<ProtectedRoute><MyModulesPage /></ProtectedRoute>} />
+              <Route path="/module/:id" element={<ProtectedRoute><ModuleViewPage /></ProtectedRoute>} />
+              <Route path="/module/:id/quiz/:block" element={<ProtectedRoute><ModuleQuizPage /></ProtectedRoute>} />
+              <Route path="/module/:id/results/:block" element={<ProtectedRoute><ModuleResultsPage /></ProtectedRoute>} />
+              <Route path="/module/:id/activity/:block" element={<ProtectedRoute><ModuleActivityPage /></ProtectedRoute>} />
+              <Route path="/module/:id/quiz-bank" element={<ProtectedRoute><ModuleQuizBankPage /></ProtectedRoute>} />
+              <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
+              <Route path="/study-modules" element={<ProtectedRoute><StudyModulesPage /></ProtectedRoute>} />
+              <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </CoinProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

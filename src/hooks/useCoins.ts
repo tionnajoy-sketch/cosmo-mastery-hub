@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, createContext, useContext } from "react";
+import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import React from "react";
 
 export interface CoinStats {
   coins: number;
@@ -58,7 +60,17 @@ const playLevelUpSound = () => {
   } catch {}
 };
 
-export const useCoins = () => {
+interface CoinContextValue {
+  stats: CoinStats;
+  addCoins: (amount: number, type?: "correct" | "reflection" | "audio" | "block_complete") => Promise<void>;
+  showCoinAnimation: boolean;
+  lastAdded: number;
+  fetchCoins: () => Promise<void>;
+}
+
+const CoinContext = createContext<CoinContextValue | null>(null);
+
+export const CoinProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [stats, setStats] = useState<CoinStats>({ coins: 0, blocksMastered: 0 });
   const [showCoinAnimation, setShowCoinAnimation] = useState(false);
@@ -85,7 +97,6 @@ export const useCoins = () => {
     async (amount: number, type: "correct" | "reflection" | "audio" | "block_complete" = "correct") => {
       if (!user || amount <= 0) return;
 
-      // Upsert coins
       const { data: existing } = await supabase
         .from("user_coins")
         .select("id, coins, blocks_mastered")
@@ -124,5 +135,13 @@ export const useCoins = () => {
     [user, soundsEnabled]
   );
 
-  return { stats, addCoins, showCoinAnimation, lastAdded, fetchCoins };
+  return React.createElement(CoinContext.Provider, { value: { stats, addCoins, showCoinAnimation, lastAdded, fetchCoins } }, children);
+};
+
+export const useCoins = (): CoinContextValue => {
+  const ctx = useContext(CoinContext);
+  if (!ctx) {
+    throw new Error("useCoins must be used within a CoinProvider");
+  }
+  return ctx;
 };
