@@ -7,6 +7,7 @@ interface SpeakButtonProps {
   label?: string;
   size?: "sm" | "icon" | "default";
   className?: string;
+  onComplete?: () => void;
 }
 
 const SpeakButton = ({ text, label, size = "icon", className = "" }: SpeakButtonProps) => {
