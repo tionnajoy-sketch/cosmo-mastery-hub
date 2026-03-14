@@ -889,7 +889,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_leaderboard: {
+        Args: never
+        Returns: {
+          blocks_mastered: number
+          current_streak: number
+          total_coins: number
+          user_name: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
