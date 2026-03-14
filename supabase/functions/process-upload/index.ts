@@ -73,12 +73,54 @@ For each block, populate ALL TJ Anderson Layer Method™ fields:
 - page_number: The exact page/slide number from the document
 - instructor_notes: Add "Source: Slide {page_number} of {total}" at the start, followed by any additional teaching notes
 
+═══════════════════════════════════════════════════════
+STATE BOARD QUIZ QUESTION RULES (CRITICAL — FOLLOW EXACTLY)
+═══════════════════════════════════════════════════════
+
+Every quiz question MUST simulate the actual cosmetology State Board licensing exam. Follow these rules precisely:
+
+1. QUESTION STEM FORMAT:
+   - Use professional, neutral phrasing — NO conversational or encouraging language in the stem.
+   - Frame stems as "Which of the following…", "A cosmetologist should…", "The primary function of…", "During a service, a client…"
+   - Test APPLICATION and COMPREHENSION, not just recall. Students should need to UNDERSTAND the definition to answer correctly.
+   - Even when the source material is general science, frame every question within a cosmetology context (client safety, sanitation, chemical services, salon procedures).
+
+2. ANSWER OPTIONS FORMAT:
+   - Exactly 4 options (A, B, C, D).
+   - Option A = correct answer (the system shuffles them for display).
+   - Option B = plausible distractor — something a student who partially knows the concept might choose. This must be GENUINELY tempting. Use related but incorrect terms, common misconceptions, or nearby definitions.
+   - Options C and D = clearly wrong but professional-sounding choices from the same subject domain. They should NOT be absurd — they should be real cosmetology terms or concepts, just not the right answer for THIS question.
+
+3. DISTRACTOR QUALITY (THIS IS THE MOST IMPORTANT RULE):
+   - Option B MUST test whether the student truly understands the full definition or just memorized a keyword.
+   - Example: If the term is "Anagen" (active growth phase), Option B should NOT be something random. It should be "Catagen" (transition phase) — a closely related term the student might confuse.
+   - Use these distractor strategies:
+     • DEFINITION SWAP: Use the definition of a closely related term as a wrong answer.
+     • PARTIAL TRUTH: An answer that is partially correct but misses the key distinguishing detail.
+     • COMMON MISCONCEPTION: What students typically get wrong about this concept.
+     • REVERSED RELATIONSHIP: Swapping cause and effect, or function and structure.
+
+4. EXPLANATION FORMAT:
+   - Start with the correct answer clearly stated.
+   - Then explain WHY each wrong answer is wrong (especially Option B).
+   - End with a warm, encouraging TJ Anderson voice sentence connecting it to their career.
+   - Example: "The correct answer is A. The anagen phase is the active growth phase where the hair bulb produces new hair cells. Catagen (B) is the transition phase, not the growth phase — don't mix those up! The telogen phase (C) is the resting phase. Mitosis (D) is cell division, not a specific hair growth phase. You're building the knowledge that will make you a confident, licensed professional!"
+
+5. QUESTION VARIETY — Each block gets 3 quiz questions. They MUST test DIFFERENTLY:
+   - quiz_question: Definition comprehension — "What is…" / "Which of the following best describes…"
+   - quiz_question_2: Application/scenario — "A client asks about…" / "During a chemical service…" / "When performing…"
+   - quiz_question_3: Critical thinking/comparison — "What distinguishes X from Y?" / "Which would be MOST appropriate when…" / "A cosmetologist notices… what should they do?"
+
+6. QUIZ BANK QUESTIONS (for quiz slides):
+   - Must follow ALL the same rules above.
+   - These are the HARDEST tier — simulate actual State Board difficulty.
+   - Test across Bloom's taxonomy: Remember, Understand, Apply, Analyze.
+   - Include scenario-based clinical questions that require multi-step reasoning.
+
 PRACTICE ACTIVITIES:
 - If the slide already contains a question, case study, or review item, use that as the basis for quiz_question.
-- If the slide is purely informational, generate State Board-style recall questions from its content.
-- Every block MUST have at least quiz_question with quiz_options and quiz_answer.
-- All quiz questions must be 4-option cosmetology State Board-style multiple choice with proper Board phrasing and difficulty.
-- Each question: one best answer, one plausible distractor, two clearly incorrect options.
+- If the slide is purely informational, generate State Board-style questions from its content using the rules above.
+- Every block MUST have all three quiz questions with quiz_options and quiz_answer.
 
 QUIZ SLIDES:
 - If a slide contains ONLY exam-style questions (no teaching content), still create a TJ Block for it AND extract the questions into quiz_bank_questions with the page_number.
