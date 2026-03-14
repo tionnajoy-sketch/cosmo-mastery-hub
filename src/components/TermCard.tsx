@@ -319,6 +319,7 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
       if (!blockCompleteAwarded.current && tabs.every((t) => next.has(t.key))) {
         blockCompleteAwarded.current = true;
         addCoins(15, "block_complete");
+        fireBlockCompleteConfetti();
       }
       return next;
     });
