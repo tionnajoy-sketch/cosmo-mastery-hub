@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bookmark, Loader2, CheckCircle2, BookOpen, Eye, Lightbulb, Heart, PenLine, Wrench, GraduationCap } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import { fireBlockCompleteConfetti } from "@/lib/confetti";
 import { getBuildExercise } from "@/lib/buildExercises";
 import BuildTheBody from "@/components/BuildTheBody";
 import BrainNote from "@/components/BrainNote";
@@ -318,6 +319,7 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
       if (!blockCompleteAwarded.current && tabs.every((t) => next.has(t.key))) {
         blockCompleteAwarded.current = true;
         addCoins(15, "block_complete");
+        fireBlockCompleteConfetti();
       }
       return next;
     });
