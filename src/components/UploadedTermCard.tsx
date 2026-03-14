@@ -187,6 +187,7 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
               </div>
             )}
             <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.visualization_desc}</p>
+            {block.video_url && <VideoPlayer url={block.video_url} />}
             <BrainNote text="Visualizing a concept creates a mental picture that strengthens recall. Close your eyes and imagine this image." />
           </div>
         );
