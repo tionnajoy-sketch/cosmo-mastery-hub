@@ -274,9 +274,13 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
       case "reflection":
         return (
           <div className="space-y-3">
-            <p className="text-sm font-medium leading-relaxed" style={{ color: c.termHeading }}>
-              {reflectionPrompt}
-            </p>
+            <div className="space-y-2">
+              {reflectionPrompts.map((prompt, i) => (
+                <p key={i} className="text-sm font-medium leading-relaxed" style={{ color: c.termHeading }}>
+                  {i + 1}. {prompt}
+                </p>
+              ))}
+            </div>
             <div className="relative">
               <Textarea
                 placeholder="Take a moment to pause and reflect... Write 1–2 sentences."
