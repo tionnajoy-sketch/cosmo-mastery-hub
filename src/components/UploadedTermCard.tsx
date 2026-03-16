@@ -82,8 +82,12 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
     journal: <GraduationCap className="h-3.5 w-3.5" />,
   };
 
+  const identityItems = Array.isArray(block.concept_identity) ? block.concept_identity : [];
+  const hasIdentity = identityItems.length > 0;
+
   const allTabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Define" },
+    ...(hasIdentity ? [{ key: "identity" as TabType, label: "Identity" }] : []),
     { key: "pronunciation", label: "Pronounce" },
     { key: "visualize", label: "Visualize" },
     { key: "metaphor", label: "Metaphor" },
