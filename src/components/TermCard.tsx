@@ -28,11 +28,12 @@ const generateReflectionPrompt = (term: string, definition: string): string => {
   return prompts[term.length % prompts.length];
 };
 
-interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; }
-type TabType = "definition" | "picture" | "metaphor" | "affirmation" | "reflection" | "journal" | "build";
+interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; concept_identity?: string[]; }
+type TabType = "definition" | "identity" | "picture" | "metaphor" | "affirmation" | "reflection" | "journal" | "build";
 
 const tabIcons: Record<TabType, React.ReactNode> = {
   definition: <BookOpen className="h-3.5 w-3.5" />,
+  identity: <Fingerprint className="h-3.5 w-3.5" />,
   picture: <Eye className="h-3.5 w-3.5" />,
   metaphor: <Lightbulb className="h-3.5 w-3.5" />,
   affirmation: <Heart className="h-3.5 w-3.5" />,
