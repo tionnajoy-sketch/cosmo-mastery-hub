@@ -23,6 +23,7 @@ const AppHeader = () => {
   const { signOut } = useAuth();
   const { stats, showCoinAnimation, lastAdded } = useCoins();
   const { soundsEnabled, toggleSounds } = useSoundsEnabled();
+  const [showTutorial, setShowTutorial] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/30 backdrop-blur-md bg-background/90">
