@@ -28,8 +28,8 @@ serve(async (req) => {
     // Trim to 5000 chars max for TTS
     const trimmedText = text.slice(0, 5000);
 
-    // Use Sarah voice - warm, friendly female voice that fits TJ's persona
-    const voiceId = "EXAVITQu4vr4xnSDxMaL";
+    // Custom TJ-Mentor voice
+    const voiceId = "b3Sj49ffEoyFHYHBRE2z";
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=mp3_44100_128`,
