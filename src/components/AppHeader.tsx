@@ -96,6 +96,16 @@ const AppHeader = () => {
         </div>
       </div>
     </header>
+    {showTutorial && (
+      <AppTutorialVideo variant="button" />
+    )}
+    {/* Tutorial dialog triggered from menu */}
+    {(() => {
+      // Render inline dialog
+      const { Dialog, DialogContent, DialogTitle } = require("@/components/ui/dialog");
+      return null;
+    })()}
+    </>
   );
 };
 
