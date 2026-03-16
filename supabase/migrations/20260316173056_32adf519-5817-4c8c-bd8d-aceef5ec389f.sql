@@ -1,0 +1,1 @@
+ALTER TABLE public.terms ADD COLUMN concept_identity jsonb NOT NULL DEFAULT '[]'::jsonb;

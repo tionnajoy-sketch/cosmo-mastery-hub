@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bookmark, Loader2, CheckCircle2, BookOpen, Eye, Lightbulb, Heart, PenLine, Wrench, GraduationCap } from "lucide-react";
+import { Bookmark, Loader2, CheckCircle2, BookOpen, Eye, Lightbulb, Heart, PenLine, Wrench, GraduationCap, Fingerprint } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import { fireBlockCompleteConfetti } from "@/lib/confetti";
 import { getBuildExercise } from "@/lib/buildExercises";
@@ -28,11 +28,12 @@ const generateReflectionPrompt = (term: string, definition: string): string => {
   return prompts[term.length % prompts.length];
 };
 
-interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; }
-type TabType = "definition" | "picture" | "metaphor" | "affirmation" | "reflection" | "journal" | "build";
+interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; concept_identity?: string[]; }
+type TabType = "definition" | "identity" | "picture" | "metaphor" | "affirmation" | "reflection" | "journal" | "build";
 
 const tabIcons: Record<TabType, React.ReactNode> = {
   definition: <BookOpen className="h-3.5 w-3.5" />,
+  identity: <Fingerprint className="h-3.5 w-3.5" />,
   picture: <Eye className="h-3.5 w-3.5" />,
   metaphor: <Lightbulb className="h-3.5 w-3.5" />,
   affirmation: <Heart className="h-3.5 w-3.5" />,
@@ -68,9 +69,12 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
 
   const buildExercise = useMemo(() => getBuildExercise(term.term), [term.term]);
   const reflectionPrompt = useMemo(() => generateReflectionPrompt(term.term, term.definition), [term.term, term.definition]);
+  const identityItems: string[] = Array.isArray(term.concept_identity) ? term.concept_identity : [];
+  const hasIdentity = identityItems.length > 0;
 
   const tabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Define" },
+    ...(hasIdentity ? [{ key: "identity" as TabType, label: "Identity" }] : []),
     { key: "picture", label: "Visualize" },
     { key: "metaphor", label: "Metaphor" },
     { key: "affirmation", label: "Affirm" },
@@ -175,6 +179,24 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     switch (activeTab) {
       case "definition":
         return <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{term.definition}</p>;
+      case "identity":
+        return (
+          <div className="space-y-3">
+            <p className="text-sm font-medium" style={{ color: c.termHeading }}>Concept Identity</p>
+            <div className="flex flex-wrap gap-2">
+              {identityItems.map((item, i) => (
+                <span
+                  key={i}
+                  className="inline-block px-3 py-1.5 rounded-full text-sm font-medium"
+                  style={{ background: c.tabInactive, color: c.termHeading, border: `1px solid ${c.tabActive}33` }}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+            <BrainNote text="These identity words capture the essence of this concept. Use them as mental anchors when you see this term on the State Board exam." />
+          </div>
+        );
       case "picture":
         const fetchVideos = async () => {
           if (videoSuggestions.length || videoLoading) return;
