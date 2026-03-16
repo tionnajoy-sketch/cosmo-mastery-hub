@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
+import tjOffice from "@/assets/tj-office.png";
 
 interface Message {
   role: "user" | "assistant";
@@ -122,17 +123,19 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
           >
             {/* Header */}
             <div
-              className="px-4 py-3 flex items-center justify-between flex-shrink-0"
+              className="px-4 py-3 flex items-center justify-between flex-shrink-0 relative overflow-hidden"
               style={{ background: "linear-gradient(135deg, hsl(270 50% 52%), hsl(325 55% 52%))" }}
             >
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-white/90" />
+              <div className="flex items-center gap-3 z-10">
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/30 flex-shrink-0">
+                  <img src={tjOffice} alt="TJ Mentor" className="w-full h-full object-cover object-[70%_15%]" />
+                </div>
                 <div>
                   <p className="text-white font-semibold text-sm">Ask TJ Mentor</p>
                   <p className="text-white/70 text-xs">{sectionName}{blockNumber ? ` · Block ${blockNumber}` : ""}</p>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white">
+              <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white z-10">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -142,12 +145,14 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
               {messages.length === 0 && (
                 <div className="py-4">
                   <div className="text-center mb-4">
-                    <Sparkles className="h-8 w-8 mx-auto mb-3" style={{ color: "hsl(270 45% 65%)" }} />
+                    <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-3 border-2" style={{ borderColor: "hsl(270 30% 85%)" }}>
+                      <img src={tjOffice} alt="TJ in her office" className="w-full h-full object-cover object-[70%_15%]" />
+                    </div>
                     <p className="text-sm font-medium" style={{ color: "hsl(270 30% 30%)" }}>
-                      Your personal study guide
+                      Hey! I'm TJ — your study mentor 💜
                     </p>
-                    <p className="text-xs mt-1" style={{ color: "hsl(270 15% 55%)" }}>
-                      Ask questions, get metaphors, practice quizzes, or deeper explanations about {sectionName}.
+                    <p className="text-xs mt-1 leading-relaxed" style={{ color: "hsl(270 15% 55%)" }}>
+                      Pull up a seat. Ask me anything about {sectionName || "cosmetology"} — I'll explain it like we're right here at my whiteboard.
                     </p>
                   </div>
                   {/* Quick Actions */}
@@ -170,9 +175,14 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
                 </div>
               )}
               {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start gap-2"}`}>
+                  {msg.role === "assistant" && (
+                    <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-1">
+                      <img src={tjOffice} alt="TJ" className="w-full h-full object-cover object-[70%_15%]" />
+                    </div>
+                  )}
                   <div
-                    className="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
+                    className="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
                     style={
                       msg.role === "user"
                         ? { background: "hsl(270 50% 52%)", color: "white" }
@@ -190,7 +200,10 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
                 </div>
               ))}
               {loading && (
-                <div className="flex justify-start">
+                <div className="flex justify-start gap-2">
+                  <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-1">
+                    <img src={tjOffice} alt="TJ" className="w-full h-full object-cover object-[70%_15%]" />
+                  </div>
                   <div className="rounded-2xl px-4 py-3" style={{ background: "hsl(270 20% 95%)" }}>
                     <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(270 45% 55%)" }} />
                   </div>
