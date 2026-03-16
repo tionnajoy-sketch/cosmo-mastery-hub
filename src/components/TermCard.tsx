@@ -69,9 +69,12 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
 
   const buildExercise = useMemo(() => getBuildExercise(term.term), [term.term]);
   const reflectionPrompt = useMemo(() => generateReflectionPrompt(term.term, term.definition), [term.term, term.definition]);
+  const identityItems: string[] = Array.isArray(term.concept_identity) ? term.concept_identity : [];
+  const hasIdentity = identityItems.length > 0;
 
   const tabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Define" },
+    ...(hasIdentity ? [{ key: "identity" as TabType, label: "Identity" }] : []),
     { key: "picture", label: "Visualize" },
     { key: "metaphor", label: "Metaphor" },
     { key: "affirmation", label: "Affirm" },
