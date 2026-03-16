@@ -45,7 +45,7 @@ export interface UploadedBlock {
   video_url?: string;
 }
 
-type TabType = "definition" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
+type TabType = "definition" | "identity" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
 
 interface UploadedTermCardProps {
   block: UploadedBlock;
