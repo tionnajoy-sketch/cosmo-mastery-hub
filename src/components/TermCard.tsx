@@ -17,15 +17,30 @@ import SpeechToTextButton from "@/components/SpeechToTextButton";
 
 const c = pageColors.study;
 
-const generateReflectionPrompt = (term: string, definition: string): string => {
-  const prompts = [
-    `Why is ${term} important in cosmetology, and how would you explain it to a fellow student?`,
-    `In your own words, what role does ${term} play? How does it connect to what you already know?`,
-    `If a client asked you about ${term}, how would you explain it simply and confidently?`,
-    `Think about ${term}. Why does understanding this concept matter for your career?`,
-    `How does ${term} relate to what you see or do in the salon? Describe the connection.`,
+const generateReflectionPrompts = (term: string, definition: string): string[] => {
+  const bank: string[][] = [
+    [
+      `In your own words, explain what ${term} means and why it matters in cosmetology.`,
+      `Describe a real salon situation where understanding ${term} would help you serve a client safely and confidently.`,
+      `How will you use your knowledge of ${term} when preparing for the State Board exam?`,
+    ],
+    [
+      `If a client asked you "What is ${term}?", how would you explain it in simple, reassuring language?`,
+      `Think about ${term}. How does it connect to something you have already learned or experienced in clinic?`,
+      `Why is ${term} important for safety, sanitation, or professional practice in the salon?`,
+    ],
+    [
+      `Explain how ${term} relates to the services you will perform as a licensed cosmetologist.`,
+      `What is one thing about ${term} that surprised you or changed the way you think about it?`,
+      `How would you teach ${term} to a fellow student who missed class today?`,
+    ],
+    [
+      `In your own words, describe the role ${term} plays in the bigger picture of cosmetology science.`,
+      `Imagine you are doing a consultation with a nervous first-time client. How would you use your understanding of ${term} to put them at ease?`,
+      `What study strategy will help you remember ${term} on exam day?`,
+    ],
   ];
-  return prompts[term.length % prompts.length];
+  return bank[term.length % bank.length];
 };
 
 interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; concept_identity?: string[]; }
