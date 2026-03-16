@@ -13,8 +13,9 @@ import {
 import {
   BookOpen, Menu, LogOut, BarChart3, Upload, Sparkles,
   Shield, Brain, Gamepad2, Lightbulb, Settings, Library,
-  Volume2, VolumeX, Trophy, GraduationCap, MessageCircle,
+  Volume2, VolumeX, Trophy, GraduationCap, MessageCircle, Play,
 } from "lucide-react";
+import AppTutorialVideo from "@/components/AppTutorialVideo";
 import CoinDisplay from "@/components/CoinDisplay";
 
 const AppHeader = () => {
