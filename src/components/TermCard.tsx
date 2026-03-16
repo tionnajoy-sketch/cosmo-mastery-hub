@@ -83,7 +83,7 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["definition"]));
 
   const buildExercise = useMemo(() => getBuildExercise(term.term), [term.term]);
-  const reflectionPrompt = useMemo(() => generateReflectionPrompt(term.term, term.definition), [term.term, term.definition]);
+  const reflectionPrompts = useMemo(() => generateReflectionPrompts(term.term, term.definition), [term.term, term.definition]);
   const identityItems: string[] = Array.isArray(term.concept_identity) ? term.concept_identity : [];
   const hasIdentity = identityItems.length > 0;
 
