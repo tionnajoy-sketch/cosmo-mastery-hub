@@ -179,6 +179,24 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
     switch (activeTab) {
       case "definition":
         return <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{term.definition}</p>;
+      case "identity":
+        return (
+          <div className="space-y-3">
+            <p className="text-sm font-medium" style={{ color: c.termHeading }}>Concept Identity</p>
+            <div className="flex flex-wrap gap-2">
+              {identityItems.map((item, i) => (
+                <span
+                  key={i}
+                  className="inline-block px-3 py-1.5 rounded-full text-sm font-medium"
+                  style={{ background: c.tabInactive, color: c.termHeading, border: `1px solid ${c.tabActive}33` }}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+            <BrainNote text="These identity words capture the essence of this concept. Use them as mental anchors when you see this term on the State Board exam." />
+          </div>
+        );
       case "picture":
         const fetchVideos = async () => {
           if (videoSuggestions.length || videoLoading) return;
