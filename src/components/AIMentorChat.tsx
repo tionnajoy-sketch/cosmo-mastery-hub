@@ -175,9 +175,14 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
                 </div>
               )}
               {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start gap-2"}`}>
+                  {msg.role === "assistant" && (
+                    <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-1">
+                      <img src={tjOffice} alt="TJ" className="w-full h-full object-cover object-[70%_15%]" />
+                    </div>
+                  )}
                   <div
-                    className="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
+                    className="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
                     style={
                       msg.role === "user"
                         ? { background: "hsl(270 50% 52%)", color: "white" }
@@ -195,7 +200,10 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
                 </div>
               ))}
               {loading && (
-                <div className="flex justify-start">
+                <div className="flex justify-start gap-2">
+                  <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-1">
+                    <img src={tjOffice} alt="TJ" className="w-full h-full object-cover object-[70%_15%]" />
+                  </div>
                   <div className="rounded-2xl px-4 py-3" style={{ background: "hsl(270 20% 95%)" }}>
                     <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(270 45% 55%)" }} />
                   </div>
