@@ -7,6 +7,7 @@ import {
   Heart, Sparkles, BookOpen, Brain, Target, GraduationCap,
   Eye, MessageSquare, Pen, Shield, CheckCircle2, ArrowRight,
 } from "lucide-react";
+import AppTutorialVideo from "@/components/AppTutorialVideo";
 
 const methodLayers = [
   { icon: BookOpen, label: "Definition", desc: "Understand the concept in clear, original language." },
@@ -50,7 +51,8 @@ const WelcomePage = () => {
           <h1 className="font-display text-4xl font-bold mb-2" style={{ background: "linear-gradient(135deg, hsl(346 45% 56%), hsl(280 50% 55%), hsl(25 70% 55%))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             Welcome to CosmoPrep
           </h1>
-          <p className="text-base text-muted-foreground">Powered by The TJ Anderson Layer Method™</p>
+          <p className="text-base text-muted-foreground mb-4">Powered by The TJ Anderson Layer Method™</p>
+          <AppTutorialVideo variant="card" label="Watch How to Navigate the App" />
         </motion.div>
 
         {/* Section 2 — Who I Am */}

@@ -21,6 +21,7 @@ import DailyPopQuestion from "@/components/DailyPopQuestion";
 import StudentContract from "@/components/StudentContract";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
+import AppTutorialVideo from "@/components/AppTutorialVideo";
 
 const c = pageColors.home;
 
@@ -170,6 +171,9 @@ const Home = () => {
             <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground" onClick={() => navigate("/pretest")}>
               <RefreshCw className="h-3.5 w-3.5" /> Retake Learning Style Quiz
             </Button>
+          </div>
+          <div className="mt-4">
+            <AppTutorialVideo variant="card" label="Watch App Tutorial" />
           </div>
         </motion.div>
       </div>
