@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
+import tjOffice from "@/assets/tj-office.png";
 
 interface Message {
   role: "user" | "assistant";
