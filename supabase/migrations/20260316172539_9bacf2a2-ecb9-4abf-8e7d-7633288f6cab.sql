@@ -1,0 +1,1 @@
+ALTER TABLE public.uploaded_module_blocks ADD COLUMN concept_identity jsonb NOT NULL DEFAULT '[]'::jsonb;

@@ -50,6 +50,7 @@ const ModuleViewPage = () => {
           quiz_answer_2: b.quiz_answer_2 || "",
           quiz_question_3: b.quiz_question_3 || "",
           quiz_answer_3: b.quiz_answer_3 || "",
+          concept_identity: Array.isArray(b.concept_identity) ? b.concept_identity : [],
         })));
       }
 

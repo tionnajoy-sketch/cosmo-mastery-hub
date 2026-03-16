@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, XCircle, StickyNote, Loader2, BookOpen, Eye, Lightbulb, Heart, PenLine, Wrench, GraduationCap, Mic, HelpCircle } from "lucide-react";
+import { CheckCircle2, XCircle, StickyNote, Loader2, BookOpen, Eye, Lightbulb, Heart, PenLine, Wrench, GraduationCap, Mic, HelpCircle, Fingerprint } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import { fireBlockCompleteConfetti } from "@/lib/confetti";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -38,13 +38,14 @@ export interface UploadedBlock {
   quiz_options_3: string[];
   quiz_answer_3: string;
   user_notes: string;
+  concept_identity?: string[];
   image_url?: string;
   instructor_notes?: string;
   slide_type?: string;
   video_url?: string;
 }
 
-type TabType = "definition" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
+type TabType = "definition" | "identity" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
 
 interface UploadedTermCardProps {
   block: UploadedBlock;
@@ -70,6 +71,7 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   // Personalized tab ordering based on learning style
   const uploadedTabIcons: Record<TabType, React.ReactNode> = {
     definition: <BookOpen className="h-3.5 w-3.5" />,
+    identity: <Fingerprint className="h-3.5 w-3.5" />,
     pronunciation: <Mic className="h-3.5 w-3.5" />,
     visualize: <Eye className="h-3.5 w-3.5" />,
     metaphor: <Lightbulb className="h-3.5 w-3.5" />,
@@ -80,8 +82,12 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
     journal: <GraduationCap className="h-3.5 w-3.5" />,
   };
 
+  const identityItems = Array.isArray(block.concept_identity) ? block.concept_identity : [];
+  const hasIdentity = identityItems.length > 0;
+
   const allTabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Define" },
+    ...(hasIdentity ? [{ key: "identity" as TabType, label: "Identity" }] : []),
     { key: "pronunciation", label: "Pronounce" },
     { key: "visualize", label: "Visualize" },
     { key: "metaphor", label: "Metaphor" },
@@ -193,6 +199,25 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
           <div>
             <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
             {block.video_url && <VideoPlayer url={block.video_url} />}
+          </div>
+        );
+
+      case "identity":
+        return (
+          <div className="space-y-3">
+            <p className="text-sm font-medium" style={{ color: c.termHeading }}>Concept Identity</p>
+            <div className="flex flex-wrap gap-2">
+              {identityItems.map((item, i) => (
+                <span
+                  key={i}
+                  className="inline-block px-3 py-1.5 rounded-full text-sm font-medium"
+                  style={{ background: c.tabInactive, color: c.termHeading, border: `1px solid ${c.tabActive}33` }}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+            <BrainNote text="These identity words capture the essence of this concept. Use them as mental anchors when you see this term on the State Board exam." />
           </div>
         );
 

@@ -588,6 +588,7 @@ export type Database = {
         Row: {
           affirmation: string
           block_number: number
+          concept_identity: Json
           created_at: string
           definition: string
           id: string
@@ -616,6 +617,7 @@ export type Database = {
         Insert: {
           affirmation?: string
           block_number?: number
+          concept_identity?: Json
           created_at?: string
           definition?: string
           id?: string
@@ -644,6 +646,7 @@ export type Database = {
         Update: {
           affirmation?: string
           block_number?: number
+          concept_identity?: Json
           created_at?: string
           definition?: string
           id?: string

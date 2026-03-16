@@ -128,6 +128,7 @@ const UploadPage = () => {
     quiz_question_3: block.quiz_question_3 || "",
     quiz_options_3: block.quiz_options_3 || [],
     quiz_answer_3: block.quiz_answer_3 || "",
+    concept_identity: Array.isArray(block.concept_identity) ? block.concept_identity : [],
     slide_type: block.slide_type || "concept",
     instructor_notes: block.instructor_notes || "",
     image_url: block.image_url || "",
