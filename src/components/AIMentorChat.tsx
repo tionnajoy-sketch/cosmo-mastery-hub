@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Volume2, VolumeX, Square } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
 import tjOffice from "@/assets/tj-office.png";
@@ -22,12 +22,12 @@ interface AIMentorChatProps {
 }
 
 const quickActions = [
-  { label: "Explain this simply", prompt: "Explain the current topic to me in simple, beginner-friendly language." },
-  { label: "Give me a metaphor", prompt: "Give me a TJ-style metaphor to help me understand the current topic better." },
-  { label: "Quiz me", prompt: "Quiz me on this topic with a state board style question. Include 4 answer choices." },
-  { label: "Break it down TJ style", prompt: "Break this down TJ style. Give me a full TJ Anderson Layer Method block: Definition, Visual explanation, Metaphor, Affirmation, Reflection question, and a Quiz question with answer choices." },
-  { label: "Why does this matter?", prompt: "Why does this matter in cosmetology? Connect it to real salon work and client experiences." },
-  { label: "Encourage me", prompt: "I need some encouragement right now. Remind me why I'm capable of passing the state board exam." },
+  { label: "✨ Explain simply", prompt: "Explain the current topic to me in simple, beginner-friendly language." },
+  { label: "🎨 Give me a metaphor", prompt: "Give me a TJ-style metaphor to help me understand the current topic better." },
+  { label: "📝 Quiz me", prompt: "Quiz me on this topic with a state board style question. Include 4 answer choices." },
+  { label: "🧠 Break it down TJ style", prompt: "Break this down TJ style. Give me a full TJ Anderson Layer Method block: Definition, Concept Identity, Visual explanation, Metaphor, Affirmation, Reflection questions, and a Quiz question with answer choices." },
+  { label: "💡 Why does this matter?", prompt: "Why does this matter in cosmetology? Connect it to real salon work and client experiences." },
+  { label: "💜 Encourage me", prompt: "I need some encouragement right now. Remind me why I'm capable of passing the state board exam." },
 ];
 
 const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyle }: AIMentorChatProps) => {
@@ -35,7 +35,11 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -43,9 +47,101 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
     }
   }, [messages]);
 
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+      }
+    };
+  }, []);
+
+  const stopSpeaking = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    setIsSpeaking(false);
+  }, []);
+
+  const speakText = useCallback(async (text: string) => {
+    if (!voiceEnabled) return;
+    stopSpeaking();
+
+    // Strip markdown for cleaner speech
+    const plainText = text
+      .replace(/#{1,6}\s/g, "")
+      .replace(/\*\*(.*?)\*\*/g, "$1")
+      .replace(/\*(.*?)\*/g, "$1")
+      .replace(/`(.*?)`/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/[-*]\s/g, "")
+      .replace(/\n{2,}/g, ". ")
+      .replace(/\n/g, " ")
+      .trim();
+
+    if (!plainText) return;
+
+    try {
+      setIsSpeaking(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text: plainText }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("TTS failed:", response.status);
+        setIsSpeaking(false);
+        return;
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      audioUrlRef.current = audioUrl;
+
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      audio.onended = () => {
+        setIsSpeaking(false);
+        audioRef.current = null;
+        if (audioUrlRef.current) {
+          URL.revokeObjectURL(audioUrlRef.current);
+          audioUrlRef.current = null;
+        }
+      };
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        audioRef.current = null;
+      };
+      await audio.play();
+    } catch (e) {
+      console.error("TTS error:", e);
+      setIsSpeaking(false);
+    }
+  }, [voiceEnabled, stopSpeaking]);
+
   const sendMessage = async (text?: string) => {
     const messageText = text || input.trim();
     if (!messageText || loading) return;
+    stopSpeaking();
+
     const userMsg: Message = { role: "user", content: messageText };
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
@@ -83,6 +179,11 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
 
       const assistantContent = data?.response || "I'm sorry, I couldn't process that. Please try again.";
       setMessages((prev) => [...prev, { role: "assistant", content: assistantContent }]);
+
+      // Auto-speak the response
+      if (voiceEnabled) {
+        speakText(assistantContent);
+      }
     } catch (e: any) {
       console.error("Chat error:", e);
       setMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Please try again." }]);
@@ -111,61 +212,125 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
         )}
       </AnimatePresence>
 
-      {/* Chat panel */}
+      {/* Chat panel - Immersive Classroom */}
       <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
-            style={{ background: "hsl(0 0% 100%)", height: "540px", maxHeight: "75vh" }}
+            className="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+            style={{ height: "580px", maxHeight: "80vh" }}
           >
-            {/* Header */}
-            <div
-              className="px-4 py-3 flex items-center justify-between flex-shrink-0 relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, hsl(270 50% 52%), hsl(325 55% 52%))" }}
-            >
-              <div className="flex items-center gap-3 z-10">
-                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/30 flex-shrink-0">
-                  <img src={tjOffice} alt="TJ Mentor" className="w-full h-full object-cover object-[70%_15%]" />
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-sm">Ask TJ Mentor</p>
-                  <p className="text-white/70 text-xs">{sectionName}{blockNumber ? ` · Block ${blockNumber}` : ""}</p>
-                </div>
+            {/* Header with TJ's office background */}
+            <div className="relative flex-shrink-0">
+              <div className="absolute inset-0">
+                <img src={tjOffice} alt="" className="w-full h-full object-cover object-[50%_20%]" />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsla(240 40% 12% / 0.4), hsla(240 40% 12% / 0.85))" }} />
               </div>
-              <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white z-10">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-              {messages.length === 0 && (
-                <div className="py-4">
-                  <div className="text-center mb-4">
-                    <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-3 border-2" style={{ borderColor: "hsl(270 30% 85%)" }}>
-                      <img src={tjOffice} alt="TJ in her office" className="w-full h-full object-cover object-[70%_15%]" />
+              <div className="relative px-4 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {/* Animated avatar */}
+                  <div className="relative">
+                    <div
+                      className={`w-11 h-11 rounded-full overflow-hidden border-2 flex-shrink-0 transition-all duration-300 ${isSpeaking ? "border-purple-300 shadow-[0_0_12px_hsla(270,80%,70%,0.6)]" : "border-white/30"}`}
+                    >
+                      <img src={tjOffice} alt="TJ Mentor" className="w-full h-full object-cover object-[70%_15%]" />
                     </div>
-                    <p className="text-sm font-medium" style={{ color: "hsl(270 30% 30%)" }}>
-                      Hey! I'm TJ — your study mentor 💜
-                    </p>
-                    <p className="text-xs mt-1 leading-relaxed" style={{ color: "hsl(270 15% 55%)" }}>
-                      Pull up a seat. Ask me anything about {sectionName || "cosmetology"} — I'll explain it like we're right here at my whiteboard.
+                    {isSpeaking && (
+                      <motion.div
+                        className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
+                        style={{ background: "hsl(145 60% 45%)" }}
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                      >
+                        <Volume2 className="h-2.5 w-2.5 text-white" />
+                      </motion.div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold text-sm">TJ Mentor</p>
+                    <p className="text-white/60 text-xs">
+                      {isSpeaking ? "Speaking..." : sectionName ? `${sectionName}${blockNumber ? ` · Block ${blockNumber}` : ""}` : "Your study guide"}
                     </p>
                   </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  {isSpeaking && (
+                    <button
+                      onClick={stopSpeaking}
+                      className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                      title="Stop speaking"
+                    >
+                      <Square className="h-4 w-4 text-white/80" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setVoiceEnabled(!voiceEnabled)}
+                    className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                    title={voiceEnabled ? "Mute TJ" : "Unmute TJ"}
+                  >
+                    {voiceEnabled ? (
+                      <Volume2 className="h-4 w-4 text-white/80" />
+                    ) : (
+                      <VolumeX className="h-4 w-4 text-white/50" />
+                    )}
+                  </button>
+                  <button onClick={() => { stopSpeaking(); setOpen(false); }} className="p-1.5 rounded-full hover:bg-white/10 transition-colors">
+                    <X className="h-4 w-4 text-white/80" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Messages area - whiteboard style */}
+            <div
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto px-4 py-3 space-y-3"
+              style={{
+                background: "linear-gradient(180deg, hsl(220 15% 96%), hsl(220 10% 98%))",
+                backgroundImage: `
+                  repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 31px,
+                    hsl(220 20% 90%) 31px,
+                    hsl(220 20% 90%) 32px
+                  )
+                `,
+                backgroundSize: "100% 32px",
+                backgroundPosition: "0 8px",
+              }}
+            >
+              {messages.length === 0 && (
+                <div className="py-6">
+                  <div className="text-center mb-5 p-4 rounded-xl" style={{ background: "hsla(0 0% 100% / 0.85)", backdropFilter: "blur(4px)" }}>
+                    <div className="w-16 h-16 rounded-full overflow-hidden mx-auto mb-3 border-2" style={{ borderColor: "hsl(270 30% 80%)" }}>
+                      <img src={tjOffice} alt="TJ in her office" className="w-full h-full object-cover object-[70%_15%]" />
+                    </div>
+                    <p className="text-sm font-semibold" style={{ color: "hsl(270 30% 28%)" }}>
+                      Hey! I'm TJ — pull up a seat 💜
+                    </p>
+                    <p className="text-xs mt-1.5 leading-relaxed" style={{ color: "hsl(270 15% 50%)" }}>
+                      We're in my office. Ask me anything and I'll walk you through it on the whiteboard — and yes, I'll explain it out loud too.
+                    </p>
+                    {voiceEnabled && (
+                      <p className="text-[10px] mt-2 flex items-center justify-center gap-1" style={{ color: "hsl(145 40% 45%)" }}>
+                        <Volume2 className="h-3 w-3" /> Voice is on — I'll read my answers to you
+                      </p>
+                    )}
+                  </div>
                   {/* Quick Actions */}
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1.5 justify-center">
                     {quickActions.map((action) => (
                       <button
                         key={action.label}
                         onClick={() => sendMessage(action.prompt)}
                         className="text-xs px-3 py-1.5 rounded-full transition-all hover:shadow-sm"
                         style={{
-                          background: "hsl(270 20% 95%)",
-                          color: "hsl(270 30% 40%)",
-                          border: "1px solid hsl(270 15% 88%)",
+                          background: "hsla(0 0% 100% / 0.9)",
+                          color: "hsl(270 30% 35%)",
+                          border: "1px solid hsl(270 15% 85%)",
                         }}
                       >
                         {action.label}
@@ -174,38 +339,55 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
                   </div>
                 </div>
               )}
+
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start gap-2"}`}>
                   {msg.role === "assistant" && (
-                    <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-1">
+                    <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 mt-1 border" style={{ borderColor: "hsl(270 20% 82%)" }}>
                       <img src={tjOffice} alt="TJ" className="w-full h-full object-cover object-[70%_15%]" />
                     </div>
                   )}
                   <div
-                    className="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
+                    className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${msg.role === "assistant" ? "shadow-sm" : ""}`}
                     style={
                       msg.role === "user"
                         ? { background: "hsl(270 50% 52%)", color: "white" }
-                        : { background: "hsl(270 20% 95%)", color: "hsl(270 20% 18%)" }
+                        : {
+                            background: "hsla(0 0% 100% / 0.92)",
+                            color: "hsl(220 15% 18%)",
+                            border: "1px solid hsl(220 15% 88%)",
+                          }
                     }
                   >
                     {msg.role === "assistant" ? (
-                      <div className="prose prose-sm max-w-none [&_p]:m-0 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5">
+                      <div className="prose prose-sm max-w-none [&_p]:m-0 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5 [&_strong]:text-purple-800 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_h1]:font-bold [&_h2]:font-semibold [&_h3]:font-semibold [&_h1]:mt-2 [&_h2]:mt-2 [&_h3]:mt-1">
                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                       </div>
                     ) : (
                       msg.content
+                    )}
+                    {msg.role === "assistant" && !isSpeaking && voiceEnabled && (
+                      <button
+                        onClick={() => speakText(msg.content)}
+                        className="mt-1.5 text-[10px] flex items-center gap-1 opacity-50 hover:opacity-100 transition-opacity"
+                        style={{ color: "hsl(270 30% 45%)" }}
+                      >
+                        <Volume2 className="h-3 w-3" /> Listen again
+                      </button>
                     )}
                   </div>
                 </div>
               ))}
               {loading && (
                 <div className="flex justify-start gap-2">
-                  <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-1">
+                  <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 mt-1 border" style={{ borderColor: "hsl(270 20% 82%)" }}>
                     <img src={tjOffice} alt="TJ" className="w-full h-full object-cover object-[70%_15%]" />
                   </div>
-                  <div className="rounded-2xl px-4 py-3" style={{ background: "hsl(270 20% 95%)" }}>
-                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(270 45% 55%)" }} />
+                  <div className="rounded-2xl px-4 py-3 shadow-sm" style={{ background: "hsla(0 0% 100% / 0.92)", border: "1px solid hsl(220 15% 88%)" }}>
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(270 45% 55%)" }} />
+                      <span className="text-xs" style={{ color: "hsl(270 20% 55%)" }}>TJ is writing on the whiteboard...</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -213,14 +395,14 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
 
             {/* Quick actions when conversation is active */}
             {messages.length > 0 && (
-              <div className="px-3 py-1.5 flex gap-1 overflow-x-auto flex-shrink-0" style={{ borderTop: "1px solid hsl(270 15% 92%)" }}>
+              <div className="px-3 py-1.5 flex gap-1 overflow-x-auto flex-shrink-0" style={{ background: "hsl(220 10% 97%)", borderTop: "1px solid hsl(220 15% 90%)" }}>
                 {quickActions.slice(0, 4).map((action) => (
                   <button
                     key={action.label}
                     onClick={() => sendMessage(action.prompt)}
                     disabled={loading}
                     className="text-[10px] px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0 transition-colors disabled:opacity-50"
-                    style={{ background: "hsl(270 15% 95%)", color: "hsl(270 25% 45%)" }}
+                    style={{ background: "hsla(0 0% 100% / 0.8)", color: "hsl(270 25% 40%)", border: "1px solid hsl(270 15% 88%)" }}
                   >
                     {action.label}
                   </button>
@@ -229,7 +411,7 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
             )}
 
             {/* Input */}
-            <div className="px-3 py-3 border-t flex-shrink-0" style={{ borderColor: "hsl(270 15% 90%)" }}>
+            <div className="px-3 py-3 flex-shrink-0" style={{ background: "hsl(220 10% 97%)", borderTop: "1px solid hsl(220 15% 90%)" }}>
               <div className="flex gap-2 items-end">
                 <div className="flex-1 relative">
                   <Textarea
@@ -241,9 +423,9 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
                         sendMessage();
                       }
                     }}
-                    placeholder="Ask about this section..."
-                    className="resize-none text-sm min-h-[40px] max-h-[80px] border-0 focus-visible:ring-1 pr-9"
-                    style={{ background: "hsl(270 15% 97%)" }}
+                    placeholder="Ask TJ anything..."
+                    className="resize-none text-sm min-h-[40px] max-h-[80px] border focus-visible:ring-1 pr-9 rounded-xl"
+                    style={{ background: "white", borderColor: "hsl(270 15% 85%)" }}
                     rows={1}
                   />
                   <div className="absolute right-0.5 bottom-0.5">
@@ -256,7 +438,7 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
                   size="sm"
                   onClick={() => sendMessage()}
                   disabled={!input.trim() || loading}
-                  className="px-3"
+                  className="px-3 rounded-xl"
                   style={{ background: "hsl(270 50% 52%)", color: "white" }}
                 >
                   <Send className="h-4 w-4" />
