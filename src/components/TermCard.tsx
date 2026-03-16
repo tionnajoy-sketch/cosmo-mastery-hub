@@ -198,11 +198,11 @@ const TermCard = ({ term, isBookmarked, onToggleBookmark }: TermCardProps) => {
         return (
           <div className="space-y-3">
             <p className="text-sm font-medium" style={{ color: c.termHeading }}>Concept Identity</p>
-            <div className="flex flex-wrap gap-2">
+           <div className="flex flex-wrap gap-1.5">
               {identityItems.map((item, i) => (
                 <span
                   key={i}
-                  className="inline-block px-3 py-1.5 rounded-full text-sm font-medium"
+                  className="inline-block px-2.5 py-1 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap"
                   style={{ background: c.tabInactive, color: c.termHeading, border: `1px solid ${c.tabActive}33` }}
                 >
                   {item}
