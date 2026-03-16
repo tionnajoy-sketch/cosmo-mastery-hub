@@ -7,6 +7,7 @@ import {
   Heart, Sparkles, BookOpen, Brain, Target, GraduationCap,
   Eye, MessageSquare, Pen, Shield, CheckCircle2, ArrowRight,
 } from "lucide-react";
+import AppTutorialVideo from "@/components/AppTutorialVideo";
 
 const methodLayers = [
   { icon: BookOpen, label: "Definition", desc: "Understand the concept in clear, original language." },
