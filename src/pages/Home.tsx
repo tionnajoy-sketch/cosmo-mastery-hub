@@ -172,6 +172,9 @@ const Home = () => {
               <RefreshCw className="h-3.5 w-3.5" /> Retake Learning Style Quiz
             </Button>
           </div>
+          <div className="mt-4">
+            <AppTutorialVideo variant="card" label="Watch App Tutorial" />
+          </div>
         </motion.div>
       </div>
 
