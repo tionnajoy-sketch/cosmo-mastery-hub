@@ -71,6 +71,7 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   // Personalized tab ordering based on learning style
   const uploadedTabIcons: Record<TabType, React.ReactNode> = {
     definition: <BookOpen className="h-3.5 w-3.5" />,
+    identity: <Fingerprint className="h-3.5 w-3.5" />,
     pronunciation: <Mic className="h-3.5 w-3.5" />,
     visualize: <Eye className="h-3.5 w-3.5" />,
     metaphor: <Lightbulb className="h-3.5 w-3.5" />,
