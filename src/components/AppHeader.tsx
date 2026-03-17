@@ -82,7 +82,7 @@ const AppHeader = () => {
                   <Lightbulb className="h-4 w-4 mr-2" /> My TJ Insights
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setShowTutorial(true); }}>
+                <DropdownMenuItem onClick={() => openTJChat(true)}>
                   <Play className="h-4 w-4 mr-2" /> App Tutorial
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/terms")}>
