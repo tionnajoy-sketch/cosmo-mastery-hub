@@ -23,7 +23,7 @@ const AppHeader = () => {
   const { signOut } = useAuth();
   const { stats, showCoinAnimation, lastAdded } = useCoins();
   const { soundsEnabled, toggleSounds } = useSoundsEnabled();
-  const [showTutorial, setShowTutorial] = useState(false);
+  
 
   return (
     <>
