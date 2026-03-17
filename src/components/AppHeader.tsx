@@ -93,21 +93,6 @@ const AppHeader = () => {
             </DropdownMenu>
           </div>
         </div>
-      </header>
-      <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
-        <DialogContent className="max-w-sm p-2 bg-black border-0 rounded-2xl">
-          <DialogTitle className="sr-only">App Navigation Tutorial</DialogTitle>
-          <div className="relative aspect-[9/16] rounded-xl overflow-hidden">
-            <video
-              src={tutorialAsset.url}
-              controls
-              autoPlay
-              playsInline
-              className="w-full h-full object-contain"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };
