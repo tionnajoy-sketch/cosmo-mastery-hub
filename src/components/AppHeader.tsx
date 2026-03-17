@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { openTJChat } from "@/components/AIMentorChat";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
 import { Button } from "@/components/ui/button";
