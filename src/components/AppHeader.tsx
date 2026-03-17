@@ -93,6 +93,7 @@ const AppHeader = () => {
             </DropdownMenu>
           </div>
         </div>
+      </header>
     </>
   );
 };
