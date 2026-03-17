@@ -16,8 +16,6 @@ import {
   Shield, Brain, Gamepad2, Lightbulb, Settings, Library,
   Volume2, VolumeX, Trophy, GraduationCap, MessageCircle, Play,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import tutorialAsset from "@/assets/app-tutorial.mp4.asset.json";
 import CoinDisplay from "@/components/CoinDisplay";
 
 const AppHeader = () => {
