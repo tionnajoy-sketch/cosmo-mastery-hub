@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { openTJChat } from "@/components/AIMentorChat";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,6 @@ import {
   Shield, Brain, Gamepad2, Lightbulb, Settings, Library,
   Volume2, VolumeX, Trophy, GraduationCap, MessageCircle, Play,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import tutorialAsset from "@/assets/app-tutorial.mp4.asset.json";
 import CoinDisplay from "@/components/CoinDisplay";
 
 const AppHeader = () => {
@@ -24,7 +23,7 @@ const AppHeader = () => {
   const { signOut } = useAuth();
   const { stats, showCoinAnimation, lastAdded } = useCoins();
   const { soundsEnabled, toggleSounds } = useSoundsEnabled();
-  const [showTutorial, setShowTutorial] = useState(false);
+  
 
   return (
     <>
@@ -68,10 +67,7 @@ const AppHeader = () => {
                   <GraduationCap className="h-4 w-4 mr-2" /> State Board Final Exam
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => {
-                  const askTjBtn = document.querySelector('[data-ask-tj-trigger]') as HTMLElement;
-                  if (askTjBtn) askTjBtn.click();
-                }}>
+                <DropdownMenuItem onClick={() => openTJChat(false)}>
                   <MessageCircle className="h-4 w-4 mr-2" /> Ask TJ
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/upload")}>
@@ -84,7 +80,7 @@ const AppHeader = () => {
                   <Lightbulb className="h-4 w-4 mr-2" /> My TJ Insights
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setShowTutorial(true); }}>
+                <DropdownMenuItem onClick={() => openTJChat(true)}>
                   <Play className="h-4 w-4 mr-2" /> App Tutorial
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/terms")}>
@@ -98,20 +94,6 @@ const AppHeader = () => {
           </div>
         </div>
       </header>
-      <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
-        <DialogContent className="max-w-sm p-2 bg-black border-0 rounded-2xl">
-          <DialogTitle className="sr-only">App Navigation Tutorial</DialogTitle>
-          <div className="relative aspect-[9/16] rounded-xl overflow-hidden">
-            <video
-              src={tutorialAsset.url}
-              controls
-              autoPlay
-              playsInline
-              className="w-full h-full object-contain"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

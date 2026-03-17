@@ -21,7 +21,7 @@ import DailyPopQuestion from "@/components/DailyPopQuestion";
 import StudentContract from "@/components/StudentContract";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
-import AppTutorialVideo from "@/components/AppTutorialVideo";
+import { openTJChat } from "@/components/AIMentorChat";
 
 const c = pageColors.home;
 
@@ -172,8 +172,19 @@ const Home = () => {
               <RefreshCw className="h-3.5 w-3.5" /> Retake Learning Style Quiz
             </Button>
           </div>
-          <div className="mt-4">
-            <AppTutorialVideo variant="card" label="Watch App Tutorial" />
+          <div className="mt-4 flex gap-3">
+            <button
+              onClick={() => openTJChat(true)}
+              className="relative flex-1 rounded-xl overflow-hidden aspect-video bg-gradient-to-br from-primary/10 to-accent/10 border border-border/40 hover:border-primary/30 transition-all group cursor-pointer"
+            >
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <MessageSquare className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <span className="text-sm font-medium text-foreground/80">Watch App Tutorial</span>
+                <span className="text-[10px] text-muted-foreground">TJ will walk you through it</span>
+              </div>
+            </button>
           </div>
         </motion.div>
       </div>

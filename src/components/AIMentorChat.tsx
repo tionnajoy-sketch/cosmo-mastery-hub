@@ -21,6 +21,20 @@ interface AIMentorChatProps {
   learningStyle?: string;
 }
 
+const WELCOME_SCRIPT = `Hi love, this is TJ Mentor. I'm so proud of you for showing up for yourself and your future license.
+
+On this home screen, you'll see your daily study goal, your commitment to yourself, and guidance based on your learning style.
+
+Here's how to use CosmoPrep:
+1. Choose one chapter or term you want to feel stronger in today.
+2. Open that study block and read the Definition, Concept Identity, and Visualization sections.
+3. Use the Metaphor and Affirmation when you feel nervous or stuck.
+4. Answer the Reflection / Journaling prompts in your own words, then try the Practice and Quiz questions.
+
+Anytime you're confused or just want to hear it broken down, tap Ask TJ and talk to me. I'll explain the concept on the whiteboard, in my voice, until it feels clear and calm in your mind.
+
+To get started right now, tell me which chapter or topic feels the most intimidating, and we'll tackle it together.`;
+
 const quickActions = [
   { label: "✨ Explain simply", prompt: "Explain the current topic to me in simple, beginner-friendly language." },
   { label: "🎨 Give me a metaphor", prompt: "Give me a TJ-style metaphor to help me understand the current topic better." },
@@ -29,6 +43,12 @@ const quickActions = [
   { label: "💡 Why does this matter?", prompt: "Why does this matter in cosmetology? Connect it to real salon work and client experiences." },
   { label: "💜 Encourage me", prompt: "I need some encouragement right now. Remind me why I'm capable of passing the state board exam." },
 ];
+
+// Global event bus so any component can open the TJ chat with a welcome script
+const listeners = new Set<(withWelcome: boolean) => void>();
+export const openTJChat = (withWelcome = false) => {
+  listeners.forEach((fn) => fn(withWelcome));
+};
 
 const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyle }: AIMentorChatProps) => {
   const [open, setOpen] = useState(false);
@@ -40,6 +60,26 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
   const scrollRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
+  const welcomeSpokenRef = useRef(false);
+
+  // Listen for external open requests
+  useEffect(() => {
+    const handler = (withWelcome: boolean) => {
+      setOpen(true);
+      if (withWelcome && messages.length === 0 && !welcomeSpokenRef.current) {
+        welcomeSpokenRef.current = true;
+        const welcomeMsg: Message = { role: "assistant", content: WELCOME_SCRIPT };
+        setMessages([welcomeMsg]);
+        // Auto-speak after a short delay to allow UI to render
+        setTimeout(() => {
+          if (voiceEnabled) speakText(WELCOME_SCRIPT);
+        }, 400);
+      }
+    };
+    listeners.add(handler);
+    return () => { listeners.delete(handler); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.length, voiceEnabled]);
 
   useEffect(() => {
     if (scrollRef.current) {
