@@ -21,7 +21,7 @@ import DailyPopQuestion from "@/components/DailyPopQuestion";
 import StudentContract from "@/components/StudentContract";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
-import AppTutorialVideo from "@/components/AppTutorialVideo";
+import { openTJChat } from "@/components/AIMentorChat";
 
 const c = pageColors.home;
 
