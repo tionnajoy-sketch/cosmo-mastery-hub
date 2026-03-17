@@ -22,6 +22,7 @@ import StudentContract from "@/components/StudentContract";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 import { openTJChat } from "@/components/AIMentorChat";
+import AppTutorialVideo from "@/components/AppTutorialVideo";
 
 const c = pageColors.home;
 
