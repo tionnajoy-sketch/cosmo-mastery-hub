@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import tutorialAsset from "@/assets/student-tutorial.mp4.asset.json";
 
 interface AppTutorialVideoProps {
@@ -60,6 +60,7 @@ const TutorialDialog = ({ open, onOpenChange }: { open: boolean; onOpenChange: (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="max-w-sm p-2 bg-black border-0 rounded-2xl">
       <DialogTitle className="sr-only">App Navigation Tutorial</DialogTitle>
+      <DialogDescription className="sr-only">Watch a tutorial video on how to use CosmoPrep</DialogDescription>
       <div className="relative aspect-[9/16] rounded-xl overflow-hidden">
         <video
           src={tutorialAsset.url}
