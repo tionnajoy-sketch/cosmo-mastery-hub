@@ -149,15 +149,25 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
 
   // Auto-save journal
   useEffect(() => {
+    if (!user) return;
     const timeout = setTimeout(async () => {
-      if (journalNote === block.user_notes) return;
-      setJournalSaving(true);
-      await supabase.from("uploaded_module_blocks").update({ user_notes: journalNote }).eq("id", block.id);
-      onNotesChange(block.id, journalNote);
+      if (mode === "uploaded") {
+        if (journalNote === block.user_notes) return;
+        setJournalSaving(true);
+        await supabase.from("uploaded_module_blocks").update({ user_notes: journalNote }).eq("id", block.id);
+        onNotesChange(block.id, journalNote);
+      } else {
+        if (!journalNote) return;
+        setJournalSaving(true);
+        await supabase.from("journal_notes").upsert(
+          { user_id: user.id, term_id: block.id, note: journalNote, updated_at: new Date().toISOString() },
+          { onConflict: "user_id,term_id" }
+        );
+      }
       setJournalSaving(false);
     }, 1000);
     return () => clearTimeout(timeout);
-  }, [journalNote, block.id, block.user_notes, onNotesChange]);
+  }, [journalNote, block.id, block.user_notes, onNotesChange, user, mode]);
 
   useEffect(() => {
     if (journalNote.length >= 10 && !journalCoinAwarded.current) {
