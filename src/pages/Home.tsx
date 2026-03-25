@@ -291,17 +291,22 @@ const Home = () => {
         {/* ── The TJ Anderson Layer Method™ ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
           <h2 className="font-display text-lg font-semibold text-foreground mb-2">The TJ Anderson Layer Method™</h2>
-          <p className="text-sm text-muted-foreground mb-4">Each concept is studied through multiple layers so the information stays in your memory.</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <p className="text-sm text-muted-foreground mb-4">A neuroscience-based system — 9 layers that activate different parts of your brain.</p>
+          <div className="space-y-2">
             {methodLayers.map((layer, i) => (
-              <motion.div key={layer.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.04 }}>
-                <Card className="border-0 shadow-sm h-full bg-card">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{ background: `${layer.color}15` }}>
-                      <layer.icon className="h-5 w-5" style={{ color: layer.color }} />
+              <motion.div key={layer.label} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.03 }}>
+                <Card className="border-0 shadow-sm bg-card">
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${layer.color}18` }}>
+                      <layer.icon className="h-4 w-4" style={{ color: layer.color }} />
                     </div>
-                    <p className="text-sm font-semibold text-foreground mb-1">{layer.label}</p>
-                    <p className="text-xs text-muted-foreground leading-snug">{layer.desc}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">{i + 1}. {layer.label}</p>
+                      <p className="text-xs text-muted-foreground leading-snug">{layer.desc}</p>
+                    </div>
+                    <span className="text-[10px] italic flex-shrink-0 max-w-[120px] text-right" style={{ color: layer.color }}>
+                      🧠 {layer.neuro}
+                    </span>
                   </CardContent>
                 </Card>
               </motion.div>
