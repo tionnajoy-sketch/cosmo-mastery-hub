@@ -331,17 +331,7 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
             >
               {block.definition}
             </motion.p>
-            {block.pronunciation && (
-              <motion.div
-                className="flex items-center gap-3 pt-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.25 }}
-              >
-                <SpeakButton text={block.term_title} size="sm" label="Hear it" onComplete={handleAudioComplete} />
-                <span className="text-sm italic" style={{ color: c.subtext }}>/{block.pronunciation}/</span>
-              </motion.div>
-            )}
+            <SpeakButton text={`${block.term_title}. ${block.definition}`} size="sm" label="Listen to definition" onComplete={handleAudioComplete} />
             {block.video_url && <VideoPlayer url={block.video_url} />}
           </div>
         );
