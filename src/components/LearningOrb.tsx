@@ -242,7 +242,9 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
       const url = data?.image_url || data?.imageUrl;
       if (url) {
         setImageUrl(url);
-        await supabase.from("uploaded_module_blocks").update({ image_url: url }).eq("id", block.id);
+        if (mode === "uploaded") {
+          await supabase.from("uploaded_module_blocks").update({ image_url: url }).eq("id", block.id);
+        }
       }
     } catch (e) { console.error("Image generation failed:", e); }
     finally { setImageLoading(false); }
