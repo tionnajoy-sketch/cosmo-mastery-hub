@@ -97,9 +97,10 @@ const tabIcons: Record<TabType, React.ReactNode> = {
 interface LearningOrbProps {
   block: UploadedBlock;
   onNotesChange: (blockId: string, notes: string) => void;
+  mode?: "uploaded" | "builtin";
 }
 
-const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
+const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbProps) => {
   const { user, profile } = useAuth();
   const { addCoins } = useCoins();
   const { soundsEnabled, toggleSounds } = useSoundsEnabled();
