@@ -800,6 +800,15 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
                     >
                       <CardContent className="pt-0 pb-4 px-4">
                         <div className="border-t pt-4" style={{ borderColor: step.borderColor }}>
+                          <motion.p
+                            className="text-xs italic mb-3"
+                            style={{ color: step.color + "bb" }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.05 }}
+                          >
+                            {step.guidedIntro}
+                          </motion.p>
                           {renderStepContent(step)}
 
                           {/* Complete & Continue button */}
