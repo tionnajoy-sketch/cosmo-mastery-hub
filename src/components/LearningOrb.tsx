@@ -70,17 +70,19 @@ interface StepConfig {
   color: string;
   bgColor: string;
   borderColor: string;
+  gradient: string;
+  glowColor: string;
 }
 
 const stepConfigs: StepConfig[] = [
-  { key: "visualize",   label: "Visualize",   icon: <Eye className="h-5 w-5" />,            color: "hsl(210 65% 55%)", bgColor: "hsl(210 65% 97%)", borderColor: "hsl(210 65% 85%)" },
-  { key: "definition",  label: "Define",       icon: <BookOpen className="h-5 w-5" />,       color: "hsl(45 80% 45%)",  bgColor: "hsl(45 80% 97%)",  borderColor: "hsl(45 80% 85%)" },
-  { key: "recognize",   label: "Recognize",    icon: <Fingerprint className="h-5 w-5" />,    color: "hsl(280 50% 55%)", bgColor: "hsl(280 50% 97%)", borderColor: "hsl(280 50% 85%)" },
-  { key: "metaphor",    label: "Metaphor",     icon: <Lightbulb className="h-5 w-5" />,      color: "hsl(270 55% 60%)", bgColor: "hsl(270 55% 97%)", borderColor: "hsl(270 55% 85%)" },
-  { key: "information", label: "Information",  icon: <Heart className="h-5 w-5" />,          color: "hsl(175 45% 42%)", bgColor: "hsl(175 45% 97%)", borderColor: "hsl(175 45% 85%)" },
-  { key: "reflection",  label: "Reflect",      icon: <PenLine className="h-5 w-5" />,        color: "hsl(220 10% 55%)", bgColor: "hsl(220 10% 97%)", borderColor: "hsl(220 10% 85%)" },
-  { key: "practice",    label: "Apply",        icon: <Wrench className="h-5 w-5" />,         color: "hsl(145 50% 42%)", bgColor: "hsl(145 50% 97%)", borderColor: "hsl(145 50% 85%)" },
-  { key: "quiz",        label: "Assess",       icon: <HelpCircle className="h-5 w-5" />,     color: "hsl(0 65% 55%)",   bgColor: "hsl(0 65% 97%)",   borderColor: "hsl(0 65% 85%)" },
+  { key: "visualize",   label: "Visualize",   icon: <Eye className="h-5 w-5" />,            color: "hsl(210 65% 55%)", bgColor: "hsl(210 50% 96%)", borderColor: "hsl(210 50% 82%)", gradient: "linear-gradient(135deg, hsl(210 65% 55%), hsl(200 70% 62%))", glowColor: "hsl(210 65% 55% / 0.25)" },
+  { key: "definition",  label: "Define",       icon: <BookOpen className="h-5 w-5" />,       color: "hsl(45 80% 45%)",  bgColor: "hsl(45 60% 96%)",  borderColor: "hsl(45 60% 82%)",  gradient: "linear-gradient(135deg, hsl(45 80% 45%), hsl(38 85% 52%))",  glowColor: "hsl(45 80% 45% / 0.25)" },
+  { key: "recognize",   label: "Recognize",    icon: <Fingerprint className="h-5 w-5" />,    color: "hsl(280 50% 55%)", bgColor: "hsl(280 40% 96%)", borderColor: "hsl(280 40% 82%)", gradient: "linear-gradient(135deg, hsl(280 50% 55%), hsl(290 55% 62%))", glowColor: "hsl(280 50% 55% / 0.25)" },
+  { key: "metaphor",    label: "Metaphor",     icon: <Lightbulb className="h-5 w-5" />,      color: "hsl(270 55% 60%)", bgColor: "hsl(270 45% 96%)", borderColor: "hsl(270 45% 82%)", gradient: "linear-gradient(135deg, hsl(270 55% 60%), hsl(260 60% 65%))", glowColor: "hsl(270 55% 60% / 0.25)" },
+  { key: "information", label: "Information",  icon: <Heart className="h-5 w-5" />,          color: "hsl(175 45% 42%)", bgColor: "hsl(175 35% 96%)", borderColor: "hsl(175 35% 82%)", gradient: "linear-gradient(135deg, hsl(175 45% 42%), hsl(185 50% 48%))", glowColor: "hsl(175 45% 42% / 0.25)" },
+  { key: "reflection",  label: "Reflect",      icon: <PenLine className="h-5 w-5" />,        color: "hsl(220 15% 50%)", bgColor: "hsl(220 10% 96%)", borderColor: "hsl(220 10% 82%)", gradient: "linear-gradient(135deg, hsl(220 15% 50%), hsl(230 18% 58%))", glowColor: "hsl(220 15% 50% / 0.2)" },
+  { key: "practice",    label: "Apply",        icon: <Wrench className="h-5 w-5" />,         color: "hsl(145 50% 42%)", bgColor: "hsl(145 40% 96%)", borderColor: "hsl(145 40% 82%)", gradient: "linear-gradient(135deg, hsl(145 50% 42%), hsl(155 55% 48%))", glowColor: "hsl(145 50% 42% / 0.25)" },
+  { key: "quiz",        label: "Assess",       icon: <HelpCircle className="h-5 w-5" />,     color: "hsl(0 65% 55%)",   bgColor: "hsl(0 50% 96%)",   borderColor: "hsl(0 50% 82%)",   gradient: "linear-gradient(135deg, hsl(0 65% 55%), hsl(10 70% 58%))",   glowColor: "hsl(0 65% 55% / 0.25)" },
 ];
 
 interface LearningOrbProps {
@@ -651,31 +653,55 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
             <motion.div
               key={step.key}
               initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: unlocked ? 1 : 0.5, y: 0 }}
+              animate={{ opacity: unlocked ? 1 : 0.45, y: 0 }}
               transition={{ delay: 0.03 * index, duration: 0.3 }}
             >
               <Card
-                className="border overflow-hidden transition-shadow"
+                className="border overflow-hidden transition-all duration-300"
                 style={{
                   borderColor: isExpanded ? step.color : isCompleted ? "hsl(145 40% 75%)" : unlocked ? step.borderColor : "hsl(var(--border))",
-                  boxShadow: isExpanded ? `0 4px 20px ${step.color}22` : "none",
-                  opacity: unlocked ? 1 : 0.55,
+                  boxShadow: isExpanded
+                    ? `0 8px 32px -4px ${step.glowColor}, 0 2px 8px -2px hsl(var(--foreground) / 0.06)`
+                    : isCompleted
+                    ? "0 1px 4px hsl(145 40% 42% / 0.08)"
+                    : unlocked
+                    ? "0 2px 12px -3px hsl(var(--foreground) / 0.08)"
+                    : "none",
+                  opacity: unlocked ? 1 : 0.45,
+                  filter: !unlocked ? "grayscale(0.4)" : isCompleted && !isExpanded ? "saturate(0.7)" : "none",
                 }}
               >
                 {/* Step Header (always visible) */}
                 <button
-                  className="w-full flex items-center gap-3 p-4 text-left transition-colors"
-                  style={{ background: isExpanded ? step.bgColor : "transparent" }}
+                  className="w-full flex items-center gap-3 p-4 text-left transition-all duration-300"
+                  style={{
+                    background: isExpanded
+                      ? `linear-gradient(135deg, ${step.bgColor}, hsl(0 0% 100%))`
+                      : "transparent",
+                  }}
                   onClick={() => handleStepTap(step, index)}
                   disabled={!unlocked}
                 >
                   {/* Step number / icon */}
                   <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
                     style={{
-                      background: isCompleted ? "hsl(145 40% 92%)" : unlocked ? step.bgColor : "hsl(var(--muted))",
-                      color: isCompleted ? "hsl(145 50% 42%)" : unlocked ? step.color : "hsl(var(--muted-foreground))",
-                      border: `1.5px solid ${isCompleted ? "hsl(145 40% 75%)" : unlocked ? step.color + "44" : "transparent"}`,
+                      background: isCompleted
+                        ? "hsl(145 40% 92%)"
+                        : isExpanded
+                        ? step.gradient
+                        : unlocked
+                        ? step.bgColor
+                        : "hsl(var(--muted))",
+                      color: isCompleted
+                        ? "hsl(145 50% 42%)"
+                        : isExpanded
+                        ? "hsl(0 0% 100%)"
+                        : unlocked
+                        ? step.color
+                        : "hsl(var(--muted-foreground))",
+                      border: `1.5px solid ${isCompleted ? "hsl(145 40% 75%)" : isExpanded ? step.color : unlocked ? step.color + "33" : "transparent"}`,
+                      boxShadow: isExpanded ? `0 0 12px ${step.glowColor}` : "none",
                     }}
                   >
                     {isCompleted ? <CheckCircle2 className="h-4.5 w-4.5" /> : unlocked ? step.icon : <Lock className="h-4 w-4" />}
@@ -683,9 +709,23 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
 
                   {/* Label */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold" style={{ color: unlocked ? c.termHeading : "hsl(var(--muted-foreground))" }}>
+                    <p
+                      className="text-sm font-semibold transition-colors duration-200"
+                      style={{
+                        color: isExpanded
+                          ? step.color
+                          : isCompleted
+                          ? "hsl(145 30% 38%)"
+                          : unlocked
+                          ? c.termHeading
+                          : "hsl(var(--muted-foreground))",
+                      }}
+                    >
                       Step {index + 1}: {step.label}
                     </p>
+                    {isCompleted && !isExpanded && (
+                      <p className="text-xs mt-0.5" style={{ color: "hsl(145 25% 55%)" }}>✓ Completed</p>
+                    )}
                   </div>
 
                   {/* Expand indicator */}
@@ -694,7 +734,7 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
                       animate={{ rotate: isExpanded ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <ChevronDown className="h-4 w-4" style={{ color: c.subtext }} />
+                      <ChevronDown className="h-4 w-4" style={{ color: isExpanded ? step.color : c.subtext }} />
                     </motion.div>
                   )}
                 </button>
@@ -722,8 +762,8 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
                           >
                             <Button
                               size="sm"
-                              className="gap-2"
-                              style={{ background: step.color, color: "hsl(0 0% 100%)" }}
+                              className="gap-2 shadow-md transition-shadow hover:shadow-lg"
+                              style={{ background: step.gradient, color: "hsl(0 0% 100%)" }}
                               onClick={() => handleCompleteAndNext(step.key)}
                             >
                               {isLast ? "Complete" : "Continue"}
