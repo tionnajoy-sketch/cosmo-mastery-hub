@@ -12,6 +12,7 @@ import {
   CheckCircle2, Flame, Heart, Shield,
   Brain, Sparkles, Eye, Upload,
   Pen, MessageSquare, GraduationCap, RefreshCw,
+  Lightbulb, PenLine, Wrench, HelpCircle, Mic, Fingerprint,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors } from "@/lib/colors";
@@ -47,22 +48,24 @@ const outcomes = [
 ];
 
 const methodLayers = [
-  { icon: BookOpen, label: "Definition", desc: "Understand the concept in clear language.", color: "hsl(200 55% 48%)" },
-  { icon: Eye, label: "Visualize", desc: "See the structure or process in a simple image.", color: "hsl(270 45% 55%)" },
-  { icon: Sparkles, label: "Metaphor", desc: "Connect the concept to something familiar.", color: "hsl(25 65% 52%)" },
-  { icon: Heart, label: "Affirmation", desc: "Train your brain to believe you can master it.", color: "hsl(346 45% 56%)" },
-  { icon: MessageSquare, label: "Reflection", desc: "Process the idea in your own words.", color: "hsl(145 45% 40%)" },
-  { icon: Pen, label: "Journal", desc: "Strengthen memory through writing.", color: "hsl(195 50% 42%)" },
-  { icon: GraduationCap, label: "Quiz", desc: "Practice state board style questions.", color: "hsl(42 55% 48%)" },
+  { icon: Eye,         label: "Visualize",      desc: "See the concept before defining it.",                     color: "hsl(215 80% 42%)", neuro: "Visual cortex & pattern recognition" },
+  { icon: BookOpen,    label: "Define",          desc: "Understand the concept in clear language.",               color: "hsl(45 90% 40%)",  neuro: "Language processing & labeling" },
+  { icon: Mic,         label: "Break It Down",   desc: "Decode word roots and origins.",                         color: "hsl(30 85% 45%)",  neuro: "Analytical processing & decoding" },
+  { icon: Fingerprint, label: "Recognize",       desc: "Identify the concept visually.",                         color: "hsl(275 70% 50%)", neuro: "Spatial memory & recall" },
+  { icon: Lightbulb,   label: "Metaphor",        desc: "Connect the concept to real life.",                      color: "hsl(265 72% 48%)", neuro: "Limbic system & emotional association" },
+  { icon: Heart,       label: "Information",     desc: "Expand understanding with deeper context.",              color: "hsl(180 60% 32%)", neuro: "Comprehension & deeper reasoning" },
+  { icon: PenLine,     label: "Reflect",         desc: "Process the idea in your own words.",                    color: "hsl(220 20% 35%)", neuro: "Metacognition & self-awareness" },
+  { icon: Wrench,      label: "Apply",           desc: "Use knowledge in real scenarios.",                       color: "hsl(145 65% 32%)", neuro: "Active recall & problem-solving" },
+  { icon: HelpCircle,  label: "Assess",          desc: "Practice state board style questions.",                  color: "hsl(0 75% 45%)",   neuro: "Performance & test readiness" },
 ];
 
 const howToSteps = [
-  "Start a Study Block",
-  "Review the Definition and Visualization",
-  "Connect the Metaphor",
-  "Repeat the Affirmation",
-  "Write your Reflection",
-  "Take the Quiz",
+  "Choose a Study Module",
+  "Work Through Each Block's 9 Layers",
+  "Follow the Guided Sequence",
+  "Use Ask TJ Mentor for Help",
+  "Practice Activities & Quizzes",
+  "Track Your Progress",
 ];
 
 const getStatusLabel = (percent: number) => {
