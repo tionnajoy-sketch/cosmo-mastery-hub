@@ -18,6 +18,7 @@ export interface DisplayCell {
   arrows?: ("right" | "down")[];
   number?: number;
   wordIds?: string[];
+  category?: string;
 }
 
 export interface CrosswordGrid {
