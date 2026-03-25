@@ -413,6 +413,16 @@ const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
         </Collapsible>
       )}
 
+      {/* Sound Toggle */}
+      <button
+        onClick={toggleSounds}
+        className="absolute top-1 right-1 z-10 p-1.5 rounded-full transition-colors hover:bg-muted/60"
+        title={soundsEnabled ? "Mute sounds" : "Unmute sounds"}
+        style={{ color: soundsEnabled ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
+      >
+        {soundsEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+      </button>
+
       {/* === ORB VIEW === */}
       <AnimatePresence mode="wait">
         {expandedNode === null ? (
