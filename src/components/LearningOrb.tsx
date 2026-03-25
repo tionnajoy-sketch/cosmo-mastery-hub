@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useCoins } from "@/hooks/useCoins";
+import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2, XCircle, StickyNote, Loader2, BookOpen, Eye,
   Lightbulb, Heart, PenLine, Wrench, GraduationCap, Mic,
-  HelpCircle, Fingerprint, X,
+  HelpCircle, Fingerprint, X, Volume2, VolumeX,
 } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import { fireBlockCompleteConfetti } from "@/lib/confetti";
@@ -102,6 +102,7 @@ interface LearningOrbProps {
 const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
   const { user, profile } = useAuth();
   const { addCoins } = useCoins();
+  const { soundsEnabled, toggleSounds } = useSoundsEnabled();
   const [expandedNode, setExpandedNode] = useState<TabType | null>(null);
   const [journalNote, setJournalNote] = useState(block.user_notes || "");
   const [journalSaving, setJournalSaving] = useState(false);
@@ -173,7 +174,7 @@ const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
   }, [block.id, expandedNode, addCoins]);
 
   const handleNodeClick = (key: TabType) => {
-    playChimeSound();
+    if (soundsEnabled) playChimeSound();
     setExpandedNode(key);
     setVisitedTabs(prev => {
       const next = new Set(prev);
@@ -183,7 +184,7 @@ const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
         setCompletionPulse(true);
         addCoins(15, "block_complete");
         fireBlockCompleteConfetti();
-        playCelebrationSound();
+        if (soundsEnabled) playCelebrationSound();
         setTimeout(() => setCompletionPulse(false), 2000);
       }
       return next;
@@ -411,6 +412,16 @@ const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
           </CollapsibleContent>
         </Collapsible>
       )}
+
+      {/* Sound Toggle */}
+      <button
+        onClick={toggleSounds}
+        className="absolute top-1 right-1 z-10 p-1.5 rounded-full transition-colors hover:bg-muted/60"
+        title={soundsEnabled ? "Mute sounds" : "Unmute sounds"}
+        style={{ color: soundsEnabled ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
+      >
+        {soundsEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+      </button>
 
       {/* === ORB VIEW === */}
       <AnimatePresence mode="wait">
