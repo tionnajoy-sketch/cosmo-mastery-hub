@@ -1,8 +1,9 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import LearningOrb from "@/components/LearningOrb";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
+import tjBackground from "@/assets/tj-background.jpg";
 
 interface LearningOrbDialogProps {
   open: boolean;
@@ -11,46 +12,54 @@ interface LearningOrbDialogProps {
   onNotesChange: (blockId: string, notes: string) => void;
   mode?: "uploaded" | "builtin";
   blockIndex?: number;
+  onComplete?: () => void;
 }
 
-const LearningOrbDialog = ({ open, onOpenChange, block, onNotesChange, mode = "uploaded", blockIndex = 0 }: LearningOrbDialogProps) => {
+const LearningOrbDialog = ({ open, onOpenChange, block, onNotesChange, mode = "uploaded", blockIndex = 0, onComplete }: LearningOrbDialogProps) => {
   if (!block) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-3xl w-[95vw] max-h-[92vh] overflow-y-auto p-0 gap-0 border-0 rounded-2xl"
-        style={{
-          background: "hsl(var(--background))",
-          boxShadow: "0 20px 60px hsl(0 0% 0% / 0.2)",
-        }}
+        className="fixed inset-0 max-w-none w-screen h-screen m-0 p-0 gap-0 border-0 rounded-none translate-x-0 translate-y-0 top-0 left-0 data-[state=open]:slide-in-from-bottom-0"
+        style={{ background: "hsl(var(--background))" }}
       >
-        {/* Header bar */}
-        <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b" style={{ background: "hsl(var(--background) / 0.95)", backdropFilter: "blur(10px)" }}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-            className="gap-2 text-xs"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to Terms
-          </Button>
-          <button
-            onClick={() => onOpenChange(false)}
-            className="p-1.5 rounded-full hover:bg-muted transition-colors"
-          >
-            <X className="h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
-          </button>
-        </div>
+        {/* Full-screen background */}
+        <div
+          className="fixed inset-0 bg-cover bg-center pointer-events-none"
+          style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.08, filter: "brightness(1.1)" }}
+        />
+        <div className="fixed inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.92) 0%, hsl(0 0% 98% / 0.95) 100%)" }} />
 
-        {/* LearningOrb */}
-        <div className="p-2 sm:p-4">
-          <LearningOrb
-            block={block}
-            onNotesChange={onNotesChange}
-            mode={mode}
-            blockIndex={blockIndex}
-          />
+        {/* Scrollable content */}
+        <div className="relative z-10 h-full overflow-y-auto">
+          {/* Sticky header */}
+          <div
+            className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3 border-b"
+            style={{ background: "hsl(var(--background) / 0.95)", backdropFilter: "blur(12px)" }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              className="gap-2 text-sm font-medium"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to Terms
+            </Button>
+            <p className="text-xs font-semibold truncate max-w-[200px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+              {block.term_title}
+            </p>
+          </div>
+
+          {/* LearningOrb - full width */}
+          <div className="max-w-3xl mx-auto px-4 sm:px-8 py-6 pb-20">
+            <LearningOrb
+              block={block}
+              onNotesChange={onNotesChange}
+              mode={mode}
+              blockIndex={blockIndex}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
