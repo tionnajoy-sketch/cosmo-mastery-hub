@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import SpeakButton from "@/components/SpeakButton";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 import StepContent from "@/components/LearningOrbStepContent";
+import tjBackground from "@/assets/tj-background.png";
 
 const c = pageColors.study;
 
@@ -86,20 +87,6 @@ export const stepConfigs: StepConfig[] = [
   { key: "quiz",        label: "Assess",          subtitle: "Performance & test readiness",           neuroExplanation: "Triggers the testing effect — retrieval under pressure consolidates long-term memory better than re-reading.", icon: <HelpCircle className="h-4 w-4" />,     color: "hsl(0 75% 45%)",   bgColor: "hsl(0 55% 95%)",   borderColor: "hsl(0 55% 72%)",   gradient: "linear-gradient(135deg, hsl(0 75% 45%), hsl(10 80% 50%))",   glowColor: "hsl(0 75% 45% / 0.4)",    guidedIntro: "Show what you know… demonstrate your mastery." },
 ];
 
-// Vibrant background gradients that rotate per block
-const blockBackgrounds = [
-  "linear-gradient(160deg, hsl(215 55% 92%), hsl(230 50% 95%), hsl(200 60% 97%))",
-  "linear-gradient(160deg, hsl(45 65% 92%), hsl(38 60% 95%), hsl(55 50% 97%))",
-  "linear-gradient(160deg, hsl(30 60% 92%), hsl(20 55% 95%), hsl(40 50% 97%))",
-  "linear-gradient(160deg, hsl(275 50% 93%), hsl(265 45% 96%), hsl(285 40% 97%))",
-  "linear-gradient(160deg, hsl(265 55% 92%), hsl(255 50% 95%), hsl(280 45% 97%))",
-  "linear-gradient(160deg, hsl(180 45% 92%), hsl(190 40% 95%), hsl(170 50% 97%))",
-  "linear-gradient(160deg, hsl(220 25% 92%), hsl(230 20% 95%), hsl(210 30% 97%))",
-  "linear-gradient(160deg, hsl(145 50% 92%), hsl(155 45% 95%), hsl(135 40% 97%))",
-  "linear-gradient(160deg, hsl(0 55% 93%), hsl(10 50% 96%), hsl(350 45% 97%))",
-  "linear-gradient(160deg, hsl(340 50% 93%), hsl(330 45% 96%), hsl(350 40% 97%))",
-];
-
 interface LearningOrbProps {
   block: UploadedBlock;
   onNotesChange: (blockId: string, notes: string) => void;
@@ -112,7 +99,7 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
   const { addCoins } = useCoins();
   const { soundsEnabled, toggleSounds } = useSoundsEnabled();
 
-  const [expandedStep, setExpandedStep] = useState<StepKey | null>(null);
+  const [activeTab, setActiveTab] = useState<StepKey | null>(null);
   const [completedSteps, setCompletedSteps] = useState<Set<StepKey>>(new Set());
   const [journalNote, setJournalNote] = useState(block.user_notes || "");
   const [journalSaving, setJournalSaving] = useState(false);
@@ -130,6 +117,7 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
   const [videoLoading, setVideoLoading] = useState(false);
   const [recognizeSelected, setRecognizeSelected] = useState<number | null>(null);
   const [recognizeRevealed, setRecognizeRevealed] = useState(false);
+  const tabScrollRef = useRef<HTMLDivElement>(null);
 
   const activeSteps = useMemo(() => {
     const identityItems = Array.isArray(block.concept_identity) ? block.concept_identity : [];
@@ -140,6 +128,13 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
       return true;
     });
   }, [block.concept_identity, block.practice_scenario, block.pronunciation, block.definition]);
+
+  // Auto-open first step
+  useEffect(() => {
+    if (activeSteps.length > 0 && activeTab === null) {
+      setActiveTab(activeSteps[0].key);
+    }
+  }, [activeSteps, activeTab]);
 
   // Load saved data for builtin terms
   useEffect(() => {
@@ -185,12 +180,12 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
   }, [journalNote, addCoins]);
 
   const handleAudioComplete = useCallback(() => {
-    const key = `${block.id}-${expandedStep}`;
+    const key = `${block.id}-${activeTab}`;
     if (!audioCoinAwarded.current.has(key)) {
       audioCoinAwarded.current.add(key);
       addCoins(2, "audio");
     }
-  }, [block.id, expandedStep, addCoins]);
+  }, [block.id, activeTab, addCoins]);
 
   const isStepUnlocked = (stepIndex: number) => {
     if (stepIndex === 0) return true;
@@ -212,15 +207,10 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
     });
   };
 
-  const handleNodeTap = (step: StepConfig, index: number) => {
+  const handleTabTap = (step: StepConfig, index: number) => {
     if (!isStepUnlocked(index)) return;
     if (soundsEnabled) playChimeSound();
-    if (expandedStep === step.key) {
-      markStepComplete(step.key);
-      setExpandedStep(null);
-    } else {
-      setExpandedStep(step.key);
-    }
+    setActiveTab(step.key);
   };
 
   const handleCompleteAndNext = (currentKey: StepKey) => {
@@ -229,9 +219,9 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
     if (currentIndex < activeSteps.length - 1) {
       const nextStep = activeSteps[currentIndex + 1];
       if (soundsEnabled) playChimeSound();
-      setExpandedStep(nextStep.key);
+      setActiveTab(nextStep.key);
     } else {
-      setExpandedStep(null);
+      setActiveTab(null);
     }
   };
 
@@ -279,352 +269,254 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
   const allCompleted = activeSteps.every(s => completedSteps.has(s.key));
   const progressPercent = (completedSteps.size / activeSteps.length) * 100;
 
-  const expandedStepConfig = expandedStep ? activeSteps.find(s => s.key === expandedStep) : null;
-  const expandedStepIndex = expandedStep ? activeSteps.findIndex(s => s.key === expandedStep) : -1;
-
-  // Pick background based on block index
-  const bg = blockBackgrounds[blockIndex % blockBackgrounds.length];
+  const activeStepConfig = activeTab ? activeSteps.find(s => s.key === activeTab) : null;
+  const activeStepIndex = activeTab ? activeSteps.findIndex(s => s.key === activeTab) : -1;
 
   return (
-    <div
-      className="relative rounded-2xl p-5 sm:p-6"
-      style={{ background: bg }}
-    >
-      {/* Instructor Notes */}
-      {block.instructor_notes && (
-        <Collapsible className="mb-3">
-          <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium px-2 py-1 rounded-md hover:bg-muted/60 transition-colors" style={{ color: "hsl(42 55% 45%)" }}>
-            <StickyNote className="h-3.5 w-3.5" /> Instructor Notes
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="mt-1 px-3 py-2 rounded-lg text-sm italic leading-relaxed" style={{ background: "hsl(42 50% 96%)", color: "hsl(42 30% 28%)" }}>
-              {block.instructor_notes}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
+    <div className="relative rounded-2xl overflow-hidden">
+      {/* TJ Background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.06 }}
+      />
+      <div className="relative z-10 p-4 sm:p-6">
 
-      {/* Progress Bar */}
-      <div className="space-y-1 mb-5">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-medium" style={{ color: c.subtext }}>
-            Step {completedSteps.size} of {activeSteps.length}
-            {allCompleted && " — ✨ Complete!"}
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleSounds}
-              className="p-1.5 rounded-full transition-colors hover:bg-muted/60"
-              title={soundsEnabled ? "Mute sounds" : "Unmute sounds"}
-              style={{ color: soundsEnabled ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
-            >
-              {soundsEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
-            </button>
-            <p className="text-xs font-semibold" style={{ color: allCompleted ? "hsl(145 50% 42%)" : "hsl(var(--primary))" }}>
-              {Math.round(progressPercent)}%
-            </p>
-          </div>
-        </div>
-        <Progress value={progressPercent} className="h-2" />
-      </div>
+        {/* Instructor Notes */}
+        {block.instructor_notes && (
+          <Collapsible className="mb-3">
+            <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium px-2 py-1 rounded-md hover:bg-muted/60 transition-colors" style={{ color: "hsl(42 55% 45%)" }}>
+              <StickyNote className="h-3.5 w-3.5" /> Instructor Notes
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-1 px-3 py-2 rounded-lg text-sm italic leading-relaxed" style={{ background: "hsl(42 50% 96%)", color: "hsl(42 30% 28%)" }}>
+                {block.instructor_notes}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
-      {/* === CENTRAL TERM BOX — Only the term, no definition === */}
-      <Card
-        className="relative border-2 overflow-hidden mb-6"
-        style={{
-          borderColor: allCompleted ? "hsl(145 50% 55%)" : "hsl(var(--border))",
-          boxShadow: allCompleted
-            ? "0 0 30px hsl(145 50% 42% / 0.15), 0 4px 20px hsl(var(--foreground) / 0.06)"
-            : "0 4px 24px hsl(var(--foreground) / 0.08), 0 1px 6px hsl(var(--foreground) / 0.04)",
-          background: allCompleted
-            ? "linear-gradient(135deg, hsl(145 35% 97%), hsl(var(--card)))"
-            : "hsl(var(--card))",
-        }}
-      >
-        <CardContent className="p-8 sm:p-10 text-center">
-          <motion.h2
-            className="font-display text-4xl sm:text-5xl font-bold leading-tight break-words"
+        {/* Term Title + Speaker */}
+        <div className="flex items-center gap-3 mb-2">
+          <h2
+            className="font-display text-3xl sm:text-4xl font-bold leading-tight break-words"
             style={{ color: c.heading }}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
           >
             {block.term_title}
-          </motion.h2>
+          </h2>
+          <SpeakButton text={block.term_title} size="sm" label="Listen" onComplete={handleAudioComplete} />
+        </div>
 
-          {block.pronunciation && (
-            <p className="text-sm mt-2 italic" style={{ color: c.subtext }}>
-              /{block.pronunciation}/
+        {block.pronunciation && (
+          <p className="text-sm italic mb-3" style={{ color: c.subtext }}>
+            /{block.pronunciation}/
+          </p>
+        )}
+
+        {/* Progress */}
+        <div className="space-y-1 mb-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium" style={{ color: c.subtext }}>
+              Step {completedSteps.size} of {activeSteps.length}
+              {allCompleted && " — ✨ Complete!"}
             </p>
-          )}
-
-          <div className="mt-3 flex justify-center">
-            <SpeakButton text={block.term_title} size="sm" label="Listen" onComplete={handleAudioComplete} />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleSounds}
+                className="p-1.5 rounded-full transition-colors hover:bg-muted/60"
+                title={soundsEnabled ? "Mute sounds" : "Unmute sounds"}
+                style={{ color: soundsEnabled ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
+              >
+                {soundsEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+              </button>
+              <p className="text-xs font-semibold" style={{ color: allCompleted ? "hsl(145 50% 42%)" : "hsl(var(--primary))" }}>
+                {Math.round(progressPercent)}%
+              </p>
+            </div>
           </div>
+          <Progress value={progressPercent} className="h-2" />
+        </div>
 
-          <AnimatePresence>
-            {allCompleted && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full"
+        {/* === HORIZONTAL SCROLLABLE TABS === */}
+        <div
+          ref={tabScrollRef}
+          className="flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {activeSteps.map((step, index) => {
+            const unlocked = isStepUnlocked(index);
+            const isCompleted = completedSteps.has(step.key);
+            const isActive = activeTab === step.key;
+
+            return (
+              <button
+                key={step.key}
+                onClick={() => handleTabTap(step, index)}
+                disabled={!unlocked}
+                className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5"
+                style={{
+                  background: isActive
+                    ? step.gradient
+                    : isCompleted
+                    ? "hsl(145 30% 92%)"
+                    : unlocked
+                    ? step.bgColor
+                    : "hsl(var(--muted) / 0.5)",
+                  color: isActive
+                    ? "hsl(0 0% 100%)"
+                    : isCompleted
+                    ? "hsl(145 40% 35%)"
+                    : unlocked
+                    ? step.color
+                    : "hsl(var(--muted-foreground))",
+                  border: `1.5px solid ${
+                    isActive
+                      ? step.color
+                      : isCompleted
+                      ? "hsl(145 40% 70%)"
+                      : unlocked
+                      ? step.borderColor
+                      : "hsl(var(--border))"
+                  }`,
+                  boxShadow: isActive
+                    ? `0 2px 12px ${step.glowColor}`
+                    : "none",
+                  cursor: unlocked ? "pointer" : "not-allowed",
+                  opacity: unlocked ? 1 : 0.45,
+                }}
+              >
+                {isCompleted ? <CheckCircle2 className="h-3 w-3" /> : unlocked ? step.icon : <Lock className="h-3 w-3" />}
+                {step.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* === TAB CONTENT PANEL === */}
+        <AnimatePresence mode="wait">
+          {activeStepConfig && (
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              <Card
+                className="border-2 overflow-hidden"
+                style={{
+                  borderColor: activeStepConfig.color,
+                  boxShadow: `0 4px 20px -4px ${activeStepConfig.glowColor}, 0 1px 6px hsl(var(--foreground) / 0.04)`,
+                  background: "hsl(var(--card))",
+                }}
+              >
+                <CardContent className="p-4 sm:p-5">
+                  {/* Guided intro */}
+                  <motion.p
+                    className="text-xs italic mb-3"
+                    style={{ color: activeStepConfig.color }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.05 }}
+                  >
+                    {activeStepConfig.guidedIntro}
+                  </motion.p>
+
+                  {/* Step content */}
+                  <StepContent
+                    stepKey={activeStepConfig.key}
+                    block={block}
+                    mode={mode}
+                    user={user}
+                    imageUrl={imageUrl}
+                    imageLoading={imageLoading}
+                    generateImage={generateImage}
+                    videoSuggestions={videoSuggestions}
+                    videoLoading={videoLoading}
+                    fetchVideoSuggestions={fetchVideoSuggestions}
+                    identityItems={identityItems}
+                    recognizeSelected={recognizeSelected}
+                    setRecognizeSelected={setRecognizeSelected}
+                    recognizeRevealed={recognizeRevealed}
+                    setRecognizeRevealed={setRecognizeRevealed}
+                    reflectionText={reflectionText}
+                    setReflectionText={setReflectionText}
+                    reflectionSubmitted={reflectionSubmitted}
+                    setReflectionSubmitted={setReflectionSubmitted}
+                    onReflectionSave={handleReflectionSave}
+                    journalNote={journalNote}
+                    setJournalNote={setJournalNote}
+                    journalSaving={journalSaving}
+                    quizSelected={quizSelected}
+                    setQuizSelected={setQuizSelected}
+                    quizRevealed={quizRevealed}
+                    setQuizRevealed={setQuizRevealed}
+                    handleAudioComplete={handleAudioComplete}
+                    stepColor={activeStepConfig.color}
+                  />
+
+                  {/* Neuroscience callout */}
+                  <motion.div
+                    className="mt-4 p-3 rounded-lg"
+                    style={{
+                      background: activeStepConfig.bgColor,
+                      border: `1px solid ${activeStepConfig.borderColor}`,
+                    }}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: activeStepConfig.color }}>
+                      🧠 Why This Step Matters
+                    </p>
+                    <p className="text-xs leading-relaxed" style={{ color: c.bodyText }}>
+                      {activeStepConfig.neuroExplanation}
+                    </p>
+                  </motion.div>
+
+                  {/* Continue button */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                    className="mt-4 flex justify-end"
+                  >
+                    <Button
+                      size="sm"
+                      className="gap-2 shadow-md transition-shadow hover:shadow-lg"
+                      style={{ background: activeStepConfig.gradient, color: "hsl(0 0% 100%)" }}
+                      onClick={() => handleCompleteAndNext(activeStepConfig.key)}
+                    >
+                      {activeStepIndex === activeSteps.length - 1 ? "Complete" : "Continue"}
+                      {activeStepIndex < activeSteps.length - 1 && <ArrowRight className="h-3.5 w-3.5" />}
+                    </Button>
+                  </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Completion badge */}
+        <AnimatePresence>
+          {allCompleted && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mt-4 flex justify-center"
+            >
+              <div
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
                 style={{ background: "hsl(145 40% 92%)", border: "1px solid hsl(145 40% 75%)" }}
               >
                 <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
                   <CheckCircle2 className="h-5 w-5" style={{ color: "hsl(145 50% 42%)" }} />
                 </motion.div>
                 <span className="text-sm font-semibold" style={{ color: "hsl(145 35% 25%)" }}>Concept Mastered!</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </CardContent>
-      </Card>
-
-      {/* === LAYER NODES — Card grid layout === */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        {activeSteps.map((step, index) => {
-          const unlocked = isStepUnlocked(index);
-          const isCompleted = completedSteps.has(step.key);
-          const isActive = expandedStep === step.key;
-
-          return (
-            <motion.button
-              key={step.key}
-              className="relative flex flex-col items-center gap-2 p-4 rounded-2xl transition-all text-center"
-              onClick={() => handleNodeTap(step, index)}
-              disabled={!unlocked}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{
-                opacity: unlocked ? 1 : 0.4,
-                scale: 1,
-              }}
-              transition={{ delay: 0.04 * index, type: "spring", stiffness: 200 }}
-              whileHover={unlocked ? { scale: 1.04, y: -2 } : {}}
-              whileTap={unlocked ? { scale: 0.97 } : {}}
-              style={{
-                background: isActive
-                  ? `linear-gradient(160deg, ${step.bgColor}, hsl(0 0% 100%))`
-                  : isCompleted
-                  ? "hsl(145 30% 96%)"
-                  : unlocked
-                  ? "hsl(var(--card))"
-                  : "hsl(var(--muted) / 0.5)",
-                border: `2px solid ${
-                  isActive
-                    ? step.color
-                    : isCompleted
-                    ? "hsl(145 40% 70%)"
-                    : unlocked
-                    ? step.borderColor
-                    : "hsl(var(--border))"
-                }`,
-                boxShadow: isActive
-                  ? `0 6px 24px ${step.glowColor}, 0 2px 8px hsl(var(--foreground) / 0.06)`
-                  : isCompleted
-                  ? "0 2px 8px hsl(145 40% 42% / 0.1)"
-                  : unlocked
-                  ? "0 2px 12px hsl(var(--foreground) / 0.06)"
-                  : "none",
-                cursor: unlocked ? "pointer" : "not-allowed",
-                filter: !unlocked ? "grayscale(0.5)" : "none",
-              }}
-            >
-              {/* Step number badge */}
-              <span
-                className="absolute top-2 left-2 text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center"
-                style={{
-                  background: isCompleted ? "hsl(145 40% 88%)" : isActive ? step.gradient : step.bgColor,
-                  color: isCompleted ? "hsl(145 50% 35%)" : step.color,
-                  border: `1px solid ${isCompleted ? "hsl(145 40% 70%)" : step.borderColor}`,
-                }}
-              >
-                {index + 1}
-              </span>
-
-              {/* Icon circle */}
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
-                style={{
-                  background: isCompleted
-                    ? "hsl(145 40% 92%)"
-                    : isActive
-                    ? step.gradient
-                    : step.bgColor,
-                  border: `2px solid ${
-                    isCompleted ? "hsl(145 40% 65%)" : isActive ? step.color : step.borderColor
-                  }`,
-                  boxShadow: isActive ? `0 0 16px ${step.glowColor}` : "none",
-                  color: isCompleted
-                    ? "hsl(145 50% 42%)"
-                    : isActive
-                    ? "hsl(0 0% 100%)"
-                    : step.color,
-                }}
-              >
-                {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : unlocked ? step.icon : <Lock className="h-3.5 w-3.5" />}
               </div>
-
-              {/* Label */}
-              <p
-                className="text-xs font-bold leading-tight"
-                style={{
-                  color: isActive ? step.color : isCompleted ? "hsl(145 30% 38%)" : unlocked ? c.heading : "hsl(var(--muted-foreground))",
-                }}
-              >
-                {step.label}
-              </p>
-
-              {/* Status */}
-              <p
-                className="text-[10px]"
-                style={{
-                  color: isCompleted ? "hsl(145 20% 50%)" : unlocked ? c.subtext : "hsl(var(--muted-foreground))",
-                }}
-              >
-                {isCompleted ? "✓ Done" : isActive ? "Active" : unlocked ? "Ready" : "Locked"}
-              </p>
-            </motion.button>
-          );
-        })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-
-      {/* === EXPANDED STEP PANEL === */}
-      <AnimatePresence>
-        {expandedStepConfig && (
-          <motion.div
-            key={expandedStep}
-            initial={{ opacity: 0, y: 20, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: "auto" }}
-            exit={{ opacity: 0, y: 20, height: 0 }}
-            transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="overflow-hidden mt-5"
-          >
-            <Card
-              className="border-2 overflow-hidden"
-              style={{
-                borderColor: expandedStepConfig.color,
-                boxShadow: `0 8px 32px -4px ${expandedStepConfig.glowColor}, 0 2px 8px -2px hsl(var(--foreground) / 0.06)`,
-              }}
-            >
-              {/* Panel Header */}
-              <div
-                className="flex items-center gap-3 p-4"
-                style={{
-                  background: `linear-gradient(135deg, ${expandedStepConfig.bgColor}, hsl(0 0% 100%))`,
-                  borderBottom: `1px solid ${expandedStepConfig.borderColor}`,
-                }}
-              >
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ background: expandedStepConfig.gradient, color: "hsl(0 0% 100%)" }}
-                >
-                  {expandedStepConfig.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold" style={{ color: expandedStepConfig.color }}>
-                    Step {expandedStepIndex + 1}: {expandedStepConfig.label}
-                  </p>
-                  <p className="text-xs" style={{ color: expandedStepConfig.color + "aa" }}>
-                    {expandedStepConfig.subtitle}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    markStepComplete(expandedStepConfig.key);
-                    setExpandedStep(null);
-                  }}
-                  className="p-1.5 rounded-full hover:bg-muted/60 transition-colors"
-                  style={{ color: c.subtext }}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* Panel Content */}
-              <CardContent className="p-4 sm:p-5">
-                {/* Guided intro */}
-                <motion.p
-                  className="text-xs italic mb-3"
-                  style={{ color: expandedStepConfig.color + "bb" }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.05 }}
-                >
-                  {expandedStepConfig.guidedIntro}
-                </motion.p>
-
-                {/* Neuroscience explanation */}
-                <motion.div
-                  className="mb-4 p-3 rounded-lg"
-                  style={{
-                    background: expandedStepConfig.bgColor,
-                    border: `1px solid ${expandedStepConfig.borderColor}`,
-                  }}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: expandedStepConfig.color }}>
-                    🧠 Why This Step Matters
-                  </p>
-                  <p className="text-xs leading-relaxed" style={{ color: c.bodyText }}>
-                    {expandedStepConfig.neuroExplanation}
-                  </p>
-                </motion.div>
-
-                <StepContent
-                  stepKey={expandedStepConfig.key}
-                  block={block}
-                  mode={mode}
-                  user={user}
-                  imageUrl={imageUrl}
-                  imageLoading={imageLoading}
-                  generateImage={generateImage}
-                  videoSuggestions={videoSuggestions}
-                  videoLoading={videoLoading}
-                  fetchVideoSuggestions={fetchVideoSuggestions}
-                  identityItems={identityItems}
-                  recognizeSelected={recognizeSelected}
-                  setRecognizeSelected={setRecognizeSelected}
-                  recognizeRevealed={recognizeRevealed}
-                  setRecognizeRevealed={setRecognizeRevealed}
-                  reflectionText={reflectionText}
-                  setReflectionText={setReflectionText}
-                  reflectionSubmitted={reflectionSubmitted}
-                  setReflectionSubmitted={setReflectionSubmitted}
-                  onReflectionSave={handleReflectionSave}
-                  journalNote={journalNote}
-                  setJournalNote={setJournalNote}
-                  journalSaving={journalSaving}
-                  quizSelected={quizSelected}
-                  setQuizSelected={setQuizSelected}
-                  quizRevealed={quizRevealed}
-                  setQuizRevealed={setQuizRevealed}
-                  handleAudioComplete={handleAudioComplete}
-                  stepColor={expandedStepConfig.color}
-                />
-
-                {/* Continue button */}
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="mt-5 flex justify-end"
-                >
-                  <Button
-                    size="sm"
-                    className="gap-2 shadow-md transition-shadow hover:shadow-lg"
-                    style={{ background: expandedStepConfig.gradient, color: "hsl(0 0% 100%)" }}
-                    onClick={() => handleCompleteAndNext(expandedStepConfig.key)}
-                  >
-                    {expandedStepIndex === activeSteps.length - 1 ? "Complete" : "Continue"}
-                    {expandedStepIndex < activeSteps.length - 1 && <ArrowRight className="h-3.5 w-3.5" />}
-                  </Button>
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
