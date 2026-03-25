@@ -70,6 +70,8 @@ interface StepConfig {
   color: string;
   bgColor: string;
   borderColor: string;
+  gradient: string;
+  glowColor: string;
 }
 
 const stepConfigs: StepConfig[] = [
