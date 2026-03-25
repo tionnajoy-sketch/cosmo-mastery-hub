@@ -97,9 +97,10 @@ const tabIcons: Record<TabType, React.ReactNode> = {
 interface LearningOrbProps {
   block: UploadedBlock;
   onNotesChange: (blockId: string, notes: string) => void;
+  mode?: "uploaded" | "builtin";
 }
 
-const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
+const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbProps) => {
   const { user, profile } = useAuth();
   const { addCoins } = useCoins();
   const { soundsEnabled, toggleSounds } = useSoundsEnabled();
@@ -120,6 +121,20 @@ const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
   const [videoSuggestions, setVideoSuggestions] = useState<{ label: string; url: string }[]>([]);
   const [videoLoading, setVideoLoading] = useState(false);
   const [completionPulse, setCompletionPulse] = useState(false);
+
+  // Load saved data for builtin terms
+  useEffect(() => {
+    if (mode !== "builtin" || !user) return;
+    supabase.from("journal_notes").select("note").eq("user_id", user.id).eq("term_id", block.id).single().then(({ data }) => {
+      if (data) setJournalNote(data.note);
+    });
+    supabase.from("reflections").select("response").eq("user_id", user.id).eq("term_id", block.id).single().then(({ data }) => {
+      if (data?.response) { setReflectionText(data.response); setReflectionSubmitted(true); }
+    });
+    supabase.from("term_images").select("image_url").eq("term_id", block.id).single().then(({ data }) => {
+      if (data) setImageUrl(data.image_url);
+    });
+  }, [mode, user, block.id]);
 
   const identityItems = Array.isArray(block.concept_identity) ? block.concept_identity : [];
   const hasIdentity = identityItems.length > 0;
@@ -148,15 +163,25 @@ const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
 
   // Auto-save journal
   useEffect(() => {
+    if (!user) return;
     const timeout = setTimeout(async () => {
-      if (journalNote === block.user_notes) return;
-      setJournalSaving(true);
-      await supabase.from("uploaded_module_blocks").update({ user_notes: journalNote }).eq("id", block.id);
-      onNotesChange(block.id, journalNote);
+      if (mode === "uploaded") {
+        if (journalNote === block.user_notes) return;
+        setJournalSaving(true);
+        await supabase.from("uploaded_module_blocks").update({ user_notes: journalNote }).eq("id", block.id);
+        onNotesChange(block.id, journalNote);
+      } else {
+        if (!journalNote) return;
+        setJournalSaving(true);
+        await supabase.from("journal_notes").upsert(
+          { user_id: user.id, term_id: block.id, note: journalNote, updated_at: new Date().toISOString() },
+          { onConflict: "user_id,term_id" }
+        );
+      }
       setJournalSaving(false);
     }, 1000);
     return () => clearTimeout(timeout);
-  }, [journalNote, block.id, block.user_notes, onNotesChange]);
+  }, [journalNote, block.id, block.user_notes, onNotesChange, user, mode]);
 
   useEffect(() => {
     if (journalNote.length >= 10 && !journalCoinAwarded.current) {
@@ -217,7 +242,9 @@ const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
       const url = data?.image_url || data?.imageUrl;
       if (url) {
         setImageUrl(url);
-        await supabase.from("uploaded_module_blocks").update({ image_url: url }).eq("id", block.id);
+        if (mode === "uploaded") {
+          await supabase.from("uploaded_module_blocks").update({ image_url: url }).eq("id", block.id);
+        }
       }
     } catch (e) { console.error("Image generation failed:", e); }
     finally { setImageLoading(false); }
@@ -332,7 +359,16 @@ const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
               {!reflectionSubmitted && <div className="absolute right-1 bottom-1"><SpeechToTextButton onTranscript={(text) => { setReflectionText(prev => prev ? `${prev} ${text}` : text); }} /></div>}
             </div>
             {!reflectionSubmitted ? (
-              <Button size="sm" onClick={() => { setReflectionSubmitted(true); if (!reflectionCoinAwarded.current) { reflectionCoinAwarded.current = true; addCoins(3, "reflection"); } }}
+              <Button size="sm" onClick={async () => {
+                setReflectionSubmitted(true);
+                if (mode === "builtin" && user) {
+                  await supabase.from("reflections").upsert(
+                    { user_id: user.id, term_id: block.id, response: reflectionText, updated_at: new Date().toISOString() },
+                    { onConflict: "user_id,term_id" }
+                  );
+                }
+                if (!reflectionCoinAwarded.current) { reflectionCoinAwarded.current = true; addCoins(3, "reflection"); }
+              }}
                 disabled={!reflectionText.trim()} className="w-full" style={{ background: c.tabActive, color: c.tabActiveText }}>Save My Reflection</Button>
             ) : (
               <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">

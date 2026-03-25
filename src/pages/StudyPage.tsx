@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,15 +6,41 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowLeft, Brain, Gamepad2, GraduationCap } from "lucide-react";
-import TermCard from "@/components/TermCard";
+import LearningOrb from "@/components/LearningOrb";
 import AIMentorChat from "@/components/AIMentorChat";
 import AppHeader from "@/components/AppHeader";
 import { pageColors } from "@/lib/colors";
 import { blockObjectivesMap } from "@/lib/sectionObjectives";
+import type { UploadedBlock } from "@/components/UploadedTermCard";
 
 const c = pageColors.study;
 
-interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; }
+interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; concept_identity?: any; }
+
+/** Convert a built-in Term into UploadedBlock shape so LearningOrb can render it */
+const termToBlock = (t: Term, blockNum: number): UploadedBlock => ({
+  id: t.id,
+  block_number: blockNum,
+  term_title: t.term,
+  pronunciation: "",
+  definition: t.definition,
+  visualization_desc: "",
+  metaphor: t.metaphor,
+  affirmation: t.affirmation,
+  reflection_prompt: `In your own words, explain what ${t.term} means and why it matters.`,
+  practice_scenario: "",
+  quiz_question: "",
+  quiz_options: [],
+  quiz_answer: "",
+  quiz_question_2: "",
+  quiz_options_2: [],
+  quiz_answer_2: "",
+  quiz_question_3: "",
+  quiz_options_3: [],
+  quiz_answer_3: "",
+  user_notes: "",
+  concept_identity: Array.isArray(t.concept_identity) ? t.concept_identity : [],
+});
 
 const StudyPage = () => {
   const { id, block } = useParams<{ id: string; block: string }>();
@@ -22,7 +48,6 @@ const StudyPage = () => {
   const { user, profile } = useAuth();
   const [sectionName, setSectionName] = useState("");
   const [terms, setTerms] = useState<Term[]>([]);
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
 
   const blockNum = Number(block);
   const objectives = blockObjectivesMap[id!]?.[blockNum] || [];
@@ -40,29 +65,7 @@ const StudyPage = () => {
     fetchData();
   }, [id, block]);
 
-  useEffect(() => {
-    if (!user || terms.length === 0) return;
-    const fetchBookmarks = async () => {
-      const { data } = await supabase.from("bookmarks").select("term_id").eq("user_id", user.id).in("term_id", terms.map((t) => t.id));
-      if (data) setBookmarkedIds(new Set(data.map((b) => b.term_id)));
-    };
-    fetchBookmarks();
-  }, [user, terms]);
-
-  const toggleBookmark = async (termId: string) => {
-    if (!user) return;
-    const isCurrentlyBookmarked = bookmarkedIds.has(termId);
-    setBookmarkedIds((prev) => {
-      const next = new Set(prev);
-      if (isCurrentlyBookmarked) next.delete(termId); else next.add(termId);
-      return next;
-    });
-    if (isCurrentlyBookmarked) {
-      await supabase.from("bookmarks").delete().eq("user_id", user.id).eq("term_id", termId);
-    } else {
-      await supabase.from("bookmarks").insert({ user_id: user.id, term_id: termId });
-    }
-  };
+  const handleNotesChange = useCallback(() => {}, []);
 
   return (
     <div className="min-h-screen" style={{ background: c.gradient }}>
@@ -85,7 +88,6 @@ const StudyPage = () => {
             Explore each term through five perspectives. Take your time.
           </p>
 
-          {/* Block Learning Objectives */}
           {objectives.length > 0 && (
             <Card className="border-0 shadow-sm mb-4" style={{ background: "hsl(195 30% 96%)" }}>
               <CardContent className="p-4">
@@ -112,7 +114,7 @@ const StudyPage = () => {
         <div className="space-y-5">
           {terms.map((term, i) => (
             <motion.div key={term.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.08 }}>
-              <TermCard term={term} isBookmarked={bookmarkedIds.has(term.id)} onToggleBookmark={toggleBookmark} />
+              <LearningOrb block={termToBlock(term, blockNum)} onNotesChange={handleNotesChange} mode="builtin" />
             </motion.div>
           ))}
         </div>
