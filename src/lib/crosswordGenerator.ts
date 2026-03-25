@@ -1,4 +1,5 @@
-// Crossword grid generation algorithm
+// Crossword grid generation with embedded clue cells
+
 export interface CrosswordWord {
   id: string;
   word: string;
@@ -10,8 +11,17 @@ export interface CrosswordWord {
   number: number;
 }
 
+export interface DisplayCell {
+  type: "empty" | "letter" | "clue";
+  letter?: string;
+  clueText?: string;
+  arrows?: ("right" | "down")[];
+  number?: number;
+  wordIds?: string[];
+}
+
 export interface CrosswordGrid {
-  cells: (string | null)[][];
+  displayCells: DisplayCell[][];
   words: CrosswordWord[];
   width: number;
   height: number;
@@ -27,21 +37,99 @@ interface PlacedWord {
   direction: "across" | "down";
 }
 
-function canPlace(
+export function generateCrossword(
+  terms: { id: string; term: string; clue: string; category: string }[],
+  targetCount: number = 10
+): CrosswordGrid {
+  const GRID = 22;
+  const grid: (string | null)[][] = Array.from({ length: GRID }, () => Array(GRID).fill(null));
+
+  const cleaned = terms
+    .map((t) => ({
+      ...t,
+      word: t.term.toUpperCase().replace(/[^A-Z]/g, ""),
+    }))
+    .filter((t) => t.word.length >= 3 && t.word.length <= 12)
+    .sort((a, b) => b.word.length - a.word.length);
+
+  if (cleaned.length === 0) {
+    return { displayCells: [[]], words: [], width: 0, height: 0 };
+  }
+
+  const placed: PlacedWord[] = [];
+
+  // Place first word horizontally, leaving col 0 free for its clue cell
+  const first = cleaned[0];
+  const startCol = 2; // leave room for clue cell
+  const startRow = Math.floor(GRID / 2);
+  for (let i = 0; i < first.word.length; i++) {
+    grid[startRow][startCol + i] = first.word[i];
+  }
+  placed.push({ ...first, row: startRow, col: startCol, direction: "across" });
+
+  // Place remaining words via intersection
+  for (let idx = 1; idx < cleaned.length && placed.length < targetCount; idx++) {
+    const term = cleaned[idx];
+    let best: { row: number; col: number; direction: "across" | "down"; score: number } | null = null;
+
+    for (const pw of placed) {
+      for (let pi = 0; pi < pw.word.length; pi++) {
+        for (let ti = 0; ti < term.word.length; ti++) {
+          if (pw.word[pi] !== term.word[ti]) continue;
+
+          const newDir: "across" | "down" = pw.direction === "across" ? "down" : "across";
+          let nr: number, nc: number;
+          if (newDir === "down") {
+            nr = pw.row - ti;
+            nc = pw.col + pi;
+          } else {
+            nr = pw.row + pi;
+            nc = pw.col - ti;
+          }
+
+          if (!isValidPlacement(grid, term.word, nr, nc, newDir, GRID)) continue;
+
+          // Ensure space for clue cell before word start
+          const clueR = newDir === "down" ? nr - 1 : nr;
+          const clueC = newDir === "across" ? nc - 1 : nc;
+          if (clueR < 0 || clueC < 0 || clueR >= GRID || clueC >= GRID) continue;
+          if (grid[clueR][clueC] !== null) continue; // clue cell blocked
+
+          const score = 1;
+          if (!best || score > best.score) {
+            best = { row: nr, col: nc, direction: newDir, score };
+          }
+        }
+      }
+    }
+
+    if (best) {
+      for (let i = 0; i < term.word.length; i++) {
+        const r = best.row + (best.direction === "down" ? i : 0);
+        const c = best.col + (best.direction === "across" ? i : 0);
+        grid[r][c] = term.word[i];
+      }
+      placed.push({ ...term, row: best.row, col: best.col, direction: best.direction });
+    }
+  }
+
+  // Build display grid with clue cells
+  return buildDisplayGrid(grid, placed, GRID);
+}
+
+function isValidPlacement(
   grid: (string | null)[][],
   word: string,
   row: number,
   col: number,
   direction: "across" | "down",
-  width: number,
-  height: number
+  size: number
 ): boolean {
   const len = word.length;
   const dr = direction === "down" ? 1 : 0;
   const dc = direction === "across" ? 1 : 0;
 
-  // Check bounds
-  if (row + dr * (len - 1) >= height || col + dc * (len - 1) >= width) return false;
+  if (row + dr * (len - 1) >= size || col + dc * (len - 1) >= size) return false;
   if (row < 0 || col < 0) return false;
 
   let hasIntersection = false;
@@ -55,167 +143,35 @@ function canPlace(
       if (existing !== word[i]) return false;
       hasIntersection = true;
     } else {
-      // Check adjacent cells perpendicular to direction
       if (direction === "across") {
         if (r > 0 && grid[r - 1][c] !== null) return false;
-        if (r < height - 1 && grid[r + 1][c] !== null) return false;
+        if (r < size - 1 && grid[r + 1][c] !== null) return false;
       } else {
         if (c > 0 && grid[r][c - 1] !== null) return false;
-        if (c < width - 1 && grid[r][c + 1] !== null) return false;
+        if (c < size - 1 && grid[r][c + 1] !== null) return false;
       }
     }
   }
 
-  // Check cell before word start
-  const beforeR = row - dr;
-  const beforeC = col - dc;
-  if (beforeR >= 0 && beforeC >= 0 && grid[beforeR][beforeC] !== null) return false;
+  // Before/after checks
+  const bR = row - dr, bC = col - dc;
+  if (bR >= 0 && bC >= 0 && grid[bR][bC] !== null) return false;
+  const aR = row + dr * len, aC = col + dc * len;
+  if (aR < size && aC < size && grid[aR][aC] !== null) return false;
 
-  // Check cell after word end
-  const afterR = row + dr * len;
-  const afterC = col + dc * len;
-  if (afterR < height && afterC < width && grid[afterR][afterC] !== null) return false;
-
-  return grid[row][col] === null ? false : hasIntersection; // Must intersect unless first word
+  return hasIntersection;
 }
 
-export function generateCrossword(
-  terms: { id: string; term: string; clue: string; category: string }[],
-  targetCount: number = 10
+function buildDisplayGrid(
+  letterGrid: (string | null)[][],
+  placed: PlacedWord[],
+  gridSize: number
 ): CrosswordGrid {
-  const WIDTH = 20;
-  const HEIGHT = 20;
-  const grid: (string | null)[][] = Array.from({ length: HEIGHT }, () => Array(WIDTH).fill(null));
-
-  // Clean and sort terms
-  const cleaned = terms
-    .map((t) => ({
-      ...t,
-      word: t.term.toUpperCase().replace(/[^A-Z]/g, ""),
-    }))
-    .filter((t) => t.word.length >= 3 && t.word.length <= 15)
-    .sort((a, b) => b.word.length - a.word.length);
-
-  if (cleaned.length === 0) {
-    return { cells: grid, words: [], width: WIDTH, height: HEIGHT };
-  }
-
-  const placed: PlacedWord[] = [];
-
-  // Place first word horizontally in center
-  const first = cleaned[0];
-  const startCol = Math.floor((WIDTH - first.word.length) / 2);
-  const startRow = Math.floor(HEIGHT / 2);
-
-  for (let i = 0; i < first.word.length; i++) {
-    grid[startRow][startCol + i] = first.word[i];
-  }
-  placed.push({
-    ...first,
-    row: startRow,
-    col: startCol,
-    direction: "across",
-  });
-
-  // Try to place remaining words
-  for (let idx = 1; idx < cleaned.length && placed.length < targetCount; idx++) {
-    const term = cleaned[idx];
-    let bestPlacement: { row: number; col: number; direction: "across" | "down"; intersections: number } | null = null;
-
-    // Try to find intersections with placed words
-    for (const pw of placed) {
-      for (let pi = 0; pi < pw.word.length; pi++) {
-        for (let ti = 0; ti < term.word.length; ti++) {
-          if (pw.word[pi] !== term.word[ti]) continue;
-
-          // Try perpendicular placement
-          const newDir: "across" | "down" = pw.direction === "across" ? "down" : "across";
-          let newRow: number, newCol: number;
-
-          if (newDir === "down") {
-            newRow = pw.row - ti;
-            newCol = pw.col + pi;
-          } else {
-            newRow = pw.row + pi;
-            newCol = pw.col - ti;
-          }
-
-          // Temporarily allow first word check
-          const origCell = grid[pw.row + (pw.direction === "down" ? pi : 0)]?.[pw.col + (pw.direction === "across" ? pi : 0)];
-
-          if (
-            newRow >= 0 &&
-            newCol >= 0 &&
-            newRow + (newDir === "down" ? term.word.length - 1 : 0) < HEIGHT &&
-            newCol + (newDir === "across" ? term.word.length - 1 : 0) < WIDTH
-          ) {
-            // Validate placement
-            let valid = true;
-            let intersections = 0;
-
-            for (let i = 0; i < term.word.length; i++) {
-              const r = newRow + (newDir === "down" ? i : 0);
-              const c = newCol + (newDir === "across" ? i : 0);
-              const existing = grid[r][c];
-
-              if (existing !== null) {
-                if (existing !== term.word[i]) {
-                  valid = false;
-                  break;
-                }
-                intersections++;
-              } else {
-                // Check perpendicular adjacency
-                if (newDir === "across") {
-                  if (r > 0 && grid[r - 1][c] !== null) { valid = false; break; }
-                  if (r < HEIGHT - 1 && grid[r + 1][c] !== null) { valid = false; break; }
-                } else {
-                  if (c > 0 && grid[r][c - 1] !== null) { valid = false; break; }
-                  if (c < WIDTH - 1 && grid[r][c + 1] !== null) { valid = false; break; }
-                }
-              }
-            }
-
-            // Check before/after
-            if (valid) {
-              const dr = newDir === "down" ? 1 : 0;
-              const dc = newDir === "across" ? 1 : 0;
-              const bR = newRow - dr, bC = newCol - dc;
-              if (bR >= 0 && bC >= 0 && grid[bR][bC] !== null) valid = false;
-              const aR = newRow + dr * term.word.length, aC = newCol + dc * term.word.length;
-              if (aR < HEIGHT && aC < WIDTH && grid[aR][aC] !== null) valid = false;
-            }
-
-            if (valid && intersections > 0) {
-              if (!bestPlacement || intersections > bestPlacement.intersections) {
-                bestPlacement = { row: newRow, col: newCol, direction: newDir, intersections };
-              }
-            }
-          }
-        }
-      }
-    }
-
-    if (bestPlacement) {
-      for (let i = 0; i < term.word.length; i++) {
-        const r = bestPlacement.row + (bestPlacement.direction === "down" ? i : 0);
-        const c = bestPlacement.col + (bestPlacement.direction === "across" ? i : 0);
-        grid[r][c] = term.word[i];
-      }
-      placed.push({
-        ...term,
-        row: bestPlacement.row,
-        col: bestPlacement.col,
-        direction: bestPlacement.direction,
-      });
-    }
-  }
-
-  // Crop grid to content
-  let minR = HEIGHT, maxR = 0, minC = WIDTH, maxC = 0;
-  for (let r = 0; r < HEIGHT; r++) {
-    for (let c = 0; c < WIDTH; c++) {
-      if (grid[r][c] !== null) {
+  // Find bounds of letter content
+  let minR = gridSize, maxR = 0, minC = gridSize, maxC = 0;
+  for (let r = 0; r < gridSize; r++) {
+    for (let c = 0; c < gridSize; c++) {
+      if (letterGrid[r][c] !== null) {
         minR = Math.min(minR, r);
         maxR = Math.max(maxR, r);
         minC = Math.min(minC, c);
@@ -224,36 +180,57 @@ export function generateCrossword(
     }
   }
 
-  const pad = 1;
-  const cropMinR = Math.max(0, minR - pad);
-  const cropMaxR = Math.min(HEIGHT - 1, maxR + pad);
-  const cropMinC = Math.max(0, minC - pad);
-  const cropMaxC = Math.min(WIDTH - 1, maxC + pad);
-
-  const croppedWidth = cropMaxC - cropMinC + 1;
-  const croppedHeight = cropMaxR - cropMinR + 1;
-  const croppedCells: (string | null)[][] = [];
-
-  for (let r = cropMinR; r <= cropMaxR; r++) {
-    croppedCells.push(grid[r].slice(cropMinC, cropMaxC + 1));
+  // Expand bounds to include clue cells (1 cell before each word)
+  for (const w of placed) {
+    const clueR = w.direction === "down" ? w.row - 1 : w.row;
+    const clueC = w.direction === "across" ? w.col - 1 : w.col;
+    minR = Math.min(minR, clueR);
+    maxR = Math.max(maxR, clueR);
+    minC = Math.min(minC, clueC);
+    maxC = Math.max(maxC, clueC);
   }
 
-  // Adjust word positions and assign numbers
+  // Ensure bounds are valid
+  minR = Math.max(0, minR);
+  minC = Math.max(0, minC);
+
+  const width = maxC - minC + 1;
+  const height = maxR - minR + 1;
+
+  // Build display cells
+  const displayCells: DisplayCell[][] = Array.from({ length: height }, () =>
+    Array.from({ length: width }, () => ({ type: "empty" as const }))
+  );
+
+  // Place letter cells
+  for (let r = minR; r <= maxR; r++) {
+    for (let c = minC; c <= maxC; c++) {
+      if (letterGrid[r]?.[c] !== null && letterGrid[r]?.[c] !== undefined) {
+        displayCells[r - minR][c - minC] = {
+          type: "letter",
+          letter: letterGrid[r][c]!,
+        };
+      }
+    }
+  }
+
+  // Assign numbers and place clue cells
   const adjustedPlaced = placed.map((p) => ({
     ...p,
-    row: p.row - cropMinR,
-    col: p.col - cropMinC,
+    row: p.row - minR,
+    col: p.col - minC,
   }));
 
-  // Sort by position for numbering
+  // Sort for numbering
   const sorted = [...adjustedPlaced].sort((a, b) => {
-    const posA = a.row * croppedWidth + a.col;
-    const posB = b.row * croppedWidth + b.col;
+    const posA = a.row * width + a.col;
+    const posB = b.row * width + b.col;
     return posA - posB;
   });
 
   const numberMap = new Map<string, number>();
   let num = 1;
+
   const words: CrosswordWord[] = sorted.map((p) => {
     const key = `${p.row}-${p.col}`;
     if (!numberMap.has(key)) {
@@ -271,7 +248,38 @@ export function generateCrossword(
     };
   });
 
-  return { cells: croppedCells, words, width: croppedWidth, height: croppedHeight };
+  // Place clue cells
+  for (const w of words) {
+    const clueR = w.direction === "down" ? w.row - 1 : w.row;
+    const clueC = w.direction === "across" ? w.col - 1 : w.col;
+
+    if (clueR >= 0 && clueC >= 0 && clueR < height && clueC < width) {
+      const existing = displayCells[clueR][clueC];
+      if (existing.type === "clue") {
+        // Merge: add direction
+        existing.arrows = [...(existing.arrows || []), w.direction === "across" ? "right" : "down"];
+        existing.wordIds = [...(existing.wordIds || []), w.id];
+        // Keep first clue short, add separator
+        existing.clueText = (existing.clueText || "") + " ▪ " + truncateClue(w.clue);
+      } else if (existing.type === "empty") {
+        displayCells[clueR][clueC] = {
+          type: "clue",
+          clueText: truncateClue(w.clue),
+          arrows: [w.direction === "across" ? "right" : "down"],
+          number: w.number,
+          wordIds: [w.id],
+        };
+      }
+      // If it's a letter cell, the clue can't go there - number on letter cell will suffice
+    }
+  }
+
+  return { displayCells, words, width, height };
+}
+
+function truncateClue(clue: string): string {
+  if (clue.length <= 40) return clue;
+  return clue.slice(0, 37) + "…";
 }
 
 export function getLevelConfig(level: number) {
