@@ -122,6 +122,20 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
   const [videoLoading, setVideoLoading] = useState(false);
   const [completionPulse, setCompletionPulse] = useState(false);
 
+  // Load saved data for builtin terms
+  useEffect(() => {
+    if (mode !== "builtin" || !user) return;
+    supabase.from("journal_notes").select("note").eq("user_id", user.id).eq("term_id", block.id).single().then(({ data }) => {
+      if (data) setJournalNote(data.note);
+    });
+    supabase.from("reflections").select("response").eq("user_id", user.id).eq("term_id", block.id).single().then(({ data }) => {
+      if (data?.response) { setReflectionText(data.response); setReflectionSubmitted(true); }
+    });
+    supabase.from("term_images").select("image_url").eq("term_id", block.id).single().then(({ data }) => {
+      if (data) setImageUrl(data.image_url);
+    });
+  }, [mode, user, block.id]);
+
   const identityItems = Array.isArray(block.concept_identity) ? block.concept_identity : [];
   const hasIdentity = identityItems.length > 0;
 
