@@ -21,12 +21,23 @@ interface Props {
 }
 
 const CELL_SIZE = 44;
-const CLUE_CELL_BG = "hsl(230 25% 88%)";
 const LETTER_CELL_BG = "hsl(230 20% 95%)";
 const SELECTED_BG = "hsl(45 90% 75%)";
 const CORRECT_BG = "hsl(145 40% 85%)";
 const INCORRECT_BG = "hsl(0 45% 88%)";
 const EMPTY_BG = "transparent";
+
+const CATEGORY_COLORS: Record<string, { bg: string; text: string; arrow: string }> = {
+  "Infection Control":    { bg: "hsl(340 65% 45%)", text: "hsl(340 80% 92%)", arrow: "hsl(340 60% 75%)" },
+  "Bacteriology":         { bg: "hsl(280 50% 40%)", text: "hsl(280 70% 92%)", arrow: "hsl(280 50% 72%)" },
+  "Skin Structure":       { bg: "hsl(25 75% 48%)",  text: "hsl(25 90% 93%)",  arrow: "hsl(25 70% 75%)" },
+  "Hair Structure":       { bg: "hsl(195 65% 40%)", text: "hsl(195 80% 92%)", arrow: "hsl(195 60% 72%)" },
+  "Nail Technology":      { bg: "hsl(350 55% 50%)", text: "hsl(350 80% 93%)", arrow: "hsl(350 55% 78%)" },
+  "Chemistry":            { bg: "hsl(160 55% 35%)", text: "hsl(160 70% 92%)", arrow: "hsl(160 50% 70%)" },
+  "Electricity":          { bg: "hsl(45 80% 42%)",  text: "hsl(45 90% 15%)",  arrow: "hsl(45 70% 25%)" },
+  "Procedures & Safety":  { bg: "hsl(220 55% 45%)", text: "hsl(220 70% 92%)", arrow: "hsl(220 50% 72%)" },
+};
+const DEFAULT_CLUE_COLOR = { bg: "hsl(260 40% 42%)", text: "hsl(260 60% 92%)", arrow: "hsl(260 40% 72%)" };
 
 const CrosswordGame = ({ grid, level, onComplete }: Props) => {
   const config = getLevelConfig(level);
@@ -243,29 +254,29 @@ const CrosswordGame = ({ grid, level, onComplete }: Props) => {
                   }
 
                   if (cell.type === "clue") {
+                    const colors = CATEGORY_COLORS[cell.category || ""] || DEFAULT_CLUE_COLOR;
                     return (
                       <div
                         key={ci}
-                        className="relative border border-slate-400/30 flex flex-col items-center justify-center overflow-hidden cursor-default"
+                        className="relative border border-white/10 flex flex-col items-center justify-center overflow-hidden cursor-default"
                         style={{
                           width: CELL_SIZE,
                           height: CELL_SIZE,
-                          background: CLUE_CELL_BG,
+                          background: colors.bg,
                           fontSize: "6px",
                           lineHeight: "1.15",
                         }}
                         title={cell.clueText}
                       >
-                        <span className="text-slate-700 text-center px-0.5 font-medium leading-tight overflow-hidden" style={{ fontSize: "6.5px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" }}>
+                        <span className="text-center px-0.5 font-semibold leading-tight overflow-hidden" style={{ fontSize: "6.5px", color: colors.text, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" }}>
                           {cell.clueText}
                         </span>
-                        {/* Direction arrows */}
                         <div className="absolute bottom-0 right-0 flex">
                           {cell.arrows?.includes("right") && (
-                            <ChevronRight className="h-2.5 w-2.5 text-slate-500" />
+                            <ChevronRight className="h-2.5 w-2.5" style={{ color: colors.arrow }} />
                           )}
                           {cell.arrows?.includes("down") && (
-                            <ChevronDown className="h-2.5 w-2.5 text-slate-500" />
+                            <ChevronDown className="h-2.5 w-2.5" style={{ color: colors.arrow }} />
                           )}
                         </div>
                       </div>

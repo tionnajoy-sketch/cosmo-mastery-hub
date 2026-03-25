@@ -18,6 +18,7 @@ export interface DisplayCell {
   arrows?: ("right" | "down")[];
   number?: number;
   wordIds?: string[];
+  category?: string;
 }
 
 export interface CrosswordGrid {
@@ -259,7 +260,6 @@ function buildDisplayGrid(
         // Merge: add direction
         existing.arrows = [...(existing.arrows || []), w.direction === "across" ? "right" : "down"];
         existing.wordIds = [...(existing.wordIds || []), w.id];
-        // Keep first clue short, add separator
         existing.clueText = (existing.clueText || "") + " ▪ " + truncateClue(w.clue);
       } else if (existing.type === "empty") {
         displayCells[clueR][clueC] = {
@@ -268,6 +268,7 @@ function buildDisplayGrid(
           arrows: [w.direction === "across" ? "right" : "down"],
           number: w.number,
           wordIds: [w.id],
+          category: w.category,
         };
       }
       // If it's a letter cell, the clue can't go there - number on letter cell will suffice
