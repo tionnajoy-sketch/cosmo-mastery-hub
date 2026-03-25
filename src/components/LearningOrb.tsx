@@ -173,6 +173,7 @@ const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
   }, [block.id, expandedNode, addCoins]);
 
   const handleNodeClick = (key: TabType) => {
+    playChimeSound();
     setExpandedNode(key);
     setVisitedTabs(prev => {
       const next = new Set(prev);
@@ -182,6 +183,7 @@ const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
         setCompletionPulse(true);
         addCoins(15, "block_complete");
         fireBlockCompleteConfetti();
+        playCelebrationSound();
         setTimeout(() => setCompletionPulse(false), 2000);
       }
       return next;
