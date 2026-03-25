@@ -61,28 +61,31 @@ const playCelebrationSound = () => {
   } catch {}
 };
 
-type StepKey = "visualize" | "definition" | "recognize" | "metaphor" | "information" | "reflection" | "practice" | "quiz";
+type StepKey = "visualize" | "definition" | "breakdown" | "recognize" | "metaphor" | "information" | "reflection" | "practice" | "quiz";
 
 interface StepConfig {
   key: StepKey;
   label: string;
+  subtitle: string;
   icon: React.ReactNode;
   color: string;
   bgColor: string;
   borderColor: string;
   gradient: string;
   glowColor: string;
+  guidedIntro: string;
 }
 
 const stepConfigs: StepConfig[] = [
-  { key: "visualize",   label: "Visualize",   icon: <Eye className="h-5 w-5" />,            color: "hsl(210 65% 55%)", bgColor: "hsl(210 50% 96%)", borderColor: "hsl(210 50% 82%)", gradient: "linear-gradient(135deg, hsl(210 65% 55%), hsl(200 70% 62%))", glowColor: "hsl(210 65% 55% / 0.25)" },
-  { key: "definition",  label: "Define",       icon: <BookOpen className="h-5 w-5" />,       color: "hsl(45 80% 45%)",  bgColor: "hsl(45 60% 96%)",  borderColor: "hsl(45 60% 82%)",  gradient: "linear-gradient(135deg, hsl(45 80% 45%), hsl(38 85% 52%))",  glowColor: "hsl(45 80% 45% / 0.25)" },
-  { key: "recognize",   label: "Recognize",    icon: <Fingerprint className="h-5 w-5" />,    color: "hsl(280 50% 55%)", bgColor: "hsl(280 40% 96%)", borderColor: "hsl(280 40% 82%)", gradient: "linear-gradient(135deg, hsl(280 50% 55%), hsl(290 55% 62%))", glowColor: "hsl(280 50% 55% / 0.25)" },
-  { key: "metaphor",    label: "Metaphor",     icon: <Lightbulb className="h-5 w-5" />,      color: "hsl(270 55% 60%)", bgColor: "hsl(270 45% 96%)", borderColor: "hsl(270 45% 82%)", gradient: "linear-gradient(135deg, hsl(270 55% 60%), hsl(260 60% 65%))", glowColor: "hsl(270 55% 60% / 0.25)" },
-  { key: "information", label: "Information",  icon: <Heart className="h-5 w-5" />,          color: "hsl(175 45% 42%)", bgColor: "hsl(175 35% 96%)", borderColor: "hsl(175 35% 82%)", gradient: "linear-gradient(135deg, hsl(175 45% 42%), hsl(185 50% 48%))", glowColor: "hsl(175 45% 42% / 0.25)" },
-  { key: "reflection",  label: "Reflect",      icon: <PenLine className="h-5 w-5" />,        color: "hsl(220 15% 50%)", bgColor: "hsl(220 10% 96%)", borderColor: "hsl(220 10% 82%)", gradient: "linear-gradient(135deg, hsl(220 15% 50%), hsl(230 18% 58%))", glowColor: "hsl(220 15% 50% / 0.2)" },
-  { key: "practice",    label: "Apply",        icon: <Wrench className="h-5 w-5" />,         color: "hsl(145 50% 42%)", bgColor: "hsl(145 40% 96%)", borderColor: "hsl(145 40% 82%)", gradient: "linear-gradient(135deg, hsl(145 50% 42%), hsl(155 55% 48%))", glowColor: "hsl(145 50% 42% / 0.25)" },
-  { key: "quiz",        label: "Assess",       icon: <HelpCircle className="h-5 w-5" />,     color: "hsl(0 65% 55%)",   bgColor: "hsl(0 50% 96%)",   borderColor: "hsl(0 50% 82%)",   gradient: "linear-gradient(135deg, hsl(0 65% 55%), hsl(10 70% 58%))",   glowColor: "hsl(0 65% 55% / 0.25)" },
+  { key: "visualize",   label: "Visualize",      subtitle: "Visual cortex & pattern recognition",   icon: <Eye className="h-5 w-5" />,            color: "hsl(215 80% 42%)", bgColor: "hsl(215 60% 95%)", borderColor: "hsl(215 60% 72%)", gradient: "linear-gradient(135deg, hsl(215 80% 42%), hsl(200 85% 48%))", glowColor: "hsl(215 80% 42% / 0.3)",  guidedIntro: "Let's start here… see the concept before you define it." },
+  { key: "definition",  label: "Define",          subtitle: "Language processing & cognitive labeling", icon: <BookOpen className="h-5 w-5" />,       color: "hsl(45 90% 40%)",  bgColor: "hsl(45 70% 95%)",  borderColor: "hsl(45 70% 72%)",  gradient: "linear-gradient(135deg, hsl(45 90% 40%), hsl(38 95% 48%))",  glowColor: "hsl(45 90% 40% / 0.3)",   guidedIntro: "Now let me explain… here's the clear, structured meaning." },
+  { key: "breakdown",   label: "Break It Down",   subtitle: "Analytical processing & decoding",       icon: <Mic className="h-5 w-5" />,            color: "hsl(30 85% 45%)",  bgColor: "hsl(30 65% 95%)",  borderColor: "hsl(30 65% 72%)",  gradient: "linear-gradient(135deg, hsl(30 85% 45%), hsl(22 90% 52%))",  glowColor: "hsl(30 85% 45% / 0.3)",   guidedIntro: "Let's break this down… understanding the structure helps it stick." },
+  { key: "recognize",   label: "Recognize",       subtitle: "Spatial memory & recall",                icon: <Fingerprint className="h-5 w-5" />,    color: "hsl(275 70% 50%)", bgColor: "hsl(275 50% 95%)", borderColor: "hsl(275 50% 72%)", gradient: "linear-gradient(135deg, hsl(275 70% 50%), hsl(285 75% 55%))", glowColor: "hsl(275 70% 50% / 0.3)",  guidedIntro: "Can you spot it? Identify the concept visually." },
+  { key: "metaphor",    label: "Metaphor",        subtitle: "Limbic system & emotional association",   icon: <Lightbulb className="h-5 w-5" />,      color: "hsl(265 72% 48%)", bgColor: "hsl(265 52% 95%)", borderColor: "hsl(265 52% 72%)", gradient: "linear-gradient(135deg, hsl(265 72% 48%), hsl(255 78% 54%))", glowColor: "hsl(265 72% 48% / 0.3)",  guidedIntro: "Let me connect this to your life… this is where it gets real." },
+  { key: "information", label: "Information",     subtitle: "Comprehension & deeper reasoning",       icon: <Heart className="h-5 w-5" />,          color: "hsl(180 60% 32%)", bgColor: "hsl(180 45% 95%)", borderColor: "hsl(180 45% 72%)", gradient: "linear-gradient(135deg, hsl(180 60% 32%), hsl(190 65% 38%))", glowColor: "hsl(180 60% 32% / 0.3)",  guidedIntro: "Let's go deeper… expanding your understanding." },
+  { key: "reflection",  label: "Reflect",         subtitle: "Metacognition & self-awareness",         icon: <PenLine className="h-5 w-5" />,        color: "hsl(220 20% 35%)", bgColor: "hsl(220 12% 95%)", borderColor: "hsl(220 12% 72%)", gradient: "linear-gradient(135deg, hsl(220 20% 35%), hsl(230 25% 42%))", glowColor: "hsl(220 20% 35% / 0.25)", guidedIntro: "Pause and think… internalize what this means to you." },
+  { key: "practice",    label: "Apply",           subtitle: "Active recall & problem-solving",        icon: <Wrench className="h-5 w-5" />,         color: "hsl(145 65% 32%)", bgColor: "hsl(145 50% 95%)", borderColor: "hsl(145 50% 72%)", gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))", glowColor: "hsl(145 65% 32% / 0.3)",  guidedIntro: "You're doing great… now put your knowledge to work." },
+  { key: "quiz",        label: "Assess",          subtitle: "Performance & test readiness",           icon: <HelpCircle className="h-5 w-5" />,     color: "hsl(0 75% 45%)",   bgColor: "hsl(0 55% 95%)",   borderColor: "hsl(0 55% 72%)",   gradient: "linear-gradient(135deg, hsl(0 75% 45%), hsl(10 80% 50%))",   glowColor: "hsl(0 75% 45% / 0.3)",    guidedIntro: "Show what you know… demonstrate your mastery." },
 ];
 
 interface LearningOrbProps {
@@ -121,9 +124,10 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
     return stepConfigs.filter(s => {
       if (s.key === "recognize" && identityItems.length === 0) return false;
       if (s.key === "practice" && !block.practice_scenario) return false;
+      if (s.key === "breakdown" && !block.pronunciation && !block.definition) return false;
       return true;
     });
-  }, [block.concept_identity, block.practice_scenario]);
+  }, [block.concept_identity, block.practice_scenario, block.pronunciation, block.definition]);
 
   // Load saved data for builtin terms
   useEffect(() => {
@@ -259,6 +263,7 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
   const getSpeakText = (key: StepKey) => {
     switch (key) {
       case "definition": return `${block.term_title}. ${block.definition}`;
+      case "breakdown": return `Let's break down ${block.term_title}. ${block.pronunciation ? `It's pronounced ${block.pronunciation}.` : ""} ${block.definition}`;
       case "metaphor": return `${block.term_title}. ${block.metaphor}`;
       case "information": return block.affirmation;
       default: return block.term_title;
@@ -326,18 +331,46 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
             >
               {block.definition}
             </motion.p>
+            <SpeakButton text={`${block.term_title}. ${block.definition}`} size="sm" label="Listen to definition" onComplete={handleAudioComplete} />
+            {block.video_url && <VideoPlayer url={block.video_url} />}
+          </div>
+        );
+
+      case "breakdown":
+        return (
+          <div className="space-y-3">
             {block.pronunciation && (
               <motion.div
-                className="flex items-center gap-3 pt-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.25 }}
+                className="flex items-center gap-3"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
               >
-                <SpeakButton text={block.term_title} size="sm" label="Hear it" onComplete={handleAudioComplete} />
-                <span className="text-sm italic" style={{ color: c.subtext }}>/{block.pronunciation}/</span>
+                <SpeakButton text={block.term_title} size="sm" label="Hear pronunciation" onComplete={handleAudioComplete} />
+                <span className="text-base font-medium italic" style={{ color: c.subtext }}>/{block.pronunciation}/</span>
               </motion.div>
             )}
-            {block.video_url && <VideoPlayer url={block.video_url} />}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-2"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "hsl(30 85% 45%)" }}>Word Structure</p>
+              <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+                {block.term_title.split(/(?=[A-Z])|[-\s]/).filter(Boolean).map((part, i) => (
+                  <span key={i}>
+                    {i > 0 && <span style={{ color: "hsl(30 60% 60%)" }}> · </span>}
+                    <strong style={{ color: "hsl(30 85% 45%)" }}>{part}</strong>
+                  </span>
+                ))}
+              </p>
+              <p className="text-sm leading-relaxed mt-2" style={{ color: c.bodyText }}>
+                Understanding the parts of this term helps you decode similar words on the exam.
+              </p>
+            </motion.div>
+            <SpeakButton text={getSpeakText("breakdown")} size="sm" label="Listen to breakdown" onComplete={handleAudioComplete} />
+            <BrainNote text="Breaking words into parts activates your brain's analytical processing, making complex terms easier to decode and remember." />
           </div>
         );
 
@@ -723,9 +756,15 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
                     >
                       Step {index + 1}: {step.label}
                     </p>
-                    {isCompleted && !isExpanded && (
-                      <p className="text-xs mt-0.5" style={{ color: "hsl(145 25% 55%)" }}>✓ Completed</p>
-                    )}
+                    <p className="text-xs mt-0.5" style={{
+                      color: isCompleted && !isExpanded
+                        ? "hsl(145 25% 55%)"
+                        : isExpanded
+                        ? step.color + "cc"
+                        : "hsl(var(--muted-foreground))",
+                    }}>
+                      {isCompleted && !isExpanded ? "✓ Completed" : step.subtitle}
+                    </p>
                   </div>
 
                   {/* Expand indicator */}
@@ -751,6 +790,15 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
                     >
                       <CardContent className="pt-0 pb-4 px-4">
                         <div className="border-t pt-4" style={{ borderColor: step.borderColor }}>
+                          <motion.p
+                            className="text-xs italic mb-3"
+                            style={{ color: step.color + "bb" }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.05 }}
+                          >
+                            {step.guidedIntro}
+                          </motion.p>
                           {renderStepContent(step)}
 
                           {/* Complete & Continue button */}
