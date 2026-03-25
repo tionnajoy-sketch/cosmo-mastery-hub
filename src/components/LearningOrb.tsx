@@ -766,9 +766,15 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
                     >
                       Step {index + 1}: {step.label}
                     </p>
-                    {isCompleted && !isExpanded && (
-                      <p className="text-xs mt-0.5" style={{ color: "hsl(145 25% 55%)" }}>✓ Completed</p>
-                    )}
+                    <p className="text-xs mt-0.5" style={{
+                      color: isCompleted && !isExpanded
+                        ? "hsl(145 25% 55%)"
+                        : isExpanded
+                        ? step.color + "cc"
+                        : "hsl(var(--muted-foreground))",
+                    }}>
+                      {isCompleted && !isExpanded ? "✓ Completed" : step.subtitle}
+                    </p>
                   </div>
 
                   {/* Expand indicator */}
