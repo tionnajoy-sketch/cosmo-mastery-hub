@@ -193,6 +193,15 @@ const LearningOrbDialog = ({
     return () => clearTimeout(timeout);
   }, [journalNote, block?.id, user, mode]);
 
+  // Auto-generate quiz when reaching quick check step
+  useEffect(() => {
+    if (!block) return;
+    const s = STEPS[currentStep];
+    if (s?.key === "quickcheck" && !block.quiz_question && !aiQuestion && !aiLoading) {
+      generateQuizQuestion();
+    }
+  }, [currentStep, block?.id]);
+
   if (!block) return null;
 
   const step = STEPS[currentStep];
@@ -258,12 +267,7 @@ const LearningOrbDialog = ({
     setAiLoading(false);
   };
 
-  // Auto-generate quiz when reaching quick check step
-  useEffect(() => {
-    if (step?.key === "quickcheck" && !block.quiz_question && !aiQuestion && !aiLoading) {
-      generateQuizQuestion();
-    }
-  }, [currentStep]);
+  // (quiz auto-generation moved above early return)
 
   const hasBuiltinQuiz = block.quiz_question && block.quiz_options?.length > 0;
   const quizQuestion = hasBuiltinQuiz ? block.quiz_question : aiQuestion?.question;
@@ -649,7 +653,7 @@ const LearningOrbDialog = ({
           >
             {/* Avatar + Caption Row */}
             <div className="flex items-center gap-3 mb-3">
-              <Avatar className="h-11 w-11 ring-2 ring-offset-1 flex-shrink-0" style={{ ringColor: step.color }}>
+              <Avatar className="h-11 w-11 flex-shrink-0" style={{ outline: `2px solid ${step.color}`, outlineOffset: "2px" }}>
                 <AvatarImage src={tjBackground} alt="Tionna Joy" className="object-cover" />
                 <AvatarFallback className="text-xs font-bold" style={{ background: step.color, color: "white" }}>TJ</AvatarFallback>
               </Avatar>
