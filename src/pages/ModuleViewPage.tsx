@@ -10,7 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { pageColors } from "@/lib/colors";
 import { blockAccentColors } from "@/lib/colors";
 import AIMentorChat from "@/components/AIMentorChat";
-import UploadedTermCard, { type UploadedBlock } from "@/components/UploadedTermCard";
+import { type UploadedBlock } from "@/components/UploadedTermCard";
+import LearningOrb from "@/components/LearningOrb";
 import AppHeader from "@/components/AppHeader";
 
 const c = pageColors.study;
@@ -138,9 +139,9 @@ const ModuleViewPage = () => {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {groupBlocks.map((block) => (
-                  <UploadedTermCard key={block.id} block={block} onNotesChange={handleNotesChange} />
+                  <LearningOrb key={block.id} block={block} onNotesChange={handleNotesChange} />
                 ))}
               </div>
 
