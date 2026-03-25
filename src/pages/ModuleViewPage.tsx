@@ -27,6 +27,7 @@ const ModuleViewPage = () => {
   const [quizBankCount, setQuizBankCount] = useState(0);
   const [selectedBlock, setSelectedBlock] = useState<UploadedBlock | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [completedTerms, setCompletedTerms] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!id) return;
@@ -57,9 +58,7 @@ const ModuleViewPage = () => {
           supabase.from("uploaded_quiz_results").select("block_number").eq("module_id", id).eq("user_id", user.id),
           supabase.from("uploaded_module_quiz_bank").select("id", { count: "exact", head: true }).eq("module_id", id),
         ]);
-        if (quizRes.data) {
-          setCompletedBlocks(new Set(quizRes.data.map((r) => r.block_number)));
-        }
+        if (quizRes.data) setCompletedBlocks(new Set(quizRes.data.map((r) => r.block_number)));
         setQuizBankCount(qbRes.count || 0);
       }
 
@@ -86,106 +85,148 @@ const ModuleViewPage = () => {
 
   return (
     <div className="min-h-screen relative">
-      {/* TJ Background */}
-      <div
-        className="fixed inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.12, filter: "brightness(1.1)" }}
-      />
-      <div className="fixed inset-0" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.88) 0%, hsl(0 0% 98% / 0.92) 100%)" }} />
-
       <div className="relative z-10">
         <AppHeader />
-        <div className="max-w-2xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-4 py-6">
           <Button variant="ghost" onClick={() => navigate("/my-modules")} className="mb-4 gap-2" style={{ color: c.subtext }}>
             <ArrowLeft className="h-4 w-4" /> My Modules
           </Button>
 
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="font-display text-3xl font-bold mb-1" style={{ color: c.heading }}>{moduleTitle}</h1>
-            <p className="text-sm mb-6" style={{ color: c.subtext }}>
-              {blocks.length} terms across {sortedGroups.length} block{sortedGroups.length !== 1 ? "s" : ""} · Tap a term to study
-            </p>
-          </motion.div>
-
-          {sortedGroups.map(([blockNum, groupBlocks], groupIdx) => {
-            const accent = blockAccentColors[groupIdx % blockAccentColors.length];
-            const hasCompletedQuiz = completedBlocks.has(Number(blockNum));
-
-            return (
-              <motion.div key={blockNum} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-                {/* Block header */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-1 h-8 rounded-full" style={{ background: accent.stripe }} />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="font-display text-lg font-semibold" style={{ color: c.heading }}>
-                        Block {blockNum}
-                      </h2>
-                      {hasCompletedQuiz && (
-                        <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(145 50% 42%)" }} />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Term list */}
-                <div className="space-y-3">
-                  {groupBlocks.map((block, blockIdx) => (
-                    <TermListItem
-                      key={block.id}
-                      termTitle={block.term_title}
-                      pronunciation={block.pronunciation}
-                      definition={block.definition}
-                      index={blockIdx}
-                      onClick={() => {
-                        setSelectedBlock(block);
-                        setSelectedIndex(blockIdx);
-                      }}
-                    />
-                  ))}
-                </div>
-
-                {/* Block action buttons */}
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <Button
-                    className="w-full gap-2 py-5"
-                    variant="outline"
-                    onClick={() => navigate(`/module/${id}/activity/${blockNum}`)}
-                    style={{ borderColor: accent.stripe, color: accent.stripe }}
-                  >
-                    <Dumbbell className="h-4 w-4" /> Practice Activities
-                  </Button>
-                  <Button
-                    className="w-full gap-2 py-5"
-                    onClick={() => navigate(`/module/${id}/quiz/${blockNum}`)}
-                    style={{ background: accent.stripe, color: "hsl(0 0% 100%)" }}
-                  >
-                    <Sparkles className="h-4 w-4" /> Quiz Me
-                  </Button>
-                </div>
-              </motion.div>
-            );
-          })}
-
-          {/* Quiz Bank */}
-          {quizBankCount > 0 && (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-              <Card className="border-2 shadow-md" style={{ borderColor: "hsl(var(--primary))", background: "hsl(var(--card) / 0.95)" }}>
-                <CardContent className="p-5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Library className="h-6 w-6" style={{ color: "hsl(var(--primary))" }} />
-                    <div>
-                      <h3 className="font-display text-lg font-semibold" style={{ color: c.heading }}>Quiz Bank</h3>
-                      <p className="text-xs" style={{ color: c.subtext }}>{quizBankCount} exam-style questions</p>
-                    </div>
-                  </div>
-                  <Button className="w-full mt-3 gap-2" onClick={() => navigate(`/module/${id}/quiz-bank`)}>
-                    <Library className="h-4 w-4" /> Practice Quiz Bank
-                  </Button>
-                </CardContent>
-              </Card>
+          {/* Split layout */}
+          <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+            {/* Left: TJ Photo */}
+            <motion.div
+              className="hidden lg:block lg:w-2/5 rounded-2xl overflow-hidden relative"
+              style={{ minHeight: 500 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <img src={tjBackground} alt="TJ Anderson" className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(0 0% 0% / 0.6) 0%, hsl(0 0% 0% / 0.1) 60%)" }} />
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <h2 className="font-display text-2xl font-bold text-white mb-1">{moduleTitle}</h2>
+                <p className="text-sm text-white/80">{blocks.length} terms across {sortedGroups.length} block{sortedGroups.length !== 1 ? "s" : ""}</p>
+              </div>
             </motion.div>
-          )}
+
+            {/* Right: Whiteboard */}
+            <motion.div
+              className="flex-1 lg:w-3/5"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              {/* Mobile header */}
+              <div className="lg:hidden mb-4">
+                <div className="relative rounded-2xl overflow-hidden" style={{ height: 160 }}>
+                  <img src={tjBackground} alt="TJ Anderson" className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(0 0% 0% / 0.7) 0%, hsl(0 0% 0% / 0.2) 100%)" }} />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h1 className="font-display text-xl font-bold text-white">{moduleTitle}</h1>
+                    <p className="text-xs text-white/80">{blocks.length} terms · {sortedGroups.length} blocks</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Whiteboard container */}
+              <div
+                className="rounded-2xl p-5 sm:p-6"
+                style={{
+                  background: "hsl(0 0% 99% / 0.95)",
+                  border: "2px solid hsl(0 0% 88%)",
+                  boxShadow: "0 4px 24px hsl(0 0% 0% / 0.06), inset 0 1px 0 hsl(0 0% 100%)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {/* Whiteboard header dots */}
+                <div className="flex items-center gap-3 mb-5 pb-3" style={{ borderBottom: "2px dashed hsl(0 0% 88%)" }}>
+                  <div className="w-3 h-3 rounded-full" style={{ background: "hsl(0 70% 55%)" }} />
+                  <div className="w-3 h-3 rounded-full" style={{ background: "hsl(45 90% 55%)" }} />
+                  <div className="w-3 h-3 rounded-full" style={{ background: "hsl(145 60% 45%)" }} />
+                  <h2 className="font-display text-lg font-bold ml-2 hidden lg:block" style={{ color: c.heading }}>
+                    {moduleTitle}
+                  </h2>
+                  <span className="text-xs ml-auto" style={{ color: c.subtext }}>
+                    {completedTerms.size}/{blocks.length} mastered
+                  </span>
+                </div>
+
+                {sortedGroups.map(([blockNum, groupBlocks], groupIdx) => {
+                  const accent = blockAccentColors[groupIdx % blockAccentColors.length];
+                  const hasCompletedQuiz = completedBlocks.has(Number(blockNum));
+
+                  return (
+                    <div key={blockNum} className="mb-6 last:mb-0">
+                      {/* Block header */}
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-1 h-8 rounded-full" style={{ background: accent.stripe }} />
+                        <h3 className="font-display text-base font-semibold" style={{ color: c.heading }}>
+                          Block {blockNum}
+                        </h3>
+                        {hasCompletedQuiz && <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(145 50% 42%)" }} />}
+                      </div>
+
+                      {/* Term list */}
+                      <div className="space-y-3">
+                        {groupBlocks.map((block, blockIdx) => (
+                          <TermListItem
+                            key={block.id}
+                            termTitle={block.term_title}
+                            pronunciation={block.pronunciation}
+                            definition={block.definition}
+                            index={blockIdx}
+                            isCompleted={completedTerms.has(block.id)}
+                            onContinue={() => {
+                              setSelectedBlock(block);
+                              setSelectedIndex(blockIdx);
+                            }}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Block action buttons */}
+                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        <Button
+                          className="w-full gap-2 py-5"
+                          variant="outline"
+                          onClick={() => navigate(`/module/${id}/activity/${blockNum}`)}
+                          style={{ borderColor: accent.stripe, color: accent.stripe }}
+                        >
+                          <Dumbbell className="h-4 w-4" /> Practice
+                        </Button>
+                        <Button
+                          className="w-full gap-2 py-5"
+                          onClick={() => navigate(`/module/${id}/quiz/${blockNum}`)}
+                          style={{ background: accent.stripe, color: "hsl(0 0% 100%)" }}
+                        >
+                          <Sparkles className="h-4 w-4" /> Quiz Me
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Quiz Bank */}
+              {quizBankCount > 0 && (
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
+                  <Card className="border-2 shadow-md" style={{ borderColor: "hsl(var(--primary))", background: "hsl(var(--card) / 0.95)" }}>
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Library className="h-6 w-6" style={{ color: "hsl(var(--primary))" }} />
+                        <div>
+                          <h3 className="font-display text-lg font-semibold" style={{ color: c.heading }}>Quiz Bank</h3>
+                          <p className="text-xs" style={{ color: c.subtext }}>{quizBankCount} exam-style questions</p>
+                        </div>
+                      </div>
+                      <Button className="w-full mt-3 gap-2" onClick={() => navigate(`/module/${id}/quiz-bank`)}>
+                        <Library className="h-4 w-4" /> Practice Quiz Bank
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </motion.div>
+          </div>
         </div>
 
         <AIMentorChat sectionName={moduleTitle} sectionId={id!} />

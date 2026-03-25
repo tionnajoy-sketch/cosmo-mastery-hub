@@ -51,6 +51,7 @@ const StudyPage = () => {
   const [terms, setTerms] = useState<Term[]>([]);
   const [selectedBlock, setSelectedBlock] = useState<UploadedBlock | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [completedTerms, setCompletedTerms] = useState<Set<string>>(new Set());
 
   const blockNum = Number(block);
   const objectives = blockObjectivesMap[id!]?.[blockNum] || [];
@@ -70,71 +71,125 @@ const StudyPage = () => {
 
   const handleNotesChange = useCallback(() => {}, []);
 
+  const handleTermComplete = useCallback((termId: string) => {
+    setCompletedTerms(prev => new Set(prev).add(termId));
+  }, []);
+
   return (
     <div className="min-h-screen relative">
-      {/* TJ Background */}
-      <div
-        className="fixed inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.12, filter: "brightness(1.1)" }}
-      />
-      <div className="fixed inset-0" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.88) 0%, hsl(0 0% 98% / 0.92) 100%)" }} />
-
       <div className="relative z-10">
         <AppHeader />
-        <div className="max-w-2xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-4 py-6">
           <Button variant="ghost" onClick={() => navigate(`/section/${id}`)} className="mb-4 gap-2 text-muted-foreground">
             <ArrowLeft className="h-4 w-4" /> Back to {sectionName || "Section"}
           </Button>
 
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="font-display text-3xl font-bold mb-1" style={{ color: c.heading }}>
-              {sectionName} — Block {block}
-            </h1>
-            <p className="text-sm mb-5" style={{ color: c.subtext }}>
-              Tap any term to begin the 9-layer learning journey.
-            </p>
-
-            {objectives.length > 0 && (
-              <Card className="border-0 shadow-sm mb-5" style={{ background: "hsl(195 30% 96% / 0.9)", backdropFilter: "blur(6px)" }}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <GraduationCap className="h-4 w-4" style={{ color: "hsl(195 45% 38%)" }} />
-                    <span className="text-xs font-semibold" style={{ color: "hsl(195 35% 25%)" }}>In this block, you will be able to:</span>
-                  </div>
-                  {objectives.map((obj, i) => (
-                    <p key={i} className="text-xs leading-relaxed" style={{ color: "hsl(195 15% 38%)" }}>• {obj}</p>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-          </motion.div>
-
-          {/* Term List */}
-          <div className="space-y-3">
-            {terms.map((term, i) => (
-              <TermListItem
-                key={term.id}
-                termTitle={term.term}
-                definition={term.definition}
-                index={i}
-                onClick={() => {
-                  setSelectedBlock(termToBlock(term, blockNum));
-                  setSelectedIndex(i);
-                }}
+          {/* Split layout: TJ photo left, whiteboard right */}
+          <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+            {/* Left: TJ Photo */}
+            <motion.div
+              className="hidden lg:block lg:w-2/5 rounded-2xl overflow-hidden relative"
+              style={{ minHeight: 500 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <img
+                src={tjBackground}
+                alt="TJ Anderson"
+                className="absolute inset-0 w-full h-full object-cover"
               />
-            ))}
-          </div>
-
-          {terms.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-8 pb-8 space-y-3">
-              <Button className="w-full py-6 text-base gap-2" style={{ background: c.buttonPrimary, color: "white" }} onClick={() => navigate(`/section/${id}/activity/${block}`)}>
-                <Gamepad2 className="h-5 w-5" /> Practice Activities
-              </Button>
-              <Button className="w-full py-6 text-base gap-2" style={{ background: c.buttonSecondary, color: "white" }} onClick={() => navigate(`/section/${id}/quiz/${block}`)}>
-                <Brain className="h-5 w-5" /> Quiz Me on This Block
-              </Button>
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(0 0% 0% / 0.6) 0%, hsl(0 0% 0% / 0.1) 60%)" }} />
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <h2 className="font-display text-2xl font-bold text-white mb-1">
+                  {sectionName}
+                </h2>
+                <p className="text-sm text-white/80">Block {block} · {terms.length} terms</p>
+                {objectives.length > 0 && (
+                  <div className="mt-3 space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <GraduationCap className="h-3.5 w-3.5 text-white/90" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/90">Learning Objectives</span>
+                    </div>
+                    {objectives.map((obj, i) => (
+                      <p key={i} className="text-xs text-white/75 leading-relaxed">• {obj}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
             </motion.div>
-          )}
+
+            {/* Right: Whiteboard with terms */}
+            <motion.div
+              className="flex-1 lg:w-3/5"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              {/* Mobile header (no photo on mobile) */}
+              <div className="lg:hidden mb-4">
+                <div className="relative rounded-2xl overflow-hidden" style={{ height: 160 }}>
+                  <img src={tjBackground} alt="TJ Anderson" className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(0 0% 0% / 0.7) 0%, hsl(0 0% 0% / 0.2) 100%)" }} />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h1 className="font-display text-xl font-bold text-white">{sectionName} — Block {block}</h1>
+                    <p className="text-xs text-white/80">{terms.length} terms to study</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Whiteboard */}
+              <div
+                className="rounded-2xl p-5 sm:p-6"
+                style={{
+                  background: "hsl(0 0% 99% / 0.95)",
+                  border: "2px solid hsl(0 0% 88%)",
+                  boxShadow: "0 4px 24px hsl(0 0% 0% / 0.06), inset 0 1px 0 hsl(0 0% 100%)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {/* Whiteboard header */}
+                <div className="flex items-center gap-3 mb-5 pb-3" style={{ borderBottom: "2px dashed hsl(0 0% 88%)" }}>
+                  <div className="w-3 h-3 rounded-full" style={{ background: "hsl(0 70% 55%)" }} />
+                  <div className="w-3 h-3 rounded-full" style={{ background: "hsl(45 90% 55%)" }} />
+                  <div className="w-3 h-3 rounded-full" style={{ background: "hsl(145 60% 45%)" }} />
+                  <h2 className="font-display text-lg font-bold ml-2 hidden lg:block" style={{ color: c.heading }}>
+                    {sectionName} — Block {block}
+                  </h2>
+                  <span className="text-xs ml-auto" style={{ color: c.subtext }}>
+                    {completedTerms.size}/{terms.length} mastered
+                  </span>
+                </div>
+
+                {/* Term list */}
+                <div className="space-y-3">
+                  {terms.map((term, i) => (
+                    <TermListItem
+                      key={term.id}
+                      termTitle={term.term}
+                      definition={term.definition}
+                      index={i}
+                      isCompleted={completedTerms.has(term.id)}
+                      onContinue={() => {
+                        setSelectedBlock(termToBlock(term, blockNum));
+                        setSelectedIndex(i);
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Action buttons */}
+                {terms.length > 0 && (
+                  <div className="mt-6 space-y-3">
+                    <Button className="w-full py-5 text-base gap-2" style={{ background: c.buttonPrimary, color: "white" }} onClick={() => navigate(`/section/${id}/activity/${block}`)}>
+                      <Gamepad2 className="h-5 w-5" /> Practice Activities
+                    </Button>
+                    <Button className="w-full py-5 text-base gap-2" style={{ background: c.buttonSecondary, color: "white" }} onClick={() => navigate(`/section/${id}/quiz/${block}`)}>
+                      <Brain className="h-5 w-5" /> Quiz Me on This Block
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
         </div>
 
         <AIMentorChat
