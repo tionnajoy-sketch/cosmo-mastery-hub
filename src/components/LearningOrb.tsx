@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useCoins } from "@/hooks/useCoins";
+import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
