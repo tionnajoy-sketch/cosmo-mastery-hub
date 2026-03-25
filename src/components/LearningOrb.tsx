@@ -277,7 +277,7 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
       {/* TJ Background */}
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.06 }}
+        style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.12 }}
       />
       <div className="relative z-10 p-4 sm:p-6">
 
