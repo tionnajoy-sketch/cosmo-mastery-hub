@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2, XCircle, StickyNote, Loader2, BookOpen, Eye,
   Lightbulb, Heart, PenLine, Wrench, GraduationCap, Mic,
-  HelpCircle, Fingerprint, X,
+  HelpCircle, Fingerprint, X, Volume2, VolumeX,
 } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import { fireBlockCompleteConfetti } from "@/lib/confetti";
