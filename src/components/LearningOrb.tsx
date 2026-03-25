@@ -102,6 +102,7 @@ interface LearningOrbProps {
 const LearningOrb = ({ block, onNotesChange }: LearningOrbProps) => {
   const { user, profile } = useAuth();
   const { addCoins } = useCoins();
+  const { soundsEnabled, toggleSounds } = useSoundsEnabled();
   const [expandedNode, setExpandedNode] = useState<TabType | null>(null);
   const [journalNote, setJournalNote] = useState(block.user_notes || "");
   const [journalSaving, setJournalSaving] = useState(false);
