@@ -267,8 +267,9 @@ const LearningOrbDialog = ({
     } catch {}
     setAiLoading(false);
   };
+  generateQuizRef.current = generateQuizQuestion;
 
-  // (quiz auto-generation moved above early return)
+  // (quiz auto-generation handled via ref above)
 
   const hasBuiltinQuiz = block.quiz_question && block.quiz_options?.length > 0;
   const quizQuestion = hasBuiltinQuiz ? block.quiz_question : aiQuestion?.question;
