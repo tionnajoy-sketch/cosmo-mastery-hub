@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import tjBackground from "@/assets/tj-background.jpg";
 
 const c = pageColors.login;
 
@@ -38,12 +39,18 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: c.gradient }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      {/* TJ Background Photo */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${tjBackground})`, filter: "brightness(0.35) blur(2px)" }}
+      />
+      <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, hsl(320 60% 20% / 0.6), hsl(280 50% 15% / 0.7))" }} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-3">
