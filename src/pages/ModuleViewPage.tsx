@@ -140,8 +140,8 @@ const ModuleViewPage = () => {
               </div>
 
               <div className="space-y-6">
-                {groupBlocks.map((block) => (
-                  <LearningOrb key={block.id} block={block} onNotesChange={handleNotesChange} />
+                {groupBlocks.map((block, blockIdx) => (
+                  <LearningOrb key={block.id} block={block} onNotesChange={handleNotesChange} blockIndex={blockIdx} />
                 ))}
               </div>
 

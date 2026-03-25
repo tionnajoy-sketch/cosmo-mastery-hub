@@ -114,7 +114,7 @@ const StudyPage = () => {
         <div className="space-y-5">
           {terms.map((term, i) => (
             <motion.div key={term.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.08 }}>
-              <LearningOrb block={termToBlock(term, blockNum)} onNotesChange={handleNotesChange} mode="builtin" />
+              <LearningOrb block={termToBlock(term, blockNum)} onNotesChange={handleNotesChange} mode="builtin" blockIndex={i} />
             </motion.div>
           ))}
         </div>
