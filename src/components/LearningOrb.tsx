@@ -346,6 +346,44 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
           </div>
         );
 
+      case "breakdown":
+        return (
+          <div className="space-y-3">
+            {block.pronunciation && (
+              <motion.div
+                className="flex items-center gap-3"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <SpeakButton text={block.term_title} size="sm" label="Hear pronunciation" onComplete={handleAudioComplete} />
+                <span className="text-base font-medium italic" style={{ color: c.subtext }}>/{block.pronunciation}/</span>
+              </motion.div>
+            )}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-2"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "hsl(30 85% 45%)" }}>Word Structure</p>
+              <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+                {block.term_title.split(/(?=[A-Z])|[-\s]/).filter(Boolean).map((part, i) => (
+                  <span key={i}>
+                    {i > 0 && <span style={{ color: "hsl(30 60% 60%)" }}> · </span>}
+                    <strong style={{ color: "hsl(30 85% 45%)" }}>{part}</strong>
+                  </span>
+                ))}
+              </p>
+              <p className="text-sm leading-relaxed mt-2" style={{ color: c.bodyText }}>
+                Understanding the parts of this term helps you decode similar words on the exam.
+              </p>
+            </motion.div>
+            <SpeakButton text={getSpeakText("breakdown")} size="sm" label="Listen to breakdown" onComplete={handleAudioComplete} />
+            <BrainNote text="Breaking words into parts activates your brain's analytical processing, making complex terms easier to decode and remember." />
+          </div>
+        );
+
       case "recognize":
         return (
           <div className="space-y-3">
