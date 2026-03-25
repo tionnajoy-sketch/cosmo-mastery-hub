@@ -379,118 +379,110 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
         </CardContent>
       </Card>
 
-      {/* === LAYER NODES — Vertical list with spacing and dividers === */}
-      <div className="space-y-0">
+      {/* === LAYER NODES — Card grid layout === */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {activeSteps.map((step, index) => {
           const unlocked = isStepUnlocked(index);
           const isCompleted = completedSteps.has(step.key);
           const isActive = expandedStep === step.key;
-          const isLast = index === activeSteps.length - 1;
 
           return (
-            <div key={step.key}>
-              {/* Node row */}
-              <motion.button
-                className="w-full flex items-center gap-4 py-4 px-3 rounded-xl transition-all"
-                onClick={() => handleNodeTap(step, index)}
-                disabled={!unlocked}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{
-                  opacity: unlocked ? 1 : 0.4,
-                  y: 0,
-                }}
-                transition={{ delay: 0.03 * index }}
+            <motion.button
+              key={step.key}
+              className="relative flex flex-col items-center gap-2 p-4 rounded-2xl transition-all text-center"
+              onClick={() => handleNodeTap(step, index)}
+              disabled={!unlocked}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{
+                opacity: unlocked ? 1 : 0.4,
+                scale: 1,
+              }}
+              transition={{ delay: 0.04 * index, type: "spring", stiffness: 200 }}
+              whileHover={unlocked ? { scale: 1.04, y: -2 } : {}}
+              whileTap={unlocked ? { scale: 0.97 } : {}}
+              style={{
+                background: isActive
+                  ? `linear-gradient(160deg, ${step.bgColor}, hsl(0 0% 100%))`
+                  : isCompleted
+                  ? "hsl(145 30% 96%)"
+                  : unlocked
+                  ? "hsl(var(--card))"
+                  : "hsl(var(--muted) / 0.5)",
+                border: `2px solid ${
+                  isActive
+                    ? step.color
+                    : isCompleted
+                    ? "hsl(145 40% 70%)"
+                    : unlocked
+                    ? step.borderColor
+                    : "hsl(var(--border))"
+                }`,
+                boxShadow: isActive
+                  ? `0 6px 24px ${step.glowColor}, 0 2px 8px hsl(var(--foreground) / 0.06)`
+                  : isCompleted
+                  ? "0 2px 8px hsl(145 40% 42% / 0.1)"
+                  : unlocked
+                  ? "0 2px 12px hsl(var(--foreground) / 0.06)"
+                  : "none",
+                cursor: unlocked ? "pointer" : "not-allowed",
+                filter: !unlocked ? "grayscale(0.5)" : "none",
+              }}
+            >
+              {/* Step number badge */}
+              <span
+                className="absolute top-2 left-2 text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center"
                 style={{
-                  background: isActive
-                    ? `${step.bgColor}`
-                    : "transparent",
-                  cursor: unlocked ? "pointer" : "not-allowed",
+                  background: isCompleted ? "hsl(145 40% 88%)" : isActive ? step.gradient : step.bgColor,
+                  color: isCompleted ? "hsl(145 50% 35%)" : step.color,
+                  border: `1px solid ${isCompleted ? "hsl(145 40% 70%)" : step.borderColor}`,
                 }}
               >
-                {/* Step number + icon circle */}
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
-                  style={{
-                    background: isCompleted
-                      ? "hsl(145 40% 92%)"
-                      : isActive
-                      ? step.gradient
-                      : unlocked
-                      ? step.bgColor
-                      : "hsl(var(--muted))",
-                    border: `2px solid ${
-                      isCompleted
-                        ? "hsl(145 40% 65%)"
-                        : isActive
-                        ? step.color
-                        : unlocked
-                        ? step.borderColor
-                        : "hsl(var(--border))"
-                    }`,
-                    boxShadow: isActive
-                      ? `0 0 16px ${step.glowColor}, 0 0 32px ${step.glowColor}`
-                      : isCompleted
-                      ? "0 0 8px hsl(145 40% 42% / 0.15)"
-                      : "0 2px 8px hsl(var(--foreground) / 0.06)",
-                    color: isCompleted
-                      ? "hsl(145 50% 42%)"
-                      : isActive
-                      ? "hsl(0 0% 100%)"
-                      : unlocked
-                      ? step.color
-                      : "hsl(var(--muted-foreground))",
-                    filter: !unlocked ? "grayscale(0.5)" : "none",
-                  }}
-                >
-                  {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : unlocked ? step.icon : <Lock className="h-3.5 w-3.5" />}
-                </div>
+                {index + 1}
+              </span>
 
-                {/* Label + subtitle */}
-                <div className="flex-1 text-left min-w-0">
-                  <p
-                    className="text-sm font-semibold"
-                    style={{
-                      color: isActive ? step.color : isCompleted ? "hsl(145 30% 38%)" : unlocked ? c.heading : "hsl(var(--muted-foreground))",
-                    }}
-                  >
-                    {index + 1}. {step.label}
-                  </p>
-                  <p
-                    className="text-xs mt-0.5"
-                    style={{
-                      color: isCompleted ? "hsl(145 20% 50%)" : unlocked ? c.subtext : "hsl(var(--muted-foreground))",
-                    }}
-                  >
-                    {isCompleted ? "✓ Completed" : step.subtitle}
-                  </p>
-                </div>
+              {/* Icon circle */}
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
+                style={{
+                  background: isCompleted
+                    ? "hsl(145 40% 92%)"
+                    : isActive
+                    ? step.gradient
+                    : step.bgColor,
+                  border: `2px solid ${
+                    isCompleted ? "hsl(145 40% 65%)" : isActive ? step.color : step.borderColor
+                  }`,
+                  boxShadow: isActive ? `0 0 16px ${step.glowColor}` : "none",
+                  color: isCompleted
+                    ? "hsl(145 50% 42%)"
+                    : isActive
+                    ? "hsl(0 0% 100%)"
+                    : step.color,
+                }}
+              >
+                {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : unlocked ? step.icon : <Lock className="h-3.5 w-3.5" />}
+              </div>
 
-                {/* Arrow */}
-                {unlocked && !isCompleted && (
-                  <ArrowRight className="h-4 w-4 flex-shrink-0" style={{ color: isActive ? step.color : c.subtext }} />
-                )}
-              </motion.button>
+              {/* Label */}
+              <p
+                className="text-xs font-bold leading-tight"
+                style={{
+                  color: isActive ? step.color : isCompleted ? "hsl(145 30% 38%)" : unlocked ? c.heading : "hsl(var(--muted-foreground))",
+                }}
+              >
+                {step.label}
+              </p>
 
-              {/* Divider line between nodes */}
-              {!isLast && (
-                <div className="flex items-center px-3">
-                  <div className="w-12 flex justify-center">
-                    <div
-                      className="w-0.5 h-4"
-                      style={{
-                        background: isCompleted
-                          ? "hsl(145 40% 65%)"
-                          : "hsl(var(--border))",
-                      }}
-                    />
-                  </div>
-                  <div
-                    className="flex-1 h-px ml-4"
-                    style={{ background: "hsl(var(--border))" }}
-                  />
-                </div>
-              )}
-            </div>
+              {/* Status */}
+              <p
+                className="text-[10px]"
+                style={{
+                  color: isCompleted ? "hsl(145 20% 50%)" : unlocked ? c.subtext : "hsl(var(--muted-foreground))",
+                }}
+              >
+                {isCompleted ? "✓ Done" : isActive ? "Active" : unlocked ? "Ready" : "Locked"}
+              </p>
+            </motion.button>
           );
         })}
       </div>
