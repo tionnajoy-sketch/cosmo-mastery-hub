@@ -254,29 +254,29 @@ const CrosswordGame = ({ grid, level, onComplete }: Props) => {
                   }
 
                   if (cell.type === "clue") {
+                    const colors = CATEGORY_COLORS[cell.category || ""] || DEFAULT_CLUE_COLOR;
                     return (
                       <div
                         key={ci}
-                        className="relative border border-slate-400/30 flex flex-col items-center justify-center overflow-hidden cursor-default"
+                        className="relative border border-white/10 flex flex-col items-center justify-center overflow-hidden cursor-default"
                         style={{
                           width: CELL_SIZE,
                           height: CELL_SIZE,
-                          background: CLUE_CELL_BG,
+                          background: colors.bg,
                           fontSize: "6px",
                           lineHeight: "1.15",
                         }}
                         title={cell.clueText}
                       >
-                        <span className="text-slate-700 text-center px-0.5 font-medium leading-tight overflow-hidden" style={{ fontSize: "6.5px", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" }}>
+                        <span className="text-center px-0.5 font-semibold leading-tight overflow-hidden" style={{ fontSize: "6.5px", color: colors.text, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" }}>
                           {cell.clueText}
                         </span>
-                        {/* Direction arrows */}
                         <div className="absolute bottom-0 right-0 flex">
                           {cell.arrows?.includes("right") && (
-                            <ChevronRight className="h-2.5 w-2.5 text-slate-500" />
+                            <ChevronRight className="h-2.5 w-2.5" style={{ color: colors.arrow }} />
                           )}
                           {cell.arrows?.includes("down") && (
-                            <ChevronDown className="h-2.5 w-2.5 text-slate-500" />
+                            <ChevronDown className="h-2.5 w-2.5" style={{ color: colors.arrow }} />
                           )}
                         </div>
                       </div>
