@@ -12,6 +12,7 @@ import {
   CheckCircle2, Flame, Heart, Shield,
   Brain, Sparkles, Eye, Upload,
   Pen, MessageSquare, GraduationCap, RefreshCw,
+  Lightbulb, PenLine, Wrench, HelpCircle, Mic, Fingerprint,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors } from "@/lib/colors";
@@ -47,22 +48,24 @@ const outcomes = [
 ];
 
 const methodLayers = [
-  { icon: BookOpen, label: "Definition", desc: "Understand the concept in clear language.", color: "hsl(200 55% 48%)" },
-  { icon: Eye, label: "Visualize", desc: "See the structure or process in a simple image.", color: "hsl(270 45% 55%)" },
-  { icon: Sparkles, label: "Metaphor", desc: "Connect the concept to something familiar.", color: "hsl(25 65% 52%)" },
-  { icon: Heart, label: "Affirmation", desc: "Train your brain to believe you can master it.", color: "hsl(346 45% 56%)" },
-  { icon: MessageSquare, label: "Reflection", desc: "Process the idea in your own words.", color: "hsl(145 45% 40%)" },
-  { icon: Pen, label: "Journal", desc: "Strengthen memory through writing.", color: "hsl(195 50% 42%)" },
-  { icon: GraduationCap, label: "Quiz", desc: "Practice state board style questions.", color: "hsl(42 55% 48%)" },
+  { icon: Eye,         label: "Visualize",      desc: "See the concept before defining it.",                     color: "hsl(215 80% 42%)", neuro: "Visual cortex & pattern recognition" },
+  { icon: BookOpen,    label: "Define",          desc: "Understand the concept in clear language.",               color: "hsl(45 90% 40%)",  neuro: "Language processing & labeling" },
+  { icon: Mic,         label: "Break It Down",   desc: "Decode word roots and origins.",                         color: "hsl(30 85% 45%)",  neuro: "Analytical processing & decoding" },
+  { icon: Fingerprint, label: "Recognize",       desc: "Identify the concept visually.",                         color: "hsl(275 70% 50%)", neuro: "Spatial memory & recall" },
+  { icon: Lightbulb,   label: "Metaphor",        desc: "Connect the concept to real life.",                      color: "hsl(265 72% 48%)", neuro: "Limbic system & emotional association" },
+  { icon: Heart,       label: "Information",     desc: "Expand understanding with deeper context.",              color: "hsl(180 60% 32%)", neuro: "Comprehension & deeper reasoning" },
+  { icon: PenLine,     label: "Reflect",         desc: "Process the idea in your own words.",                    color: "hsl(220 20% 35%)", neuro: "Metacognition & self-awareness" },
+  { icon: Wrench,      label: "Apply",           desc: "Use knowledge in real scenarios.",                       color: "hsl(145 65% 32%)", neuro: "Active recall & problem-solving" },
+  { icon: HelpCircle,  label: "Assess",          desc: "Practice state board style questions.",                  color: "hsl(0 75% 45%)",   neuro: "Performance & test readiness" },
 ];
 
 const howToSteps = [
-  "Start a Study Block",
-  "Review the Definition and Visualization",
-  "Connect the Metaphor",
-  "Repeat the Affirmation",
-  "Write your Reflection",
-  "Take the Quiz",
+  "Choose a Study Module",
+  "Work Through Each Block's 9 Layers",
+  "Follow the Guided Sequence",
+  "Use Ask TJ Mentor for Help",
+  "Practice Activities & Quizzes",
+  "Track Your Progress",
 ];
 
 const getStatusLabel = (percent: number) => {
@@ -288,17 +291,22 @@ const Home = () => {
         {/* ── The TJ Anderson Layer Method™ ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
           <h2 className="font-display text-lg font-semibold text-foreground mb-2">The TJ Anderson Layer Method™</h2>
-          <p className="text-sm text-muted-foreground mb-4">Each concept is studied through multiple layers so the information stays in your memory.</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <p className="text-sm text-muted-foreground mb-4">A neuroscience-based system — 9 layers that activate different parts of your brain.</p>
+          <div className="space-y-2">
             {methodLayers.map((layer, i) => (
-              <motion.div key={layer.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.04 }}>
-                <Card className="border-0 shadow-sm h-full bg-card">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{ background: `${layer.color}15` }}>
-                      <layer.icon className="h-5 w-5" style={{ color: layer.color }} />
+              <motion.div key={layer.label} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.03 }}>
+                <Card className="border-0 shadow-sm bg-card">
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${layer.color}18` }}>
+                      <layer.icon className="h-4 w-4" style={{ color: layer.color }} />
                     </div>
-                    <p className="text-sm font-semibold text-foreground mb-1">{layer.label}</p>
-                    <p className="text-xs text-muted-foreground leading-snug">{layer.desc}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">{i + 1}. {layer.label}</p>
+                      <p className="text-xs text-muted-foreground leading-snug">{layer.desc}</p>
+                    </div>
+                    <span className="text-[10px] italic flex-shrink-0 max-w-[120px] text-right" style={{ color: layer.color }}>
+                      🧠 {layer.neuro}
+                    </span>
                   </CardContent>
                 </Card>
               </motion.div>

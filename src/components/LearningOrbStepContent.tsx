@@ -193,6 +193,24 @@ const EtymologyBreakdown = ({ block }: { block: UploadedBlock }) => {
         </motion.div>
       )}
 
+      {/* Speech-to-text for verbal practice */}
+      <div className="mt-3">
+        <p className="text-xs font-medium mb-2" style={{ color: c.subtext }}>
+          🎤 Practice saying the breakdown out loud:
+        </p>
+        <div className="flex items-center gap-2">
+          <SpeechToTextButton
+            onTranscript={(text) => {
+              // Just visual feedback — user practices pronunciation
+            }}
+            className="flex-shrink-0"
+          />
+          <span className="text-xs italic" style={{ color: c.subtext }}>
+            Tap the mic and say each word part aloud
+          </span>
+        </div>
+      </div>
+
       <BrainNote text="Breaking words into roots activates analytical processing, making complex terms easier to decode and remember." />
     </div>
   );

@@ -64,6 +64,7 @@ interface StepConfig {
   key: StepKey;
   label: string;
   subtitle: string;
+  neuroExplanation: string;
   icon: React.ReactNode;
   color: string;
   bgColor: string;
@@ -73,39 +74,40 @@ interface StepConfig {
   guidedIntro: string;
 }
 
-const stepConfigs: StepConfig[] = [
-  { key: "visualize",   label: "Visualize",      subtitle: "Visual cortex & pattern recognition",   icon: <Eye className="h-4 w-4" />,            color: "hsl(215 80% 42%)", bgColor: "hsl(215 60% 95%)", borderColor: "hsl(215 60% 72%)", gradient: "linear-gradient(135deg, hsl(215 80% 42%), hsl(200 85% 48%))", glowColor: "hsl(215 80% 42% / 0.4)",  guidedIntro: "Let's start here… see the concept before you define it." },
-  { key: "definition",  label: "Define",          subtitle: "Language processing & labeling",         icon: <BookOpen className="h-4 w-4" />,       color: "hsl(45 90% 40%)",  bgColor: "hsl(45 70% 95%)",  borderColor: "hsl(45 70% 72%)",  gradient: "linear-gradient(135deg, hsl(45 90% 40%), hsl(38 95% 48%))",  glowColor: "hsl(45 90% 40% / 0.4)",   guidedIntro: "Now let me explain… here's the clear, structured meaning." },
-  { key: "breakdown",   label: "Break It Down",   subtitle: "Analytical decoding & word roots",       icon: <Mic className="h-4 w-4" />,            color: "hsl(30 85% 45%)",  bgColor: "hsl(30 65% 95%)",  borderColor: "hsl(30 65% 72%)",  gradient: "linear-gradient(135deg, hsl(30 85% 45%), hsl(22 90% 52%))",  glowColor: "hsl(30 85% 45% / 0.4)",   guidedIntro: "Let's break this down… understanding the roots helps it stick." },
-  { key: "recognize",   label: "Recognize",       subtitle: "Spatial memory & recall",                icon: <Fingerprint className="h-4 w-4" />,    color: "hsl(275 70% 50%)", bgColor: "hsl(275 50% 95%)", borderColor: "hsl(275 50% 72%)", gradient: "linear-gradient(135deg, hsl(275 70% 50%), hsl(285 75% 55%))", glowColor: "hsl(275 70% 50% / 0.4)",  guidedIntro: "Can you spot it? Identify the concept visually." },
-  { key: "metaphor",    label: "Metaphor",        subtitle: "Limbic system & emotional association",   icon: <Lightbulb className="h-4 w-4" />,      color: "hsl(265 72% 48%)", bgColor: "hsl(265 52% 95%)", borderColor: "hsl(265 52% 72%)", gradient: "linear-gradient(135deg, hsl(265 72% 48%), hsl(255 78% 54%))", glowColor: "hsl(265 72% 48% / 0.4)",  guidedIntro: "Let me connect this to your life… this is where it gets real." },
-  { key: "information", label: "Information",     subtitle: "Comprehension & deeper reasoning",       icon: <Heart className="h-4 w-4" />,          color: "hsl(180 60% 32%)", bgColor: "hsl(180 45% 95%)", borderColor: "hsl(180 45% 72%)", gradient: "linear-gradient(135deg, hsl(180 60% 32%), hsl(190 65% 38%))", glowColor: "hsl(180 60% 32% / 0.4)",  guidedIntro: "Let's go deeper… expanding your understanding." },
-  { key: "reflection",  label: "Reflect",         subtitle: "Metacognition & self-awareness",         icon: <PenLine className="h-4 w-4" />,        color: "hsl(220 20% 35%)", bgColor: "hsl(220 12% 95%)", borderColor: "hsl(220 12% 72%)", gradient: "linear-gradient(135deg, hsl(220 20% 35%), hsl(230 25% 42%))", glowColor: "hsl(220 20% 35% / 0.3)", guidedIntro: "Pause and think… internalize what this means to you." },
-  { key: "practice",    label: "Apply",           subtitle: "Active recall & problem-solving",        icon: <Wrench className="h-4 w-4" />,         color: "hsl(145 65% 32%)", bgColor: "hsl(145 50% 95%)", borderColor: "hsl(145 50% 72%)", gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))", glowColor: "hsl(145 65% 32% / 0.4)",  guidedIntro: "You're doing great… now put your knowledge to work." },
-  { key: "quiz",        label: "Assess",          subtitle: "Performance & test readiness",           icon: <HelpCircle className="h-4 w-4" />,     color: "hsl(0 75% 45%)",   bgColor: "hsl(0 55% 95%)",   borderColor: "hsl(0 55% 72%)",   gradient: "linear-gradient(135deg, hsl(0 75% 45%), hsl(10 80% 50%))",   glowColor: "hsl(0 75% 45% / 0.4)",    guidedIntro: "Show what you know… demonstrate your mastery." },
+export const stepConfigs: StepConfig[] = [
+  { key: "visualize",   label: "Visualize",      subtitle: "Visual cortex & pattern recognition",   neuroExplanation: "Activates the visual cortex to build mental imagery before labeling — your brain remembers pictures faster than words.", icon: <Eye className="h-4 w-4" />,            color: "hsl(215 80% 42%)", bgColor: "hsl(215 60% 95%)", borderColor: "hsl(215 60% 72%)", gradient: "linear-gradient(135deg, hsl(215 80% 42%), hsl(200 85% 48%))", glowColor: "hsl(215 80% 42% / 0.4)",  guidedIntro: "Let's start here… see the concept before you define it." },
+  { key: "definition",  label: "Define",          subtitle: "Language processing & labeling",         neuroExplanation: "Engages Broca's and Wernicke's areas — language centers that convert raw ideas into structured knowledge.", icon: <BookOpen className="h-4 w-4" />,       color: "hsl(45 90% 40%)",  bgColor: "hsl(45 70% 95%)",  borderColor: "hsl(45 70% 72%)",  gradient: "linear-gradient(135deg, hsl(45 90% 40%), hsl(38 95% 48%))",  glowColor: "hsl(45 90% 40% / 0.4)",   guidedIntro: "Now let me explain… here's the clear, structured meaning." },
+  { key: "breakdown",   label: "Break It Down",   subtitle: "Analytical decoding & word roots",       neuroExplanation: "Activates the prefrontal cortex's analytical processing — breaking words into roots creates multiple memory anchors.", icon: <Mic className="h-4 w-4" />,            color: "hsl(30 85% 45%)",  bgColor: "hsl(30 65% 95%)",  borderColor: "hsl(30 65% 72%)",  gradient: "linear-gradient(135deg, hsl(30 85% 45%), hsl(22 90% 52%))",  glowColor: "hsl(30 85% 45% / 0.4)",   guidedIntro: "Let's break this down… understanding the roots helps it stick." },
+  { key: "recognize",   label: "Recognize",       subtitle: "Spatial memory & recall",                neuroExplanation: "Engages the hippocampus and parietal cortex — spatial identification strengthens retrieval pathways.", icon: <Fingerprint className="h-4 w-4" />,    color: "hsl(275 70% 50%)", bgColor: "hsl(275 50% 95%)", borderColor: "hsl(275 50% 72%)", gradient: "linear-gradient(135deg, hsl(275 70% 50%), hsl(285 75% 55%))", glowColor: "hsl(275 70% 50% / 0.4)",  guidedIntro: "Can you spot it? Identify the concept visually." },
+  { key: "metaphor",    label: "Metaphor",        subtitle: "Limbic system & emotional association",   neuroExplanation: "Activates the limbic system — emotional connections make memories 3x more durable than logic alone.", icon: <Lightbulb className="h-4 w-4" />,      color: "hsl(265 72% 48%)", bgColor: "hsl(265 52% 95%)", borderColor: "hsl(265 52% 72%)", gradient: "linear-gradient(135deg, hsl(265 72% 48%), hsl(255 78% 54%))", glowColor: "hsl(265 72% 48% / 0.4)",  guidedIntro: "Let me connect this to your life… this is where it gets real." },
+  { key: "information", label: "Information",     subtitle: "Comprehension & deeper reasoning",       neuroExplanation: "Engages the temporal and frontal lobes for deeper semantic processing — building context around facts.", icon: <Heart className="h-4 w-4" />,          color: "hsl(180 60% 32%)", bgColor: "hsl(180 45% 95%)", borderColor: "hsl(180 45% 72%)", gradient: "linear-gradient(135deg, hsl(180 60% 32%), hsl(190 65% 38%))", glowColor: "hsl(180 60% 32% / 0.4)",  guidedIntro: "Let's go deeper… expanding your understanding." },
+  { key: "reflection",  label: "Reflect",         subtitle: "Metacognition & self-awareness",         neuroExplanation: "Activates the default mode network — self-referential thinking embeds knowledge into personal identity.", icon: <PenLine className="h-4 w-4" />,        color: "hsl(220 20% 35%)", bgColor: "hsl(220 12% 95%)", borderColor: "hsl(220 12% 72%)", gradient: "linear-gradient(135deg, hsl(220 20% 35%), hsl(230 25% 42%))", glowColor: "hsl(220 20% 35% / 0.3)", guidedIntro: "Pause and think… internalize what this means to you." },
+  { key: "practice",    label: "Apply",           subtitle: "Active recall & problem-solving",        neuroExplanation: "Engages the motor cortex and executive function — applying knowledge strengthens neural pathways through action.", icon: <Wrench className="h-4 w-4" />,         color: "hsl(145 65% 32%)", bgColor: "hsl(145 50% 95%)", borderColor: "hsl(145 50% 72%)", gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))", glowColor: "hsl(145 65% 32% / 0.4)",  guidedIntro: "You're doing great… now put your knowledge to work." },
+  { key: "quiz",        label: "Assess",          subtitle: "Performance & test readiness",           neuroExplanation: "Triggers the testing effect — retrieval under pressure consolidates long-term memory better than re-reading.", icon: <HelpCircle className="h-4 w-4" />,     color: "hsl(0 75% 45%)",   bgColor: "hsl(0 55% 95%)",   borderColor: "hsl(0 55% 72%)",   gradient: "linear-gradient(135deg, hsl(0 75% 45%), hsl(10 80% 50%))",   glowColor: "hsl(0 75% 45% / 0.4)",    guidedIntro: "Show what you know… demonstrate your mastery." },
 ];
 
-// Node positions around central box (relative %, top/left based)
-// Arranged: top-left, top-center, top-right, right-top, right-bottom, bottom-right, bottom-center, bottom-left, left-center
-const nodePositions = [
-  { top: "-6%",  left: "8%"  },  // 1 - top left
-  { top: "-10%", left: "44%" },  // 2 - top center
-  { top: "-6%",  left: "80%" },  // 3 - top right
-  { top: "30%",  left: "96%" },  // 4 - right top
-  { top: "65%",  left: "96%" },  // 5 - right bottom
-  { top: "100%", left: "80%" },  // 6 - bottom right
-  { top: "104%", left: "44%" },  // 7 - bottom center
-  { top: "100%", left: "8%"  },  // 8 - bottom left
-  { top: "48%",  left: "-6%" },  // 9 - left center
+// Vibrant background gradients that rotate per block
+const blockBackgrounds = [
+  "linear-gradient(160deg, hsl(215 55% 92%), hsl(230 50% 95%), hsl(200 60% 97%))",
+  "linear-gradient(160deg, hsl(45 65% 92%), hsl(38 60% 95%), hsl(55 50% 97%))",
+  "linear-gradient(160deg, hsl(30 60% 92%), hsl(20 55% 95%), hsl(40 50% 97%))",
+  "linear-gradient(160deg, hsl(275 50% 93%), hsl(265 45% 96%), hsl(285 40% 97%))",
+  "linear-gradient(160deg, hsl(265 55% 92%), hsl(255 50% 95%), hsl(280 45% 97%))",
+  "linear-gradient(160deg, hsl(180 45% 92%), hsl(190 40% 95%), hsl(170 50% 97%))",
+  "linear-gradient(160deg, hsl(220 25% 92%), hsl(230 20% 95%), hsl(210 30% 97%))",
+  "linear-gradient(160deg, hsl(145 50% 92%), hsl(155 45% 95%), hsl(135 40% 97%))",
+  "linear-gradient(160deg, hsl(0 55% 93%), hsl(10 50% 96%), hsl(350 45% 97%))",
+  "linear-gradient(160deg, hsl(340 50% 93%), hsl(330 45% 96%), hsl(350 40% 97%))",
 ];
 
 interface LearningOrbProps {
   block: UploadedBlock;
   onNotesChange: (blockId: string, notes: string) => void;
   mode?: "uploaded" | "builtin";
+  blockIndex?: number;
 }
 
-const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbProps) => {
+const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }: LearningOrbProps) => {
   const { user } = useAuth();
   const { addCoins } = useCoins();
   const { soundsEnabled, toggleSounds } = useSoundsEnabled();
@@ -280,11 +282,17 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
   const expandedStepConfig = expandedStep ? activeSteps.find(s => s.key === expandedStep) : null;
   const expandedStepIndex = expandedStep ? activeSteps.findIndex(s => s.key === expandedStep) : -1;
 
+  // Pick background based on block index
+  const bg = blockBackgrounds[blockIndex % blockBackgrounds.length];
+
   return (
-    <div className="relative space-y-4">
+    <div
+      className="relative rounded-2xl p-5 sm:p-6"
+      style={{ background: bg }}
+    >
       {/* Instructor Notes */}
       {block.instructor_notes && (
-        <Collapsible className="mb-1">
+        <Collapsible className="mb-3">
           <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium px-2 py-1 rounded-md hover:bg-muted/60 transition-colors" style={{ color: "hsl(42 55% 45%)" }}>
             <StickyNote className="h-3.5 w-3.5" /> Instructor Notes
           </CollapsibleTrigger>
@@ -297,206 +305,194 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
       )}
 
       {/* Progress Bar */}
-      <div className="space-y-1">
+      <div className="space-y-1 mb-5">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium" style={{ color: c.subtext }}>
             Step {completedSteps.size} of {activeSteps.length}
             {allCompleted && " — ✨ Complete!"}
           </p>
-          <p className="text-xs font-semibold" style={{ color: allCompleted ? "hsl(145 50% 42%)" : "hsl(var(--primary))" }}>
-            {Math.round(progressPercent)}%
-          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleSounds}
+              className="p-1.5 rounded-full transition-colors hover:bg-muted/60"
+              title={soundsEnabled ? "Mute sounds" : "Unmute sounds"}
+              style={{ color: soundsEnabled ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
+            >
+              {soundsEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            </button>
+            <p className="text-xs font-semibold" style={{ color: allCompleted ? "hsl(145 50% 42%)" : "hsl(var(--primary))" }}>
+              {Math.round(progressPercent)}%
+            </p>
+          </div>
         </div>
         <Progress value={progressPercent} className="h-2" />
       </div>
 
-      {/* === CENTRAL BOX + SURROUNDING NODES === */}
-      <div className="relative" style={{ paddingTop: "48px", paddingBottom: "48px", paddingLeft: "12px", paddingRight: "12px" }}>
-        {/* Central Term Box */}
-        <Card
-          className="relative z-10 border-2 overflow-hidden"
-          style={{
-            borderColor: allCompleted ? "hsl(145 50% 55%)" : "hsl(var(--border))",
-            boxShadow: allCompleted
-              ? "0 0 30px hsl(145 50% 42% / 0.15), 0 4px 20px hsl(var(--foreground) / 0.06)"
-              : "0 4px 24px hsl(var(--foreground) / 0.08), 0 1px 6px hsl(var(--foreground) / 0.04)",
-            background: allCompleted
-              ? "linear-gradient(135deg, hsl(145 35% 97%), hsl(var(--card)))"
-              : "hsl(var(--card))",
-          }}
-        >
-          <CardContent className="p-6 sm:p-8 text-center">
-            {/* Sound toggle */}
-            <button
-              onClick={toggleSounds}
-              className="absolute top-3 right-3 p-1.5 rounded-full transition-colors hover:bg-muted/60 z-20"
-              title={soundsEnabled ? "Mute sounds" : "Unmute sounds"}
-              style={{ color: soundsEnabled ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
-            >
-              {soundsEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            </button>
+      {/* === CENTRAL TERM BOX — Only the term, no definition === */}
+      <Card
+        className="relative border-2 overflow-hidden mb-6"
+        style={{
+          borderColor: allCompleted ? "hsl(145 50% 55%)" : "hsl(var(--border))",
+          boxShadow: allCompleted
+            ? "0 0 30px hsl(145 50% 42% / 0.15), 0 4px 20px hsl(var(--foreground) / 0.06)"
+            : "0 4px 24px hsl(var(--foreground) / 0.08), 0 1px 6px hsl(var(--foreground) / 0.04)",
+          background: allCompleted
+            ? "linear-gradient(135deg, hsl(145 35% 97%), hsl(var(--card)))"
+            : "hsl(var(--card))",
+        }}
+      >
+        <CardContent className="p-8 sm:p-10 text-center">
+          <motion.h2
+            className="font-display text-4xl sm:text-5xl font-bold leading-tight break-words"
+            style={{ color: c.heading }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            {block.term_title}
+          </motion.h2>
 
-            {/* Term Title */}
-            <motion.h2
-              className="font-display text-3xl sm:text-4xl font-bold leading-tight break-words"
-              style={{ color: c.heading }}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-            >
-              {block.term_title}
-            </motion.h2>
+          {block.pronunciation && (
+            <p className="text-sm mt-2 italic" style={{ color: c.subtext }}>
+              /{block.pronunciation}/
+            </p>
+          )}
 
-            {/* Pronunciation */}
-            {block.pronunciation && (
-              <p className="text-sm mt-1 italic" style={{ color: c.subtext }}>
-                /{block.pronunciation}/
-              </p>
-            )}
+          <div className="mt-3 flex justify-center">
+            <SpeakButton text={block.term_title} size="sm" label="Listen" onComplete={handleAudioComplete} />
+          </div>
 
-            {/* Definition */}
-            <motion.p
-              className="text-sm sm:text-base leading-relaxed mt-3 max-w-lg mx-auto"
-              style={{ color: c.bodyText }}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              {block.definition}
-            </motion.p>
-
-            {/* Listen button */}
-            <div className="mt-3 flex justify-center">
-              <SpeakButton text={`${block.term_title}. ${block.definition}`} size="sm" label="Listen" onComplete={handleAudioComplete} />
-            </div>
-
-            {/* Completion badge */}
-            <AnimatePresence>
-              {allCompleted && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full"
-                  style={{ background: "hsl(145 40% 92%)", border: "1px solid hsl(145 40% 75%)" }}
-                >
-                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-                    <CheckCircle2 className="h-5 w-5" style={{ color: "hsl(145 50% 42%)" }} />
-                  </motion.div>
-                  <span className="text-sm font-semibold" style={{ color: "hsl(145 35% 25%)" }}>Concept Mastered!</span>
+          <AnimatePresence>
+            {allCompleted && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full"
+                style={{ background: "hsl(145 40% 92%)", border: "1px solid hsl(145 40% 75%)" }}
+              >
+                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+                  <CheckCircle2 className="h-5 w-5" style={{ color: "hsl(145 50% 42%)" }} />
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </CardContent>
-        </Card>
+                <span className="text-sm font-semibold" style={{ color: "hsl(145 35% 25%)" }}>Concept Mastered!</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </CardContent>
+      </Card>
 
-        {/* Surrounding Layer Nodes */}
+      {/* === LAYER NODES — Vertical list with spacing and dividers === */}
+      <div className="space-y-0">
         {activeSteps.map((step, index) => {
           const unlocked = isStepUnlocked(index);
           const isCompleted = completedSteps.has(step.key);
           const isActive = expandedStep === step.key;
-          // Use position from array, wrapping if more/fewer steps
-          const pos = nodePositions[index % nodePositions.length];
+          const isLast = index === activeSteps.length - 1;
 
           return (
-            <motion.button
-              key={step.key}
-              className="absolute z-20 flex flex-col items-center gap-0.5"
-              style={{
-                top: pos.top,
-                left: pos.left,
-                transform: "translate(-50%, -50%)",
-              }}
-              onClick={() => handleNodeTap(step, index)}
-              disabled={!unlocked}
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{
-                opacity: unlocked ? 1 : 0.4,
-                scale: isActive ? 1.15 : 1,
-              }}
-              transition={{ delay: 0.05 * index, type: "spring", stiffness: 300 }}
-              whileHover={unlocked ? { scale: 1.2 } : {}}
-              whileTap={unlocked ? { scale: 0.95 } : {}}
-            >
-              {/* Node circle */}
-              <div
-                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300"
+            <div key={step.key}>
+              {/* Node row */}
+              <motion.button
+                className="w-full flex items-center gap-4 py-4 px-3 rounded-xl transition-all"
+                onClick={() => handleNodeTap(step, index)}
+                disabled={!unlocked}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{
+                  opacity: unlocked ? 1 : 0.4,
+                  y: 0,
+                }}
+                transition={{ delay: 0.03 * index }}
                 style={{
-                  background: isCompleted
-                    ? "hsl(145 40% 92%)"
-                    : isActive
-                    ? step.gradient
-                    : unlocked
-                    ? step.bgColor
-                    : "hsl(var(--muted))",
-                  border: `2px solid ${
-                    isCompleted
-                      ? "hsl(145 40% 65%)"
+                  background: isActive
+                    ? `${step.bgColor}`
+                    : "transparent",
+                  cursor: unlocked ? "pointer" : "not-allowed",
+                }}
+              >
+                {/* Step number + icon circle */}
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
+                  style={{
+                    background: isCompleted
+                      ? "hsl(145 40% 92%)"
                       : isActive
-                      ? step.color
+                      ? step.gradient
                       : unlocked
-                      ? step.borderColor
-                      : "hsl(var(--border))"
-                  }`,
-                  boxShadow: isActive
-                    ? `0 0 16px ${step.glowColor}, 0 0 32px ${step.glowColor}`
-                    : isCompleted
-                    ? "0 0 8px hsl(145 40% 42% / 0.15)"
-                    : "0 2px 8px hsl(var(--foreground) / 0.06)",
-                  color: isCompleted
-                    ? "hsl(145 50% 42%)"
-                    : isActive
-                    ? "hsl(0 0% 100%)"
-                    : unlocked
-                    ? step.color
-                    : "hsl(var(--muted-foreground))",
-                  filter: !unlocked ? "grayscale(0.5)" : "none",
-                }}
-              >
-                {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : unlocked ? step.icon : <Lock className="h-3.5 w-3.5" />}
-              </div>
-              {/* Node label */}
-              <span
-                className="text-[10px] font-semibold leading-tight text-center max-w-[56px] whitespace-nowrap"
-                style={{
-                  color: isActive
-                    ? step.color
-                    : isCompleted
-                    ? "hsl(145 30% 38%)"
-                    : unlocked
-                    ? c.subtext
-                    : "hsl(var(--muted-foreground))",
-                }}
-              >
-                {index + 1}. {step.label}
-              </span>
-            </motion.button>
+                      ? step.bgColor
+                      : "hsl(var(--muted))",
+                    border: `2px solid ${
+                      isCompleted
+                        ? "hsl(145 40% 65%)"
+                        : isActive
+                        ? step.color
+                        : unlocked
+                        ? step.borderColor
+                        : "hsl(var(--border))"
+                    }`,
+                    boxShadow: isActive
+                      ? `0 0 16px ${step.glowColor}, 0 0 32px ${step.glowColor}`
+                      : isCompleted
+                      ? "0 0 8px hsl(145 40% 42% / 0.15)"
+                      : "0 2px 8px hsl(var(--foreground) / 0.06)",
+                    color: isCompleted
+                      ? "hsl(145 50% 42%)"
+                      : isActive
+                      ? "hsl(0 0% 100%)"
+                      : unlocked
+                      ? step.color
+                      : "hsl(var(--muted-foreground))",
+                    filter: !unlocked ? "grayscale(0.5)" : "none",
+                  }}
+                >
+                  {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : unlocked ? step.icon : <Lock className="h-3.5 w-3.5" />}
+                </div>
+
+                {/* Label + subtitle */}
+                <div className="flex-1 text-left min-w-0">
+                  <p
+                    className="text-sm font-semibold"
+                    style={{
+                      color: isActive ? step.color : isCompleted ? "hsl(145 30% 38%)" : unlocked ? c.heading : "hsl(var(--muted-foreground))",
+                    }}
+                  >
+                    {index + 1}. {step.label}
+                  </p>
+                  <p
+                    className="text-xs mt-0.5"
+                    style={{
+                      color: isCompleted ? "hsl(145 20% 50%)" : unlocked ? c.subtext : "hsl(var(--muted-foreground))",
+                    }}
+                  >
+                    {isCompleted ? "✓ Completed" : step.subtitle}
+                  </p>
+                </div>
+
+                {/* Arrow */}
+                {unlocked && !isCompleted && (
+                  <ArrowRight className="h-4 w-4 flex-shrink-0" style={{ color: isActive ? step.color : c.subtext }} />
+                )}
+              </motion.button>
+
+              {/* Divider line between nodes */}
+              {!isLast && (
+                <div className="flex items-center px-3">
+                  <div className="w-12 flex justify-center">
+                    <div
+                      className="w-0.5 h-4"
+                      style={{
+                        background: isCompleted
+                          ? "hsl(145 40% 65%)"
+                          : "hsl(var(--border))",
+                      }}
+                    />
+                  </div>
+                  <div
+                    className="flex-1 h-px ml-4"
+                    style={{ background: "hsl(var(--border))" }}
+                  />
+                </div>
+              )}
+            </div>
           );
         })}
-
-        {/* SVG Arrows connecting nodes */}
-        <svg
-          className="absolute inset-0 w-full h-full pointer-events-none z-0"
-          style={{ overflow: "visible" }}
-        >
-          {activeSteps.map((_, index) => {
-            if (index === activeSteps.length - 1) return null;
-            const from = nodePositions[index % nodePositions.length];
-            const to = nodePositions[(index + 1) % nodePositions.length];
-            const isCompleted = completedSteps.has(activeSteps[index].key);
-            return (
-              <line
-                key={index}
-                x1={from.left}
-                y1={from.top}
-                x2={to.left}
-                y2={to.top}
-                stroke={isCompleted ? "hsl(145 40% 65%)" : "hsl(var(--border))"}
-                strokeWidth="1.5"
-                strokeDasharray={isCompleted ? "none" : "4 3"}
-                opacity={0.5}
-              />
-            );
-          })}
-        </svg>
       </div>
 
       {/* === EXPANDED STEP PANEL === */}
@@ -508,7 +504,7 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
             animate={{ opacity: 1, y: 0, height: "auto" }}
             exit={{ opacity: 0, y: 20, height: 0 }}
             transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="overflow-hidden"
+            className="overflow-hidden mt-5"
           >
             <Card
               className="border-2 overflow-hidden"
@@ -553,8 +549,9 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
 
               {/* Panel Content */}
               <CardContent className="p-4 sm:p-5">
+                {/* Guided intro */}
                 <motion.p
-                  className="text-xs italic mb-4"
+                  className="text-xs italic mb-3"
                   style={{ color: expandedStepConfig.color + "bb" }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -562,6 +559,25 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
                 >
                   {expandedStepConfig.guidedIntro}
                 </motion.p>
+
+                {/* Neuroscience explanation */}
+                <motion.div
+                  className="mb-4 p-3 rounded-lg"
+                  style={{
+                    background: expandedStepConfig.bgColor,
+                    border: `1px solid ${expandedStepConfig.borderColor}`,
+                  }}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: expandedStepConfig.color }}>
+                    🧠 Why This Step Matters
+                  </p>
+                  <p className="text-xs leading-relaxed" style={{ color: c.bodyText }}>
+                    {expandedStepConfig.neuroExplanation}
+                  </p>
+                </motion.div>
 
                 <StepContent
                   stepKey={expandedStepConfig.key}
