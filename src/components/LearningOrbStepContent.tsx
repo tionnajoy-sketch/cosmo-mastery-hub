@@ -449,73 +449,163 @@ const StepContent = (props: StepContentProps) => {
       );
 
     case "quiz":
-      return (
-        <div className="space-y-4">
-          <motion.div
-            className="p-3 rounded-lg mb-2"
-            style={{ background: "hsl(0 50% 97%)", border: "1px solid hsl(0 40% 88%)" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+      return <StateboardQuiz block={block} quizSelected={props.quizSelected} setQuizSelected={props.setQuizSelected} quizRevealed={props.quizRevealed} setQuizRevealed={props.setQuizRevealed} stepColor={stepColor} />;
+
+    default:
+      return null;
+  }
+};
+
+// Self-contained State Board quiz with AI fallback
+const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, setQuizRevealed, stepColor }: {
+  block: UploadedBlock;
+  quizSelected: string | null;
+  setQuizSelected: (v: string | null) => void;
+  quizRevealed: boolean;
+  setQuizRevealed: (v: boolean) => void;
+  stepColor: string;
+}) => {
+  const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+
+  const hasBuiltinQuiz = block.quiz_question && block.quiz_options.length > 0;
+
+  const generateQuestion = async () => {
+    setAiLoading(true);
+    setAiError("");
+    try {
+      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
+        body: {
+          messages: [{
+            role: "user",
+            content: `Create a State Board Cosmetology exam-style multiple choice question about "${block.term_title}". Definition: "${block.definition}". Respond ONLY with JSON: {"question":"...","options":["A)...","B)...","C)...","D)..."],"answer":"the full text of the correct option"}. No markdown.`,
+          }],
+          sectionName: "State Board Quiz",
+        },
+      });
+      const text = data?.response || data?.choices?.[0]?.message?.content || "";
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        setAiQuestion(parsed);
+      } else {
+        setAiError("Could not generate question. Try again.");
+      }
+    } catch {
+      setAiError("Failed to generate question.");
+    }
+    setAiLoading(false);
+  };
+
+  // Auto-generate if no built-in quiz
+  useState(() => {
+    if (!hasBuiltinQuiz && !aiQuestion && !aiLoading) {
+      generateQuestion();
+    }
+  });
+
+  const question = hasBuiltinQuiz ? block.quiz_question : aiQuestion?.question;
+  const options = hasBuiltinQuiz ? block.quiz_options.map(String) : (aiQuestion?.options || []);
+  const answer = hasBuiltinQuiz ? block.quiz_answer : (aiQuestion?.answer || "");
+
+  return (
+    <div className="space-y-4">
+      <motion.div
+        className="p-4 rounded-xl mb-2"
+        style={{
+          background: "linear-gradient(135deg, hsl(0 50% 97%), hsl(0 40% 94%))",
+          border: "1.5px solid hsl(0 40% 85%)",
+          boxShadow: "0 2px 8px hsl(0 40% 50% / 0.08)",
+        }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(0 75% 45%)" }}>
+          🎓 State Board Cosmetology Practice Question
+        </p>
+        <p className="text-xs" style={{ color: c.subtext }}>
+          This question mirrors what you'll see on the actual State Board exam. Use what you just learned about <strong>{block.term_title}</strong>.
+        </p>
+      </motion.div>
+
+      {aiLoading && (
+        <div className="flex items-center gap-3 py-6 justify-center">
+          <Loader2 className="h-5 w-5 animate-spin" style={{ color: stepColor }} />
+          <p className="text-sm" style={{ color: c.subtext }}>Generating State Board question…</p>
+        </div>
+      )}
+
+      {aiError && (
+        <div className="text-center space-y-2 py-4">
+          <p className="text-sm" style={{ color: "hsl(0 60% 50%)" }}>{aiError}</p>
+          <Button size="sm" variant="outline" onClick={generateQuestion}>Try Again</Button>
+        </div>
+      )}
+
+      {question && options.length > 0 && (
+        <div className="space-y-3">
+          <motion.p
+            className="text-sm font-medium leading-relaxed"
+            style={{ color: c.termHeading }}
+            initial={{ opacity: 0, x: 6 }}
+            animate={{ opacity: 1, x: 0 }}
           >
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(0 75% 45%)" }}>
-              🎓 State Board Cosmetology Practice Question
-            </p>
-            <p className="text-xs" style={{ color: c.subtext }}>
-              This question mirrors what you'll see on the actual State Board exam. Use what you just learned about <strong>{block.term_title}</strong>.
-            </p>
-          </motion.div>
-          {block.quiz_question && block.quiz_options.length > 0 && (
-            <div className="space-y-3">
-              <motion.p
-                className="text-sm font-medium leading-relaxed"
-                style={{ color: c.termHeading }}
-                initial={{ opacity: 0, x: 6 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {block.quiz_question}
-              </motion.p>
-              <div className="space-y-2">
-                {block.quiz_options.map((opt, i) => {
-                  const letter = String.fromCharCode(65 + i);
-                  const isSelected = props.quizSelected === letter;
-                  const isCorrect = String(opt) === block.quiz_answer;
-                  let bg = "hsl(var(--card))";
-                  let border = "hsl(var(--border))";
-                  if (props.quizRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
-                  else if (props.quizRevealed && isSelected && !isCorrect) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
-                  else if (props.quizRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
-                  return (
-                    <motion.button
-                      key={i}
-                      onClick={() => { if (!props.quizRevealed) { props.setQuizSelected(letter); props.setQuizRevealed(true); } }}
-                      className="w-full text-left p-3 rounded-lg text-sm transition-all"
-                      style={{ background: bg, border: `2px solid ${border}`, color: c.bodyText }}
-                      disabled={props.quizRevealed}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.05 + i * 0.05 }}
-                    >
-                      <span className="font-semibold mr-2">{letter})</span> {String(opt)}
-                      {props.quizRevealed && isCorrect && <CheckCircle2 className="inline h-4 w-4 ml-2" style={{ color: "hsl(145 40% 45%)" }} />}
-                      {props.quizRevealed && isSelected && !isCorrect && <XCircle className="inline h-4 w-4 ml-2" style={{ color: "hsl(0 60% 50%)" }} />}
-                    </motion.button>
-                  );
-                })}
-              </div>
-              {props.quizRevealed && (
-                <Button size="sm" variant="outline" onClick={() => { props.setQuizSelected(null); props.setQuizRevealed(false); }}>
-                  Try Again
+            {question}
+          </motion.p>
+          <div className="space-y-2">
+            {options.map((opt, i) => {
+              const letter = String.fromCharCode(65 + i);
+              const optText = String(opt).replace(/^[A-D]\)\s*/, "");
+              const isSelected = quizSelected === letter;
+              const isCorrect = String(opt) === answer || optText === answer;
+              let bg = "hsl(var(--card))";
+              let border = "hsl(var(--border))";
+              if (quizRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
+              else if (quizRevealed && isSelected && !isCorrect) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
+              else if (quizRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
+              return (
+                <motion.button
+                  key={i}
+                  onClick={() => { if (!quizRevealed) { setQuizSelected(letter); setQuizRevealed(true); } }}
+                  className="w-full text-left p-3 rounded-lg text-sm transition-all"
+                  style={{ background: bg, border: `2px solid ${border}`, color: c.bodyText }}
+                  disabled={quizRevealed}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 + i * 0.05 }}
+                >
+                  <span className="font-semibold mr-2">{letter})</span> {optText}
+                  {quizRevealed && isCorrect && <CheckCircle2 className="inline h-4 w-4 ml-2" style={{ color: "hsl(145 40% 45%)" }} />}
+                  {quizRevealed && isSelected && !isCorrect && <XCircle className="inline h-4 w-4 ml-2" style={{ color: "hsl(0 60% 50%)" }} />}
+                </motion.button>
+              );
+            })}
+          </div>
+          {quizRevealed && (
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>
+                Try Again
+              </Button>
+              {!hasBuiltinQuiz && (
+                <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuestion(); }} style={{ borderColor: stepColor, color: stepColor }}>
+                  New Question
                 </Button>
               )}
             </div>
           )}
         </div>
-      );
+      )}
 
-    default:
-      return null;
-  }
+      {!hasBuiltinQuiz && !aiQuestion && !aiLoading && !aiError && (
+        <div className="text-center py-4">
+          <Button size="sm" onClick={generateQuestion} className="gap-2" style={{ background: stepColor, color: "white" }}>
+            🎓 Generate State Board Question
+          </Button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default StepContent;

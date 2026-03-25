@@ -273,11 +273,11 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
   const activeStepIndex = activeTab ? activeSteps.findIndex(s => s.key === activeTab) : -1;
 
   return (
-    <div className="relative rounded-2xl overflow-hidden">
+    <div className="relative rounded-2xl overflow-hidden" style={{ boxShadow: "0 8px 32px hsl(var(--foreground) / 0.08)" }}>
       {/* TJ Background */}
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.12 }}
+        style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.15, filter: "brightness(1.1)" }}
       />
       <div className="relative z-10 p-4 sm:p-6">
 
