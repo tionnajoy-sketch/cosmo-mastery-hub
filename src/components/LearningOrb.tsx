@@ -124,9 +124,10 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
     return stepConfigs.filter(s => {
       if (s.key === "recognize" && identityItems.length === 0) return false;
       if (s.key === "practice" && !block.practice_scenario) return false;
+      if (s.key === "breakdown" && !block.pronunciation && !block.definition) return false;
       return true;
     });
-  }, [block.concept_identity, block.practice_scenario]);
+  }, [block.concept_identity, block.practice_scenario, block.pronunciation, block.definition]);
 
   // Load saved data for builtin terms
   useEffect(() => {
