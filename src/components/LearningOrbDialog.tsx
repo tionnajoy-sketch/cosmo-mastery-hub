@@ -194,13 +194,14 @@ const LearningOrbDialog = ({
   }, [journalNote, block?.id, user, mode]);
 
   // Auto-generate quiz when reaching quick check step
+  const generateQuizRef = useRef<() => void>();
   useEffect(() => {
     if (!block) return;
     const s = STEPS[currentStep];
     if (s?.key === "quickcheck" && !block.quiz_question && !aiQuestion && !aiLoading) {
-      generateQuizQuestion();
+      generateQuizRef.current?.();
     }
-  }, [currentStep, block?.id]);
+  }, [currentStep, block?.id, aiQuestion, aiLoading]);
 
   if (!block) return null;
 
