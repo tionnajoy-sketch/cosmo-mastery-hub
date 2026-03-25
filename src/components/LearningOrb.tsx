@@ -432,6 +432,16 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
   const getContentMotion = (key: TabType) => contentVariants[key] || { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
 
   const orbRadius = 110;
+  const [rippleActive, setRippleActive] = useState(false);
+
+  // Trigger ripple on completion
+  useEffect(() => {
+    if (completionPulse) {
+      setRippleActive(true);
+      const t = setTimeout(() => setRippleActive(false), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [completionPulse]);
 
   return (
     <div className="relative">
@@ -452,12 +462,28 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
       {/* Sound Toggle */}
       <button
         onClick={toggleSounds}
-        className="absolute top-1 right-1 z-10 p-1.5 rounded-full transition-colors hover:bg-muted/60"
+        className="absolute top-1 right-1 z-30 p-1.5 rounded-full transition-colors hover:bg-muted/60"
         title={soundsEnabled ? "Mute sounds" : "Unmute sounds"}
         style={{ color: soundsEnabled ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
       >
         {soundsEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
       </button>
+
+      {/* Background dim overlay when expanded */}
+      <AnimatePresence>
+        {expandedNode !== null && (
+          <motion.div
+            key="dim-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-20"
+            style={{ background: "hsl(0 0% 0% / 0.25)", backdropFilter: "blur(2px)" }}
+            onClick={closeNode}
+          />
+        )}
+      </AnimatePresence>
 
       {/* === ORB VIEW === */}
       <AnimatePresence mode="wait">
@@ -472,6 +498,43 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
           >
             {/* Orbital container */}
             <div className="relative" style={{ width: orbRadius * 2 + 80, height: orbRadius * 2 + 80 }}>
+
+              {/* Completion ripple rings */}
+              {rippleActive && (
+                <>
+                  {[0, 0.3, 0.6].map((delay, ri) => (
+                    <motion.div
+                      key={`ripple-${ri}`}
+                      className="absolute rounded-full pointer-events-none"
+                      style={{
+                        width: 100, height: 100,
+                        left: "50%", top: "50%",
+                        marginLeft: -50, marginTop: -50,
+                        border: "2px solid hsl(45 80% 55% / 0.5)",
+                      }}
+                      initial={{ scale: 1, opacity: 0.7 }}
+                      animate={{ scale: 3.5, opacity: 0 }}
+                      transition={{ duration: 1.5, delay, ease: "easeOut" }}
+                    />
+                  ))}
+                </>
+              )}
+
+              {/* Ambient glow pulse behind center */}
+              <motion.div
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: 130, height: 130,
+                  left: "50%", top: "50%",
+                  marginLeft: -65, marginTop: -65,
+                  background: allCompleted
+                    ? "radial-gradient(circle, hsl(45 80% 55% / 0.2) 0%, transparent 70%)"
+                    : "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%)",
+                }}
+                animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              />
+
               {/* Center term - breathing animation */}
               <motion.div
                 className="absolute rounded-full flex flex-col items-center justify-center text-center cursor-default z-10"
@@ -544,26 +607,32 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
                     }}
                     onClick={() => handleNodeClick(node.key)}
                     animate={{
-                      x: [0, Math.sin(i * 1.2) * 3, 0],
-                      y: [0, Math.cos(i * 0.9) * 3, 0],
+                      x: [0, Math.sin(i * 1.2) * 4, 0, Math.sin(i * 0.7 + 2) * 2, 0],
+                      y: [0, Math.cos(i * 0.9) * 4, 0, Math.cos(i * 1.4 + 1) * 2, 0],
                     }}
                     transition={{
-                      duration: 4 + i * 0.3,
+                      duration: 5 + i * 0.4,
                       repeat: Infinity,
                       ease: "easeInOut",
                     }}
                     whileHover={{
-                      scale: 1.2,
-                      boxShadow: `0 4px 20px ${node.glowColor}`,
+                      scale: 1.25,
+                      boxShadow: `0 6px 25px ${node.glowColor}, 0 0 15px ${node.glowColor}`,
+                      filter: "brightness(1.15)",
                     }}
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: 0.92 }}
                   >
                     {node.icon}
                     <span className="text-[8px] font-semibold mt-0.5 leading-none">{node.label}</span>
                     {isVisited && (
-                      <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-white flex items-center justify-center">
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                        className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-white flex items-center justify-center"
+                      >
                         <CheckCircle2 className="h-2.5 w-2.5" style={{ color: "hsl(145 50% 42%)" }} />
-                      </span>
+                      </motion.span>
                     )}
                   </motion.button>
                 );
@@ -580,73 +649,105 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
           /* === EXPANDED PANEL === */
           <motion.div
             key={`panel-${expandedNode}`}
-            initial={{ opacity: 0, scale: 0.85, borderRadius: "50%" }}
+            initial={{ opacity: 0, scale: 0.6, borderRadius: "50%" }}
             animate={{ opacity: 1, scale: 1, borderRadius: "1rem" }}
-            exit={{ opacity: 0, scale: 0.85, borderRadius: "50%" }}
-            transition={{ duration: 0.4, type: "spring", damping: 20 }}
-            className="rounded-2xl p-5 shadow-lg relative"
+            exit={{ opacity: 0, scale: 0.6, borderRadius: "50%" }}
+            transition={{ duration: 0.45, type: "spring", damping: 18, stiffness: 150 }}
+            className="rounded-2xl p-5 shadow-lg relative z-30"
             style={{
               background: c.card,
               border: `2px solid ${nodeStyles[expandedNode].color}`,
-              boxShadow: `0 8px 30px ${nodeStyles[expandedNode].glow}`,
+              boxShadow: `0 8px 40px ${nodeStyles[expandedNode].glow}, 0 0 20px ${nodeStyles[expandedNode].glow}`,
             }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <motion.div
-                initial={{ opacity: 0, x: -10 }}
+                initial={{ opacity: 0, x: -15 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.15 }}
+                transition={{ delay: 0.15, duration: 0.3 }}
                 className="flex items-center gap-2"
               >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: nodeStyles[expandedNode].color, color: "hsl(0 0% 100%)" }}>
+                <motion.div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ background: nodeStyles[expandedNode].color, color: "hsl(0 0% 100%)" }}
+                  initial={{ scale: 0, rotate: -90 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
+                >
                   {tabIcons[expandedNode]}
-                </div>
+                </motion.div>
                 <div>
-                  <h3 className="font-display text-lg font-semibold" style={{ color: c.termHeading }}>{block.term_title}</h3>
-                  <p className="text-xs font-medium" style={{ color: nodeStyles[expandedNode].color }}>
+                  <motion.h3
+                    className="font-display text-lg font-semibold"
+                    style={{ color: c.termHeading }}
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    {block.term_title}
+                  </motion.h3>
+                  <motion.p
+                    className="text-xs font-medium"
+                    style={{ color: nodeStyles[expandedNode].color }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
                     {orbNodes.find(n => n.key === expandedNode)?.label}
-                  </p>
+                  </motion.p>
                 </div>
               </motion.div>
-              <button onClick={closeNode} className="p-1.5 rounded-full hover:bg-muted/60 transition-colors">
+              <motion.button
+                onClick={closeNode}
+                className="p-1.5 rounded-full hover:bg-muted/60 transition-colors"
+                initial={{ opacity: 0, rotate: 90 }}
+                animate={{ opacity: 1, rotate: 0 }}
+                transition={{ delay: 0.2 }}
+                whileHover={{ scale: 1.15, rotate: 90 }}
+              >
                 <X className="h-4 w-4" style={{ color: c.subtext }} />
-              </button>
+              </motion.button>
             </div>
 
             {/* Speak button */}
             {showSpeakButton && expandedNode !== "pronunciation" && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex justify-end mb-2">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="flex justify-end mb-2">
                 <SpeakButton text={getSpeakText()} label="Listen" size="sm" onComplete={handleAudioComplete} />
               </motion.div>
             )}
 
-            {/* Content with layer-specific animation */}
-            <motion.div {...getContentMotion(expandedNode)}>
+            {/* Content with layer-specific animation + staged delay */}
+            <motion.div
+              {...getContentMotion(expandedNode)}
+              transition={{ ...getContentMotion(expandedNode).transition, delay: 0.25 }}
+            >
               {renderContent()}
             </motion.div>
 
             {/* Navigation dots */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
               className="flex items-center justify-center gap-2 mt-5 pt-3 border-t"
               style={{ borderColor: "hsl(var(--border))" }}
             >
-              {orbNodes.map((node, i) => {
+              {orbNodes.map((node) => {
                 const isCurrent = node.key === expandedNode;
                 const isVis = visitedTabs.has(node.key);
                 return (
-                  <button
+                  <motion.button
                     key={node.key}
                     onClick={() => handleNodeClick(node.key)}
-                    className="rounded-full transition-all"
-                    style={{
+                    className="rounded-full"
+                    animate={{
                       width: isCurrent ? 24 : 8,
-                      height: 8,
                       background: isCurrent ? node.color : isVis ? "hsl(145 50% 50%)" : "hsl(var(--border))",
                     }}
+                    transition={{ duration: 0.25 }}
+                    style={{ height: 8 }}
+                    whileHover={{ scale: 1.3 }}
                     title={node.label}
                   />
                 );
