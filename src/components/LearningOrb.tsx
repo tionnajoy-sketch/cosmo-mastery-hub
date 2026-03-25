@@ -653,31 +653,55 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
             <motion.div
               key={step.key}
               initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: unlocked ? 1 : 0.5, y: 0 }}
+              animate={{ opacity: unlocked ? 1 : 0.45, y: 0 }}
               transition={{ delay: 0.03 * index, duration: 0.3 }}
             >
               <Card
-                className="border overflow-hidden transition-shadow"
+                className="border overflow-hidden transition-all duration-300"
                 style={{
                   borderColor: isExpanded ? step.color : isCompleted ? "hsl(145 40% 75%)" : unlocked ? step.borderColor : "hsl(var(--border))",
-                  boxShadow: isExpanded ? `0 4px 20px ${step.color}22` : "none",
-                  opacity: unlocked ? 1 : 0.55,
+                  boxShadow: isExpanded
+                    ? `0 8px 32px -4px ${step.glowColor}, 0 2px 8px -2px hsl(var(--foreground) / 0.06)`
+                    : isCompleted
+                    ? "0 1px 4px hsl(145 40% 42% / 0.08)"
+                    : unlocked
+                    ? "0 2px 12px -3px hsl(var(--foreground) / 0.08)"
+                    : "none",
+                  opacity: unlocked ? 1 : 0.45,
+                  filter: !unlocked ? "grayscale(0.4)" : isCompleted && !isExpanded ? "saturate(0.7)" : "none",
                 }}
               >
                 {/* Step Header (always visible) */}
                 <button
-                  className="w-full flex items-center gap-3 p-4 text-left transition-colors"
-                  style={{ background: isExpanded ? step.bgColor : "transparent" }}
+                  className="w-full flex items-center gap-3 p-4 text-left transition-all duration-300"
+                  style={{
+                    background: isExpanded
+                      ? `linear-gradient(135deg, ${step.bgColor}, hsl(0 0% 100%))`
+                      : "transparent",
+                  }}
                   onClick={() => handleStepTap(step, index)}
                   disabled={!unlocked}
                 >
                   {/* Step number / icon */}
                   <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
                     style={{
-                      background: isCompleted ? "hsl(145 40% 92%)" : unlocked ? step.bgColor : "hsl(var(--muted))",
-                      color: isCompleted ? "hsl(145 50% 42%)" : unlocked ? step.color : "hsl(var(--muted-foreground))",
-                      border: `1.5px solid ${isCompleted ? "hsl(145 40% 75%)" : unlocked ? step.color + "44" : "transparent"}`,
+                      background: isCompleted
+                        ? "hsl(145 40% 92%)"
+                        : isExpanded
+                        ? step.gradient
+                        : unlocked
+                        ? step.bgColor
+                        : "hsl(var(--muted))",
+                      color: isCompleted
+                        ? "hsl(145 50% 42%)"
+                        : isExpanded
+                        ? "hsl(0 0% 100%)"
+                        : unlocked
+                        ? step.color
+                        : "hsl(var(--muted-foreground))",
+                      border: `1.5px solid ${isCompleted ? "hsl(145 40% 75%)" : isExpanded ? step.color : unlocked ? step.color + "33" : "transparent"}`,
+                      boxShadow: isExpanded ? `0 0 12px ${step.glowColor}` : "none",
                     }}
                   >
                     {isCompleted ? <CheckCircle2 className="h-4.5 w-4.5" /> : unlocked ? step.icon : <Lock className="h-4 w-4" />}
@@ -685,9 +709,23 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
 
                   {/* Label */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold" style={{ color: unlocked ? c.termHeading : "hsl(var(--muted-foreground))" }}>
+                    <p
+                      className="text-sm font-semibold transition-colors duration-200"
+                      style={{
+                        color: isExpanded
+                          ? step.color
+                          : isCompleted
+                          ? "hsl(145 30% 38%)"
+                          : unlocked
+                          ? c.termHeading
+                          : "hsl(var(--muted-foreground))",
+                      }}
+                    >
                       Step {index + 1}: {step.label}
                     </p>
+                    {isCompleted && !isExpanded && (
+                      <p className="text-xs mt-0.5" style={{ color: "hsl(145 25% 55%)" }}>✓ Completed</p>
+                    )}
                   </div>
 
                   {/* Expand indicator */}
@@ -696,7 +734,7 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
                       animate={{ rotate: isExpanded ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <ChevronDown className="h-4 w-4" style={{ color: c.subtext }} />
+                      <ChevronDown className="h-4 w-4" style={{ color: isExpanded ? step.color : c.subtext }} />
                     </motion.div>
                   )}
                 </button>
@@ -724,8 +762,8 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
                           >
                             <Button
                               size="sm"
-                              className="gap-2"
-                              style={{ background: step.color, color: "hsl(0 0% 100%)" }}
+                              className="gap-2 shadow-md transition-shadow hover:shadow-lg"
+                              style={{ background: step.gradient, color: "hsl(0 0% 100%)" }}
                               onClick={() => handleCompleteAndNext(step.key)}
                             >
                               {isLast ? "Complete" : "Continue"}
