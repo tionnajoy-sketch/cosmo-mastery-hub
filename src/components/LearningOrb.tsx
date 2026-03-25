@@ -18,7 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import SpeakButton from "@/components/SpeakButton";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 import StepContent from "@/components/LearningOrbStepContent";
-import tjBackground from "@/assets/tj-background.png";
+import tjBackground from "@/assets/tj-background.jpg";
 
 const c = pageColors.study;
 
@@ -84,7 +84,7 @@ export const stepConfigs: StepConfig[] = [
   { key: "information", label: "Information",     subtitle: "Comprehension & deeper reasoning",       neuroExplanation: "Engages the temporal and frontal lobes for deeper semantic processing — building context around facts.", icon: <Heart className="h-4 w-4" />,          color: "hsl(180 60% 32%)", bgColor: "hsl(180 45% 95%)", borderColor: "hsl(180 45% 72%)", gradient: "linear-gradient(135deg, hsl(180 60% 32%), hsl(190 65% 38%))", glowColor: "hsl(180 60% 32% / 0.4)",  guidedIntro: "Let's go deeper… expanding your understanding." },
   { key: "reflection",  label: "Reflect",         subtitle: "Metacognition & self-awareness",         neuroExplanation: "Activates the default mode network — self-referential thinking embeds knowledge into personal identity.", icon: <PenLine className="h-4 w-4" />,        color: "hsl(220 20% 35%)", bgColor: "hsl(220 12% 95%)", borderColor: "hsl(220 12% 72%)", gradient: "linear-gradient(135deg, hsl(220 20% 35%), hsl(230 25% 42%))", glowColor: "hsl(220 20% 35% / 0.3)", guidedIntro: "Pause and think… internalize what this means to you." },
   { key: "practice",    label: "Apply",           subtitle: "Active recall & problem-solving",        neuroExplanation: "Engages the motor cortex and executive function — applying knowledge strengthens neural pathways through action.", icon: <Wrench className="h-4 w-4" />,         color: "hsl(145 65% 32%)", bgColor: "hsl(145 50% 95%)", borderColor: "hsl(145 50% 72%)", gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))", glowColor: "hsl(145 65% 32% / 0.4)",  guidedIntro: "You're doing great… now put your knowledge to work." },
-  { key: "quiz",        label: "Assess",          subtitle: "Performance & test readiness",           neuroExplanation: "Triggers the testing effect — retrieval under pressure consolidates long-term memory better than re-reading.", icon: <HelpCircle className="h-4 w-4" />,     color: "hsl(0 75% 45%)",   bgColor: "hsl(0 55% 95%)",   borderColor: "hsl(0 55% 72%)",   gradient: "linear-gradient(135deg, hsl(0 75% 45%), hsl(10 80% 50%))",   glowColor: "hsl(0 75% 45% / 0.4)",    guidedIntro: "Show what you know… demonstrate your mastery." },
+  { key: "quiz",        label: "Assess",          subtitle: "State Board exam readiness",             neuroExplanation: "Triggers the testing effect — retrieval under pressure consolidates long-term memory better than re-reading. This question mirrors the format you'll see on the State Board Cosmetology Exam.", icon: <GraduationCap className="h-4 w-4" />, color: "hsl(0 75% 45%)",   bgColor: "hsl(0 55% 95%)",   borderColor: "hsl(0 55% 72%)",   gradient: "linear-gradient(135deg, hsl(0 75% 45%), hsl(10 80% 50%))",   glowColor: "hsl(0 75% 45% / 0.4)",    guidedIntro: "Time for a State Board–style question… let's see if you're exam-ready." },
 ];
 
 interface LearningOrbProps {
@@ -277,7 +277,7 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
       {/* TJ Background */}
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.06 }}
+        style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.12 }}
       />
       <div className="relative z-10 p-4 sm:p-6">
 

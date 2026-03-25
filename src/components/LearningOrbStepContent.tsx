@@ -451,6 +451,19 @@ const StepContent = (props: StepContentProps) => {
     case "quiz":
       return (
         <div className="space-y-4">
+          <motion.div
+            className="p-3 rounded-lg mb-2"
+            style={{ background: "hsl(0 50% 97%)", border: "1px solid hsl(0 40% 88%)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(0 75% 45%)" }}>
+              🎓 State Board Cosmetology Practice Question
+            </p>
+            <p className="text-xs" style={{ color: c.subtext }}>
+              This question mirrors what you'll see on the actual State Board exam. Use what you just learned about <strong>{block.term_title}</strong>.
+            </p>
+          </motion.div>
           {block.quiz_question && block.quiz_options.length > 0 && (
             <div className="space-y-3">
               <motion.p
