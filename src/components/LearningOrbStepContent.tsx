@@ -153,19 +153,24 @@ const EtymologyBreakdown = ({ block }: { block: UploadedBlock }) => {
                 initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 + i * 0.12 }}
-                className="flex items-start gap-3 p-3 rounded-xl"
+                className="flex items-center gap-3 p-3 rounded-xl"
                 style={{
                   background: "linear-gradient(135deg, hsl(30 50% 97%), hsl(30 40% 94%))",
                   border: "1px solid hsl(30 40% 85%)",
                 }}
               >
+                <SpeakButton
+                  text={`${part.part}, meaning ${part.meaning}, from ${part.origin}`}
+                  size="sm"
+                  label={`Hear "${part.part}"`}
+                />
                 <span
                   className="font-display text-xl font-bold flex-shrink-0"
                   style={{ color: "hsl(30 85% 40%)" }}
                 >
                   {part.part}
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <span
                     className="text-[10px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded"
                     style={{ background: "hsl(30 40% 88%)", color: "hsl(30 60% 35%)" }}
