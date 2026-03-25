@@ -454,24 +454,40 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded", blockIndex = 0 }
                     stepColor={activeStepConfig.color}
                   />
 
-                  {/* Neuroscience callout */}
-                  <motion.div
-                    className="mt-4 p-3 rounded-lg"
-                    style={{
-                      background: activeStepConfig.bgColor,
-                      border: `1px solid ${activeStepConfig.borderColor}`,
-                    }}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                  >
-                    <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: activeStepConfig.color }}>
-                      🧠 Why This Step Matters
-                    </p>
-                    <p className="text-xs leading-relaxed" style={{ color: c.bodyText }}>
-                      {activeStepConfig.neuroExplanation}
-                    </p>
-                  </motion.div>
+                  {/* Neuroscience callout — collapsible dropdown */}
+                  <Collapsible>
+                    <CollapsibleTrigger asChild>
+                      <button
+                        className="mt-4 w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-colors hover:brightness-95"
+                        style={{
+                          background: activeStepConfig.bgColor,
+                          border: `1px solid ${activeStepConfig.borderColor}`,
+                        }}
+                      >
+                        <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: activeStepConfig.color }}>
+                          🧠 Why This Step Matters
+                        </span>
+                        <HelpCircle className="h-3.5 w-3.5 shrink-0" style={{ color: activeStepConfig.color }} />
+                      </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <motion.div
+                        className="px-3 py-2.5 rounded-b-lg -mt-1"
+                        style={{
+                          background: activeStepConfig.bgColor,
+                          borderLeft: `1px solid ${activeStepConfig.borderColor}`,
+                          borderRight: `1px solid ${activeStepConfig.borderColor}`,
+                          borderBottom: `1px solid ${activeStepConfig.borderColor}`,
+                        }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        <p className="text-xs leading-relaxed" style={{ color: c.bodyText }}>
+                          {activeStepConfig.neuroExplanation}
+                        </p>
+                      </motion.div>
+                    </CollapsibleContent>
+                  </Collapsible>
 
                   {/* Continue button */}
                   <motion.div
