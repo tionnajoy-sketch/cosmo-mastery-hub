@@ -263,6 +263,7 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
   const getSpeakText = (key: StepKey) => {
     switch (key) {
       case "definition": return `${block.term_title}. ${block.definition}`;
+      case "breakdown": return `Let's break down ${block.term_title}. ${block.pronunciation ? `It's pronounced ${block.pronunciation}.` : ""} ${block.definition}`;
       case "metaphor": return `${block.term_title}. ${block.metaphor}`;
       case "information": return block.affirmation;
       default: return block.term_title;
