@@ -38,6 +38,7 @@ import InsightsPage from "./pages/InsightsPage";
 import StudyModulesPage from "./pages/StudyModulesPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ComprehensiveFinalExamPage from "./pages/ComprehensiveFinalExamPage";
+import CosmoConnectionGridPage from "./pages/CosmoConnectionGridPage";
 import AIMentorChat from "./components/AIMentorChat";
 import NotFound from "./pages/NotFound";
 
@@ -84,6 +85,7 @@ const App = () => (
               <Route path="/study-modules" element={<ProtectedRoute><StudyModulesPage /></ProtectedRoute>} />
               <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
               <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />
+              <Route path="/cosmo-grid" element={<ProtectedRoute><CosmoConnectionGridPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <AIMentorChat />

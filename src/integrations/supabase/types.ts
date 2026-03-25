@@ -50,6 +50,51 @@ export type Database = {
           },
         ]
       }
+      cosmo_grid_sessions: {
+        Row: {
+          completed: boolean
+          completed_words: Json
+          created_at: string
+          id: string
+          level: number
+          score: number
+          session_date: string
+          time_taken_seconds: number
+          total_words: number
+          user_id: string
+          weak_categories: Json
+          words_correct: number
+        }
+        Insert: {
+          completed?: boolean
+          completed_words?: Json
+          created_at?: string
+          id?: string
+          level?: number
+          score?: number
+          session_date?: string
+          time_taken_seconds?: number
+          total_words?: number
+          user_id: string
+          weak_categories?: Json
+          words_correct?: number
+        }
+        Update: {
+          completed?: boolean
+          completed_words?: Json
+          created_at?: string
+          id?: string
+          level?: number
+          score?: number
+          session_date?: string
+          time_taken_seconds?: number
+          total_words?: number
+          user_id?: string
+          weak_categories?: Json
+          words_correct?: number
+        }
+        Relationships: []
+      }
       journal_notes: {
         Row: {
           id: string
