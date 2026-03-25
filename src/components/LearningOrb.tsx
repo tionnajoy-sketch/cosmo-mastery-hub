@@ -357,7 +357,16 @@ const LearningOrb = ({ block, onNotesChange, mode = "uploaded" }: LearningOrbPro
               {!reflectionSubmitted && <div className="absolute right-1 bottom-1"><SpeechToTextButton onTranscript={(text) => { setReflectionText(prev => prev ? `${prev} ${text}` : text); }} /></div>}
             </div>
             {!reflectionSubmitted ? (
-              <Button size="sm" onClick={() => { setReflectionSubmitted(true); if (!reflectionCoinAwarded.current) { reflectionCoinAwarded.current = true; addCoins(3, "reflection"); } }}
+              <Button size="sm" onClick={async () => {
+                setReflectionSubmitted(true);
+                if (mode === "builtin" && user) {
+                  await supabase.from("reflections").upsert(
+                    { user_id: user.id, term_id: block.id, response: reflectionText, updated_at: new Date().toISOString() },
+                    { onConflict: "user_id,term_id" }
+                  );
+                }
+                if (!reflectionCoinAwarded.current) { reflectionCoinAwarded.current = true; addCoins(3, "reflection"); }
+              }}
                 disabled={!reflectionText.trim()} className="w-full" style={{ background: c.tabActive, color: c.tabActiveText }}>Save My Reflection</Button>
             ) : (
               <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
