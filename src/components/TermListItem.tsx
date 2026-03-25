@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import SpeakButton from "@/components/SpeakButton";
 import { pageColors } from "@/lib/colors";
 
@@ -19,15 +20,15 @@ interface TermListItemProps {
   definition: string;
   index: number;
   isCompleted?: boolean;
-  onClick: () => void;
+  onContinue: () => void;
 }
 
-const TermListItem = ({ termTitle, pronunciation, definition, index, isCompleted, onClick }: TermListItemProps) => {
+const TermListItem = ({ termTitle, pronunciation, definition, index, isCompleted, onContinue }: TermListItemProps) => {
   const [etymology, setEtymology] = useState<EtymologyPart[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  // Auto-load etymology on first render
+  // Auto-load etymology on mount
   useState(() => {
     if (!loaded && !loading) {
       setLoaded(true);
@@ -52,23 +53,20 @@ const TermListItem = ({ termTitle, pronunciation, definition, index, isCompleted
   });
 
   return (
-    <motion.button
-      onClick={onClick}
-      className="w-full text-left p-4 sm:p-5 rounded-2xl transition-all group"
+    <motion.div
+      className="w-full text-left p-4 sm:p-5 rounded-2xl"
       style={{
-        background: "hsl(0 0% 100% / 0.92)",
+        background: "hsl(0 0% 100% / 0.94)",
         backdropFilter: "blur(8px)",
-        border: isCompleted ? "2px solid hsl(145 40% 70%)" : "2px solid hsl(0 0% 90%)",
+        border: isCompleted ? "2px solid hsl(145 40% 70%)" : "2px solid hsl(0 0% 88%)",
         boxShadow: "0 2px 12px hsl(0 0% 0% / 0.06)",
       }}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.04 * index }}
-      whileHover={{ scale: 1.01, boxShadow: "0 4px 20px hsl(0 0% 0% / 0.1)" }}
-      whileTap={{ scale: 0.99 }}
     >
-      <div className="flex items-start gap-3">
-        {/* Number badge */}
+      {/* Term number + name + speaker */}
+      <div className="flex items-center gap-3 mb-2">
         <div
           className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
           style={{
@@ -77,76 +75,92 @@ const TermListItem = ({ termTitle, pronunciation, definition, index, isCompleted
             border: isCompleted ? "1.5px solid hsl(145 40% 70%)" : "1.5px solid hsl(215 60% 80%)",
           }}
         >
-          {index + 1}
+          {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
         </div>
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Term + pronunciation + speaker */}
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-display text-lg sm:text-xl font-bold truncate" style={{ color: c.heading }}>
-              {termTitle}
-            </h3>
-            <SpeakButton text={termTitle} size="icon" className="h-7 w-7" />
-          </div>
+        <h3 className="font-display text-xl sm:text-2xl font-bold flex-1" style={{ color: c.heading }}>
+          {termTitle}
+        </h3>
 
-          {pronunciation && (
-            <p className="text-xs italic mb-2" style={{ color: c.subtext }}>
-              /{pronunciation}/
-            </p>
-          )}
+        <SpeakButton text={termTitle} size="icon" className="h-8 w-8 flex-shrink-0" />
 
-          {/* Etymology breakdown */}
-          {loading && (
-            <div className="flex items-center gap-2 mt-1">
-              <Loader2 className="h-3 w-3 animate-spin" style={{ color: c.subtext }} />
-              <span className="text-[11px]" style={{ color: c.subtext }}>Loading roots…</span>
-            </div>
-          )}
-
-          {etymology && (
-            <div className="flex flex-wrap gap-1.5 mt-1">
-              {etymology.map((part, i) => (
-                <div key={i} className="flex items-center gap-1">
-                  <div
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px]"
-                    style={{
-                      background: "hsl(30 45% 95%)",
-                      border: "1px solid hsl(30 35% 85%)",
-                    }}
-                  >
-                    <span className="font-bold" style={{ color: "hsl(30 85% 40%)" }}>{part.part}</span>
-                    <span style={{ color: c.subtext }}>= "{part.meaning}"</span>
-                    <SpeakButton
-                      text={`${part.part}, meaning ${part.meaning}, from ${part.origin}`}
-                      size="icon"
-                      className="h-5 w-5 ml-0.5"
-                    />
-                  </div>
-                  {i < etymology.length - 1 && (
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(30 60% 55%)" }}>+</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Definition preview */}
-          <div className="flex items-center gap-2 mt-2">
-            <p className="text-xs line-clamp-1" style={{ color: c.subtext }}>
-              {definition}
-            </p>
-            <SpeakButton text={`${termTitle}. ${definition}`} size="icon" className="h-5 w-5 flex-shrink-0" />
-          </div>
-        </div>
-
-        {/* Arrow */}
-        <ChevronRight
-          className="flex-shrink-0 h-5 w-5 mt-2 transition-transform group-hover:translate-x-1"
-          style={{ color: c.subtext }}
-        />
+        {isCompleted && (
+          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: "hsl(145 40% 92%)", color: "hsl(145 40% 35%)", border: "1px solid hsl(145 40% 75%)" }}>
+            Mastered
+          </span>
+        )}
       </div>
-    </motion.button>
+
+      {/* Pronunciation */}
+      {pronunciation && (
+        <p className="text-sm italic ml-11 mb-2" style={{ color: c.subtext }}>
+          /{pronunciation}/
+        </p>
+      )}
+
+      {/* Etymology breakdown */}
+      {loading && (
+        <div className="flex items-center gap-2 ml-11 mt-1 mb-3">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: c.subtext }} />
+          <span className="text-xs" style={{ color: c.subtext }}>Loading root breakdown…</span>
+        </div>
+      )}
+
+      {etymology && (
+        <div className="ml-11 mb-3 space-y-1.5">
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(30 85% 45%)" }}>
+            Root Breakdown
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {etymology.map((part, i) => (
+              <div key={i} className="flex items-center gap-1">
+                <div
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs"
+                  style={{
+                    background: "hsl(30 45% 95%)",
+                    border: "1px solid hsl(30 35% 85%)",
+                  }}
+                >
+                  <span className="font-bold" style={{ color: "hsl(30 85% 40%)" }}>{part.part}</span>
+                  <span style={{ color: c.subtext }}>= "{part.meaning}"</span>
+                  <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 rounded" style={{ background: "hsl(30 40% 88%)", color: "hsl(30 60% 35%)" }}>
+                    {part.origin}
+                  </span>
+                  <SpeakButton
+                    text={`${part.part}, meaning ${part.meaning}, from ${part.origin}`}
+                    size="icon"
+                    className="h-5 w-5"
+                  />
+                </div>
+                {i < etymology.length - 1 && (
+                  <span className="text-xs font-bold" style={{ color: "hsl(30 60% 55%)" }}>+</span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Combined meaning */}
+          <p className="text-xs mt-1" style={{ color: c.bodyText }}>
+            <strong style={{ color: "hsl(30 85% 40%)" }}>{termTitle}</strong> ={" "}
+            {etymology.map((p) => `"${p.meaning}"`).join(" + ")}
+          </p>
+        </div>
+      )}
+
+      {/* Continue button */}
+      <div className="ml-11 mt-3">
+        <Button
+          onClick={onContinue}
+          className="gap-2 px-6 py-2.5 text-sm font-semibold shadow-md transition-all hover:shadow-lg"
+          style={{
+            background: "linear-gradient(135deg, hsl(215 80% 42%), hsl(200 85% 48%))",
+            color: "hsl(0 0% 100%)",
+          }}
+        >
+          Study This Term <ArrowRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </motion.div>
   );
 };
 
