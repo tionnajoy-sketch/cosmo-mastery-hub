@@ -66,6 +66,9 @@ const AppHeader = () => {
                 <DropdownMenuItem onClick={() => navigate("/comprehensive-exam")}>
                   <GraduationCap className="h-4 w-4 mr-2" /> State Board Final Exam
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/cosmo-grid")}>
+                  <Grid3X3 className="h-4 w-4 mr-2" /> Cosmo Connection Grid™
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => openTJChat(false)}>
                   <MessageCircle className="h-4 w-4 mr-2" /> Ask TJ

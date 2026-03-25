@@ -171,7 +171,7 @@ const CosmoConnectionGridPage = () => {
 
     // Award coins
     const coinsEarned = result.wordsCorrect * 2 + (result.wordsCorrect === result.totalWords ? 10 : 0);
-    addCoins(coinsEarned, "cosmo-grid");
+    addCoins(coinsEarned, "correct");
 
     setPhase("results");
   }, [user, addCoins]);
