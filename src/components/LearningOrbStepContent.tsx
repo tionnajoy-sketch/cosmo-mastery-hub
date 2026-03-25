@@ -368,7 +368,7 @@ const StepContent = (props: StepContentProps) => {
             />
             {!props.reflectionSubmitted && (
               <div className="absolute right-1 bottom-1">
-                <SpeechToTextButton onTranscript={(text) => props.setReflectionText((prev: string) => prev ? `${prev} ${text}` : text)} />
+                <SpeechToTextButton onTranscript={(text) => props.setReflectionText(props.reflectionText ? `${props.reflectionText} ${text}` : text)} />
               </div>
             )}
           </div>
@@ -416,7 +416,7 @@ const StepContent = (props: StepContentProps) => {
               style={{ color: c.bodyText }}
             />
             <div className="absolute right-1 bottom-1">
-              <SpeechToTextButton onTranscript={(text) => props.setJournalNote((prev: string) => prev ? `${prev} ${text}` : text)} />
+              <SpeechToTextButton onTranscript={(text) => props.setJournalNote(props.journalNote ? `${props.journalNote} ${text}` : text)} />
             </div>
           </div>
           {props.journalSaving && <p className="text-xs" style={{ color: c.subtext }}>Saving…</p>}
