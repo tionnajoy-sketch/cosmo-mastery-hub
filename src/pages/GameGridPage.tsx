@@ -6,7 +6,7 @@ import { useCoins } from "@/hooks/useCoins";
 import { useStudyTracker } from "@/hooks/useStudyTracker";
 import { useLearningMetrics } from "@/hooks/useLearningMetrics";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Sparkles, Flame, Trophy, Brain, Target, TrendingUp, Zap } from "lucide-react";
+import { Lock, Sparkles, Flame, Trophy, Brain, Target, TrendingUp, Zap, ChevronDown, ChevronRight } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import LearningOrbDialog from "@/components/LearningOrbDialog";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
