@@ -191,17 +191,35 @@ const GameGridPage = () => {
 
             return (
               <div key={sectionId}>
-                {/* Section divider */}
-                <div className="flex items-center gap-3 mb-4">
+                {/* Section divider - clickable toggle */}
+                <button
+                  onClick={() => toggleSection(sectionId)}
+                  className="flex items-center gap-3 mb-4 w-full group cursor-pointer"
+                >
                   <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)" }} />
-                  <h2 className="font-display text-sm sm:text-base font-semibold uppercase tracking-widest px-3 py-1 rounded-full"
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full transition-colors"
                     style={{ color: "hsl(45 80% 70%)", background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
-                    {sectionName}
-                  </h2>
+                    <motion.div animate={{ rotate: collapsedSections.has(sectionId) ? 0 : 90 }} transition={{ duration: 0.2 }}>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </motion.div>
+                    <h2 className="font-display text-sm sm:text-base font-semibold uppercase tracking-widest">
+                      {sectionName}
+                    </h2>
+                    <span className="text-[10px] opacity-50">({sectionTerms.length})</span>
+                  </div>
                   <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)" }} />
-                </div>
+                </button>
 
-                {/* Terms grid */}
+                {/* Terms grid - collapsible */}
+                <AnimatePresence initial={false}>
+                  {!collapsedSections.has(sectionId) && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {sectionTerms.map((term) => {
                     const i = globalIndex++;
