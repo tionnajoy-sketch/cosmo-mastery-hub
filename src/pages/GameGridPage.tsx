@@ -87,6 +87,7 @@ const GameGridPage = () => {
   const [sections, setSections] = useState<Map<string, string>>(new Map());
   const [selectedBlock, setSelectedBlock] = useState<UploadedBlock | null>(null);
   const [identityMsg, setIdentityMsg] = useState(IDENTITY_MESSAGES[0]);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchAll = async () => {
