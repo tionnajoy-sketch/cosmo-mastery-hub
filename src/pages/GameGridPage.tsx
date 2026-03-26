@@ -66,7 +66,7 @@ const GameGridPage = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { stats: coinStats } = useCoins();
-  const studyStats = useStudyTracker();
+  const studyTracker = useStudyTracker();
   const { aggregate, getTermStatus, metrics } = useLearningMetrics();
 
   const [terms, setTerms] = useState<Term[]>([]);
@@ -129,7 +129,7 @@ const GameGridPage = () => {
         {/* Stats Row */}
         <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 mb-5">
           {[
-            { icon: Flame, label: "Streak", value: studyStats.currentStreak, color: "hsl(25 80% 55%)" },
+            { icon: Flame, label: "Streak", value: studyTracker.currentStreak, color: "hsl(25 80% 55%)" },
             { icon: Zap, label: "XP", value: aggregate.totalXP, color: "hsl(45 90% 50%)" },
             { icon: Sparkles, label: "Coins", value: coinStats.coins, color: "hsl(45 80% 55%)" },
             { icon: Target, label: "Confidence", value: `${aggregate.avgConfidence}%`, color: "hsl(145 55% 50%)" },
