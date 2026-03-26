@@ -274,10 +274,15 @@ const GameGridPage = () => {
                   />
                 )}
               </motion.button>
-            );
-          })}
-        </div>
-      </div>
+                    );
+                    return termEl;
+                  })()}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
       {/* Learning Dialog */}
       <LearningOrbDialog
