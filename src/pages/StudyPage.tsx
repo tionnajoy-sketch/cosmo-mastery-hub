@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowLeft, Brain, Gamepad2, GraduationCap } from "lucide-react";
-import AIMentorChat from "@/components/AIMentorChat";
+import AskTJFullScreen from "@/components/AskTJFullScreen";
 import AppHeader from "@/components/AppHeader";
 import TermListItem from "@/components/TermListItem";
 import LearningOrbDialog from "@/components/LearningOrbDialog";
