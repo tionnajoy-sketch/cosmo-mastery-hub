@@ -114,6 +114,14 @@ const GameGridPage = () => {
   }, []);
 
   const handleNotesChange = useCallback(() => {}, []);
+  const toggleSection = useCallback((sectionId: string) => {
+    setCollapsedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) next.delete(sectionId);
+      else next.add(sectionId);
+      return next;
+    });
+  }, []);
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, hsl(240 15% 8%) 0%, hsl(260 20% 12%) 50%, hsl(240 15% 10%) 100%)" }}>
