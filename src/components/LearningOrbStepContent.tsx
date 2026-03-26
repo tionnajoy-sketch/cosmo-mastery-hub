@@ -229,14 +229,28 @@ const StepContent = (props: StepContentProps) => {
       return (
         <div className="space-y-3">
           {props.imageUrl ? (
-            <motion.img
-              src={props.imageUrl}
-              alt={`Visual for ${block.term_title}`}
-              className="w-full rounded-lg"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.15 }}
-            />
+            <div className="relative w-full">
+              <motion.img
+                src={props.imageUrl}
+                alt={`Visual for ${block.term_title}`}
+                className="w-full rounded-lg"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.15 }}
+              />
+              {/* Programmatic text overlay — always spelled correctly */}
+              <div className="absolute bottom-0 left-0 right-0 rounded-b-lg px-4 py-3"
+                style={{ background: "linear-gradient(to top, hsl(0 0% 0% / 0.75), hsl(0 0% 0% / 0))" }}>
+                <p className="font-display text-base sm:text-lg font-bold text-white leading-tight drop-shadow-md">
+                  {block.term_title}
+                </p>
+                {block.definition && (
+                  <p className="text-[11px] sm:text-xs text-white/80 leading-snug mt-0.5 line-clamp-2 drop-shadow">
+                    {block.definition}
+                  </p>
+                )}
+              </div>
+            </div>
           ) : props.imageLoading ? (
             <div className="flex flex-col items-center gap-3 py-6">
               <Loader2 className="h-8 w-8 animate-spin" style={{ color: stepColor }} />
