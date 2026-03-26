@@ -192,13 +192,7 @@ const StudyPage = () => {
           </div>
         </div>
 
-        <AIMentorChat
-          sectionName={sectionName}
-          sectionId={id!}
-          blockNumber={block}
-          terms={terms.map((t) => ({ term: t.term, definition: t.definition }))}
-          learningStyle={profile?.learning_style}
-        />
+        {/* Ask TJ is now rendered globally in App.tsx */}
       </div>
 
       {/* Full-screen Learning Dialog */}
