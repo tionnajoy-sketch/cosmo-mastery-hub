@@ -156,10 +156,42 @@ const GameGridPage = () => {
         </div>
       </div>
 
-      {/* ─── Game Grid ─── */}
-      <div className="max-w-7xl mx-auto px-4 pb-12">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {terms.map((term, i) => {
+      {/* ─── Game Grid grouped by section ─── */}
+      <div className="max-w-7xl mx-auto px-4 pb-12 space-y-8">
+        {(() => {
+          // Group terms by section, preserving section order
+          const sectionOrder: string[] = [];
+          const grouped = new Map<string, Term[]>();
+          terms.forEach((t) => {
+            if (!grouped.has(t.section_id)) {
+              sectionOrder.push(t.section_id);
+              grouped.set(t.section_id, []);
+            }
+            grouped.get(t.section_id)!.push(t);
+          });
+
+          let globalIndex = 0;
+          return sectionOrder.map((sectionId) => {
+            const sectionTerms = grouped.get(sectionId) || [];
+            const sectionName = sections.get(sectionId) || "Uncategorized";
+
+            return (
+              <div key={sectionId}>
+                {/* Section divider */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)" }} />
+                  <h2 className="font-display text-sm sm:text-base font-semibold uppercase tracking-widest px-3 py-1 rounded-full"
+                    style={{ color: "hsl(45 80% 70%)", background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+                    {sectionName}
+                  </h2>
+                  <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)" }} />
+                </div>
+
+                {/* Terms grid for this section */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {sectionTerms.map((term) => {
+                    const i = globalIndex++;
+                    const termEl = (() => {
             const status = getTermStatus(term.id);
             const termMetrics = metrics.get(term.id);
             const tileColor = TILE_COLORS[i % TILE_COLORS.length];
