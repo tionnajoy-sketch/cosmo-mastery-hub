@@ -62,6 +62,20 @@ const termToBlock = (t: Term): UploadedBlock => ({
   concept_identity: Array.isArray(t.concept_identity) ? t.concept_identity : [],
 });
 
+// Group terms by section
+const groupTermsBySection = (terms: Term[]) => {
+  const sectionOrder: string[] = [];
+  const grouped = new Map<string, Term[]>();
+  terms.forEach((t) => {
+    if (!grouped.has(t.section_id)) {
+      sectionOrder.push(t.section_id);
+      grouped.set(t.section_id, []);
+    }
+    grouped.get(t.section_id)!.push(t);
+  });
+  return { sectionOrder, grouped };
+};
+
 const GameGridPage = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
