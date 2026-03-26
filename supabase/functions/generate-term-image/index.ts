@@ -46,7 +46,8 @@ Requirements:
 - Use a clean, light background with professional medical/educational illustration quality
 - Color-coded sections where appropriate (like a textbook cross-section diagram)
 - Make it visually clear how the metaphor relates to the actual structure
-- This should help visual learners understand and remember the concept`;
+- This should help visual learners understand and remember the concept
+- CRITICAL: All text labels and captions MUST be spelled correctly. Double-check every word against standard English dictionary spelling. No typos, no misspellings. Verify the spelling of "${term}" specifically.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
