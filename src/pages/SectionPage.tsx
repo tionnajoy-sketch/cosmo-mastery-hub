@@ -396,7 +396,7 @@ const SectionPage = () => {
         )}
       </div>
 
-      <AIMentorChat sectionName={section.name} sectionId={id!} />
+      {/* Ask TJ is now global */}
     </div>
   );
 };

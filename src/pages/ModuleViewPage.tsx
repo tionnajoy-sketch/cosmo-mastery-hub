@@ -229,7 +229,7 @@ const ModuleViewPage = () => {
           </div>
         </div>
 
-        <AIMentorChat sectionName={moduleTitle} sectionId={id!} />
+        {/* Ask TJ is now global */}
       </div>
 
       {/* Full-screen Learning Dialog */}
