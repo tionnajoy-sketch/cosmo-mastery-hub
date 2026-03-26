@@ -299,6 +299,9 @@ const GameGridPage = () => {
                     );
                   })}
                 </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           });
