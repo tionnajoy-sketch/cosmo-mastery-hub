@@ -66,7 +66,7 @@ const GameGridPage = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { stats: coinStats } = useCoins();
-  const { stats: studyStats } = useStudyTracker();
+  const studyStats = useStudyTracker();
   const { aggregate, getTermStatus, metrics } = useLearningMetrics();
 
   const [terms, setTerms] = useState<Term[]>([]);
