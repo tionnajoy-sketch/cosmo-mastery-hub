@@ -39,7 +39,8 @@ import StudyModulesPage from "./pages/StudyModulesPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ComprehensiveFinalExamPage from "./pages/ComprehensiveFinalExamPage";
 import CosmoConnectionGridPage from "./pages/CosmoConnectionGridPage";
-import AIMentorChat from "./components/AIMentorChat";
+import AskTJFullScreen from "./components/AskTJFullScreen";
+import GameGridPage from "./pages/GameGridPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -86,9 +87,10 @@ const App = () => (
               <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
               <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />
               <Route path="/cosmo-grid" element={<ProtectedRoute><CosmoConnectionGridPage /></ProtectedRoute>} />
+              <Route path="/game-grid" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <AIMentorChat />
+            <AskTJFullScreen />
           </CoinProvider>
         </AuthProvider>
       </BrowserRouter>
