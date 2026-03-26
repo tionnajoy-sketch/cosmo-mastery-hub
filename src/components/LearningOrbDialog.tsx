@@ -765,7 +765,7 @@ const LearningOrbDialog = ({
           </div>
 
           {/* ═══════ CENTER SECTION ═══════ */}
-          <div className="flex-1 overflow-y-auto px-5 sm:px-8" style={{ scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 60%) transparent" }}>
+          <div className="flex-1 overflow-y-auto px-5 sm:px-8 scrollbar-visible" style={{ scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 40%) transparent" }}>
             <div className="max-w-lg mx-auto pb-8 pt-2">
               <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
             </div>
