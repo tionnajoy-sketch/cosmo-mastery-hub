@@ -70,6 +70,13 @@ const AppHeader = () => {
                   <Grid3X3 className="h-4 w-4 mr-2" /> Cosmo Connection Grid™
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/strategy")}>
+                  <Gamepad2 className="h-4 w-4 mr-2" /> Activities
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/study-modules")}>
+                  <Brain className="h-4 w-4 mr-2" /> Quizzes & Testing
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => openTJChat(false)}>
                   <MessageCircle className="h-4 w-4 mr-2" /> Ask TJ
                 </DropdownMenuItem>

@@ -478,7 +478,14 @@ const LearningOrbDialog = ({
         return (
           <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center text-center space-y-5 py-4">
             {imageUrl ? (
-              <img src={imageUrl} alt={`Visual for ${block.term_title}`} className="w-full max-w-md rounded-2xl shadow-lg" />
+              <div className="relative w-full max-w-md">
+                <img src={imageUrl} alt={`Visual for ${block.term_title}`} className="w-full rounded-2xl shadow-lg" />
+                <div className="absolute bottom-0 left-0 right-0 rounded-b-2xl px-4 py-3"
+                  style={{ background: "linear-gradient(to top, hsl(0 0% 0% / 0.8), hsl(0 0% 0% / 0))" }}>
+                  <p className="font-display text-base sm:text-lg font-bold text-white leading-tight drop-shadow-md">{block.term_title}</p>
+                  {block.definition && <p className="text-[11px] sm:text-xs text-white/80 leading-snug mt-0.5 line-clamp-2 drop-shadow">{block.definition}</p>}
+                </div>
+              </div>
             ) : imageLoading ? (
               <div className="flex flex-col items-center gap-3 py-10">
                 <Loader2 className="h-8 w-8 animate-spin" style={{ color: step.color }} />
@@ -741,28 +748,27 @@ const LearningOrbDialog = ({
             </AnimatePresence>
           </div>
 
-          {/* ═══════ CENTER SECTION ═══════ */}
-          <div className="flex-1 overflow-y-auto px-5 sm:px-8 scrollbar-visible">
-            <div className="max-w-lg mx-auto pb-6">
-              <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
-            </div>
-          </div>
-
-          {/* ═══════ BOTTOM SECTION ═══════ */}
-          <div className="flex-shrink-0 px-4 sm:px-6 py-3 border-t" style={{ background: "hsl(var(--background) / 0.96)", backdropFilter: "blur(12px)" }}>
-            <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
-              <Button variant="ghost" size="sm" onClick={currentStep === 0 ? () => { stopSpeaking(); onOpenChange(false); } : goBack} className="gap-1.5 text-sm" style={{ color: c.subtext }}>
+          {/* ═══════ NAVIGATION BAR (Top of content area) ═══════ */}
+          <div className="flex-shrink-0 px-4 sm:px-6 py-2 border-b" style={{ background: "hsl(var(--background) / 0.96)" }}>
+            <div className="max-w-lg mx-auto flex items-center justify-between gap-2">
+              <Button variant="ghost" size="sm" onClick={currentStep === 0 ? () => { stopSpeaking(); onOpenChange(false); } : goBack} className="gap-1 text-sm" style={{ color: c.subtext }}>
                 <ArrowLeft className="h-4 w-4" /> {currentStep === 0 ? "Back" : "Previous"}
               </Button>
-              <Button variant="ghost" size="sm" className="gap-1.5 text-xs hidden sm:flex" style={{ color: c.subtext }}
+              <Button variant="ghost" size="sm" className="gap-1 text-xs" style={{ color: c.subtext }}
                 onClick={() => { if (step.key === "quiz") { setQuizSelected(null); setQuizRevealed(false); } }}>
                 <RefreshCw className="h-3.5 w-3.5" /> Explain Again
               </Button>
-              <Button size="sm" className="gap-1.5 text-sm px-5 shadow-md" style={{ background: step.gradient, color: "white" }} onClick={goNext}>
+              <Button size="sm" className="gap-1 text-sm px-5 shadow-md" style={{ background: step.gradient, color: "white" }} onClick={goNext}>
                 {currentStep === STEPS.length - 1 ? "Complete" : "Next"} {currentStep < STEPS.length - 1 && <ArrowRight className="h-4 w-4" />}
               </Button>
             </div>
-            <p className="text-center text-[10px] mt-1.5 sm:hidden" style={{ color: c.subtext }}>Step {currentStep + 1} of {STEPS.length} · {step.label}</p>
+          </div>
+
+          {/* ═══════ CENTER SECTION ═══════ */}
+          <div className="flex-1 overflow-y-auto px-5 sm:px-8 scrollbar-visible" style={{ scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 40%) transparent" }}>
+            <div className="max-w-lg mx-auto pb-8 pt-2">
+              <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
+            </div>
           </div>
         </div>
       </DialogContent>

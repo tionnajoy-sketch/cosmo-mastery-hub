@@ -31,17 +31,22 @@ serve(async (req) => {
       });
     }
 
-    // Generate image using Lovable AI — realistic, clean, educational (NO text labels to avoid misspellings)
-    const prompt = `Create a realistic, detailed educational anatomy diagram for a cosmetology student. Illustrate "${term}" (${definition}).
+    // Generate image using Lovable AI — realistic, clean, educational (ABSOLUTELY NO text)
+    const prompt = `Create a realistic, detailed educational anatomy diagram for a cosmetology student. Illustrate the concept of "${term}" (${definition}).
 
-Requirements:
-- Realistic anatomical or scientific illustration style (textbook quality)
-- Clean, professional medical illustration with color-coded cross-section layers
-- DO NOT include ANY text, labels, captions, or words in the image — the image must be purely visual with NO written text whatsoever
-- Use arrows or lines pointing to key structures but WITHOUT text labels
-- Light, clean background
-- Show the concept clearly through visual elements only
-- Make it easy to understand what "${term}" is just by looking at the illustration`;
+CRITICAL RULES — YOU MUST FOLLOW ALL OF THESE:
+1. ABSOLUTELY NO TEXT of any kind in the image. No letters, no words, no labels, no captions, no numbers, no annotations, no watermarks. ZERO text.
+2. DO NOT write the term name anywhere in the image.
+3. DO NOT add any labels or captions to arrows or lines.
+4. The image must be 100% visual — shapes, colors, structures only.
+5. Realistic anatomical or scientific illustration style (textbook quality).
+6. Clean, professional medical illustration with color-coded cross-section layers.
+7. Use arrows or lines pointing to key structures but with NO text labels attached.
+8. Light, clean background.
+9. Show the concept clearly through visual elements only.
+10. Make it easy to understand what the concept is just by looking at the illustration.
+
+Remember: ABSOLUTELY NO TEXT, LETTERS, OR WORDS ANYWHERE IN THE IMAGE.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
