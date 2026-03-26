@@ -31,23 +31,17 @@ serve(async (req) => {
       });
     }
 
-    // Generate image using Lovable AI — realistic, labeled, educational
-    const prompt = `Create a realistic, detailed educational diagram for a cosmetology student studying for their state board exam. The image should clearly illustrate the term "${term}".
-
-Scientific definition: "${definition}"
-Conceptual metaphor: "${metaphor}"
+    // Generate image using Lovable AI — realistic, clean, educational (NO text labels to avoid misspellings)
+    const prompt = `Create a realistic, detailed educational anatomy diagram for a cosmetology student. Illustrate "${term}" (${definition}).
 
 Requirements:
-- Realistic anatomical or scientific illustration style (NOT cartoon, NOT watercolor)
-- Include clear TEXT LABELS directly on the image pointing to key structures
-- The main label should show the term name "${term}" in bold
-- Add 2-3 additional labels pointing to relevant anatomical features mentioned in the definition
-- Include a small caption area at the bottom of the image that reads: "${term} — ${metaphor}"
-- Use a clean, light background with professional medical/educational illustration quality
-- Color-coded sections where appropriate (like a textbook cross-section diagram)
-- Make it visually clear how the metaphor relates to the actual structure
-- This should help visual learners understand and remember the concept
-- CRITICAL: All text labels and captions MUST be spelled correctly. Double-check every word against standard English dictionary spelling. No typos, no misspellings. Verify the spelling of "${term}" specifically.`;
+- Realistic anatomical or scientific illustration style (textbook quality)
+- Clean, professional medical illustration with color-coded cross-section layers
+- DO NOT include ANY text, labels, captions, or words in the image — the image must be purely visual with NO written text whatsoever
+- Use arrows or lines pointing to key structures but WITHOUT text labels
+- Light, clean background
+- Show the concept clearly through visual elements only
+- Make it easy to understand what "${term}" is just by looking at the illustration`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -56,7 +50,7 @@ Requirements:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
+        model: "google/gemini-3-pro-image-preview",
         messages: [{ role: "user", content: prompt }],
         modalities: ["image", "text"],
       }),
