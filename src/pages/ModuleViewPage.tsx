@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, Sparkles, Dumbbell, Library, CheckCircle2 } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
-import AIMentorChat from "@/components/AIMentorChat";
+// AskTJ is now global
 import { type UploadedBlock } from "@/components/UploadedTermCard";
 import AppHeader from "@/components/AppHeader";
 import TermListItem from "@/components/TermListItem";
@@ -229,7 +229,7 @@ const ModuleViewPage = () => {
           </div>
         </div>
 
-        <AIMentorChat sectionName={moduleTitle} sectionId={id!} />
+        {/* Ask TJ is now global */}
       </div>
 
       {/* Full-screen Learning Dialog */}

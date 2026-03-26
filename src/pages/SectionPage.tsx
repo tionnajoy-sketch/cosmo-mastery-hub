@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target, GraduationCap, Circle, Map } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
-import AIMentorChat from "@/components/AIMentorChat";
+// AskTJ is now global
 import AppHeader from "@/components/AppHeader";
 import { sectionObjectivesMap, blockObjectivesMap } from "@/lib/sectionObjectives";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
@@ -396,7 +396,7 @@ const SectionPage = () => {
         )}
       </div>
 
-      <AIMentorChat sectionName={section.name} sectionId={id!} />
+      {/* Ask TJ is now global */}
     </div>
   );
 };
