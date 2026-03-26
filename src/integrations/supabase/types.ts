@@ -883,6 +883,56 @@ export type Database = {
         }
         Relationships: []
       }
+      user_learning_metrics: {
+        Row: {
+          confidence: number
+          created_at: string
+          id: string
+          last_interaction_at: string
+          layers_completed: Json
+          mastery_achieved: boolean
+          retention: number
+          term_id: string | null
+          understanding: number
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          last_interaction_at?: string
+          layers_completed?: Json
+          mastery_achieved?: boolean
+          retention?: number
+          term_id?: string | null
+          understanding?: number
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          last_interaction_at?: string
+          layers_completed?: Json
+          mastery_achieved?: boolean
+          retention?: number
+          term_id?: string | null
+          understanding?: number
+          user_id?: string
+          xp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_learning_metrics_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wrong_answers: {
         Row: {
           block_number: number
