@@ -206,31 +206,17 @@ const UploadPage = () => {
         const imagesToProcess = multiFiles.length > 0 ? multiFiles : [file];
         totalPagesInDoc = imagesToProcess.length;
         
+        const allDataUrls: string[] = [];
         for (let i = 0; i < imagesToProcess.length; i++) {
-          const compressed = await compressImage(imagesToProcess[i]);
-          contentChunks.push(`[IMAGE] Analyze image ${i + 1} of ${imagesToProcess.length} and create TJ Learning Blocks from the visible content.`);
-          // Store compressed data URLs alongside chunks - we'll use index to match
-          if (i === 0) imageDataUrl = compressed;
-          else {
-            // For multi-image, we store extra data URLs in a parallel array
-            (contentChunks as any).__imageDataUrls = (contentChunks as any).__imageDataUrls || [compressed];
-            (contentChunks as any).__imageDataUrls.push(compressed);
-          }
+          allDataUrls.push(await compressImage(imagesToProcess[i]));
           processedPageNumbers.push(i + 1);
         }
-        // For multi-image, store all compressed data URLs properly
-        if (imagesToProcess.length > 1) {
-          const allDataUrls: string[] = [imageDataUrl!];
-          for (let i = 1; i < imagesToProcess.length; i++) {
-            allDataUrls.push(await compressImage(imagesToProcess[i]));
-          }
-          // Override: each chunk gets its own image
-          contentChunks.length = 0;
-          for (let i = 0; i < allDataUrls.length; i++) {
-            contentChunks.push(`[IMAGE] Analyze image ${i + 1} of ${allDataUrls.length}.`);
-          }
-          (contentChunks as any).__allImageDataUrls = allDataUrls;
+        
+        for (let i = 0; i < allDataUrls.length; i++) {
+          contentChunks.push(`[IMAGE] Analyze image ${i + 1} of ${allDataUrls.length} and create TJ Learning Blocks from the visible content.`);
         }
+        imageDataUrl = allDataUrls[0];
+        (contentChunks as any).__allImageDataUrls = allDataUrls;
       } else if (isPdf) {
         setProgressMessage("Extracting text from PDF pages...");
         setProgress(10);
