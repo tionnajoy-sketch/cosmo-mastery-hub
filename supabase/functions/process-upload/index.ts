@@ -150,6 +150,14 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const maxContentLength = 15000;
+    const truncatedContent = content.length > maxContentLength 
+      ? content.slice(0, maxContentLength) + "\n\n[Content truncated for processing]"
+      : content;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 55000);
+
     // Build messages based on content type
     const userContent: any[] = [];
     
