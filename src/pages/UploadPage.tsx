@@ -26,7 +26,7 @@ import {
   ArrowLeft, Upload, FileText, Loader2, Sparkles, Lock,
   BookOpen, Eye, Lightbulb, Heart, MessageCircle, Brain,
   Search, Layers, Wand2, CheckCircle2, Mail, ExternalLink,
-  AlertTriangle,
+  AlertTriangle, ImageIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AppHeader from "@/components/AppHeader";
