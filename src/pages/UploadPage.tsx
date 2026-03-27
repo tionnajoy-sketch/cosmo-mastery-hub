@@ -499,12 +499,19 @@ const UploadPage = () => {
             <CardContent className="p-8 flex flex-col items-center text-center">
               {file ? (
                 <>
-                  <FileText className="h-10 w-10 mb-3" style={{ color: "hsl(145 50% 42%)" }} />
-                  <p className="text-sm font-semibold text-foreground">{file.name}</p>
+                  {multiFiles.length > 1 ? (
+                    <ImageIcon className="h-10 w-10 mb-3" style={{ color: "hsl(145 50% 42%)" }} />
+                  ) : (
+                    <FileText className="h-10 w-10 mb-3" style={{ color: "hsl(145 50% 42%)" }} />
+                  )}
+                  <p className="text-sm font-semibold text-foreground">
+                    {multiFiles.length > 1 ? `${multiFiles.length} images selected` : file.name}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                    {detectedPageCount && ` · ${detectedPageCount} pages`}
-                    {" "}· Click or drop to replace
+                    {multiFiles.length > 1 
+                      ? `${multiFiles.map(f => f.name).join(", ")} · Click or drop to replace`
+                      : `${(file.size / 1024 / 1024).toFixed(2)} MB${detectedPageCount ? ` · ${detectedPageCount} pages` : ""} · Click or drop to replace`
+                    }
                   </p>
                 </>
               ) : (
