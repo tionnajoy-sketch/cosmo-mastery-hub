@@ -1,78 +1,51 @@
 
 
-# Redesign: Central Term Box with Surrounding Layer Nodes
+## Problem Analysis
 
-## What You Asked For
+The image upload to TJ Blocks is failing because phone camera photos (like the uploaded real estate vocabulary sheets) are typically 3-8MB. When base64-encoded, they grow ~33% larger. This exceeds the Supabase Edge Function's request body size limit (~6MB), causing the request to fail silently or with an error.
 
-1. **Break It Down** should show the actual word root/etymology (e.g., "Epi = upon, Dermis = skin"), not just split on capital letters
-2. **New layout**: A large central box displaying the full term and definition prominently (never cut off), with the 9 learning layer nodes arranged around the box perimeter, connected by arrows showing the sequence
-
-## Current State
-
-The LearningOrb is a vertical stack of accordion-style cards. The "Break It Down" step just splits the term on capital letters, which is not meaningful etymology. The term header is a simple `h2` above the card list.
+Additionally, the system only handles one image file at a time, but the user uploaded two pages.
 
 ## Plan
 
-### 1. Update "Break It Down" Content (Etymology/Root Words)
+### 1. Client-Side Image Compression (UploadPage.tsx)
 
-- Replace the naive `split(/(?=[A-Z])/)` logic with a proper etymology display
-- Use the block's existing data fields (pronunciation, definition) to present root word analysis
-- Show a structured breakdown: **Root** → meaning, **Prefix** → meaning, **Suffix** → meaning
-- Add guided text: "This word comes from..." with the origin and meaning of each part
-- For terms where roots aren't stored in the database, generate an AI-based breakdown using the term title and definition as context (display a "decode" button that calls the AI mentor edge function)
+Before converting to base64, resize and compress the image on the client side using an HTML Canvas:
+- Scale images down to max 1600px on the longest side (sufficient for OCR/text reading)
+- Compress to JPEG at 0.7 quality
+- This typically reduces a 5MB phone photo to ~200-400KB base64
+- Apply this compression in the `convertToBlocks` function before sending to the edge function
 
-### 2. Redesign Layout: Central Box + Surrounding Nodes
+### 2. Multi-Image Support (UploadPage.tsx)
 
-Replace the vertical card stack with:
+Allow users to select multiple image files at once:
+- When multiple images are selected, process each as a separate "page/chunk"
+- Each image gets its own call to the edge function with `chunkIndex` and `totalChunks`
+- All resulting blocks are combined into a single module
+- Update the file input to accept `multiple` for images
 
-```text
-         ┌──────────────────────────┐
-    [1]──┤                          ├──[2]
-         │                          │
-    [9]  │     EPIDERMIS            │  [3]
-     │   │                          │   │
-    [8]  │  "The outermost layer    │  [4]
-         │   of the skin..."        │
-    [7]──┤                          ├──[5]
-         └──────────┬───────────────┘
-                    [6]
+### 3. Edge Function Robustness (process-upload/index.ts)
+
+- Add a size check and log for the incoming `imageDataUrl` length
+- Increase the timeout slightly for image processing (images take longer for the AI to analyze)
+- Ensure proper error messages are returned when the payload is too large
+
+### Technical Details
+
+**Image compression utility** (new helper in UploadPage or a lib file):
 ```
+compressImage(file: File, maxDimension: 1600, quality: 0.7) → Promise<string>
+```
+Uses `createImageBitmap` + `canvas.toBlob` to resize and compress, then `FileReader.readAsDataURL` on the resulting blob.
 
-**Central box:**
-- Large, prominent card with the term title in bold display font (full width, never truncated)
-- Definition text below the term
-- Pronunciation if available
-- Sound toggle in corner
+**Multi-file flow**:
+- File input gets `multiple` attribute when image types are detected
+- Each image becomes its own content chunk with its own `imageDataUrl`
+- The edge function processes each independently, returning blocks per image
+- All blocks merge into one module
 
-**Surrounding nodes:**
-- 9 circular nodes positioned around the box perimeter using CSS absolute positioning
-- Each node shows its step number, icon, and color
-- Arrows/connectors drawn between nodes (CSS borders or SVG lines) showing the 1→2→3... sequence
-- Locked nodes appear grayed with a lock icon
-- Completed nodes show a checkmark
-- Active/expanded node glows
+### Files to Modify
 
-**Node tap behavior:**
-- Tapping a node opens a full-width panel below the central box (or as an overlay)
-- The panel slides in with staged content reveal (same as current)
-- "Continue" button closes and advances to the next node
-- Progress bar remains at top
-
-### 3. Responsive Considerations
-
-- On mobile (<640px): nodes arranged in two columns flanking the central box, or in a horizontal scrollable row above/below
-- Central box takes full width with generous padding so term is never cut off
-- Node circles sized at ~44px for tap targets
-
-### 4. Files Changed
-
-- **`src/components/LearningOrb.tsx`** — Full layout rewrite: central box + positioned nodes replacing the vertical card stack; updated "breakdown" content renderer with etymology display
-
-### 5. Technical Approach
-
-- Use CSS Grid or absolute positioning within a relative container for node placement
-- Nodes arranged: 3 on top edge, 1 on each side (×2 per side = 4), 2 on bottom — adjusted based on how many active steps exist
-- SVG overlay or CSS `::after` pseudo-elements for arrow connectors between nodes
-- Expanded content rendered in a separate panel below the grid, outside the node positioning container
-- All existing step content renderers, sound effects, progress tracking, and completion logic preserved
+1. **src/pages/UploadPage.tsx** — Add image compression, multi-image support, update file input
+2. **supabase/functions/process-upload/index.ts** — Add payload size logging, better error handling for large payloads
 
