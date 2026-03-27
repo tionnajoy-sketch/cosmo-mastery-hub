@@ -167,7 +167,7 @@ serve(async (req) => {
       : content;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), isImageUpload ? 90000 : 55000);
+    const timeout = setTimeout(() => controller.abort(), isImageUpload ? 180000 : 55000);
 
     // Build messages based on content type
     const userContent: any[] = [];
@@ -180,7 +180,19 @@ serve(async (req) => {
       });
       userContent.push({
         type: "text",
-        text: `Analyze this uploaded image from "${filename}". Read ALL visible text, labels, diagrams, and content on the image. Treat the image as a single slide/page (Page 1). Create TJ Learning Blocks from every concept, term, or topic visible in the image. If there are multiple distinct concepts visible, create one block per concept.\n\nIMPORTANT: Read the image carefully. Extract real text from the image — do not guess or fabricate content.`,
+        text: `Analyze this uploaded image from "${filename}". This image contains a vocabulary list, study sheet, or reference material with MULTIPLE terms/words and their definitions.
+
+YOUR TASK: Read EVERY term, vocabulary word, definition, and piece of content visible in the image. Create ONE TJ Learning Block for EACH individual term or vocabulary word found.
+
+For example, if the image shows 10 vocabulary words with definitions, you must create 10 separate blocks — one per word.
+
+Do NOT summarize the entire image into a single block. Do NOT only read the title/heading. Read the FULL content of the image including all rows, columns, bullet points, and definitions.
+
+IMPORTANT: 
+- Read the image carefully and thoroughly — scan every line of text.
+- Extract real text from the image — do not guess or fabricate content.
+- Each vocabulary word/term gets its own block with page_number starting at 1 and incrementing.
+- Use the actual definitions from the image for each term's definition field.`,
       });
     } else {
       userContent.push({
