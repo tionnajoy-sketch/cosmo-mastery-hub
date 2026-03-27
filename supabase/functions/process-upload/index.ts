@@ -204,6 +204,34 @@ IMPORTANT:
     // Use a vision-capable model for images
     const model = isImageUpload ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
 
+    // For image uploads, override the system prompt to focus on per-term extraction
+    const activeSystemPrompt = isImageUpload 
+      ? `You are TJ Anderson, a cosmetology and education expert. You analyze images of vocabulary sheets, study guides, and handwritten notes.
+
+CRITICAL INSTRUCTION: This image contains MULTIPLE vocabulary terms/words with definitions. You MUST create ONE separate TJ Learning Block for EACH individual term found. If there are 16 terms, you must return 16 blocks.
+
+DO NOT summarize the image into one block. DO NOT only read the title. Read EVERY line, EVERY definition, EVERY handwritten answer.
+
+For EACH term found, generate:
+- term_title: The vocabulary word/term
+- page_number: Sequential number starting at 1
+- pronunciation: Phonetic pronunciation
+- definition: The definition from the image, enhanced for clarity
+- concept_identity: 3-7 descriptor words capturing the concept
+- visualization_desc: A visual description to help the learner picture the concept
+- metaphor: A real-world analogy
+- affirmation: An encouraging statement
+- reflection_prompt: 2-4 reflection prompts naming the term
+- practice_scenario: A quick applied task
+- quiz_question, quiz_options (4 options, A=correct), quiz_answer: Definition comprehension
+- quiz_question_2, quiz_options_2, quiz_answer_2: Application/scenario
+- quiz_question_3, quiz_options_3, quiz_answer_3: Critical thinking
+- slide_type: "concept"
+- instructor_notes: Source information
+
+Return valid JSON. The number of blocks MUST equal the number of terms visible in the image.`
+      : systemPrompt;
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       signal: controller.signal,
       method: "POST",
@@ -214,7 +242,7 @@ IMPORTANT:
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: activeSystemPrompt },
           { role: "user", content: userContent },
         ],
         tools: [
