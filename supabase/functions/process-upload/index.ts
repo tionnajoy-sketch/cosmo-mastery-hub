@@ -140,6 +140,17 @@ serve(async (req) => {
     const { content, moduleId, filename, chunkIndex, totalChunks, imageDataUrl } = body;
     const isImageUpload = !!imageDataUrl;
     
+    if (isImageUpload && imageDataUrl) {
+      const dataUrlLength = typeof imageDataUrl === "string" ? imageDataUrl.length : 0;
+      console.log(`Image data URL length: ${dataUrlLength} chars (~${Math.round(dataUrlLength * 0.75 / 1024)}KB)`);
+      if (dataUrlLength > 10_000_000) {
+        return new Response(JSON.stringify({ error: "Image is too large. Please use a smaller image (under 5MB)." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+    
     if (!content || typeof content !== "string") {
       return new Response(JSON.stringify({ error: "Missing or invalid 'content' field." }), {
         status: 400,
@@ -156,7 +167,7 @@ serve(async (req) => {
       : content;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 55000);
+    const timeout = setTimeout(() => controller.abort(), isImageUpload ? 90000 : 55000);
 
     // Build messages based on content type
     const userContent: any[] = [];

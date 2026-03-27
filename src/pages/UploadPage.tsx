@@ -43,12 +43,36 @@ interface ConversionSummary {
   totalChunks: number;
 }
 
+const compressImage = async (file: File, maxDimension = 1600, quality = 0.7): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDimension || height > maxDimension) {
+        const ratio = Math.min(maxDimension / width, maxDimension / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return reject(new Error("Canvas not supported"));
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => reject(new Error("Failed to load image"));
+    img.src = URL.createObjectURL(file);
+  });
+};
+
 const UploadPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [multiFiles, setMultiFiles] = useState<File[]>([]);
   const [selectedMode, setSelectedMode] = useState<"student" | null>("student");
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -87,6 +111,7 @@ const UploadPage = () => {
       return;
     }
     setFile(selectedFile);
+    setMultiFiles([]);
     setSummary(null);
 
     if (selectedFile.type === "text/plain" || selectedFile.name.endsWith(".txt")) {
@@ -95,7 +120,6 @@ const UploadPage = () => {
       setDetectedPageCount(null);
     } else if (selectedFile.type === "application/pdf") {
       setTextContent("");
-      // Detect page count for PDFs
       try {
         const result = await extractPdfText(selectedFile, { start: 1, end: 1 });
         setDetectedPageCount(result.totalPages);
@@ -107,6 +131,21 @@ const UploadPage = () => {
       setTextContent("");
       setDetectedPageCount(null);
     }
+  };
+
+  const handleMultiFileSelect = async (files: FileList) => {
+    const imageFiles = Array.from(files).filter(f => 
+      imageTypes.includes(f.type) || /\.(jpe?g|png|webp|gif)$/i.test(f.name)
+    );
+    if (imageFiles.length === 0) {
+      toast({ title: "No valid images", description: "Please select image files (JPG, PNG, WEBP, GIF).", variant: "destructive" });
+      return;
+    }
+    setMultiFiles(imageFiles);
+    setFile(imageFiles[0]);
+    setSummary(null);
+    setDetectedPageCount(imageFiles.length);
+    setTextContent("");
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -162,18 +201,36 @@ const UploadPage = () => {
       let skippedPages: number[] = [];
 
       if (isImage) {
-        setProgressMessage("Reading image...");
+        setProgressMessage("Compressing and reading image(s)...");
         setProgress(15);
-        // Convert image to base64 data URL
-        const reader = new FileReader();
-        imageDataUrl = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        contentChunks = [`[IMAGE] Analyze this image and create TJ Learning Blocks from the visible content.`];
-        totalPagesInDoc = 1;
-        processedPageNumbers = [1];
+        const imagesToProcess = multiFiles.length > 0 ? multiFiles : [file];
+        totalPagesInDoc = imagesToProcess.length;
+        
+        for (let i = 0; i < imagesToProcess.length; i++) {
+          const compressed = await compressImage(imagesToProcess[i]);
+          contentChunks.push(`[IMAGE] Analyze image ${i + 1} of ${imagesToProcess.length} and create TJ Learning Blocks from the visible content.`);
+          // Store compressed data URLs alongside chunks - we'll use index to match
+          if (i === 0) imageDataUrl = compressed;
+          else {
+            // For multi-image, we store extra data URLs in a parallel array
+            (contentChunks as any).__imageDataUrls = (contentChunks as any).__imageDataUrls || [compressed];
+            (contentChunks as any).__imageDataUrls.push(compressed);
+          }
+          processedPageNumbers.push(i + 1);
+        }
+        // For multi-image, store all compressed data URLs properly
+        if (imagesToProcess.length > 1) {
+          const allDataUrls: string[] = [imageDataUrl!];
+          for (let i = 1; i < imagesToProcess.length; i++) {
+            allDataUrls.push(await compressImage(imagesToProcess[i]));
+          }
+          // Override: each chunk gets its own image
+          contentChunks.length = 0;
+          for (let i = 0; i < allDataUrls.length; i++) {
+            contentChunks.push(`[IMAGE] Analyze image ${i + 1} of ${allDataUrls.length}.`);
+          }
+          (contentChunks as any).__allImageDataUrls = allDataUrls;
+        }
       } else if (isPdf) {
         setProgressMessage("Extracting text from PDF pages...");
         setProgress(10);
@@ -262,7 +319,10 @@ const UploadPage = () => {
           totalChunks,
         };
         // Include image data for image uploads
-        if (imageDataUrl && chunkIndex === 0) {
+        const allImageUrls = (contentChunks as any).__allImageDataUrls;
+        if (allImageUrls && allImageUrls[chunkIndex]) {
+          requestBody.imageDataUrl = allImageUrls[chunkIndex];
+        } else if (imageDataUrl && chunkIndex === 0) {
           requestBody.imageDataUrl = imageDataUrl;
         }
 
@@ -460,8 +520,20 @@ const UploadPage = () => {
             ref={fileInputRef}
             type="file"
             accept=".pdf,.pptx,.ppt,.docx,.doc,.txt,.jpg,.jpeg,.png,.webp,.gif"
+            multiple
             className="hidden"
-            onChange={(e) => { if (e.target.files?.[0]) handleFileSelect(e.target.files[0]); }}
+            onChange={(e) => {
+              const files = e.target.files;
+              if (!files || files.length === 0) return;
+              const allImages = Array.from(files).every(f => 
+                imageTypes.includes(f.type) || /\.(jpe?g|png|webp|gif)$/i.test(f.name)
+              );
+              if (files.length > 1 && allImages) {
+                handleMultiFileSelect(files);
+              } else if (files[0]) {
+                handleFileSelect(files[0]);
+              }
+            }}
           />
         </motion.div>
 
