@@ -242,7 +242,7 @@ Return valid JSON. The number of blocks MUST equal the number of terms visible i
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: activeSystemPrompt },
           { role: "user", content: userContent },
         ],
         tools: [
