@@ -72,11 +72,18 @@ const UploadPage = () => {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/msword",
     "text/plain",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
   ];
 
+  const imageTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
   const handleFileSelect = async (selectedFile: File) => {
-    if (!acceptedTypes.includes(selectedFile.type) && !selectedFile.name.endsWith(".txt")) {
-      toast({ title: "Unsupported file type", description: "Please upload PDF, PowerPoint, Word, or text files.", variant: "destructive" });
+    const isImage = imageTypes.includes(selectedFile.type) || /\.(jpe?g|png|webp|gif)$/i.test(selectedFile.name);
+    if (!acceptedTypes.includes(selectedFile.type) && !selectedFile.name.endsWith(".txt") && !isImage) {
+      toast({ title: "Unsupported file type", description: "Please upload PDF, PowerPoint, Word, image, or text files.", variant: "destructive" });
       return;
     }
     setFile(selectedFile);
@@ -145,14 +152,29 @@ const UploadPage = () => {
     try {
       const isPdf = file.type === "application/pdf";
       const isText = file.type === "text/plain" || file.name.endsWith(".txt");
+      const isImage = imageTypes.includes(file.type) || /\.(jpe?g|png|webp|gif)$/i.test(file.name);
 
       // Step 1: Parse content
       let contentChunks: string[] = [];
+      let imageDataUrl: string | null = null;
       let totalPagesInDoc = 0;
       let processedPageNumbers: number[] = [];
       let skippedPages: number[] = [];
 
-      if (isPdf) {
+      if (isImage) {
+        setProgressMessage("Reading image...");
+        setProgress(15);
+        // Convert image to base64 data URL
+        const reader = new FileReader();
+        imageDataUrl = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        contentChunks = [`[IMAGE] Analyze this image and create TJ Learning Blocks from the visible content.`];
+        totalPagesInDoc = 1;
+        processedPageNumbers = [1];
+      } else if (isPdf) {
         setProgressMessage("Extracting text from PDF pages...");
         setProgress(10);
 
@@ -232,14 +254,20 @@ const UploadPage = () => {
           `Analyzing content... (pass ${chunkIndex + 1} of ${totalChunks})`
         );
 
+        const requestBody: any = {
+          content: contentChunks[chunkIndex],
+          moduleId: moduleData.id,
+          filename: file.name,
+          chunkIndex: chunkIndex + 1,
+          totalChunks,
+        };
+        // Include image data for image uploads
+        if (imageDataUrl && chunkIndex === 0) {
+          requestBody.imageDataUrl = imageDataUrl;
+        }
+
         const { data, error } = await supabase.functions.invoke("process-upload", {
-          body: {
-            content: contentChunks[chunkIndex],
-            moduleId: moduleData.id,
-            filename: file.name,
-            chunkIndex: chunkIndex + 1,
-            totalChunks,
-          },
+          body: requestBody,
         });
 
         if (error) {
@@ -423,7 +451,7 @@ const UploadPage = () => {
                 <>
                   <Upload className="h-10 w-10 mb-3 text-muted-foreground" />
                   <p className="text-sm font-semibold text-foreground">Drop your file here or click to browse</p>
-                  <p className="text-xs text-muted-foreground mt-1">PDF, PowerPoint, Word, or plain text</p>
+                  <p className="text-xs text-muted-foreground mt-1">PDF, PowerPoint, Word, images (JPG, PNG), or plain text</p>
                 </>
               )}
             </CardContent>
@@ -431,7 +459,7 @@ const UploadPage = () => {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdf,.pptx,.ppt,.docx,.doc,.txt"
+            accept=".pdf,.pptx,.ppt,.docx,.doc,.txt,.jpg,.jpeg,.png,.webp,.gif"
             className="hidden"
             onChange={(e) => { if (e.target.files?.[0]) handleFileSelect(e.target.files[0]); }}
           />
