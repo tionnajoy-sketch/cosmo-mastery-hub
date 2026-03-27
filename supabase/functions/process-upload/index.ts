@@ -137,7 +137,8 @@ serve(async (req) => {
       });
     }
 
-    const { content, moduleId, filename, chunkIndex, totalChunks } = body;
+    const { content, moduleId, filename, chunkIndex, totalChunks, imageDataUrl } = body;
+    const isImageUpload = !!imageDataUrl;
     
     if (!content || typeof content !== "string") {
       return new Response(JSON.stringify({ error: "Missing or invalid 'content' field." }), {
@@ -149,13 +150,28 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const maxContentLength = 15000;
-    const truncatedContent = content.length > maxContentLength 
-      ? content.slice(0, maxContentLength) + "\n\n[Content truncated for processing]"
-      : content;
+    // Build messages based on content type
+    const userContent: any[] = [];
+    
+    if (isImageUpload) {
+      // Multimodal: send image + text instruction
+      userContent.push({
+        type: "image_url",
+        image_url: { url: imageDataUrl },
+      });
+      userContent.push({
+        type: "text",
+        text: `Analyze this uploaded image from "${filename}". Read ALL visible text, labels, diagrams, and content on the image. Treat the image as a single slide/page (Page 1). Create TJ Learning Blocks from every concept, term, or topic visible in the image. If there are multiple distinct concepts visible, create one block per concept.\n\nIMPORTANT: Read the image carefully. Extract real text from the image — do not guess or fabricate content.`,
+      });
+    } else {
+      userContent.push({
+        type: "text",
+        text: `Analyze the following study material from "${filename}"${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}. Create exactly ONE TJ Block per page/slide. Do NOT merge slides.\n\n${truncatedContent}`,
+      });
+    }
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 55000);
+    // Use a vision-capable model for images
+    const model = isImageUpload ? "google/gemini-2.5-flash" : "google/gemini-2.5-flash";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       signal: controller.signal,
@@ -165,10 +181,10 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Analyze the following study material from "${filename}"${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}. Create exactly ONE TJ Block per page/slide. Do NOT merge slides.\n\n${truncatedContent}` },
+          { role: "user", content: userContent },
         ],
         tools: [
           {
