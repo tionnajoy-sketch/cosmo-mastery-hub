@@ -202,7 +202,7 @@ IMPORTANT:
     }
 
     // Use a vision-capable model for images
-    const model = isImageUpload ? "google/gemini-2.5-flash" : "google/gemini-2.5-flash";
+    const model = isImageUpload ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       signal: controller.signal,
