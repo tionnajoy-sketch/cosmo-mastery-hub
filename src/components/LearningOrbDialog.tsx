@@ -692,7 +692,7 @@ const LearningOrbDialog = ({
               You made it. 🎉
             </motion.h2>
             <motion.p className="text-lg max-w-md" style={{ color: c.subtext }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
-              +15 coins earned • {STEPS.length} layers completed
+              +15 coins earned • {adaptedSteps.length} layers completed
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="flex flex-col gap-3">
               <Button size="lg" className="gap-2 text-base px-8 py-6 shadow-lg"
@@ -726,7 +726,7 @@ const LearningOrbDialog = ({
                 <AvatarFallback className="text-xs font-bold" style={{ background: step.color, color: "white" }}>TJ</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <p className="text-xs italic leading-snug" style={{ color: step.color }}>"{step.caption}"</p>
+                <p className="text-xs italic leading-snug" style={{ color: step.color }}>"{getAdaptedCaption(step.caption, step.key)}"</p>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {isSpeaking && (
@@ -744,10 +744,10 @@ const LearningOrbDialog = ({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="font-display text-lg font-bold truncate" style={{ color: c.heading }}>{block.term_title}</h3>
-                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: c.subtext }}>Cosmetology</p>
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: c.subtext }}>{profile?.selected_program || "Cosmetology"}</p>
               </div>
               <div className="flex-shrink-0 text-right">
-                <p className="text-xs font-semibold" style={{ color: step.color }}>Step {currentStep + 1} of {STEPS.length}</p>
+                <p className="text-xs font-semibold" style={{ color: step.color }}>Step {currentStep + 1} of {adaptedSteps.length}</p>
               </div>
             </div>
 
@@ -756,7 +756,7 @@ const LearningOrbDialog = ({
 
             {/* Step indicator pills */}
             <div className="flex items-center justify-center gap-1 mt-2.5">
-              {STEPS.map((s, i) => (
+              {adaptedSteps.map((s, i) => (
                 <div key={s.key} className="h-1.5 rounded-full transition-all duration-300"
                   style={{ width: i === currentStep ? 20 : 6, background: i <= currentStep ? s.color : "hsl(var(--border))", opacity: i <= currentStep ? 1 : 0.4 }} />
               ))}
@@ -786,7 +786,7 @@ const LearningOrbDialog = ({
                 <RefreshCw className="h-3.5 w-3.5" /> Explain Again
               </Button>
               <Button size="sm" className="gap-1 text-sm px-5 shadow-md" style={{ background: step.gradient, color: "white" }} onClick={goNext}>
-                {currentStep === STEPS.length - 1 ? "Complete" : "Next"} {currentStep < STEPS.length - 1 && <ArrowRight className="h-4 w-4" />}
+                {currentStep === adaptedSteps.length - 1 ? "Complete" : "Next"} {currentStep < adaptedSteps.length - 1 && <ArrowRight className="h-4 w-4" />}
               </Button>
             </div>
           </div>
