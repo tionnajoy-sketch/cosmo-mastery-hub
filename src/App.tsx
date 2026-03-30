@@ -95,7 +95,7 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />
-      <TJCafe open={showCafe} onDismiss={dismissCafe} />
+      <TJCafe open={showCafe} onDismiss={dismissCafe} requiredMode={!isManual} />
     </>
   );
 };
