@@ -13,6 +13,12 @@ export const useStudyBreak = () => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    const handleOpenCafe = () => setShowCafe(true);
+    window.addEventListener("open-tj-cafe", handleOpenCafe);
+    return () => window.removeEventListener("open-tj-cafe", handleOpenCafe);
+  }, []);
+
+  useEffect(() => {
     // Initialize or restore session start time
     const stored = sessionStorage.getItem(SESSION_KEY);
     if (!stored) {
