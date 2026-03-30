@@ -79,7 +79,10 @@ const ModuleResultsPage = () => {
               {wrongCount > 0 && <p className="text-xs mt-1" style={{ color: c.wrongText }}>{wrongCount} wrong {wrongCount === 1 ? "answer" : "answers"} tracked</p>}
             </div>
 
-            <p className="text-base leading-relaxed mb-4" style={{ color: c.bodyText }}>{getMessage()}</p>
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-base leading-relaxed mb-4" style={{ color: c.bodyText }}>{getMessage()}</p>
+              <SpeakButton text={getMessage()} size="icon" className="flex-shrink-0 mb-4" />
+            </div>
 
             {percentage < 60 && (
               <div className="flex items-start gap-2 p-3 rounded-lg mb-4" style={{ background: "hsl(346 35% 96%)" }}>
