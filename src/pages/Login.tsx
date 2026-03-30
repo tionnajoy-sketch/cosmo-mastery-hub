@@ -7,24 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
-import { pageColors } from "@/lib/colors";
-import tjBackground from "@/assets/tj-background.jpg";
-
-const c = pageColors.login;
-
-const languageLabels = {
-  en: { flag: "🇺🇸", label: "English" },
-  es: { flag: "🇪🇸", label: "Español" },
-  fr: { flag: "🇫🇷", label: "Français" },
-};
+import { BookOpen } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedLang, setSelectedLang] = useState("en");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,50 +28,25 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* TJ Background Photo */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${tjBackground})`, filter: "brightness(0.35) blur(2px)" }}
-      />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, hsl(320 60% 20% / 0.6), hsl(280 50% 15% / 0.7))" }} />
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-background">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-md"
       >
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <Heart className="h-6 w-6" style={{ color: c.heading }} />
-            <span className="font-display text-2xl font-bold" style={{ color: c.heading }}>CosmoPrep</span>
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2.5 mb-3">
+            <BookOpen className="h-7 w-7 text-foreground" />
+            <span className="font-display text-3xl font-bold text-foreground tracking-tight">TJ Anderson Test Prep</span>
           </div>
-          <p className="text-sm" style={{ color: c.subtext }}>Welcome back, beauty! Let's keep studying.</p>
+          <p className="text-sm text-muted-foreground">Powered by the TJ Anderson Layer Method™</p>
         </div>
 
-        {/* Language Selector */}
-        <div className="flex justify-center gap-2 mb-6">
-          {Object.entries(languageLabels).map(([key, { flag, label }]) => (
-            <button
-              key={key}
-              onClick={() => setSelectedLang(key)}
-              className="px-4 py-2.5 rounded-full text-sm font-medium transition-all border-2"
-              style={{
-                background: selectedLang === key ? c.button : "rgba(255,255,255,0.8)",
-                color: selectedLang === key ? "white" : c.cardHeading,
-                borderColor: selectedLang === key ? c.button : "rgba(255,255,255,0.4)",
-                boxShadow: selectedLang === key ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
-              }}
-            >
-              {flag} {label}
-            </button>
-          ))}
-        </div>
-
-        <Card className="border-0 shadow-2xl" style={{ background: c.card }}>
-          <CardHeader className="text-center">
-            <CardTitle className="font-display text-2xl" style={{ color: c.cardHeading }}>Sign In</CardTitle>
-            <CardDescription>Enter your email and password to continue</CardDescription>
+        <Card className="border border-border shadow-sm bg-card">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="font-display text-2xl text-card-foreground">Welcome Back</CardTitle>
+            <CardDescription className="text-muted-foreground">Sign in to continue your learning journey</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
@@ -94,13 +58,13 @@ const Login = () => {
                 <Label htmlFor="password">Password</Label>
                 <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
               </div>
-              <Button type="submit" className="w-full text-base py-6" disabled={loading} style={{ background: c.button, color: "white" }}>
+              <Button type="submit" className="w-full text-base py-6" disabled={loading}>
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
             <p className="text-center text-sm text-muted-foreground mt-4">
               Don't have an account?{" "}
-              <Link to="/signup" className="font-medium underline" style={{ color: c.link }}>
+              <Link to="/signup" className="font-medium underline text-foreground">
                 Sign up
               </Link>
             </p>
