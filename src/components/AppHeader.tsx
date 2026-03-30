@@ -69,6 +69,9 @@ const AppHeader = () => {
               <DropdownMenuItem onClick={() => openTJChat(false)}>
                 <MessageCircle className="h-4 w-4 mr-2" /> Ask TJ
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openTJCafe()}>
+                <Coffee className="h-4 w-4 mr-2" /> TJ Cafe
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/upload")} className="text-primary">
                 <Upload className="h-4 w-4 mr-2" /> Create With TJ™
