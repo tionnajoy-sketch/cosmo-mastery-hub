@@ -555,6 +555,52 @@ const LearningOrbDialog = ({
           </motion.div>
         );
 
+      case "recognize": {
+        const conceptIdentity = Array.isArray(block.concept_identity) ? block.concept_identity.map(String) : [];
+        const identityItems = conceptIdentity.length >= 4 ? conceptIdentity.slice(0, 4) :
+          [block.definition, block.metaphor || "A related concept in another field", "An unrelated term from a different subject", "A common misconception about this topic"].slice(0, 4);
+        // Shuffle but keep track of correct index (index 0 is always correct before shuffle)
+        const shuffled = [...identityItems].sort(() => Math.random() - 0.5);
+        return (
+          <motion.div key="recognize" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-6">
+            <p className="text-base font-medium text-center" style={{ color: c.termHeading }}>
+              Which of these best describes <strong style={{ color: step.color }}>{block.term_title}</strong>?
+            </p>
+            <div className="grid grid-cols-1 gap-3 max-w-md mx-auto">
+              {identityItems.map((item, i) => {
+                const isCorrect = i === 0;
+                const isSelected = recognizeSelected === i;
+                let bg = "hsl(var(--card))";
+                let border = "hsl(var(--border))";
+                if (recognizeRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
+                else if (recognizeRevealed && isSelected) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
+                else if (recognizeRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
+                return (
+                  <motion.button
+                    key={i}
+                    onClick={() => { if (!recognizeRevealed) { setRecognizeSelected(i); setRecognizeRevealed(true); } }}
+                    className="p-4 rounded-xl text-sm font-medium text-left transition-all"
+                    style={{ background: bg, border: `2px solid ${border}`, color: c.termHeading }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + i * 0.05 }}
+                  >
+                    {item}
+                  </motion.button>
+                );
+              })}
+            </div>
+            {recognizeRevealed && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+                <p className="text-sm font-medium" style={{ color: recognizeSelected === 0 ? "hsl(145 50% 35%)" : "hsl(0 60% 45%)" }}>
+                  {recognizeSelected === 0 ? "✓ That's right!" : "✗ Not quite — the correct answer is highlighted above."}
+                </p>
+              </motion.div>
+            )}
+          </motion.div>
+        );
+      }
+
       case "metaphor":
         return (
           <motion.div key="metaphor" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center text-center space-y-6 py-8">
