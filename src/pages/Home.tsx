@@ -103,6 +103,21 @@ const Home = () => {
     fetchProgress();
   }, [user, sections]);
 
+  // Cafe countdown
+  const [cafeMinutesLeft, setCafeMinutesLeft] = useState<number | null>(null);
+  useEffect(() => {
+    const update = () => {
+      const start = Number(sessionStorage.getItem("tj_study_start_time") || 0);
+      if (!start) { setCafeMinutesLeft(null); return; }
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(0, 60 - Math.floor(elapsed / 60000));
+      setCafeMinutesLeft(remaining);
+    };
+    update();
+    const id = setInterval(update, 30000);
+    return () => clearInterval(id);
+  }, []);
+
   const firstName = profile?.name?.split(" ")[0] || "Student";
 
   // DNA-driven confidence message
