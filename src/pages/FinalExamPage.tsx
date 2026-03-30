@@ -337,7 +337,10 @@ const FinalExamPage = () => {
           <motion.div key={currentIndex} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
             <Card className="border-0 shadow-lg mb-4" style={{ background: "white" }}>
               <CardContent className="p-6">
-                <p className="text-base leading-relaxed" style={{ color: c.cardText }}>{currentQuestion.question_text}</p>
+                <div className="flex items-start gap-2">
+                  <p className="text-base leading-relaxed flex-1" style={{ color: c.cardText }}>{currentQuestion.question_text}</p>
+                  <SpeakButton text={currentQuestion.question_text} size="icon" className="flex-shrink-0 mt-[-4px]" />
+                </div>
               </CardContent>
             </Card>
 
