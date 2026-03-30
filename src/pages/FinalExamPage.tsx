@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle, Clock, Brain, Sparkles, BookOpen, Target, Heart } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import SpeakButton from "@/components/SpeakButton";
 
 const c = pageColors.quiz;
 
