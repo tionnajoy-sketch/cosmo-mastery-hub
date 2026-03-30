@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import {
   BookOpen, Target, TrendingUp,
-  CheckCircle2, Flame, Gamepad2,
+  CheckCircle2, Flame, Gamepad2, Coffee,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors } from "@/lib/colors";
@@ -19,6 +19,7 @@ import DailyPopQuestion from "@/components/DailyPopQuestion";
 import StudentContract from "@/components/StudentContract";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
+import { openTJCafe } from "@/hooks/useStudyBreak";
 import { Eye, Mic, PenLine, BookOpen as BookOpenIcon2 } from "lucide-react";
 
 const c = pageColors.home;
@@ -102,6 +103,21 @@ const Home = () => {
     fetchProgress();
   }, [user, sections]);
 
+  // Cafe countdown
+  const [cafeMinutesLeft, setCafeMinutesLeft] = useState<number | null>(null);
+  useEffect(() => {
+    const update = () => {
+      const start = Number(sessionStorage.getItem("tj_study_start_time") || 0);
+      if (!start) { setCafeMinutesLeft(null); return; }
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(0, 60 - Math.floor(elapsed / 60000));
+      setCafeMinutesLeft(remaining);
+    };
+    update();
+    const id = setInterval(update, 30000);
+    return () => clearInterval(id);
+  }, []);
+
   const firstName = profile?.name?.split(" ")[0] || "Student";
 
   // DNA-driven confidence message
@@ -178,6 +194,30 @@ const Home = () => {
               <Gamepad2 className="h-5 w-5" /> Practice Lab
             </Button>
           </div>
+
+          {/* Cafe countdown indicator */}
+          {cafeMinutesLeft !== null && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              onClick={() => openTJCafe()}
+              className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl w-full transition-all hover:scale-[1.01]"
+              style={{
+                background: cafeMinutesLeft === 0
+                  ? "linear-gradient(135deg, hsl(0 75% 50%), hsl(45 90% 55%))"
+                  : "hsl(30 15% 94%)",
+                color: cafeMinutesLeft === 0 ? "white" : "hsl(30 10% 35%)",
+              }}
+            >
+              <Coffee className="h-4 w-4 flex-shrink-0" />
+              <span className="text-sm font-medium">
+                {cafeMinutesLeft === 0
+                  ? "☕ Your TJ Cafe break is ready — take a moment"
+                  : `☕ TJ Cafe in ${cafeMinutesLeft} min`}
+              </span>
+            </motion.button>
+          )}
         </motion.div>
       </div>
 
