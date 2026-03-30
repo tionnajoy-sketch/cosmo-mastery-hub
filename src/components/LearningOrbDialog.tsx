@@ -794,6 +794,22 @@ const LearningOrbDialog = ({
           {/* ═══════ CENTER SECTION ═══════ */}
           <div className="flex-1 overflow-y-auto px-5 sm:px-8 scrollbar-visible" style={{ scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 40%) transparent" }}>
             <div className="max-w-lg mx-auto pb-8 pt-2">
+              {/* DNA Encouragement Banner */}
+              {encouragementMsg && (
+                <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 px-4 py-3 rounded-xl text-center text-sm font-medium"
+                  style={{ background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))", border: "1px solid hsl(var(--border))" }}>
+                  💜 {encouragementMsg}
+                </motion.div>
+              )}
+              {/* Memory Cue Banner */}
+              {rules.addMemoryCues && (step.key === "definition" || step.key === "information") && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  className="mb-4 px-4 py-2 rounded-lg text-xs text-center"
+                  style={{ background: "hsl(45 80% 95%)", color: "hsl(45 50% 30%)", border: "1px solid hsl(45 60% 80%)" }}>
+                  🔑 Key Point: Remember "{block.term_title}" — say it, picture it, connect it to something you know.
+                </motion.div>
+              )}
               <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
             </div>
           </div>
