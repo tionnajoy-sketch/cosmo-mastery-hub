@@ -184,6 +184,37 @@ const Home = () => {
       {/* ── Minimal Content ── */}
       <div className="flex-1 px-4 pb-6 max-w-2xl mx-auto w-full space-y-6">
 
+        {/* ── Your Learning Style ── */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+          <Card className="border-0 shadow-md bg-card overflow-hidden">
+            <div className="flex">
+              <div className="w-2 flex-shrink-0" style={{ background: currentStyle.color }} />
+              <CardContent className="p-5 flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${currentStyle.color}18` }}>
+                    <StyleIcon className="h-5 w-5" style={{ color: currentStyle.color }} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Your Learning Style</p>
+                    <h3 className="font-display text-base font-semibold text-foreground">{currentStyle.label}</h3>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                  {currentStyle.description}
+                </p>
+                <div className="p-3 rounded-lg" style={{ background: `${currentStyle.color}08` }}>
+                  <p className="text-xs font-semibold mb-1" style={{ color: currentStyle.color }}>
+                    How we'll use this to teach you:
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {currentStyle.howWeUseIt}
+                  </p>
+                </div>
+              </CardContent>
+            </div>
+          </Card>
+        </motion.section>
+
         {/* ── Daily Goal + Streak ── */}
         {!trackerLoading && (
           <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
