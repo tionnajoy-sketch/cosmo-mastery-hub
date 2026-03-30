@@ -517,27 +517,19 @@ const LearningOrbDialog = ({
 
       case "visual":
         return (
-          <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center text-center space-y-5 py-4">
-            {imageUrl ? (
-              <div className="relative w-full max-w-md">
-                <img src={imageUrl} alt={`Visual for ${block.term_title}`} className="w-full rounded-2xl shadow-lg" />
-                <div className="absolute bottom-0 left-0 right-0 rounded-b-2xl px-4 py-3"
-                  style={{ background: "linear-gradient(to top, hsl(0 0% 0% / 0.8), hsl(0 0% 0% / 0))" }}>
-                  <p className="font-display text-base sm:text-lg font-bold text-white leading-tight drop-shadow-md">{block.term_title}</p>
-                  {block.definition && <p className="text-[11px] sm:text-xs text-white/80 leading-snug mt-0.5 line-clamp-2 drop-shadow">{block.definition}</p>}
-                </div>
-              </div>
-            ) : imageLoading ? (
-              <div className="flex flex-col items-center gap-3 py-10">
-                <Loader2 className="h-8 w-8 animate-spin" style={{ color: step.color }} />
-                <p className="text-sm" style={{ color: c.subtext }}>Generating illustration…</p>
-              </div>
-            ) : (
-              <Button size="lg" variant="outline" onClick={generateImage} className="gap-2" style={{ borderColor: step.color, color: step.color }}>
-                <Sparkles className="h-4 w-4" /> Generate Visual
-              </Button>
-            )}
-            {block.visualization_desc && <p className="text-sm max-w-md" style={{ color: c.subtext }}>{block.visualization_desc}</p>}
+          <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center space-y-5 py-4">
+            <TJVisualEngine
+              termId={block.id}
+              termName={block.term_title}
+              definition={block.definition}
+              metaphor={block.metaphor}
+              existingImageUrl={imageUrl}
+              onImageGenerated={(url) => {
+                setImageUrl(url);
+                if (mode === "uploaded") supabase.from("uploaded_module_blocks").update({ image_url: url }).eq("id", block.id);
+              }}
+            />
+            {block.visualization_desc && <p className="text-sm max-w-md text-center" style={{ color: c.subtext }}>{block.visualization_desc}</p>}
             {block.video_url && <VideoPlayer url={block.video_url} />}
           </motion.div>
         );
@@ -578,6 +570,17 @@ const LearningOrbDialog = ({
                 <Sparkles className="h-4 w-4" /> Load Deeper Information
               </Button>
             )}
+
+            {/* TJ Learning Studio — embedded content engine */}
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">TJ Learning Studio</p>
+              <TJLearningStudio
+                termName={block.term_title}
+                definition={block.definition}
+                metaphor={block.metaphor}
+                additionalContent={block.practice_scenario}
+              />
+            </div>
           </motion.div>
         );
 
