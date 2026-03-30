@@ -10,6 +10,7 @@ import {
   Shuffle, BookOpen, PenLine, Puzzle, Timer, Zap, ChevronRight,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
+import SpeakButton from "@/components/SpeakButton";
 
 interface Section {
   id: string;
@@ -65,7 +66,10 @@ const PracticeLabPage = () => {
           <div className="text-center mb-8">
             <Gamepad2 className="h-10 w-10 mx-auto mb-3 text-primary" />
             <h1 className="font-display text-3xl font-bold text-foreground mb-2">Practice Lab</h1>
-            <p className="text-sm text-muted-foreground">Reinforce your learning with interactive activities and quizzes.</p>
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-sm text-muted-foreground">Reinforce your learning with interactive activities and quizzes.</p>
+              <SpeakButton text="Welcome to the Practice Lab. This is your space to reinforce your learning with interactive activities and quizzes. Take your time and enjoy the process." size="icon" className="flex-shrink-0" />
+            </div>
           </div>
 
           {/* Activity Types Overview */}

@@ -16,6 +16,7 @@ import BrainDump from "@/components/activities/BrainDump";
 import PictureMatch from "@/components/activities/PictureMatch";
 import MnemonicBuilder from "@/components/activities/MnemonicBuilder";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import SpeakButton from "@/components/SpeakButton";
 
 const c = pageColors.activity;
 

@@ -10,6 +10,7 @@ import { ArrowLeft, CheckCircle2, XCircle, Brain, Heart, Target, Eye, BookOpen, 
 import { pageColors } from "@/lib/colors";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useCoins } from "@/hooks/useCoins";
+import SpeakButton from "@/components/SpeakButton";
 
 const c = pageColors.quiz;
 
@@ -359,7 +360,10 @@ const QuizPage = () => {
               }}
             >
               <CardContent className="p-6">
-                <p className="text-base leading-relaxed" style={{ color: c.cardText }}>{currentQuestion.question_text}</p>
+                <div className="flex items-start gap-2">
+                  <p className="text-base leading-relaxed flex-1" style={{ color: c.cardText }}>{currentQuestion.question_text}</p>
+                  <SpeakButton text={currentQuestion.question_text} size="icon" className="flex-shrink-0 mt-[-4px]" />
+                </div>
               </CardContent>
             </Card>
 
@@ -426,7 +430,10 @@ const QuizPage = () => {
                         <><XCircle className="h-5 w-5" style={{ color: c.feedbackWrongIcon }} /><span className="font-semibold" style={{ color: c.feedbackWrongIcon }}>{getWrongFeedback()}</span></>
                       )}
                     </div>
-                    <p className="text-sm leading-relaxed mb-3" style={{ color: c.cardText }}>{currentQuestion.explanation}</p>
+                    <div className="flex items-start gap-2">
+                      <p className="text-sm leading-relaxed mb-3 flex-1" style={{ color: c.cardText }}>{currentQuestion.explanation}</p>
+                      <SpeakButton text={currentQuestion.explanation} size="icon" className="flex-shrink-0" />
+                    </div>
 
                     {strategyMode && !isCorrect && (
                       <div className="p-3 rounded-lg mb-3" style={{ background: "hsl(42 50% 96%)" }}>

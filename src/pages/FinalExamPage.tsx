@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle, Clock, Brain, Sparkles, BookOpen, Target, Heart } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import SpeakButton from "@/components/SpeakButton";
 
 const c = pageColors.quiz;
 
@@ -336,7 +337,10 @@ const FinalExamPage = () => {
           <motion.div key={currentIndex} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
             <Card className="border-0 shadow-lg mb-4" style={{ background: "white" }}>
               <CardContent className="p-6">
-                <p className="text-base leading-relaxed" style={{ color: c.cardText }}>{currentQuestion.question_text}</p>
+                <div className="flex items-start gap-2">
+                  <p className="text-base leading-relaxed flex-1" style={{ color: c.cardText }}>{currentQuestion.question_text}</p>
+                  <SpeakButton text={currentQuestion.question_text} size="icon" className="flex-shrink-0 mt-[-4px]" />
+                </div>
               </CardContent>
             </Card>
 
@@ -380,7 +384,10 @@ const FinalExamPage = () => {
                         <><XCircle className="h-5 w-5" style={{ color: "hsl(0 55% 50%)" }} /><span className="font-semibold" style={{ color: "hsl(0 45% 35%)" }}>Not quite.</span></>
                       )}
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: "hsl(220 15% 30%)" }}>{currentQuestion.explanation}</p>
+                    <div className="flex items-start gap-2">
+                      <p className="text-sm leading-relaxed flex-1" style={{ color: "hsl(220 15% 30%)" }}>{currentQuestion.explanation}</p>
+                      <SpeakButton text={currentQuestion.explanation} size="icon" className="flex-shrink-0" />
+                    </div>
                   </CardContent>
                 </Card>
                 <Button className="w-full py-5 text-base" style={{ background: c.nextButton, color: "white" }} onClick={handleNext}>

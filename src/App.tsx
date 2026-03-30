@@ -43,9 +43,62 @@ import CosmoConnectionGridPage from "./pages/CosmoConnectionGridPage";
 import AskTJFullScreen from "./components/AskTJFullScreen";
 import GameGridPage from "./pages/GameGridPage";
 import PracticeLabPage from "./pages/PracticeLabPage";
+import TJCafe from "./components/TJCafe";
+import { useStudyBreak } from "./hooks/useStudyBreak";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const AppContent = () => {
+  const { showCafe, dismissCafe } = useStudyBreak();
+  return (
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/welcome" element={<ProtectedRoute><WelcomePage /></ProtectedRoute>} />
+        <Route path="/section/:id" element={<ProtectedRoute><SectionPage /></ProtectedRoute>} />
+        <Route path="/section/:id/study/:block" element={<ProtectedRoute><StudyPage /></ProtectedRoute>} />
+        <Route path="/section/:id/activity/:block" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
+        <Route path="/section/:id/quiz/:block" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
+        <Route path="/section/:id/results/:block" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
+        <Route path="/section/:id/pop-quiz" element={<ProtectedRoute><PopQuizPage /></ProtectedRoute>} />
+        <Route path="/section/:id/final-exam" element={<ProtectedRoute><FinalExamPage /></ProtectedRoute>} />
+        <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
+        <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/pretest" element={<ProtectedRoute><PretestPage /></ProtectedRoute>} />
+        <Route path="/pretest-results" element={<ProtectedRoute><PretestResultsPage /></ProtectedRoute>} />
+        <Route path="/post-test" element={<ProtectedRoute><PosttestPage /></ProtectedRoute>} />
+        <Route path="/post-test-results" element={<ProtectedRoute><PosttestResultsPage /></ProtectedRoute>} />
+        <Route path="/anatomy-map" element={<ProtectedRoute><AnatomyMapPage /></ProtectedRoute>} />
+        <Route path="/skin-map" element={<ProtectedRoute><SkinMapPage /></ProtectedRoute>} />
+        <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
+        <Route path="/my-modules" element={<ProtectedRoute><MyModulesPage /></ProtectedRoute>} />
+        <Route path="/module/:id" element={<ProtectedRoute><ModuleViewPage /></ProtectedRoute>} />
+        <Route path="/module/:id/quiz/:block" element={<ProtectedRoute><ModuleQuizPage /></ProtectedRoute>} />
+        <Route path="/module/:id/results/:block" element={<ProtectedRoute><ModuleResultsPage /></ProtectedRoute>} />
+        <Route path="/module/:id/activity/:block" element={<ProtectedRoute><ModuleActivityPage /></ProtectedRoute>} />
+        <Route path="/module/:id/quiz-bank" element={<ProtectedRoute><ModuleQuizBankPage /></ProtectedRoute>} />
+        <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
+        <Route path="/learn" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
+        <Route path="/study-modules" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
+        <Route path="/practice-lab" element={<ProtectedRoute><PracticeLabPage /></ProtectedRoute>} />
+        <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
+        <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
+        <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />
+        <Route path="/cosmo-grid" element={<ProtectedRoute><CosmoConnectionGridPage /></ProtectedRoute>} />
+        <Route path="/game-grid" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <AskTJFullScreen />
+      <TJCafe open={showCafe} onDismiss={dismissCafe} />
+    </>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -55,48 +108,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CoinProvider>
-            <ScrollToTop />
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
-              <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-              <Route path="/welcome" element={<ProtectedRoute><WelcomePage /></ProtectedRoute>} />
-              <Route path="/section/:id" element={<ProtectedRoute><SectionPage /></ProtectedRoute>} />
-              <Route path="/section/:id/study/:block" element={<ProtectedRoute><StudyPage /></ProtectedRoute>} />
-              <Route path="/section/:id/activity/:block" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
-              <Route path="/section/:id/quiz/:block" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
-              <Route path="/section/:id/results/:block" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
-              <Route path="/section/:id/pop-quiz" element={<ProtectedRoute><PopQuizPage /></ProtectedRoute>} />
-              <Route path="/section/:id/final-exam" element={<ProtectedRoute><FinalExamPage /></ProtectedRoute>} />
-              <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
-              <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/pretest" element={<ProtectedRoute><PretestPage /></ProtectedRoute>} />
-              <Route path="/pretest-results" element={<ProtectedRoute><PretestResultsPage /></ProtectedRoute>} />
-              <Route path="/post-test" element={<ProtectedRoute><PosttestPage /></ProtectedRoute>} />
-              <Route path="/post-test-results" element={<ProtectedRoute><PosttestResultsPage /></ProtectedRoute>} />
-              <Route path="/anatomy-map" element={<ProtectedRoute><AnatomyMapPage /></ProtectedRoute>} />
-              <Route path="/skin-map" element={<ProtectedRoute><SkinMapPage /></ProtectedRoute>} />
-              <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
-              <Route path="/my-modules" element={<ProtectedRoute><MyModulesPage /></ProtectedRoute>} />
-              <Route path="/module/:id" element={<ProtectedRoute><ModuleViewPage /></ProtectedRoute>} />
-              <Route path="/module/:id/quiz/:block" element={<ProtectedRoute><ModuleQuizPage /></ProtectedRoute>} />
-              <Route path="/module/:id/results/:block" element={<ProtectedRoute><ModuleResultsPage /></ProtectedRoute>} />
-              <Route path="/module/:id/activity/:block" element={<ProtectedRoute><ModuleActivityPage /></ProtectedRoute>} />
-              <Route path="/module/:id/quiz-bank" element={<ProtectedRoute><ModuleQuizBankPage /></ProtectedRoute>} />
-              <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
-              <Route path="/learn" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
-              <Route path="/study-modules" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
-              <Route path="/practice-lab" element={<ProtectedRoute><PracticeLabPage /></ProtectedRoute>} />
-              <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
-              <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
-              <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />
-              <Route path="/cosmo-grid" element={<ProtectedRoute><CosmoConnectionGridPage /></ProtectedRoute>} />
-              <Route path="/game-grid" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <AskTJFullScreen />
+            <AppContent />
           </CoinProvider>
         </AuthProvider>
       </BrowserRouter>
