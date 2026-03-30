@@ -430,7 +430,10 @@ const QuizPage = () => {
                         <><XCircle className="h-5 w-5" style={{ color: c.feedbackWrongIcon }} /><span className="font-semibold" style={{ color: c.feedbackWrongIcon }}>{getWrongFeedback()}</span></>
                       )}
                     </div>
-                    <p className="text-sm leading-relaxed mb-3" style={{ color: c.cardText }}>{currentQuestion.explanation}</p>
+                    <div className="flex items-start gap-2">
+                      <p className="text-sm leading-relaxed mb-3 flex-1" style={{ color: c.cardText }}>{currentQuestion.explanation}</p>
+                      <SpeakButton text={currentQuestion.explanation} size="icon" className="flex-shrink-0" />
+                    </div>
 
                     {strategyMode && !isCorrect && (
                       <div className="p-3 rounded-lg mb-3" style={{ background: "hsl(42 50% 96%)" }}>

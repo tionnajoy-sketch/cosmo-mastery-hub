@@ -384,7 +384,10 @@ const FinalExamPage = () => {
                         <><XCircle className="h-5 w-5" style={{ color: "hsl(0 55% 50%)" }} /><span className="font-semibold" style={{ color: "hsl(0 45% 35%)" }}>Not quite.</span></>
                       )}
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: "hsl(220 15% 30%)" }}>{currentQuestion.explanation}</p>
+                    <div className="flex items-start gap-2">
+                      <p className="text-sm leading-relaxed flex-1" style={{ color: "hsl(220 15% 30%)" }}>{currentQuestion.explanation}</p>
+                      <SpeakButton text={currentQuestion.explanation} size="icon" className="flex-shrink-0" />
+                    </div>
                   </CardContent>
                 </Card>
                 <Button className="w-full py-5 text-base" style={{ background: c.nextButton, color: "white" }} onClick={handleNext}>
