@@ -181,11 +181,11 @@ const LearningOrbDialog = ({
   // Reorder steps based on DNA layer strength
   const adaptedSteps = useMemo(() => {
     if (!dna) return STEPS;
-    const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz" };
+    const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz", B: "breakdown", N: "recognize" };
     const preferred = LAYER_MAP[dna.layerStrength];
     if (!preferred) return STEPS;
-    // Keep breakdown first, move preferred step to second position
-    const rest = STEPS.filter(s => s.key !== "breakdown" && s.key !== preferred);
+    // Keep first step (Visualize), move preferred step to second position
+    const rest = STEPS.filter(s => s.key !== STEPS[0].key && s.key !== preferred);
     const preferredStep = STEPS.find(s => s.key === preferred);
     if (!preferredStep) return STEPS;
     return [STEPS[0], preferredStep, ...rest];
@@ -210,6 +210,10 @@ const LearningOrbDialog = ({
   const [quizRevealed, setQuizRevealed] = useState(false);
   const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+
+  // Recognize
+  const [recognizeSelected, setRecognizeSelected] = useState<number | null>(null);
+  const [recognizeRevealed, setRecognizeRevealed] = useState(false);
 
   // Etymology
   const [etymology, setEtymology] = useState<{ parts: { part: string; meaning: string; origin: string }[]; pronunciation: string; summary: string } | null>(null);
