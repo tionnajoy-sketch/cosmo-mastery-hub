@@ -12,6 +12,7 @@ import {
 import AppHeader from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useSoundsEnabled } from "@/hooks/useCoins";
+import SpeakButton from "@/components/SpeakButton";
 
 const methodLayers = [
   { icon: Eye, label: "Visualize", desc: "See the concept before defining it.", color: "hsl(215 80% 42%)", neuro: "Activates the visual cortex and pattern recognition." },
@@ -78,6 +79,24 @@ Let's get to work.
 
 — Tionna ✨`;
 
+const ABOUT_ME_TEXT = `My name is Tionna Joy Anderson, and I am a licensed cosmetologist, educator, and creator of the TJ Anderson Layer Method™.
+
+With over 20 years in the beauty industry and a background in business, leadership, and education, I've spent years helping people grow in both skill and confidence.
+
+I've worked with hundreds of clients and students, and one thing became clear:
+
+People don't struggle because they're incapable. They struggle because they haven't been taught in a way that connects.
+
+This platform is the result of that realization.
+
+This is about changing how people learn.`;
+
+const HOW_TO_USE_TEXT = howToSteps.map((s, i) => `Step ${i + 1}: ${s}`).join("\n");
+
+const OUTCOMES_TEXT = outcomes.map(o => `• ${o}`).join("\n");
+
+const METHOD_TEXT = methodLayers.map((l, i) => `Layer ${i + 1}: ${l.label}. ${l.desc} ${l.neuro}`).join("\n");
+
 const VOICE_SCRIPT = `Hey… it's Tionna…
 
 Before you start anything in here, I just want you to know…
@@ -97,26 +116,6 @@ This is about understanding.
 So take your time… breathe…
 
 and let's go through this together.`;
-
-const ABOUT_ME_TEXT = `My name is Tionna Joy Anderson, and I am a licensed cosmetologist, educator, and creator of the TJ Anderson Layer Method™.
-
-With over 20 years in the beauty industry and a background in business, leadership, and education, I've spent years helping people grow in both skill and confidence.
-
-I've worked with hundreds of clients and students, and one thing became clear:
-
-People don't struggle because they're incapable. They struggle because they haven't been taught in a way that connects.
-
-This platform is the result of that realization.
-
-This is about changing how people learn.`;
-
-const ABOUT_VOICE = `I've been doing this for over 20 years…
-
-but teaching… helping people understand…
-
-that's my passion.
-
-This app is me helping you connect the dots.`;
 
 const WelcomePage = () => {
   const navigate = useNavigate();
@@ -177,7 +176,6 @@ const WelcomePage = () => {
     }
   }, [isPlaying, cleanup, playVoice]);
 
-  // Auto-play voice for new visitors
   useEffect(() => {
     if (soundsEnabled && !hasAutoPlayed) {
       setHasAutoPlayed(true);
@@ -222,6 +220,10 @@ const WelcomePage = () => {
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
           <Card className="border-0 shadow-md bg-card">
             <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-display text-lg font-semibold text-foreground">Foreword</h2>
+                <SpeakButton text={FOREWORD_TEXT} label="Listen" size="sm" />
+              </div>
               <div className="text-sm leading-relaxed text-foreground/80 whitespace-pre-line">
                 {FOREWORD_TEXT}
               </div>
@@ -233,25 +235,23 @@ const WelcomePage = () => {
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-8">
           <Card className="border-0 shadow-md bg-card">
             <CardContent className="p-6">
-              <h2 className="font-display text-xl font-semibold text-foreground mb-3">Who I Am</h2>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-display text-xl font-semibold text-foreground">Who I Am</h2>
+                <SpeakButton text={ABOUT_ME_TEXT} label="Listen" size="sm" />
+              </div>
               <div className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
                 {ABOUT_ME_TEXT}
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => playVoice(ABOUT_VOICE)}
-                className="mt-3 gap-2 text-xs text-muted-foreground"
-              >
-                <Volume2 className="h-3.5 w-3.5" /> Hear Tionna
-              </Button>
             </CardContent>
           </Card>
         </motion.section>
 
         {/* TJ Anderson Layer Method™ */}
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
-          <h2 className="font-display text-xl font-semibold text-foreground mb-2">The TJ Anderson Layer Method™</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-display text-xl font-semibold text-foreground">The TJ Anderson Layer Method™</h2>
+            <SpeakButton text={METHOD_TEXT} label="Listen" size="sm" />
+          </div>
           <p className="text-sm text-muted-foreground mb-4">
             A neuroscience-based system — each layer activates a different part of your brain for deeper learning.
           </p>
@@ -279,7 +279,10 @@ const WelcomePage = () => {
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mb-8">
           <Card className="border-0 shadow-md bg-card">
             <CardContent className="p-6">
-              <h2 className="font-display text-xl font-semibold text-foreground mb-4">How to Use the App</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-xl font-semibold text-foreground">How to Use the App</h2>
+                <SpeakButton text={HOW_TO_USE_TEXT} label="Listen" size="sm" />
+              </div>
               <div className="space-y-4">
                 {howToSteps.map((step, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -296,7 +299,10 @@ const WelcomePage = () => {
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-8">
           <Card className="border-0 shadow-md bg-card">
             <CardContent className="p-6">
-              <h2 className="font-display text-xl font-semibold text-foreground mb-4">What You Will Walk Away With</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-xl font-semibold text-foreground">What You Will Walk Away With</h2>
+                <SpeakButton text={OUTCOMES_TEXT} label="Listen" size="sm" />
+              </div>
               <div className="space-y-3">
                 {outcomes.map((outcome, i) => (
                   <div key={i} className="flex items-center gap-3">
