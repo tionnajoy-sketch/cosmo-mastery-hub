@@ -10,6 +10,7 @@ import {
   Shuffle, BookOpen, PenLine, Puzzle, Timer, Zap, ChevronRight,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
+import SpeakButton from "@/components/SpeakButton";
 
 interface Section {
   id: string;
