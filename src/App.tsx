@@ -43,6 +43,8 @@ import CosmoConnectionGridPage from "./pages/CosmoConnectionGridPage";
 import AskTJFullScreen from "./components/AskTJFullScreen";
 import GameGridPage from "./pages/GameGridPage";
 import PracticeLabPage from "./pages/PracticeLabPage";
+import TJCafe from "./components/TJCafe";
+import { useStudyBreak } from "./hooks/useStudyBreak";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

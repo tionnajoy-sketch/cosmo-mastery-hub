@@ -231,8 +231,8 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
           exit={{ scale: 0 }}
           onClick={() => setOpen(true)}
           data-ask-tj-trigger
-          className="fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl flex items-center gap-2"
-          style={{ background: "linear-gradient(135deg, hsl(270 50% 52%), hsl(325 55% 52%))" }}
+          className="fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-lg flex items-center gap-2"
+          style={{ background: "hsl(30 10% 25%)", border: "1px solid hsl(30 8% 35%)" }}
         >
           <MessageCircle className="h-6 w-6 text-white" />
           <span className="text-white text-sm font-medium pr-1">Ask TJ</span>
@@ -247,38 +247,32 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[100] flex flex-col"
-      style={{ background: "hsl(240 15% 8%)" }}
+      style={{ background: "hsl(30 15% 96%)" }}
     >
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <img src={tjBackground} alt="" className="w-full h-full object-cover opacity-10" />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, hsl(240 20% 8% / 0.92), hsl(260 20% 10% / 0.95))" }} />
-      </div>
-
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-3 flex-shrink-0" style={{ background: "hsl(0 0% 0% / 0.3)", borderBottom: "1px solid hsl(0 0% 100% / 0.08)" }}>
+      <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-3 flex-shrink-0" style={{ background: "white", borderBottom: "1px solid hsl(30 10% 88%)", boxShadow: "0 1px 4px hsl(0 0% 0% / 0.04)" }}>
         <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 rounded-full overflow-hidden border-2 ${isSpeaking ? "border-purple-400 shadow-[0_0_16px_hsl(270_80%_60%/0.5)]" : "border-white/20"}`}>
+          <div className={`w-11 h-11 rounded-full overflow-hidden border-2 ${isSpeaking ? "border-amber-400 shadow-[0_0_12px_hsl(45_80%_55%/0.3)]" : "border-stone-200"}`}>
             <img src={tjBackground} alt="TJ" className="w-full h-full object-cover" />
           </div>
           <div>
-            <h2 className="text-white font-bold text-lg">TJ Mentor</h2>
-            <p className="text-white/50 text-xs">
+            <h2 className="font-bold text-base" style={{ color: "hsl(30 10% 15%)" }}>TJ Mentor</h2>
+            <p className="text-xs" style={{ color: "hsl(30 8% 50%)" }}>
               {isSpeaking ? "Speaking..." : phase === "awaiting_answer" || phase === "retest" ? "Waiting for your answer…" : "Your study guide"}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {isSpeaking && (
-            <button onClick={stopSpeaking} className="p-2 rounded-full hover:bg-white/10">
-              <Square className="h-4 w-4 text-white/80" />
+            <button onClick={stopSpeaking} className="p-2 rounded-full hover:bg-stone-100">
+              <Square className="h-4 w-4" style={{ color: "hsl(30 8% 40%)" }} />
             </button>
           )}
-          <button onClick={() => setVoiceEnabled(!voiceEnabled)} className="p-2 rounded-full hover:bg-white/10">
-            {voiceEnabled ? <Volume2 className="h-4 w-4 text-white/80" /> : <VolumeX className="h-4 w-4 text-white/50" />}
+          <button onClick={() => setVoiceEnabled(!voiceEnabled)} className="p-2 rounded-full hover:bg-stone-100">
+            {voiceEnabled ? <Volume2 className="h-4 w-4" style={{ color: "hsl(30 8% 40%)" }} /> : <VolumeX className="h-4 w-4" style={{ color: "hsl(30 8% 60%)" }} />}
           </button>
-          <button onClick={() => { stopSpeaking(); setOpen(false); }} className="p-2 rounded-full hover:bg-white/10">
-            <X className="h-5 w-5 text-white/80" />
+          <button onClick={() => { stopSpeaking(); setOpen(false); }} className="p-2 rounded-full hover:bg-stone-100">
+            <X className="h-5 w-5" style={{ color: "hsl(30 8% 40%)" }} />
           </button>
         </div>
       </div>
@@ -288,20 +282,20 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
         <div className="max-w-2xl mx-auto">
           {messages.length === 0 && (
             <div className="text-center py-12 space-y-6">
-              <div className="w-24 h-24 rounded-full overflow-hidden mx-auto border-3" style={{ borderColor: "hsl(270 40% 55%)" }}>
+              <div className="w-24 h-24 rounded-full overflow-hidden mx-auto border-2" style={{ borderColor: "hsl(30 10% 80%)" }}>
                 <img src={tjBackground} alt="TJ" className="w-full h-full object-cover" />
               </div>
               <div>
-                <h3 className="text-white font-display text-2xl font-bold mb-2">Hey, I'm TJ 💜</h3>
-                <p className="text-white/60 text-sm max-w-md mx-auto">
-                  Ask me anything about cosmetology, or let me generate a question to test your knowledge. I'll teach you — not just quiz you.
+                <h3 className="font-display text-2xl font-bold mb-2" style={{ color: "hsl(30 10% 15%)" }}>Hey, I'm TJ ✨</h3>
+                <p className="text-sm max-w-md mx-auto" style={{ color: "hsl(30 8% 45%)" }}>
+                  Ask me anything about your studies, or let me generate a question to test your knowledge. I'll teach you — not just quiz you.
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2">
-                <Button variant="outline" size="sm" onClick={generateQuestion} className="gap-2 border-white/20 text-white hover:bg-white/10">
+                <Button variant="outline" size="sm" onClick={generateQuestion} className="gap-2" style={{ borderColor: "hsl(30 10% 80%)", color: "hsl(30 10% 25%)" }}>
                   <Brain className="h-4 w-4" /> Generate a question
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => sendMessage("Break down the most important concept I need to know for the state board exam.")} className="gap-2 border-white/20 text-white hover:bg-white/10">
+                <Button variant="outline" size="sm" onClick={() => sendMessage("Break down the most important concept I need to know for the state board exam.")} className="gap-2" style={{ borderColor: "hsl(30 10% 80%)", color: "hsl(30 10% 25%)" }}>
                   <Sparkles className="h-4 w-4" /> Teach me something
                 </Button>
               </div>
@@ -316,25 +310,25 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start gap-3"}`}
             >
               {msg.role === "assistant" && (
-                <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 mt-1 border" style={{ borderColor: "hsl(270 30% 45%)" }}>
+                <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 mt-1 border" style={{ borderColor: "hsl(30 10% 80%)" }}>
                   <img src={tjBackground} alt="TJ" className="w-full h-full object-cover" />
                 </div>
               )}
               <div
-                className={`max-w-[85%] rounded-2xl px-5 py-3.5 text-sm leading-relaxed ${msg.role === "assistant" ? "shadow-lg" : ""}`}
+                className={`max-w-[85%] rounded-2xl px-5 py-3.5 text-sm leading-relaxed ${msg.role === "assistant" ? "shadow-sm" : ""}`}
                 style={
                   msg.role === "user"
-                    ? { background: "hsl(270 50% 48%)", color: "white" }
-                    : { background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 92%)", border: "1px solid hsl(0 0% 100% / 0.1)" }
+                    ? { background: "hsl(30 10% 25%)", color: "white" }
+                    : { background: "white", color: "hsl(30 10% 20%)", border: "1px solid hsl(30 10% 90%)" }
                 }
               >
                 {msg.role === "assistant" ? (
-                  <div className="prose prose-sm prose-invert max-w-none [&_p]:m-0 [&_ul]:my-1 [&_li]:my-0.5 [&_strong]:text-purple-300">
+                  <div className="prose prose-sm max-w-none [&_p]:m-0 [&_ul]:my-1 [&_li]:my-0.5 [&_strong]:text-amber-700">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 ) : msg.content}
                 {msg.role === "assistant" && !isSpeaking && voiceEnabled && (
-                  <button onClick={() => speakText(msg.content)} className="mt-2 text-[10px] flex items-center gap-1 opacity-50 hover:opacity-100" style={{ color: "hsl(270 40% 70%)" }}>
+                  <button onClick={() => speakText(msg.content)} className="mt-2 text-[10px] flex items-center gap-1 opacity-40 hover:opacity-80" style={{ color: "hsl(30 10% 35%)" }}>
                     <Volume2 className="h-3 w-3" /> Listen again
                   </button>
                 )}
@@ -344,11 +338,11 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
 
           {loading && (
             <div className="flex gap-3">
-              <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border" style={{ borderColor: "hsl(270 30% 45%)" }}>
+              <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border" style={{ borderColor: "hsl(30 10% 80%)" }}>
                 <img src={tjBackground} alt="TJ" className="w-full h-full object-cover" />
               </div>
-              <div className="rounded-2xl px-5 py-3.5" style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
-                <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+              <div className="rounded-2xl px-5 py-3.5" style={{ background: "white", border: "1px solid hsl(30 10% 90%)" }}>
+                <Loader2 className="h-5 w-5 animate-spin" style={{ color: "hsl(30 10% 50%)" }} />
               </div>
             </div>
           )}
@@ -364,7 +358,7 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
 
           {phase === "incorrect" && !loading && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center gap-3 pt-2">
-              <Button size="sm" onClick={handleRetest} className="gap-2" style={{ background: "hsl(265 55% 50%)", color: "white" }}>
+              <Button size="sm" onClick={handleRetest} className="gap-2" style={{ background: "hsl(30 10% 30%)", color: "white" }}>
                 <RefreshCw className="h-4 w-4" /> Re-Test Me
               </Button>
             </motion.div>
@@ -372,7 +366,7 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
 
           {(phase === "awaiting_answer" || phase === "retest") && !loading && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-2">
-              <p className="text-xs italic" style={{ color: "hsl(45 80% 65%)" }}>
+              <p className="text-xs italic" style={{ color: "hsl(45 60% 42%)" }}>
                 💡 Tell me what you think first — then I'll teach you.
               </p>
             </motion.div>
@@ -381,7 +375,7 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
       </div>
 
       {/* Input */}
-      <div className="relative z-10 px-4 sm:px-8 py-4 flex-shrink-0" style={{ background: "hsl(0 0% 0% / 0.3)", borderTop: "1px solid hsl(0 0% 100% / 0.08)" }}>
+      <div className="relative z-10 px-4 sm:px-8 py-4 flex-shrink-0" style={{ background: "white", borderTop: "1px solid hsl(30 10% 88%)" }}>
         <div className="max-w-2xl mx-auto flex gap-3 items-end">
           <div className="flex-1 relative">
             <Textarea
@@ -390,7 +384,7 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
               placeholder={phase === "awaiting_answer" || phase === "retest" ? "Type your answer..." : "Ask TJ anything..."}
               className="resize-none text-sm min-h-[48px] max-h-[100px] rounded-xl pr-10"
-              style={{ background: "hsl(0 0% 100% / 0.08)", color: "white", borderColor: "hsl(0 0% 100% / 0.15)" }}
+              style={{ background: "hsl(30 10% 97%)", color: "hsl(30 10% 15%)", borderColor: "hsl(30 10% 85%)" }}
               rows={1}
             />
             <div className="absolute right-1 bottom-1">
@@ -402,7 +396,7 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
             onClick={() => sendMessage()}
             disabled={!input.trim() || loading}
             className="px-4 py-3 rounded-xl"
-            style={{ background: "hsl(270 50% 52%)", color: "white" }}
+            style={{ background: "hsl(30 10% 25%)", color: "white" }}
           >
             <Send className="h-4 w-4" />
           </Button>
