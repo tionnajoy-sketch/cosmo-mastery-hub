@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.elevenlabs-tts]
 verify_jwt = false
+
+[functions.tj-learning-studio]
+verify_jwt = false
+
+[functions.dynamic-learning]
+verify_jwt = false
