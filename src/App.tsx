@@ -50,7 +50,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { showCafe, dismissCafe } = useStudyBreak();
+  const { showCafe, dismissCafe, isManual } = useStudyBreak();
   return (
     <>
       <ScrollToTop />
@@ -95,7 +95,7 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />
-      <TJCafe open={showCafe} onDismiss={dismissCafe} />
+      <TJCafe open={showCafe} onDismiss={dismissCafe} requiredMode={!isManual} />
     </>
   );
 };
