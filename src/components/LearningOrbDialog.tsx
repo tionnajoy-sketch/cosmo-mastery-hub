@@ -338,6 +338,21 @@ const LearningOrbDialog = ({
       case "information":
         if (expandedInfo) textToSpeak = expandedInfo.slice(0, 800);
         break;
+      case "recognize":
+        textToSpeak = `Can you identify ${block.term_title}? Choose the best description.`;
+        break;
+      case "visual":
+        textToSpeak = `Let's visualize ${block.term_title}. Your visual cortex remembers images much faster than text.`;
+        break;
+      case "reflection":
+        textToSpeak = `Take a moment to reflect on ${block.term_title}. How does this connect to what you already know?`;
+        break;
+      case "application":
+        textToSpeak = `Now let's apply what you know about ${block.term_title} in a real scenario.`;
+        break;
+      case "quiz":
+        textToSpeak = `Time to test yourself on ${block.term_title}. Let's see if you're exam ready.`;
+        break;
     }
     if (textToSpeak && currentStep > 0) {
       setTimeout(() => speakText(textToSpeak), 200);
