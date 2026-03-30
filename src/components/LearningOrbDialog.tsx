@@ -641,7 +641,7 @@ const LearningOrbDialog = ({
                     else if (quizRevealed && isSelected) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
                     else if (quizRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 45%)"; }
                     return (
-                      <motion.button key={i} onClick={() => { if (!quizRevealed) { setQuizSelected(letter); setQuizRevealed(true); if (isCorrect) addCoins(10, "correct"); } }}
+                      <motion.button key={i} onClick={() => { if (!quizRevealed) { setQuizSelected(letter); setQuizRevealed(true); const correct = isCorrect; if (correct) addCoins(10, "correct"); updateDNA({ quizCorrect: correct, layerCompleted: "quiz" }); } }}
                         className="w-full text-left p-4 rounded-xl text-sm font-medium transition-all"
                         style={{ background: bg, border: `2px solid ${border}`, color: c.bodyText }}
                         disabled={quizRevealed}
