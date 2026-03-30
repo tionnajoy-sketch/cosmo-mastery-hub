@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
+// Global event to open cafe from anywhere
+export const openTJCafe = () => {
+  window.dispatchEvent(new CustomEvent("open-tj-cafe"));
+};
+
 const BREAK_INTERVAL_MS = 60 * 60 * 1000; // 60 minutes
 const SESSION_KEY = "tj_study_start_time";
 
