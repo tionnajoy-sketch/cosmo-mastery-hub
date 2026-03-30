@@ -8,11 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import {
-  BookOpen, ArrowRight, Target, TrendingUp,
-  CheckCircle2, Flame, Heart, Shield,
-  Brain, Sparkles, Eye, Upload, Gamepad2,
-  Pen, MessageSquare, GraduationCap, RefreshCw,
-  Lightbulb, PenLine, Wrench, HelpCircle, Mic, Fingerprint,
+  BookOpen, Target, TrendingUp,
+  CheckCircle2, Flame, Gamepad2,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors } from "@/lib/colors";
@@ -22,51 +19,6 @@ import DailyPopQuestion from "@/components/DailyPopQuestion";
 import StudentContract from "@/components/StudentContract";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
-import { openTJChat } from "@/components/AskTJFullScreen";
-import AppTutorialVideo from "@/components/AppTutorialVideo";
-
-const c = pageColors.home;
-
-interface Section {
-  id: string;
-  name: string;
-  description: string;
-  order: number;
-  color_theme: string;
-}
-
-interface SectionProgress {
-  totalBlocks: number;
-  completedBlocks: number;
-}
-
-const outcomes = [
-  { icon: Shield, label: "Confidence to pass your state board exam", color: "hsl(185 45% 42%)" },
-  { icon: Brain, label: "Deep understanding of cosmetology theory", color: "hsl(265 40% 55%)" },
-  { icon: Target, label: "Test taking strategies that work", color: "hsl(25 65% 50%)" },
-  { icon: Heart, label: "Knowledge that stays with you throughout your career", color: "hsl(346 45% 56%)" },
-];
-
-const methodLayers = [
-  { icon: Eye,         label: "Visualize",      desc: "See the concept before defining it.",                     color: "hsl(215 80% 42%)", neuro: "Visual cortex & pattern recognition" },
-  { icon: BookOpen,    label: "Define",          desc: "Understand the concept in clear language.",               color: "hsl(45 90% 40%)",  neuro: "Language processing & labeling" },
-  { icon: Mic,         label: "Break It Down",   desc: "Decode word roots and origins.",                         color: "hsl(30 85% 45%)",  neuro: "Analytical processing & decoding" },
-  { icon: Fingerprint, label: "Recognize",       desc: "Identify the concept visually.",                         color: "hsl(275 70% 50%)", neuro: "Spatial memory & recall" },
-  { icon: Lightbulb,   label: "Metaphor",        desc: "Connect the concept to real life.",                      color: "hsl(265 72% 48%)", neuro: "Limbic system & emotional association" },
-  { icon: Heart,       label: "Information",     desc: "Expand understanding with deeper context.",              color: "hsl(180 60% 32%)", neuro: "Comprehension & deeper reasoning" },
-  { icon: PenLine,     label: "Reflect",         desc: "Process the idea in your own words.",                    color: "hsl(220 20% 35%)", neuro: "Metacognition & self-awareness" },
-  { icon: Wrench,      label: "Apply",           desc: "Use knowledge in real scenarios.",                       color: "hsl(145 65% 32%)", neuro: "Active recall & problem-solving" },
-  { icon: HelpCircle,  label: "Assess",          desc: "Practice state board style questions.",                  color: "hsl(0 75% 45%)",   neuro: "Performance & test readiness" },
-];
-
-const howToSteps = [
-  "Choose a Study Module",
-  "Work Through Each Block's 9 Layers",
-  "Follow the Guided Sequence",
-  "Use Ask TJ Mentor for Help",
-  "Practice Activities & Quizzes",
-  "Track Your Progress",
-];
 
 const getStatusLabel = (percent: number) => {
   if (percent === 0) return { label: "Just Starting", color: "hsl(200 50% 50%)" };
