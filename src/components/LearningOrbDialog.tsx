@@ -45,6 +45,14 @@ const STEPS: StepDef[] = [
     neuroNote: "Phonetic decoding activates language processing centers, building neural pathways for recall.",
   },
   {
+    key: "application",
+    label: "Apply It",
+    color: "hsl(145 65% 32%)",
+    gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))",
+    caption: "Now put your knowledge to work…",
+    neuroNote: "Active recall and problem-solving transfer knowledge from short-term to long-term memory.",
+  },
+  {
     key: "definition",
     label: "Definition",
     color: "hsl(45 90% 40%)",
@@ -70,7 +78,7 @@ const STEPS: StepDef[] = [
   },
   {
     key: "information",
-    label: "Information",
+    label: "Going Deeper",
     color: "hsl(320 55% 48%)",
     gradient: "linear-gradient(135deg, hsl(320 55% 48%), hsl(330 60% 54%))",
     caption: "Let me go deeper with you on this…",
@@ -81,20 +89,12 @@ const STEPS: StepDef[] = [
     label: "Reflection",
     color: "hsl(25 65% 50%)",
     gradient: "linear-gradient(135deg, hsl(25 65% 50%), hsl(30 70% 55%))",
-    caption: "You're doing great… now connect it to your life.",
+    caption: "Connect this to the metaphor and your life…",
     neuroNote: "Metacognition and self-referencing activate the prefrontal cortex for deep internalization.",
   },
   {
-    key: "application",
-    label: "Application",
-    color: "hsl(145 65% 32%)",
-    gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))",
-    caption: "Now put your knowledge to work in the salon…",
-    neuroNote: "Active recall and problem-solving transfer knowledge from short-term to long-term memory.",
-  },
-  {
     key: "quiz",
-    label: "State Board Quiz",
+    label: "Knowledge Check",
     color: "hsl(0 75% 45%)",
     gradient: "linear-gradient(135deg, hsl(0 75% 45%), hsl(10 80% 50%))",
     caption: "Let's see if you're exam-ready…",
@@ -587,11 +587,18 @@ const LearningOrbDialog = ({
       case "reflection":
         return (
           <motion.div key="reflection" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-4">
+            {/* Connect reflection to metaphor for emotional + cognitive learning */}
+            {block.metaphor && (
+              <div className="px-4 py-3 rounded-xl" style={{ background: "hsl(265 40% 96%)", border: "1.5px solid hsl(265 40% 85%)" }}>
+                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(265 50% 50%)" }}>💭 Recall the Metaphor</p>
+                <p className="text-sm italic leading-relaxed" style={{ color: "hsl(265 30% 35%)" }}>"{block.metaphor}"</p>
+              </div>
+            )}
             <p className="text-lg font-display font-semibold text-center" style={{ color: step.color }}>
               How does {block.term_title} connect to your experience?
             </p>
             <p className="text-base leading-relaxed text-center" style={{ color: c.bodyText }}>
-              {block.reflection_prompt || `In your own words, explain what ${block.term_title} means and why it matters in your career.`}
+              {block.reflection_prompt || `Think about the metaphor above. In your own words, explain what ${block.term_title} means and why it matters in your career.`}
             </p>
             <div className="relative">
               <textarea
