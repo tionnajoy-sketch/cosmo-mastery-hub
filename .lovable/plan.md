@@ -1,51 +1,39 @@
 
 
-## Problem Analysis
+## Plan: Unify Module View with Colorful Game Grid
 
-The image upload to TJ Blocks is failing because phone camera photos (like the uploaded real estate vocabulary sheets) are typically 3-8MB. When base64-encoded, they grow ~33% larger. This exceeds the Supabase Edge Function's request body size limit (~6MB), causing the request to fail silently or with an error.
+**Goal**: Replace the current whiteboard-style term list in `ModuleViewPage.tsx` with the same dark-themed, colorful tile grid used in `GameGridPage.tsx`.
 
-Additionally, the system only handles one image file at a time, but the user uploaded two pages.
+---
 
-## Plan
+### What Changes
 
-### 1. Client-Side Image Compression (UploadPage.tsx)
+**File: `src/pages/ModuleViewPage.tsx`** — Full visual overhaul
 
-Before converting to base64, resize and compress the image on the client side using an HTML Canvas:
-- Scale images down to max 1600px on the longest side (sufficient for OCR/text reading)
-- Compress to JPEG at 0.7 quality
-- This typically reduces a 5MB phone photo to ~200-400KB base64
-- Apply this compression in the `convertToBlocks` function before sending to the edge function
+1. **Dark background** — Match the Game Grid's gradient (`hsl(240 15% 8%)` to `hsl(260 20% 12%)`)
 
-### 2. Multi-Image Support (UploadPage.tsx)
+2. **Stats strip at top** — Show streak, module block count, mastered count, and coins in the same glassmorphic stat cards
 
-Allow users to select multiple image files at once:
-- When multiple images are selected, process each as a separate "page/chunk"
-- Each image gets its own call to the edge function with `chunkIndex` and `totalChunks`
-- All resulting blocks are combined into a single module
-- Update the file input to accept `multiple` for images
+3. **Replace whiteboard term list with colorful tile grid** — Use the same `grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5` layout with:
+   - `TILE_COLORS` array for gradient backgrounds per tile
+   - Status-based coloring (gold for mastered, green for completed, default gradients for new/active)
+   - Status badges (NEW / IN PROGRESS / MASTERED)
+   - Progress bars showing layers completed
+   - Hover scale animations
+   - Trophy/CheckCircle icons
 
-### 3. Edge Function Robustness (process-upload/index.ts)
+4. **Group by block number** — Keep the block-based grouping but use the same section divider style (gold text, horizontal gradient lines, collapsible toggle, progress bar per block)
 
-- Add a size check and log for the incoming `imageDataUrl` length
-- Increase the timeout slightly for image processing (images take longer for the AI to analyze)
-- Ensure proper error messages are returned when the payload is too large
+5. **Block action buttons** — Keep Learn/Practice/Quiz buttons below each block group, styled to match the dark theme (outline buttons with accent colors)
+
+6. **Quiz Bank card** — Restyle to match the dark theme
+
+7. **Remove** the TJ background photo split layout and whiteboard container — replace entirely with the grid experience
 
 ### Technical Details
 
-**Image compression utility** (new helper in UploadPage or a lib file):
-```
-compressImage(file: File, maxDimension: 1600, quality: 0.7) → Promise<string>
-```
-Uses `createImageBitmap` + `canvas.toBlob` to resize and compress, then `FileReader.readAsDataURL` on the resulting blob.
-
-**Multi-file flow**:
-- File input gets `multiple` attribute when image types are detected
-- Each image becomes its own content chunk with its own `imageDataUrl`
-- The edge function processes each independently, returning blocks per image
-- All blocks merge into one module
-
-### Files to Modify
-
-1. **src/pages/UploadPage.tsx** — Add image compression, multi-image support, update file input
-2. **supabase/functions/process-upload/index.ts** — Add payload size logging, better error handling for large payloads
+- Import `TILE_COLORS` pattern (or define matching array) and status badge logic from GameGridPage
+- Track completed terms via `completedTerms` set to determine tile status (new vs completed vs mastered)
+- Each tile click continues to open `LearningOrchestrator` as it does now
+- Mobile header simplified to dark gradient with module title
 
