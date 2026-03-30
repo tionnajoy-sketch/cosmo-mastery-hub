@@ -61,9 +61,13 @@ const AppHeader = () => {
                 <GraduationCap className="h-4 w-4 mr-2" /> Final Exam
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/welcome")}>
+                <Library className="h-4 w-4 mr-2" /> Foreword
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => openTJChat(false)}>
                 <MessageCircle className="h-4 w-4 mr-2" /> Ask TJ
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/upload")}>
                 <Upload className="h-4 w-4 mr-2" /> Create Study Blocks
               </DropdownMenuItem>
@@ -74,9 +78,6 @@ const AppHeader = () => {
                 <Lightbulb className="h-4 w-4 mr-2" /> My TJ Insights
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => openTJChat(true)}>
-                <Play className="h-4 w-4 mr-2" /> App Tutorial
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/terms")}>
                 <Shield className="h-4 w-4 mr-2" /> Terms of Use
               </DropdownMenuItem>

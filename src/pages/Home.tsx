@@ -134,7 +134,17 @@ const Home = () => {
     fetchProgress();
   }, [user, sections]);
 
-  const firstName = profile?.name?.split(" ")[0] || "Beautiful";
+  const firstName = profile?.name?.split(" ")[0] || "Student";
+
+  // DNA-driven confidence message
+  const dnaConfidence = profile?.dna_confidence;
+  const confidenceMessage = (() => {
+    if (!dnaConfidence) return "Every step you take builds something real. Let's keep going.";
+    const code = dnaConfidence.charCodeAt(0);
+    if (code <= 104) return "You're doing better than you think. Let's take it one step at a time — I'm right here with you.";
+    if (code <= 113) return "You're building real knowledge. Trust the process — it's working.";
+    return "You're showing real confidence. Let's push even further today.";
+  })();
   const overallPercent = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
   const status = getStatusLabel(overallPercent);
   const pieData = [
@@ -163,23 +173,20 @@ const Home = () => {
             Welcome back, {firstName} ✨
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed mb-1">
-            You are building something powerful. Every concept you study brings you closer to the professional you are becoming.
+            {confidenceMessage}
           </p>
-          <p className="text-xs italic" style={{ color: "hsl(185 30% 50%)" }}>
-            TJ Test Prep is your calm, encouraging study space — breathe, learn, and let it stick.
-          </p>
-          <div className="flex items-center gap-3 mt-3">
-            <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground" onClick={() => navigate("/welcome")}>
-              <BookOpen className="h-3.5 w-3.5" /> Foreword
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <Button className="py-6 text-sm font-display font-semibold gap-2 shadow-lg" onClick={() => navigate("/learn")}>
+              <BookOpen className="h-5 w-5" /> Start Learning
             </Button>
-            <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground" onClick={() => navigate("/pretest")}>
-              <RefreshCw className="h-3.5 w-3.5" /> Retake Learning Style Quiz
+            <Button variant="secondary" className="py-6 text-sm font-display font-semibold gap-2 shadow-md" onClick={() => navigate("/practice-lab")}>
+              <Gamepad2 className="h-5 w-5" /> Practice Lab
             </Button>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-3 grid grid-cols-2 gap-3">
             <AppTutorialVideo variant="card" label="Watch Tutorial Video" />
             <button
-              onClick={() => openTJChat(true)}
+              onClick={() => openTJChat(false)}
               className="relative rounded-xl overflow-hidden aspect-video bg-gradient-to-br from-primary/10 to-accent/10 border border-border/40 hover:border-primary/30 transition-all group cursor-pointer"
             >
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
