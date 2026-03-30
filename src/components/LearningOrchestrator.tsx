@@ -30,7 +30,7 @@ const STEP_LABELS: Record<string, string> = {
   definition: "Definition",
   visual: "Visualization",
   metaphor: "Metaphor",
-  information: "Going Deeper",
+  information: "Information",
   reflection: "Reflection",
   quiz: "Knowledge Check",
 };

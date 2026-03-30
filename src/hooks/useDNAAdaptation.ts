@@ -22,7 +22,7 @@ export interface AdaptationRules {
   toneModifier: "supportive" | "neutral" | "challenging";
 }
 
-// 9-step sequence: Visualize → Define → Break It Down → Recognize → Metaphor → Going Deeper → Reflect → Apply → Assess
+// 9-step sequence: Visualize → Define → Break It Down → Recognize → Metaphor → Information → Reflect → Apply → Assess
 const DEFAULT_STEPS = ["visual", "definition", "breakdown", "recognize", "metaphor", "information", "reflection", "application", "quiz"];
 
 const LAYER_TO_STEP: Record<string, string> = {
