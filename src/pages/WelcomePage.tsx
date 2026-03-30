@@ -48,12 +48,13 @@ const WelcomePage = () => {
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center mb-10">
           <div className="inline-flex items-center gap-2 mb-4">
             <Heart className="h-7 w-7" style={{ color: "hsl(346 45% 56%)" }} />
-            <span className="font-display text-3xl font-bold text-foreground">CosmoPrep</span>
+            <span className="font-display text-3xl font-bold text-foreground">TJ Test Prep</span>
           </div>
           <h1 className="font-display text-4xl font-bold mb-2" style={{ background: "linear-gradient(135deg, hsl(346 45% 56%), hsl(280 50% 55%), hsl(25 70% 55%))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            Welcome to CosmoPrep
+            Foreword
           </h1>
-          <p className="text-base text-muted-foreground mb-4">Powered by The TJ Anderson Layer Method™</p>
+          <p className="text-base text-muted-foreground mb-1">By Tionna Joy Anderson</p>
+          <p className="text-sm text-muted-foreground mb-4">Powered by The TJ Anderson Layer Method™</p>
           <AppTutorialVideo variant="card" label="Watch How to Navigate the App" />
         </motion.div>
 

@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   BookOpen, Menu, LogOut, BarChart3, Upload, Sparkles,
-  Shield, Brain, Gamepad2, Lightbulb,
-  Volume2, VolumeX, Trophy, GraduationCap, MessageCircle, Play, Grid3X3, Library,
+  Shield, Gamepad2,
+  Volume2, VolumeX, GraduationCap, MessageCircle, Play, Library, Lightbulb, Grid3X3,
 } from "lucide-react";
 import CoinDisplay from "@/components/CoinDisplay";
 
@@ -48,30 +48,17 @@ const AppHeader = () => {
               <DropdownMenuItem onClick={() => navigate("/")}>
                 <BookOpen className="h-4 w-4 mr-2" /> Dashboard
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/study-modules")}>
-                <Library className="h-4 w-4 mr-2" /> Study Modules
+              <DropdownMenuItem onClick={() => navigate("/learn")}>
+                <Grid3X3 className="h-4 w-4 mr-2" /> Learn
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/strategy")}>
+              <DropdownMenuItem onClick={() => navigate("/practice-lab")}>
                 <Gamepad2 className="h-4 w-4 mr-2" /> Practice Lab
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/progress")}>
                 <BarChart3 className="h-4 w-4 mr-2" /> Progress Tracker
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/leaderboard")}>
-                <Trophy className="h-4 w-4 mr-2" /> Leaderboard
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/comprehensive-exam")}>
-                <GraduationCap className="h-4 w-4 mr-2" /> State Board Final Exam
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/cosmo-grid")}>
-                <Grid3X3 className="h-4 w-4 mr-2" /> Connection Grid™
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/strategy")}>
-                <Gamepad2 className="h-4 w-4 mr-2" /> Activities
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/study-modules")}>
-                <Brain className="h-4 w-4 mr-2" /> Quizzes & Testing
+                <GraduationCap className="h-4 w-4 mr-2" /> Final Exam
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => openTJChat(false)}>

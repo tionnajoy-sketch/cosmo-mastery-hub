@@ -42,6 +42,7 @@ import ComprehensiveFinalExamPage from "./pages/ComprehensiveFinalExamPage";
 import CosmoConnectionGridPage from "./pages/CosmoConnectionGridPage";
 import AskTJFullScreen from "./components/AskTJFullScreen";
 import GameGridPage from "./pages/GameGridPage";
+import PracticeLabPage from "./pages/PracticeLabPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -85,7 +86,10 @@ const App = () => (
               <Route path="/module/:id/activity/:block" element={<ProtectedRoute><ModuleActivityPage /></ProtectedRoute>} />
               <Route path="/module/:id/quiz-bank" element={<ProtectedRoute><ModuleQuizBankPage /></ProtectedRoute>} />
               <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
+              <Route path="/learn" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
               <Route path="/study-modules" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
+              <Route path="/practice-lab" element={<ProtectedRoute><PracticeLabPage /></ProtectedRoute>} />
+              <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
               <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
               <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />
               <Route path="/cosmo-grid" element={<ProtectedRoute><CosmoConnectionGridPage /></ProtectedRoute>} />

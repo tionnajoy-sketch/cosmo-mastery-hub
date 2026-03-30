@@ -340,29 +340,7 @@ const GameGridPage = () => {
                         })}
                       </div>
 
-                      {/* Activity & Testing Section */}
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {(() => {
-                          const blocks = new Set(sectionTerms.map(t => t.block_number));
-                          const blockNums = Array.from(blocks).sort((a, b) => a - b);
-                          return blockNums.map(bn => (
-                            <div key={bn} className="flex gap-1.5">
-                              <Button size="sm" variant="outline" className="text-xs border-white/15 text-white/70 hover:text-white hover:bg-white/10"
-                                onClick={(e) => { e.stopPropagation(); navigate(`/section/${sectionId}/activity/${bn}`); }}>
-                                <Gamepad2 className="h-3 w-3 mr-1" /> Block {bn} Activities
-                              </Button>
-                              <Button size="sm" variant="outline" className="text-xs border-white/15 text-white/70 hover:text-white hover:bg-white/10"
-                                onClick={(e) => { e.stopPropagation(); navigate(`/section/${sectionId}/quiz/${bn}`); }}>
-                                <Brain className="h-3 w-3 mr-1" /> Block {bn} Quiz
-                              </Button>
-                            </div>
-                          ));
-                        })()}
-                        <Button size="sm" className="text-xs ml-auto" style={{ background: "hsl(42 60% 50%)", color: "hsl(42 30% 10%)" }}
-                          onClick={(e) => { e.stopPropagation(); navigate(`/section/${sectionId}/final-exam`); }}>
-                          <GraduationCap className="h-3.5 w-3.5 mr-1" /> Final Exam
-                        </Button>
-                      </div>
+                      {/* Activities moved to Practice Lab */}
                     </motion.div>
                   )}
                 </AnimatePresence>
