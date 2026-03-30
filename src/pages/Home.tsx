@@ -199,18 +199,32 @@ const Home = () => {
           {cafeMinutesLeft !== null && (
             <motion.button
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
+              animate={
+                cafeMinutesLeft === 0
+                  ? { opacity: 1, scale: [1, 1.03, 1] }
+                  : cafeMinutesLeft !== null && cafeMinutesLeft <= 5
+                    ? { opacity: 1, scale: [1, 1.02, 1] }
+                    : { opacity: 1 }
+              }
+              transition={
+                cafeMinutesLeft === 0
+                  ? { opacity: { delay: 0.6 }, scale: { repeat: Infinity, duration: 1.5, ease: "easeInOut" } }
+                  : cafeMinutesLeft !== null && cafeMinutesLeft <= 5
+                    ? { opacity: { delay: 0.6 }, scale: { repeat: Infinity, duration: 2, ease: "easeInOut" } }
+                    : { delay: 0.6 }
+              }
               onClick={() => openTJCafe()}
               className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl w-full transition-all hover:scale-[1.01]"
               style={{
                 background: cafeMinutesLeft === 0
                   ? "linear-gradient(135deg, hsl(0 75% 50%), hsl(45 90% 55%))"
-                  : "hsl(30 15% 94%)",
+                  : cafeMinutesLeft !== null && cafeMinutesLeft <= 5
+                    ? "hsl(42 40% 92%)"
+                    : "hsl(30 15% 94%)",
                 color: cafeMinutesLeft === 0 ? "white" : "hsl(30 10% 35%)",
               }}
             >
-              <Coffee className="h-4 w-4 flex-shrink-0" />
+              <Coffee className={`h-4 w-4 flex-shrink-0 ${cafeMinutesLeft !== null && cafeMinutesLeft <= 5 ? "animate-pulse" : ""}`} />
               <span className="text-sm font-medium">
                 {cafeMinutesLeft === 0
                   ? "☕ Your TJ Cafe break is ready — take a moment"
