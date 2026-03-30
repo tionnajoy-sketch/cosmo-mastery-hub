@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -12,6 +12,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
+import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import { pageColors } from "@/lib/colors";
 import { fireBlockCompleteConfetti } from "@/lib/confetti";
 import SpeakButton from "@/components/SpeakButton";
@@ -162,9 +163,23 @@ const fetchTTS = async (text: string): Promise<HTMLAudioElement | null> => {
 const LearningOrbDialog = ({
   open, onOpenChange, block, onNotesChange, mode = "uploaded", blockIndex = 0, onComplete,
 }: LearningOrbDialogProps) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
+  const { dna, rules, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
+
+  // Reorder steps based on DNA layer strength
+  const adaptedSteps = useMemo(() => {
+    if (!dna) return STEPS;
+    const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz" };
+    const preferred = LAYER_MAP[dna.layerStrength];
+    if (!preferred) return STEPS;
+    // Keep breakdown first, move preferred step to second position
+    const rest = STEPS.filter(s => s.key !== "breakdown" && s.key !== preferred);
+    const preferredStep = STEPS.find(s => s.key === preferred);
+    if (!preferredStep) return STEPS;
+    return [STEPS[0], preferredStep, ...rest];
+  }, [dna]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completed, setCompleted] = useState(false);
