@@ -10,6 +10,7 @@ import { ArrowLeft, CheckCircle2, XCircle, Brain, Heart, Target, Eye, BookOpen, 
 import { pageColors } from "@/lib/colors";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useCoins } from "@/hooks/useCoins";
+import SpeakButton from "@/components/SpeakButton";
 
 const c = pageColors.quiz;
 
