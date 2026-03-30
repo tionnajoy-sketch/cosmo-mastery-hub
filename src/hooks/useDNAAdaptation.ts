@@ -13,23 +13,18 @@ export interface DNAProfile {
 }
 
 export interface AdaptationRules {
-  /** Reordered step keys — strongest layer first */
   stepOrder: string[];
-  /** Encouragement messages to inject */
   encouragement: string[];
-  /** Content depth: "brief" | "standard" | "deep" */
   contentDepth: "brief" | "standard" | "deep";
-  /** Difficulty level for quizzes/apply */
   difficulty: "guided" | "standard" | "challenge";
-  /** Whether to add memory cues */
   addMemoryCues: boolean;
-  /** Whether to break content into smaller steps */
   microSteps: boolean;
-  /** Caption modifier for the TJ voice */
   toneModifier: "supportive" | "neutral" | "challenging";
 }
 
-const DEFAULT_STEPS = ["breakdown", "definition", "visual", "metaphor", "information", "reflection", "application", "quiz"];
+// Updated default step order per restructuring:
+// Word Breakdown → Apply It → Definition → Visualization → Metaphor → Going Deeper → Reflection → Knowledge Check
+const DEFAULT_STEPS = ["breakdown", "application", "definition", "visual", "metaphor", "information", "reflection", "quiz"];
 
 const LAYER_TO_STEP: Record<string, string> = {
   D: "definition",
@@ -44,17 +39,17 @@ const LAYER_TO_STEP: Record<string, string> = {
 function parseRetention(char: string | null): DNAProfile["retention"] {
   if (!char) return "developing";
   const code = char.toUpperCase().charCodeAt(0);
-  if (code <= 72) return "low";       // A-H
-  if (code <= 81) return "developing"; // I-Q
-  return "strong";                     // R-Z
+  if (code <= 72) return "low";
+  if (code <= 81) return "developing";
+  return "strong";
 }
 
 function parseConfidence(char: string | null): DNAProfile["confidence"] {
   if (!char) return "developing";
   const code = char.toLowerCase().charCodeAt(0);
-  if (code <= 104) return "low";        // a-h
-  if (code <= 113) return "developing"; // i-q
-  return "high";                        // r-z
+  if (code <= 104) return "low";
+  if (code <= 113) return "developing";
+  return "high";
 }
 
 export function parseDNACode(code: string | null): DNAProfile | null {
@@ -81,7 +76,7 @@ export function buildAdaptationRules(dna: DNAProfile | null): AdaptationRules {
     };
   }
 
-  // 1. Reorder steps — put strongest layer earlier
+  // Reorder steps — put strongest layer after breakdown (always first)
   const preferredStep = LAYER_TO_STEP[dna.layerStrength] || "definition";
   const stepOrder = [
     "breakdown", // always first
@@ -89,7 +84,6 @@ export function buildAdaptationRules(dna: DNAProfile | null): AdaptationRules {
     ...DEFAULT_STEPS.filter(s => s !== "breakdown" && s !== preferredStep),
   ];
 
-  // 2. Confidence adaptations
   const encouragement: string[] = [];
   let difficulty: AdaptationRules["difficulty"] = "standard";
   let microSteps = false;
@@ -109,13 +103,12 @@ export function buildAdaptationRules(dna: DNAProfile | null): AdaptationRules {
     toneModifier = "challenging";
   }
 
-  // 3. Retention adaptations
   let addMemoryCues = false;
   let contentDepth: AdaptationRules["contentDepth"] = "standard";
 
   if (dna.retention === "low") {
     addMemoryCues = true;
-    contentDepth = "brief"; // shorter but more repetitive
+    contentDepth = "brief";
     if (!encouragement.length) {
       encouragement.push("Let's review the key points one more time to lock them in.");
     }
@@ -123,7 +116,6 @@ export function buildAdaptationRules(dna: DNAProfile | null): AdaptationRules {
     contentDepth = "deep";
   }
 
-  // 4. Engagement adaptations
   if (dna.engagement <= 3) {
     contentDepth = "brief";
     microSteps = true;
@@ -152,44 +144,35 @@ export const useDNAAdaptation = () => {
   const updateDNA = useCallback(async (interaction: InteractionData) => {
     if (!user || !profile) return;
 
-    // Get current metrics
     let engagement = profile.dna_engagement ?? 5;
     let retentionChar = profile.dna_retention || "M";
     let confidenceChar = profile.dna_confidence || "m";
     let layerStrength = profile.dna_layer_strength || "D";
 
-    // Adjust engagement (0-9) based on time and completion
     if (interaction.timeSpentSeconds !== undefined) {
       if (interaction.timeSpentSeconds > 60) engagement = Math.min(9, engagement + 1);
       else if (interaction.timeSpentSeconds < 10) engagement = Math.max(0, engagement - 1);
     }
 
-    // Adjust retention based on quiz results
     if (interaction.quizCorrect !== undefined) {
       const retCode = retentionChar.toUpperCase().charCodeAt(0);
       if (interaction.quizCorrect) {
-        const newCode = Math.min(90, retCode + 1); // move toward Z
-        retentionChar = String.fromCharCode(newCode);
+        retentionChar = String.fromCharCode(Math.min(90, retCode + 1));
       } else {
-        const newCode = Math.max(65, retCode - 1); // move toward A
-        retentionChar = String.fromCharCode(newCode);
+        retentionChar = String.fromCharCode(Math.max(65, retCode - 1));
       }
     }
 
-    // Adjust confidence based on reflection depth and quiz success
     if (interaction.reflectionLength !== undefined && interaction.reflectionLength > 50) {
       const confCode = confidenceChar.toLowerCase().charCodeAt(0);
-      const newCode = Math.min(122, confCode + 1); // move toward z
-      confidenceChar = String.fromCharCode(newCode);
+      confidenceChar = String.fromCharCode(Math.min(122, confCode + 1));
     }
     if (interaction.quizCorrect === true) {
       const confCode = confidenceChar.toLowerCase().charCodeAt(0);
-      const newCode = Math.min(122, confCode + 1);
-      confidenceChar = String.fromCharCode(newCode);
+      confidenceChar = String.fromCharCode(Math.min(122, confCode + 1));
     } else if (interaction.quizCorrect === false) {
       const confCode = confidenceChar.toLowerCase().charCodeAt(0);
-      const newCode = Math.max(97, confCode - 1);
-      confidenceChar = String.fromCharCode(newCode);
+      confidenceChar = String.fromCharCode(Math.max(97, confCode - 1));
     }
 
     const newCode = `${layerStrength}${engagement}${retentionChar}${confidenceChar}`;
@@ -207,18 +190,17 @@ export const useDNAAdaptation = () => {
     }
   }, [user, profile, refreshProfile]);
 
-  /** Get an encouragement message based on current DNA */
   const getEncouragement = useCallback((): string | null => {
     if (!rules.encouragement.length) return null;
     return rules.encouragement[Math.floor(Math.random() * rules.encouragement.length)];
   }, [rules.encouragement]);
 
-  /** Get step caption modifier based on DNA */
   const getAdaptedCaption = useCallback((originalCaption: string, stepKey: string): string => {
     if (!dna) return originalCaption;
 
     if (rules.toneModifier === "supportive") {
       const prefixes: Record<string, string> = {
+        breakdown: "Take your time with this — we'll go step by step…",
         definition: "Take your time with this — we'll go step by step…",
         visual: "Pictures help a lot — let's see it together…",
         metaphor: "I love this part — let me tell you a story…",
@@ -232,6 +214,7 @@ export const useDNAAdaptation = () => {
 
     if (rules.toneModifier === "challenging") {
       const prefixes: Record<string, string> = {
+        breakdown: "You probably know this already — prove it.",
         definition: "You probably know this already — prove it.",
         visual: "Quick scan — what patterns do you see?",
         metaphor: "Think beyond the surface — what's the real connection?",

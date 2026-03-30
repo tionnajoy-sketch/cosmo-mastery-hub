@@ -166,11 +166,11 @@ const Home = () => {
             You are building something powerful. Every concept you study brings you closer to the professional you are becoming.
           </p>
           <p className="text-xs italic" style={{ color: "hsl(185 30% 50%)" }}>
-            CosmoPrep is your calm, encouraging study space — breathe, learn, and let it stick.
+            TJ Test Prep is your calm, encouraging study space — breathe, learn, and let it stick.
           </p>
           <div className="flex items-center gap-3 mt-3">
             <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground" onClick={() => navigate("/welcome")}>
-              <BookOpen className="h-3.5 w-3.5" /> View Welcome Guide
+              <BookOpen className="h-3.5 w-3.5" /> Foreword
             </Button>
             <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground" onClick={() => navigate("/pretest")}>
               <RefreshCw className="h-3.5 w-3.5" /> Retake Learning Style Quiz
@@ -370,9 +370,9 @@ const Home = () => {
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
           <Button
             className="w-full py-6 text-base font-display font-semibold gap-2 shadow-lg"
-            onClick={() => document.getElementById("study-sections")?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => navigate("/study-modules")}
           >
-            <BookOpen className="h-5 w-5" /> Continue Learning
+            <BookOpen className="h-5 w-5" /> Start Studying
           </Button>
         </motion.section>
 
