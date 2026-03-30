@@ -15,7 +15,7 @@ import {
   BookOpen, Menu, LogOut, BarChart3, Upload, Sparkles,
   Shield, Gamepad2,
   Volume2, VolumeX, GraduationCap, MessageCircle, Play, Library, Lightbulb, Grid3X3,
-  Coffee,
+  Coffee, NotebookPen,
 } from "lucide-react";
 import CoinDisplay from "@/components/CoinDisplay";
 
