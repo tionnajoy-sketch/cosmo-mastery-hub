@@ -78,10 +78,10 @@ const STEPS: StepDef[] = [
   },
   {
     key: "information",
-    label: "Going Deeper",
+    label: "Information",
     color: "hsl(320 55% 48%)",
     gradient: "linear-gradient(135deg, hsl(320 55% 48%), hsl(330 60% 54%))",
-    caption: "Let me go deeper with you on this…",
+    caption: "Let me share more about this with you…",
     neuroNote: "Elaborative encoding strengthens comprehension through expanded context and reasoning.",
   },
   {
@@ -327,31 +327,31 @@ const LearningOrbDialog = ({
     let textToSpeak = "";
     switch (s.key) {
       case "breakdown":
-        if (etymology) textToSpeak = `Let's break down the word ${block.term_title}. ${etymology.summary}`;
+        textToSpeak = `Alright… let's break this word down together. ${block.term_title}. Don't worry about memorizing it yet… just listen to the sounds.`;
         break;
       case "definition":
-        textToSpeak = `${block.term_title}. ${block.definition}`;
+        textToSpeak = `Okay… now let's understand what ${block.term_title} actually means. ${block.definition}. Just sit with that for a moment.`;
         break;
       case "metaphor":
-        textToSpeak = block.metaphor || `Think of ${block.term_title} as something you already know from your daily life.`;
+        textToSpeak = `Stay with me… this is where it starts to click. ${block.metaphor || `Think of ${block.term_title} as something you already know from your daily life.`}`;
         break;
       case "information":
-        if (expandedInfo) textToSpeak = expandedInfo.slice(0, 800);
+        textToSpeak = `Now I want to share a little more about ${block.term_title}. Don't try to memorize this… just let it build on what you already know.`;
         break;
       case "recognize":
-        textToSpeak = `Can you identify ${block.term_title}? Choose the best description.`;
+        textToSpeak = `Alright… let's see if you can spot it. Look at the options and choose the one that best describes ${block.term_title}. Trust yourself.`;
         break;
       case "visual":
-        textToSpeak = `Let's visualize ${block.term_title}. Your visual cortex remembers images much faster than text.`;
+        textToSpeak = `Don't try to memorize this yet… just look at it. See how it looks… that's all I want you to focus on right now.`;
         break;
       case "reflection":
-        textToSpeak = `Take a moment to reflect on ${block.term_title}. How does this connect to what you already know?`;
+        textToSpeak = `Take a breath… now think about ${block.term_title}. How does it connect to the metaphor? How does it connect to your life? Write what comes to mind.`;
         break;
       case "application":
-        textToSpeak = `Now let's apply what you know about ${block.term_title} in a real scenario.`;
+        textToSpeak = `Now let's put what you know to work. Think about how ${block.term_title} shows up in a real scenario. You've got this.`;
         break;
       case "quiz":
-        textToSpeak = `Time to test yourself on ${block.term_title}. Let's see if you're exam ready.`;
+        textToSpeak = `Alright… let's see what you've built. This is not about being perfect… it's about showing yourself what you know.`;
         break;
     }
     if (textToSpeak && currentStep > 0) {
@@ -785,7 +785,7 @@ const LearningOrbDialog = ({
     }
   };
 
-  /* ─── Completion Screen with Feedback ─── */
+  /* ─── Completion Screen ─── */
   if (completed) {
     const quizPassed = quizRevealed && quizSelected && (
       (hasBuiltinQuiz && block.quiz_options.map(String).some((opt, i) => String.fromCharCode(65 + i) === quizSelected && (String(opt) === quizAnswer || String(opt).replace(/^[A-D]\)\s*/, "") === quizAnswer))) ||
@@ -802,23 +802,26 @@ const LearningOrbDialog = ({
               <CheckCircle2 className="h-20 w-20 mx-auto" style={{ color: "hsl(145 55% 42%)" }} />
             </motion.div>
             <motion.h2 className="font-display text-3xl sm:text-4xl font-bold" style={{ color: c.heading }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              You made it. 🎉
+              You just completed this concept.
             </motion.h2>
-            <motion.p className="text-lg max-w-md" style={{ color: c.subtext }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
+            <motion.p className="text-lg max-w-md italic" style={{ color: c.subtext }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
+              "See… you understood that."
+            </motion.p>
+            <motion.p className="text-sm" style={{ color: c.subtext }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
               +15 coins earned • {adaptedSteps.length} layers completed
             </motion.p>
 
             {/* Performance Feedback */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
               className="w-full max-w-sm rounded-2xl p-5 space-y-3 text-left" style={{ background: "hsl(var(--card))", border: "1.5px solid hsl(var(--border))" }}>
-              <p className="text-xs font-bold uppercase tracking-widest text-center" style={{ color: c.subtext }}>Performance Summary</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-center text-muted-foreground">Performance Summary</p>
               <div className="flex items-center gap-3 px-2 py-2 rounded-lg" style={{ background: quizPassed ? "hsl(145 40% 95%)" : "hsl(25 60% 95%)" }}>
                 {quizPassed ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "hsl(145 50% 40%)" }} /> : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "hsl(25 60% 45%)" }} />}
                 <div>
                   <p className="text-sm font-semibold" style={{ color: quizPassed ? "hsl(145 35% 25%)" : "hsl(25 40% 25%)" }}>
                     Knowledge Check: {quizPassed ? "Passed ✓" : "Needs Practice"}
                   </p>
-                  <p className="text-xs" style={{ color: c.subtext }}>
+                  <p className="text-xs text-muted-foreground">
                     {quizPassed ? "Great recall — you're building exam readiness." : "Review this concept and try again for stronger retention."}
                   </p>
                 </div>
@@ -831,19 +834,22 @@ const LearningOrbDialog = ({
               )}
             </motion.div>
 
+            {/* Voice */}
+            <SpeakButton text="That's how we learn… not memorize. You just built real understanding." size="sm" label="Hear TJ" />
+
             {/* Next Steps */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="flex flex-col gap-3 w-full max-w-sm">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }} className="flex flex-col gap-3 w-full max-w-sm">
               {!quizPassed && (
                 <Button size="lg" variant="outline" className="w-full gap-2 text-base py-5"
                   style={{ borderColor: "hsl(25 60% 50%)", color: "hsl(25 60% 40%)" }}
                   onClick={() => { setCompleted(false); setCurrentStep(adaptedSteps.length - 1); setQuizSelected(null); setQuizRevealed(false); setAiQuestion(null); completedRef.current = false; }}>
-                  <RefreshCw className="h-4 w-4" /> Practice Again
+                  <RefreshCw className="h-4 w-4" /> Practice This
                 </Button>
               )}
               <Button size="lg" className="w-full gap-2 text-base py-5 shadow-lg"
                 style={{ background: "linear-gradient(135deg, hsl(265 72% 48%), hsl(215 80% 42%))", color: "white" }}
                 onClick={() => onOpenChange(false)}>
-                <ArrowRight className="h-5 w-5" /> Back to Grid
+                <ArrowRight className="h-5 w-5" /> Next Concept
               </Button>
             </motion.div>
           </div>
@@ -926,8 +932,8 @@ const LearningOrbDialog = ({
                 <ArrowLeft className="h-4 w-4" /> {currentStep === 0 ? "Back" : "Previous"}
               </Button>
               <Button variant="ghost" size="sm" className="gap-1 text-xs" style={{ color: c.subtext }}
-                onClick={() => { if (step.key === "quiz") { setQuizSelected(null); setQuizRevealed(false); } }}>
-                <RefreshCw className="h-3.5 w-3.5" /> Explain Again
+                onClick={() => { speakText(`Let me explain ${block.term_title} another way…`); }}>
+                <RefreshCw className="h-3.5 w-3.5" /> Let TJ Explain Again
               </Button>
               <Button size="sm" className="gap-1 text-sm px-5 shadow-md" 
                 style={{ background: step.gradient, color: "white", opacity: step.key === "quiz" && !quizRevealed ? 0.5 : 1 }} 
