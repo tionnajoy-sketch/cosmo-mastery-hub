@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { BookOpen, ArrowLeft, Sparkles, AlertTriangle, Heart } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import SpeakButton from "@/components/SpeakButton";
 
 const c = pageColors.results;
 type QuizMode = "practice" | "confidence";
