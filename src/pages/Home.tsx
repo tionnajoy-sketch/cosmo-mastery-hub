@@ -162,70 +162,38 @@ const Home = () => {
   };
   const styleTip = styleTips[learningStyle] || styleTips.visual;
 
-  return (
+   return (
     <div className="min-h-screen flex flex-col" style={{ background: c.gradient }}>
       <AppHeader />
 
       {/* ── Hero Welcome ── */}
-      <div className="px-4 pt-8 pb-2 max-w-2xl mx-auto w-full">
+      <div className="px-4 pt-10 pb-4 max-w-2xl mx-auto w-full">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className="font-display text-3xl font-bold mb-2 text-foreground">
+          <h1 className="font-display text-3xl font-bold mb-3 text-foreground">
             Welcome back, {firstName} ✨
           </h1>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-1">
+          <p className="text-base text-muted-foreground leading-relaxed">
             {confidenceMessage}
           </p>
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <Button className="py-6 text-sm font-display font-semibold gap-2 shadow-lg" onClick={() => navigate("/learn")}>
+
+          {/* TWO Primary Actions */}
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <Button className="py-7 text-base font-display font-semibold gap-2 shadow-lg rounded-xl" onClick={() => navigate("/learn")}>
               <BookOpen className="h-5 w-5" /> Start Learning
             </Button>
-            <Button variant="secondary" className="py-6 text-sm font-display font-semibold gap-2 shadow-md" onClick={() => navigate("/practice-lab")}>
+            <Button variant="secondary" className="py-7 text-base font-display font-semibold gap-2 shadow-md rounded-xl" onClick={() => navigate("/practice-lab")}>
               <Gamepad2 className="h-5 w-5" /> Practice Lab
             </Button>
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <AppTutorialVideo variant="card" label="Watch Tutorial Video" />
-            <button
-              onClick={() => openTJChat(false)}
-              className="relative rounded-xl overflow-hidden aspect-video bg-gradient-to-br from-primary/10 to-accent/10 border border-border/40 hover:border-primary/30 transition-all group cursor-pointer"
-            >
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <MessageSquare className="h-6 w-6 text-primary-foreground" />
-                </div>
-                <span className="text-sm font-medium text-foreground/80">Talk to TJ</span>
-                <span className="text-[10px] text-muted-foreground">Ask anything</span>
-              </div>
-            </button>
           </div>
         </motion.div>
       </div>
 
-      {/* ── Main Content ── */}
-      <div className="flex-1 px-4 pb-6 max-w-2xl mx-auto w-full space-y-8">
-
-        {/* ── Learning Style Tip ── */}
-        {profile?.has_completed_pretest && (
-          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-            <Card className="border-0 shadow-sm" style={{ background: "hsl(270 20% 96%)" }}>
-              <CardContent className="p-4 flex items-start gap-3">
-                <Sparkles className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "hsl(270 40% 52%)" }} />
-                <p className="text-sm leading-relaxed" style={{ color: "hsl(270 25% 30%)" }}>
-                  {styleTip}
-                </p>
-              </CardContent>
-            </Card>
-          </motion.section>
-        )}
-
-        {/* ── Student Contract ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
-          <StudentContract />
-        </motion.section>
+      {/* ── Minimal Content ── */}
+      <div className="flex-1 px-4 pb-6 max-w-2xl mx-auto w-full space-y-6">
 
         {/* ── Daily Goal + Streak ── */}
         {!trackerLoading && (
-          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
             <Card className="border-0 shadow-md" style={{ background: goalMet ? "hsl(145 40% 96%)" : "hsl(42 60% 96%)" }}>
               <CardContent className="p-5">
                 <div className="flex items-center gap-2 mb-2">
@@ -276,95 +244,35 @@ const Home = () => {
           </motion.section>
         )}
 
-        {/* ── What You Will Walk Away With ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
-          <h2 className="font-display text-lg font-semibold text-foreground mb-4">What You Will Walk Away With</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {outcomes.map((item, i) => (
-              <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.06 }}>
-                <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-card">
-                  <CardContent className="p-4 flex items-start gap-3">
-                    <div className="p-1.5 rounded-lg flex-shrink-0" style={{ background: `${item.color}15` }}>
-                      <item.icon className="h-4 w-4" style={{ color: item.color }} />
-                    </div>
-                    <p className="text-sm text-foreground/80 leading-snug">{item.label}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* ── The TJ Anderson Layer Method™ ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
-          <h2 className="font-display text-lg font-semibold text-foreground mb-2">The TJ Anderson Layer Method™</h2>
-          <p className="text-sm text-muted-foreground mb-4">A neuroscience-based system — 9 layers that activate different parts of your brain.</p>
-          <div className="space-y-2">
-            {methodLayers.map((layer, i) => (
-              <motion.div key={layer.label} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.03 }}>
-                <Card className="border-0 shadow-sm bg-card">
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${layer.color}18` }}>
-                      <layer.icon className="h-4 w-4" style={{ color: layer.color }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">{i + 1}. {layer.label}</p>
-                      <p className="text-xs text-muted-foreground leading-snug">{layer.desc}</p>
-                    </div>
-                    <span className="text-[10px] italic flex-shrink-0 max-w-[120px] text-right" style={{ color: layer.color }}>
-                      🧠 {layer.neuro}
-                    </span>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* ── How to Use the App ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-          <h2 className="font-display text-lg font-semibold text-foreground mb-4">How to Use the App</h2>
-          <div className="space-y-3">
-            {howToSteps.map((step, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 bg-primary text-primary-foreground">
-                  {i + 1}
-                </div>
-                <p className="text-sm text-foreground/80">{step}</p>
-              </div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* ── Progress Dashboard ── */}
+        {/* ── Progress Summary (compact) ── */}
         {totalQuestions > 0 && (
-          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}>
-            <Card className="border-0 shadow-md" style={{ background: c.card }}>
+          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
+            <Card className="border-0 shadow-md bg-card">
               <CardContent className="p-5">
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-3">
                   <TrendingUp className="h-5 w-5" style={{ color: c.accent }} />
-                  <h3 className="font-display text-lg font-semibold text-foreground">Your Progress</h3>
+                  <h3 className="font-display text-sm font-semibold text-foreground">Your Progress</h3>
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="flex-shrink-0">
-                    <PieChart width={90} height={90}>
-                      <Pie data={pieData} innerRadius={28} outerRadius={40} dataKey="value" startAngle={90} endAngle={-270} strokeWidth={0}>
+                    <PieChart width={80} height={80}>
+                      <Pie data={pieData} innerRadius={24} outerRadius={36} dataKey="value" startAngle={90} endAngle={-270} strokeWidth={0}>
                         {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
                       </Pie>
                     </PieChart>
                   </div>
                   <div className="flex-1 grid grid-cols-3 gap-3">
                     <div className="text-center p-2 rounded-lg bg-secondary">
-                      <p className="font-display text-2xl font-bold text-primary">{overallPercent}%</p>
-                      <p className="text-xs text-muted-foreground">Correct</p>
+                      <p className="font-display text-xl font-bold text-primary">{overallPercent}%</p>
+                      <p className="text-[10px] text-muted-foreground">Correct</p>
                     </div>
                     <div className="text-center p-2 rounded-lg bg-secondary">
-                      <p className="font-display text-2xl font-bold text-primary">{totalQuestions}</p>
-                      <p className="text-xs text-muted-foreground">Questions</p>
+                      <p className="font-display text-xl font-bold text-primary">{totalQuestions}</p>
+                      <p className="text-[10px] text-muted-foreground">Questions</p>
                     </div>
                     <div className="text-center p-2 rounded-lg bg-secondary">
                       <p className="font-display text-sm font-bold" style={{ color: status.color }}>{status.label}</p>
-                      <p className="text-xs text-muted-foreground">Status</p>
+                      <p className="text-[10px] text-muted-foreground">Status</p>
                     </div>
                   </div>
                 </div>
@@ -373,6 +281,10 @@ const Home = () => {
           </motion.section>
         )}
 
+        {/* ── Student Contract ── */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+          <StudentContract />
+        </motion.section>
       </div>
 
       <AppFooter />
