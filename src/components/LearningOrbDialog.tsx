@@ -389,11 +389,17 @@ const LearningOrbDialog = ({
   const fetchExpandedInfo = async () => {
     setInfoLoading(true);
     try {
+      const depthInstruction = rules.contentDepth === "brief"
+        ? "Keep it short — 2 paragraphs max, simple language."
+        : rules.contentDepth === "deep"
+        ? "Go deep — 4-5 thorough paragraphs with connections to related concepts."
+        : "Keep it concise but thorough — 3-4 paragraphs max.";
+      const programName = profile?.selected_program || "cosmetology";
       const { data } = await supabase.functions.invoke("ai-mentor-chat", {
         body: {
           messages: [{
             role: "user",
-            content: `Provide a deeper, expanded explanation of "${block.term_title}" (${block.definition}). Include: why it matters in cosmetology, how it connects to other concepts, and what a student needs to know for the state board exam. Keep it concise but thorough — 3-4 paragraphs max.`,
+            content: `Provide a deeper, expanded explanation of "${block.term_title}" (${block.definition}). Include: why it matters in ${programName}, how it connects to other concepts, and what a student needs to know for the exam. ${depthInstruction}`,
           }],
           sectionName: "Expanded Information",
         },
@@ -421,11 +427,17 @@ const LearningOrbDialog = ({
   const generateQuizQuestion = async () => {
     setAiLoading(true);
     try {
+      const difficultyHint = rules.difficulty === "guided"
+        ? "Make the question straightforward with clear options. Add a hint."
+        : rules.difficulty === "challenge"
+        ? "Make the question challenging — use scenario-based or application-style questions."
+        : "Standard difficulty for exam preparation.";
+      const programName = profile?.selected_program || "cosmetology";
       const { data } = await supabase.functions.invoke("ai-mentor-chat", {
         body: {
           messages: [{
             role: "user",
-            content: `Create a State Board Cosmetology exam-style multiple choice question about "${block.term_title}". Definition: "${block.definition}". Respond ONLY with JSON: {"question":"...","options":["A)...","B)...","C)...","D)..."],"answer":"the full text of the correct option"}. No markdown.`,
+            content: `Create a ${programName} exam-style multiple choice question about "${block.term_title}". Definition: "${block.definition}". ${difficultyHint} Respond ONLY with JSON: {"question":"...","options":["A)...","B)...","C)...","D)..."],"answer":"the full text of the correct option"}. No markdown.`,
           }],
           sectionName: "State Board Quiz",
         },
