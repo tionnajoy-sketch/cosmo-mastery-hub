@@ -255,6 +255,8 @@ const LearningOrbDialog = ({
       setQuizSelected(null);
       setQuizRevealed(false);
       setAiQuestion(null);
+      setRecognizeSelected(null);
+      setRecognizeRevealed(false);
       setEtymology(null);
       setExpandedInfo("");
       completedRef.current = false;
