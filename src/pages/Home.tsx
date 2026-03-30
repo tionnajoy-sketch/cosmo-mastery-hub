@@ -19,6 +19,7 @@ import DailyPopQuestion from "@/components/DailyPopQuestion";
 import StudentContract from "@/components/StudentContract";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
+import { Eye, Mic, PenLine, BookOpen as BookOpenIcon2 } from "lucide-react";
 
 const c = pageColors.home;
 
@@ -119,15 +120,40 @@ const Home = () => {
     { name: "Remaining", value: Math.max((totalQuestions || 1) - (totalCorrect || 0), 0) },
   ];
 
-  // Learning style tip
+  // Learning style info
   const learningStyle = profile?.learning_style || "visual";
-  const styleTips: Record<string, string> = {
-    visual: "Based on your learning style, you may benefit most from the Visualize and Metaphor sections inside each study block.",
-    reading: "Based on your learning style, you may benefit most from the Definition, Reflection, and Journal sections inside each study block.",
-    kinesthetic: "Based on your learning style, you may benefit most from the Practice activities and Quiz sections inside each study block.",
-    auditory: "Based on your learning style, you may benefit most from the Metaphor and Affirmation sections inside each study block.",
+  const styleInfo: Record<string, { label: string; icon: any; color: string; description: string; howWeUseIt: string }> = {
+    visual: {
+      label: "Visual Learner",
+      icon: Eye,
+      color: "hsl(215 80% 42%)",
+      description: "You learn best by seeing — images, diagrams, and visual patterns help you understand and remember.",
+      howWeUseIt: "We'll prioritize the Visualize and Metaphor layers, showing you concepts through images and visual connections before diving into definitions.",
+    },
+    reading: {
+      label: "Reading/Writing Learner",
+      icon: BookOpenIcon2,
+      color: "hsl(45 90% 40%)",
+      description: "You learn best through written words — reading definitions, writing reflections, and journaling deepen your understanding.",
+      howWeUseIt: "We'll emphasize the Define, Reflect, and Journal layers, giving you structured text and space to process concepts in your own words.",
+    },
+    kinesthetic: {
+      label: "Kinesthetic Learner",
+      icon: PenLine,
+      color: "hsl(145 65% 32%)",
+      description: "You learn best by doing — hands-on activities, practice scenarios, and interactive exercises make concepts stick.",
+      howWeUseIt: "We'll focus on the Apply and Practice layers, putting you in real scenarios and interactive activities as early as possible.",
+    },
+    auditory: {
+      label: "Auditory Learner",
+      icon: Mic,
+      color: "hsl(275 70% 50%)",
+      description: "You learn best by hearing — spoken explanations, voice guidance, and verbal repetition help you absorb information.",
+      howWeUseIt: "We'll activate TJ's voice guidance on every step and emphasize the Metaphor and Affirmation layers with audio-first delivery.",
+    },
   };
-  const styleTip = styleTips[learningStyle] || styleTips.visual;
+  const currentStyle = styleInfo[learningStyle] || styleInfo.visual;
+  const StyleIcon = currentStyle.icon;
 
    return (
     <div className="min-h-screen flex flex-col" style={{ background: c.gradient }}>
@@ -157,6 +183,37 @@ const Home = () => {
 
       {/* ── Minimal Content ── */}
       <div className="flex-1 px-4 pb-6 max-w-2xl mx-auto w-full space-y-6">
+
+        {/* ── Your Learning Style ── */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+          <Card className="border-0 shadow-md bg-card overflow-hidden">
+            <div className="flex">
+              <div className="w-2 flex-shrink-0" style={{ background: currentStyle.color }} />
+              <CardContent className="p-5 flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${currentStyle.color}18` }}>
+                    <StyleIcon className="h-5 w-5" style={{ color: currentStyle.color }} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Your Learning Style</p>
+                    <h3 className="font-display text-base font-semibold text-foreground">{currentStyle.label}</h3>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                  {currentStyle.description}
+                </p>
+                <div className="p-3 rounded-lg" style={{ background: `${currentStyle.color}08` }}>
+                  <p className="text-xs font-semibold mb-1" style={{ color: currentStyle.color }}>
+                    How we'll use this to teach you:
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {currentStyle.howWeUseIt}
+                  </p>
+                </div>
+              </CardContent>
+            </div>
+          </Card>
+        </motion.section>
 
         {/* ── Daily Goal + Streak ── */}
         {!trackerLoading && (
