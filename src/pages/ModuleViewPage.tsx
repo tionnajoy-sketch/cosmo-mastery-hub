@@ -11,7 +11,7 @@ import { pageColors, blockAccentColors } from "@/lib/colors";
 import { type UploadedBlock } from "@/components/UploadedTermCard";
 import AppHeader from "@/components/AppHeader";
 import TermListItem from "@/components/TermListItem";
-import LearningOrbDialog from "@/components/LearningOrbDialog";
+import LearningOrchestrator from "@/components/LearningOrchestrator";
 import tjBackground from "@/assets/tj-background.jpg";
 
 const c = pageColors.study;
@@ -233,7 +233,7 @@ const ModuleViewPage = () => {
       </div>
 
       {/* Full-screen Learning Dialog */}
-      <LearningOrbDialog
+      <LearningOrchestrator
         open={!!selectedBlock}
         onOpenChange={(open) => { if (!open) setSelectedBlock(null); }}
         block={selectedBlock}
