@@ -25,7 +25,7 @@ import tjBackground from "@/assets/tj-background.jpg";
 
 const c = pageColors.study;
 
-/* ─── 8-Step Configuration ─── */
+/* ─── 9-Step Configuration ─── */
 interface StepDef {
   key: string;
   label: string;
@@ -37,36 +37,36 @@ interface StepDef {
 
 const STEPS: StepDef[] = [
   {
-    key: "breakdown",
-    label: "Word Breakdown",
-    color: "hsl(185 55% 42%)",
-    gradient: "linear-gradient(135deg, hsl(185 55% 42%), hsl(195 60% 48%))",
-    caption: "Let's learn how to say this word first…",
-    neuroNote: "Phonetic decoding activates language processing centers, building neural pathways for recall.",
-  },
-  {
-    key: "application",
-    label: "Apply It",
-    color: "hsl(145 65% 32%)",
-    gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))",
-    caption: "Now put your knowledge to work…",
-    neuroNote: "Active recall and problem-solving transfer knowledge from short-term to long-term memory.",
+    key: "visual",
+    label: "Visualize",
+    color: "hsl(215 80% 42%)",
+    gradient: "linear-gradient(135deg, hsl(215 80% 42%), hsl(200 85% 48%))",
+    caption: "Let's see it… your visual cortex remembers images 60,000x faster.",
+    neuroNote: "Visual encoding creates dual pathways — verbal + visual — doubling retention.",
   },
   {
     key: "definition",
-    label: "Definition",
+    label: "Define",
     color: "hsl(45 90% 40%)",
     gradient: "linear-gradient(135deg, hsl(45 90% 40%), hsl(38 95% 48%))",
     caption: "Now let's understand what it means…",
     neuroNote: "Cognitive labeling anchors meaning in your semantic memory network.",
   },
   {
-    key: "visual",
-    label: "Visualization",
-    color: "hsl(215 80% 42%)",
-    gradient: "linear-gradient(135deg, hsl(215 80% 42%), hsl(200 85% 48%))",
-    caption: "Let's see it… your visual cortex remembers images 60,000x faster.",
-    neuroNote: "Visual encoding creates dual pathways — verbal + visual — doubling retention.",
+    key: "breakdown",
+    label: "Break It Down",
+    color: "hsl(185 55% 42%)",
+    gradient: "linear-gradient(135deg, hsl(185 55% 42%), hsl(195 60% 48%))",
+    caption: "Let's learn how to say this word first…",
+    neuroNote: "Phonetic decoding activates language processing centers, building neural pathways for recall.",
+  },
+  {
+    key: "recognize",
+    label: "Recognize",
+    color: "hsl(275 70% 50%)",
+    gradient: "linear-gradient(135deg, hsl(275 70% 50%), hsl(285 75% 56%))",
+    caption: "Can you identify it now? Let's test your recognition…",
+    neuroNote: "Spatial memory and recall systems strengthen through active identification.",
   },
   {
     key: "metaphor",
@@ -86,15 +86,23 @@ const STEPS: StepDef[] = [
   },
   {
     key: "reflection",
-    label: "Reflection",
+    label: "Reflect",
     color: "hsl(25 65% 50%)",
     gradient: "linear-gradient(135deg, hsl(25 65% 50%), hsl(30 70% 55%))",
     caption: "Connect this to the metaphor and your life…",
     neuroNote: "Metacognition and self-referencing activate the prefrontal cortex for deep internalization.",
   },
   {
+    key: "application",
+    label: "Apply",
+    color: "hsl(145 65% 32%)",
+    gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))",
+    caption: "Now put your knowledge to work…",
+    neuroNote: "Active recall and problem-solving transfer knowledge from short-term to long-term memory.",
+  },
+  {
     key: "quiz",
-    label: "Knowledge Check",
+    label: "Assess",
     color: "hsl(0 75% 45%)",
     gradient: "linear-gradient(135deg, hsl(0 75% 45%), hsl(10 80% 50%))",
     caption: "Let's see if you're exam-ready…",
@@ -173,11 +181,11 @@ const LearningOrbDialog = ({
   // Reorder steps based on DNA layer strength
   const adaptedSteps = useMemo(() => {
     if (!dna) return STEPS;
-    const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz" };
+    const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz", B: "breakdown", N: "recognize" };
     const preferred = LAYER_MAP[dna.layerStrength];
     if (!preferred) return STEPS;
-    // Keep breakdown first, move preferred step to second position
-    const rest = STEPS.filter(s => s.key !== "breakdown" && s.key !== preferred);
+    // Keep first step (Visualize), move preferred step to second position
+    const rest = STEPS.filter(s => s.key !== STEPS[0].key && s.key !== preferred);
     const preferredStep = STEPS.find(s => s.key === preferred);
     if (!preferredStep) return STEPS;
     return [STEPS[0], preferredStep, ...rest];
@@ -202,6 +210,10 @@ const LearningOrbDialog = ({
   const [quizRevealed, setQuizRevealed] = useState(false);
   const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+
+  // Recognize
+  const [recognizeSelected, setRecognizeSelected] = useState<number | null>(null);
+  const [recognizeRevealed, setRecognizeRevealed] = useState(false);
 
   // Etymology
   const [etymology, setEtymology] = useState<{ parts: { part: string; meaning: string; origin: string }[]; pronunciation: string; summary: string } | null>(null);
@@ -243,6 +255,8 @@ const LearningOrbDialog = ({
       setQuizSelected(null);
       setQuizRevealed(false);
       setAiQuestion(null);
+      setRecognizeSelected(null);
+      setRecognizeRevealed(false);
       setEtymology(null);
       setExpandedInfo("");
       completedRef.current = false;
@@ -323,6 +337,21 @@ const LearningOrbDialog = ({
         break;
       case "information":
         if (expandedInfo) textToSpeak = expandedInfo.slice(0, 800);
+        break;
+      case "recognize":
+        textToSpeak = `Can you identify ${block.term_title}? Choose the best description.`;
+        break;
+      case "visual":
+        textToSpeak = `Let's visualize ${block.term_title}. Your visual cortex remembers images much faster than text.`;
+        break;
+      case "reflection":
+        textToSpeak = `Take a moment to reflect on ${block.term_title}. How does this connect to what you already know?`;
+        break;
+      case "application":
+        textToSpeak = `Now let's apply what you know about ${block.term_title} in a real scenario.`;
+        break;
+      case "quiz":
+        textToSpeak = `Time to test yourself on ${block.term_title}. Let's see if you're exam ready.`;
         break;
     }
     if (textToSpeak && currentStep > 0) {
@@ -542,6 +571,52 @@ const LearningOrbDialog = ({
             {block.video_url && <VideoPlayer url={block.video_url} />}
           </motion.div>
         );
+
+      case "recognize": {
+        const conceptIdentity = Array.isArray(block.concept_identity) ? block.concept_identity.map(String) : [];
+        const identityItems = conceptIdentity.length >= 4 ? conceptIdentity.slice(0, 4) :
+          [block.definition, block.metaphor || "A related concept in another field", "An unrelated term from a different subject", "A common misconception about this topic"].slice(0, 4);
+        // Shuffle but keep track of correct index (index 0 is always correct before shuffle)
+        const shuffled = [...identityItems].sort(() => Math.random() - 0.5);
+        return (
+          <motion.div key="recognize" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-6">
+            <p className="text-base font-medium text-center" style={{ color: c.termHeading }}>
+              Which of these best describes <strong style={{ color: step.color }}>{block.term_title}</strong>?
+            </p>
+            <div className="grid grid-cols-1 gap-3 max-w-md mx-auto">
+              {identityItems.map((item, i) => {
+                const isCorrect = i === 0;
+                const isSelected = recognizeSelected === i;
+                let bg = "hsl(var(--card))";
+                let border = "hsl(var(--border))";
+                if (recognizeRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
+                else if (recognizeRevealed && isSelected) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
+                else if (recognizeRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
+                return (
+                  <motion.button
+                    key={i}
+                    onClick={() => { if (!recognizeRevealed) { setRecognizeSelected(i); setRecognizeRevealed(true); } }}
+                    className="p-4 rounded-xl text-sm font-medium text-left transition-all"
+                    style={{ background: bg, border: `2px solid ${border}`, color: c.termHeading }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + i * 0.05 }}
+                  >
+                    {item}
+                  </motion.button>
+                );
+              })}
+            </div>
+            {recognizeRevealed && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+                <p className="text-sm font-medium" style={{ color: recognizeSelected === 0 ? "hsl(145 50% 35%)" : "hsl(0 60% 45%)" }}>
+                  {recognizeSelected === 0 ? "✓ That's right!" : "✗ Not quite — the correct answer is highlighted above."}
+                </p>
+              </motion.div>
+            )}
+          </motion.div>
+        );
+      }
 
       case "metaphor":
         return (

@@ -22,9 +22,8 @@ export interface AdaptationRules {
   toneModifier: "supportive" | "neutral" | "challenging";
 }
 
-// Updated default step order per restructuring:
-// Word Breakdown → Apply It → Definition → Visualization → Metaphor → Going Deeper → Reflection → Knowledge Check
-const DEFAULT_STEPS = ["breakdown", "application", "definition", "visual", "metaphor", "information", "reflection", "quiz"];
+// 9-step sequence: Visualize → Define → Break It Down → Recognize → Metaphor → Going Deeper → Reflect → Apply → Assess
+const DEFAULT_STEPS = ["visual", "definition", "breakdown", "recognize", "metaphor", "information", "reflection", "application", "quiz"];
 
 const LAYER_TO_STEP: Record<string, string> = {
   D: "definition",
@@ -34,6 +33,8 @@ const LAYER_TO_STEP: Record<string, string> = {
   R: "reflection",
   A: "application",
   K: "quiz",
+  B: "breakdown",
+  N: "recognize",
 };
 
 function parseRetention(char: string | null): DNAProfile["retention"] {
