@@ -291,7 +291,7 @@ const LearningOrbDialog = ({
   // Auto-fetch etymology on breakdown step
   useEffect(() => {
     if (!block) return;
-    const s = STEPS[currentStep];
+    const s = adaptedSteps[currentStep];
     if (s?.key === "breakdown" && !etymology && !etymLoading) {
       fetchEtymology();
     }
@@ -306,7 +306,7 @@ const LearningOrbDialog = ({
   // Auto-speak on step change
   useEffect(() => {
     if (!block || !voiceEnabled || !autoVoiceRef.current) return;
-    const s = STEPS[currentStep];
+    const s = adaptedSteps[currentStep];
     if (!s) return;
     let textToSpeak = "";
     switch (s.key) {
