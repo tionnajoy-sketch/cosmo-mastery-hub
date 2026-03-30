@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { openTJChat } from "@/components/AskTJFullScreen";
+import { openTJCafe } from "@/hooks/useStudyBreak";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
   BookOpen, Menu, LogOut, BarChart3, Upload, Sparkles,
   Shield, Gamepad2,
   Volume2, VolumeX, GraduationCap, MessageCircle, Play, Library, Lightbulb, Grid3X3,
+  Coffee,
 } from "lucide-react";
 import CoinDisplay from "@/components/CoinDisplay";
 
@@ -66,6 +68,9 @@ const AppHeader = () => {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => openTJChat(false)}>
                 <MessageCircle className="h-4 w-4 mr-2" /> Ask TJ
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openTJCafe()}>
+                <Coffee className="h-4 w-4 mr-2" /> TJ Cafe
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/upload")} className="text-primary">

@@ -1,11 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
+// Global event to open cafe from anywhere
+export const openTJCafe = () => {
+  window.dispatchEvent(new CustomEvent("open-tj-cafe"));
+};
+
 const BREAK_INTERVAL_MS = 60 * 60 * 1000; // 60 minutes
 const SESSION_KEY = "tj_study_start_time";
 
 export const useStudyBreak = () => {
   const [showCafe, setShowCafe] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    const handleOpenCafe = () => setShowCafe(true);
+    window.addEventListener("open-tj-cafe", handleOpenCafe);
+    return () => window.removeEventListener("open-tj-cafe", handleOpenCafe);
+  }, []);
 
   useEffect(() => {
     // Initialize or restore session start time
@@ -37,5 +48,9 @@ export const useStudyBreak = () => {
     sessionStorage.setItem(SESSION_KEY, String(Date.now()));
   }, []);
 
-  return { showCafe, dismissCafe };
+  const openCafe = useCallback(() => {
+    setShowCafe(true);
+  }, []);
+
+  return { showCafe, dismissCafe, openCafe };
 };
