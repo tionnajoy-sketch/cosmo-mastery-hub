@@ -251,7 +251,12 @@ export type Database = {
           birth_month: number | null
           birth_year: number | null
           created_at: string
+          dna_confidence: string | null
+          dna_engagement: number | null
+          dna_layer_strength: string | null
+          dna_retention: string | null
           exam_date: string | null
+          has_completed_onboarding: boolean | null
           has_completed_pretest: boolean
           id: string
           language: string
@@ -259,15 +264,22 @@ export type Database = {
           learning_style: string
           name: string
           program: string | null
+          selected_program: string | null
           sex: string | null
           state: string | null
+          tj_dna_code: string | null
           tone_preference: string | null
         }
         Insert: {
           birth_month?: number | null
           birth_year?: number | null
           created_at?: string
+          dna_confidence?: string | null
+          dna_engagement?: number | null
+          dna_layer_strength?: string | null
+          dna_retention?: string | null
           exam_date?: string | null
+          has_completed_onboarding?: boolean | null
           has_completed_pretest?: boolean
           id: string
           language?: string
@@ -275,15 +287,22 @@ export type Database = {
           learning_style?: string
           name?: string
           program?: string | null
+          selected_program?: string | null
           sex?: string | null
           state?: string | null
+          tj_dna_code?: string | null
           tone_preference?: string | null
         }
         Update: {
           birth_month?: number | null
           birth_year?: number | null
           created_at?: string
+          dna_confidence?: string | null
+          dna_engagement?: number | null
+          dna_layer_strength?: string | null
+          dna_retention?: string | null
           exam_date?: string | null
+          has_completed_onboarding?: boolean | null
           has_completed_pretest?: boolean
           id?: string
           language?: string
@@ -291,8 +310,10 @@ export type Database = {
           learning_style?: string
           name?: string
           program?: string | null
+          selected_program?: string | null
           sex?: string | null
           state?: string | null
+          tj_dna_code?: string | null
           tone_preference?: string | null
         }
         Relationships: []
