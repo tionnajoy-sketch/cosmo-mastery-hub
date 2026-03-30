@@ -25,7 +25,7 @@ import tjBackground from "@/assets/tj-background.jpg";
 
 const c = pageColors.study;
 
-/* ─── 8-Step Configuration ─── */
+/* ─── 9-Step Configuration ─── */
 interface StepDef {
   key: string;
   label: string;
@@ -37,36 +37,36 @@ interface StepDef {
 
 const STEPS: StepDef[] = [
   {
-    key: "breakdown",
-    label: "Word Breakdown",
-    color: "hsl(185 55% 42%)",
-    gradient: "linear-gradient(135deg, hsl(185 55% 42%), hsl(195 60% 48%))",
-    caption: "Let's learn how to say this word first…",
-    neuroNote: "Phonetic decoding activates language processing centers, building neural pathways for recall.",
-  },
-  {
-    key: "application",
-    label: "Apply It",
-    color: "hsl(145 65% 32%)",
-    gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))",
-    caption: "Now put your knowledge to work…",
-    neuroNote: "Active recall and problem-solving transfer knowledge from short-term to long-term memory.",
+    key: "visual",
+    label: "Visualize",
+    color: "hsl(215 80% 42%)",
+    gradient: "linear-gradient(135deg, hsl(215 80% 42%), hsl(200 85% 48%))",
+    caption: "Let's see it… your visual cortex remembers images 60,000x faster.",
+    neuroNote: "Visual encoding creates dual pathways — verbal + visual — doubling retention.",
   },
   {
     key: "definition",
-    label: "Definition",
+    label: "Define",
     color: "hsl(45 90% 40%)",
     gradient: "linear-gradient(135deg, hsl(45 90% 40%), hsl(38 95% 48%))",
     caption: "Now let's understand what it means…",
     neuroNote: "Cognitive labeling anchors meaning in your semantic memory network.",
   },
   {
-    key: "visual",
-    label: "Visualization",
-    color: "hsl(215 80% 42%)",
-    gradient: "linear-gradient(135deg, hsl(215 80% 42%), hsl(200 85% 48%))",
-    caption: "Let's see it… your visual cortex remembers images 60,000x faster.",
-    neuroNote: "Visual encoding creates dual pathways — verbal + visual — doubling retention.",
+    key: "breakdown",
+    label: "Break It Down",
+    color: "hsl(185 55% 42%)",
+    gradient: "linear-gradient(135deg, hsl(185 55% 42%), hsl(195 60% 48%))",
+    caption: "Let's learn how to say this word first…",
+    neuroNote: "Phonetic decoding activates language processing centers, building neural pathways for recall.",
+  },
+  {
+    key: "recognize",
+    label: "Recognize",
+    color: "hsl(275 70% 50%)",
+    gradient: "linear-gradient(135deg, hsl(275 70% 50%), hsl(285 75% 56%))",
+    caption: "Can you identify it now? Let's test your recognition…",
+    neuroNote: "Spatial memory and recall systems strengthen through active identification.",
   },
   {
     key: "metaphor",
@@ -86,15 +86,23 @@ const STEPS: StepDef[] = [
   },
   {
     key: "reflection",
-    label: "Reflection",
+    label: "Reflect",
     color: "hsl(25 65% 50%)",
     gradient: "linear-gradient(135deg, hsl(25 65% 50%), hsl(30 70% 55%))",
     caption: "Connect this to the metaphor and your life…",
     neuroNote: "Metacognition and self-referencing activate the prefrontal cortex for deep internalization.",
   },
   {
+    key: "application",
+    label: "Apply",
+    color: "hsl(145 65% 32%)",
+    gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))",
+    caption: "Now put your knowledge to work…",
+    neuroNote: "Active recall and problem-solving transfer knowledge from short-term to long-term memory.",
+  },
+  {
     key: "quiz",
-    label: "Knowledge Check",
+    label: "Assess",
     color: "hsl(0 75% 45%)",
     gradient: "linear-gradient(135deg, hsl(0 75% 45%), hsl(10 80% 50%))",
     caption: "Let's see if you're exam-ready…",

@@ -373,24 +373,6 @@ const Home = () => {
           </motion.section>
         )}
 
-        {/* ── Quick Actions ── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              className="py-6 text-sm font-display font-semibold gap-2 shadow-lg"
-              onClick={() => navigate("/learn")}
-            >
-              <BookOpen className="h-5 w-5" /> Learn
-            </Button>
-            <Button
-              variant="secondary"
-              className="py-6 text-sm font-display font-semibold gap-2 shadow-md"
-              onClick={() => navigate("/practice-lab")}
-            >
-              <Gamepad2 className="h-5 w-5" /> Practice Lab
-            </Button>
-          </div>
-        </motion.section>
       </div>
 
       <AppFooter />
