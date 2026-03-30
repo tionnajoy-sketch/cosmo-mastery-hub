@@ -330,12 +330,24 @@ const LearningOrbDialog = ({
 
   if (!block) return null;
 
-  const step = STEPS[currentStep];
-  const progressPercent = ((currentStep + 1) / STEPS.length) * 100;
+  const step = adaptedSteps[currentStep];
+  const progressPercent = ((currentStep + 1) / adaptedSteps.length) * 100;
+
+  // DNA-adapted encouragement message
+  const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
   const goNext = () => {
     stopSpeaking();
-    if (currentStep < STEPS.length - 1) {
+    // Track DNA updates based on current step
+    if (step.key === "reflection" && journalNote.length > 0) {
+      updateDNA({ layerCompleted: "reflection", reflectionLength: journalNote.length });
+    } else if (step.key === "application") {
+      updateDNA({ layerCompleted: "application" });
+    } else {
+      updateDNA({ layerCompleted: step.key, timeSpentSeconds: 30 });
+    }
+
+    if (currentStep < adaptedSteps.length - 1) {
       if (soundsEnabled) playChime();
       setCurrentStep(s => s + 1);
     } else {
