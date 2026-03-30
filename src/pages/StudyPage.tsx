@@ -9,7 +9,7 @@ import { ArrowLeft, Brain, Gamepad2, GraduationCap } from "lucide-react";
 import AskTJFullScreen from "@/components/AskTJFullScreen";
 import AppHeader from "@/components/AppHeader";
 import TermListItem from "@/components/TermListItem";
-import LearningOrbDialog from "@/components/LearningOrbDialog";
+import LearningOrchestrator from "@/components/LearningOrchestrator";
 import { pageColors } from "@/lib/colors";
 import { blockObjectivesMap } from "@/lib/sectionObjectives";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
@@ -196,7 +196,7 @@ const StudyPage = () => {
       </div>
 
       {/* Full-screen Learning Dialog */}
-      <LearningOrbDialog
+      <LearningOrchestrator
         open={!!selectedBlock}
         onOpenChange={(open) => { if (!open) setSelectedBlock(null); }}
         block={selectedBlock}
