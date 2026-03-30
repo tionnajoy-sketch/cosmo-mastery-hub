@@ -10,7 +10,7 @@ const AppFooter = () => (
       </p>
       <a
         href="/terms"
-        className="text-xs text-primary hover:underline"
+        className="text-xs text-foreground/60 hover:text-foreground hover:underline"
       >
         Terms of Use &amp; Intellectual Property Notice
       </a>

@@ -8,11 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { pageColors } from "@/lib/colors";
-
-const c = pageColors.signup;
 
 const US_STATES = [
   "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia",
@@ -73,6 +70,7 @@ const Signup = () => {
         state: state || null,
         exam_date: examDate || null,
         program: program || null,
+        selected_program: program ? program.toLowerCase() : "cosmetology",
         language,
         birth_month: birthMonth ? parseInt(birthMonth) : null,
         birth_year: birthYear ? parseInt(birthYear) : null,
@@ -91,7 +89,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: c.gradient }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-background">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -99,16 +97,16 @@ const Signup = () => {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <Sparkles className="h-6 w-6" style={{ color: c.heading }} />
-            <span className="font-display text-2xl font-bold" style={{ color: c.heading }}>CosmoPrep</span>
+          <div className="inline-flex items-center gap-2.5 mb-3">
+            <BookOpen className="h-7 w-7 text-foreground" />
+            <span className="font-display text-2xl font-bold text-foreground tracking-tight">TJ Anderson Test Prep</span>
           </div>
-          <p className="text-sm" style={{ color: c.subtext }}>Your calm, encouraging study space — breathe, learn, and let it stick.</p>
+          <p className="text-sm text-muted-foreground">This platform learns YOU first, then teaches you.</p>
         </div>
 
-        <Card className="border-0 shadow-2xl" style={{ background: c.card }}>
-          <CardHeader className="text-center">
-            <CardTitle className="font-display text-2xl" style={{ color: c.cardHeading }}>Create Account</CardTitle>
+        <Card className="border border-border shadow-sm bg-card">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="font-display text-2xl text-card-foreground">Create Account</CardTitle>
             <CardDescription>Tell us a little about yourself</CardDescription>
           </CardHeader>
           <CardContent>
@@ -126,7 +124,6 @@ const Signup = () => {
                 <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" required minLength={6} />
               </div>
 
-              {/* Birth Month & Year */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Birth Month</Label>
@@ -152,7 +149,6 @@ const Signup = () => {
                 </div>
               </div>
 
-              {/* Sex */}
               <div className="space-y-2">
                 <Label>Sex</Label>
                 <Select value={sex} onValueChange={setSex}>
@@ -165,54 +161,31 @@ const Signup = () => {
                 </Select>
               </div>
 
-              {/* Tone Preference */}
-              <div className="space-y-2">
-                <Label>Tone Preference</Label>
-                <Select value={tonePreference} onValueChange={setTonePreference}>
-                  <SelectTrigger><SelectValue placeholder="How should we talk to you?" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gentle">🌿 Gentle</SelectItem>
-                    <SelectItem value="hype_coach">🔥 Hype‑Coach</SelectItem>
-                    <SelectItem value="straight">🎯 Straight‑to‑the‑Point</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Leaderboard Preference */}
-              <div className="space-y-2">
-                <Label>Leaderboard Preference</Label>
-                <Select value={leaderboardPreference} onValueChange={setLeaderboardPreference}>
-                  <SelectTrigger><SelectValue placeholder="Who sees your progress?" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="private">🔒 Private</SelectItem>
-                    <SelectItem value="friends">👯 Friends Only</SelectItem>
-                    <SelectItem value="global">🌍 Global</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Preferred Language</Label>
-                <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger><SelectValue placeholder="Select language" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">🇺🇸 English</SelectItem>
-                    <SelectItem value="es">🇪🇸 Español</SelectItem>
-                    <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
               <div className="space-y-2">
                 <Label>Program</Label>
                 <Select value={program} onValueChange={setProgram}>
                   <SelectTrigger><SelectValue placeholder="Select your program" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Cosmetology">Cosmetology</SelectItem>
-                    <SelectItem value="Esthetics">Esthetics</SelectItem>
-                    <SelectItem value="Nail Technology">Nail Technology</SelectItem>
+                    <SelectItem value="Real Estate">Real Estate</SelectItem>
+                    <SelectItem value="Barbering" disabled>Barbering (coming soon)</SelectItem>
+                    <SelectItem value="Nursing" disabled>Nursing (coming soon)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label>Tone Preference</Label>
+                <Select value={tonePreference} onValueChange={setTonePreference}>
+                  <SelectTrigger><SelectValue placeholder="How should we talk to you?" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gentle">🌿 Gentle</SelectItem>
+                    <SelectItem value="hype_coach">🔥 Hype-Coach</SelectItem>
+                    <SelectItem value="straight">🎯 Straight-to-the-Point</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label>State</Label>
                 <Select value={state} onValueChange={setState}>
@@ -237,17 +210,17 @@ const Signup = () => {
                 />
                 <Label htmlFor="terms" className="text-xs text-muted-foreground leading-snug cursor-pointer">
                   I agree to the{" "}
-                  <a href="/terms" target="_blank" className="underline text-primary">Terms of Use</a>{" "}
-                  and acknowledge that CosmoPrep™ content is proprietary.
+                  <a href="/terms" target="_blank" className="underline text-foreground">Terms of Use</a>{" "}
+                  and acknowledge that TJ Anderson Test Prep™ content is proprietary.
                 </Label>
               </div>
-              <Button type="submit" className="w-full text-base py-6" disabled={loading || !agreedToTerms} style={{ background: c.button, color: "white" }}>
-                {loading ? "Creating account..." : "Join CosmoPrep"}
+              <Button type="submit" className="w-full text-base py-6" disabled={loading || !agreedToTerms}>
+                {loading ? "Creating account..." : "Join TJ Test Prep"}
               </Button>
             </form>
             <p className="text-center text-sm text-muted-foreground mt-4">
               Already have an account?{" "}
-              <Link to="/login" className="font-medium underline" style={{ color: c.link }}>
+              <Link to="/login" className="font-medium underline text-foreground">
                 Sign in
               </Link>
             </p>

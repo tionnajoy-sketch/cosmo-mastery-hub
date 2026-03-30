@@ -11,6 +11,13 @@ interface Profile {
   language: string;
   has_completed_pretest: boolean;
   learning_style: string;
+  selected_program: string;
+  has_completed_onboarding: boolean;
+  tj_dna_code: string | null;
+  dna_layer_strength: string | null;
+  dna_engagement: number;
+  dna_retention: string | null;
+  dna_confidence: string | null;
 }
 
 interface AuthContextType {
@@ -44,7 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select("*")
       .eq("id", userId)
       .single();
-    if (data) setProfile(data as Profile);
+    if (data) setProfile(data as unknown as Profile);
   }, []);
 
   const refreshProfile = useCallback(async () => {

@@ -9,6 +9,7 @@ import { CoinProvider } from "@/hooks/useCoins";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import OnboardingPage from "./pages/OnboardingPage";
 import Home from "./pages/Home";
 import WelcomePage from "./pages/WelcomePage";
 import SectionPage from "./pages/SectionPage";
@@ -57,6 +58,7 @@ const App = () => (
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
               <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/welcome" element={<ProtectedRoute><WelcomePage /></ProtectedRoute>} />
               <Route path="/section/:id" element={<ProtectedRoute><SectionPage /></ProtectedRoute>} />
