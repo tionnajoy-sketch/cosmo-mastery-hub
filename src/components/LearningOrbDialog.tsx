@@ -349,6 +349,15 @@ const LearningOrbDialog = ({
       updateDNA({ layerCompleted: step.key, timeSpentSeconds: 30 });
     }
 
+    // Prevent skipping quiz — quiz must be answered before completing
+    if (currentStep === adaptedSteps.length - 2) {
+      // About to move to quiz step — allow it
+    }
+    if (step.key === "quiz" && !quizRevealed) {
+      // Don't allow completing without answering the quiz
+      return;
+    }
+
     if (currentStep < adaptedSteps.length - 1) {
       if (soundsEnabled) playChime();
       setCurrentStep(s => s + 1);
@@ -701,14 +710,19 @@ const LearningOrbDialog = ({
     }
   };
 
-  /* ─── Completion Screen ─── */
+  /* ─── Completion Screen with Feedback ─── */
   if (completed) {
+    const quizPassed = quizRevealed && quizSelected && (
+      (hasBuiltinQuiz && block.quiz_options.map(String).some((opt, i) => String.fromCharCode(65 + i) === quizSelected && (String(opt) === quizAnswer || String(opt).replace(/^[A-D]\)\s*/, "") === quizAnswer))) ||
+      (!hasBuiltinQuiz && aiQuestion && aiQuestion.options.some((opt, i) => String.fromCharCode(65 + i) === quizSelected && (String(opt) === aiQuestion.answer || String(opt).replace(/^[A-D]\)\s*/, "") === aiQuestion.answer)))
+    );
+
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="fixed inset-0 max-w-none w-screen h-screen m-0 p-0 gap-0 border-0 rounded-none translate-x-0 translate-y-0 top-0 left-0 data-[state=open]:slide-in-from-bottom-0" style={{ background: "hsl(var(--background))" }}>
+        <DialogContent className="fixed inset-0 max-w-none w-screen h-screen m-0 p-0 gap-0 border-0 rounded-none translate-x-0 translate-y-0 top-0 left-0 data-[state=open]:slide-in-from-bottom-0 overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.12 }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.88) 0%, hsl(0 0% 98% / 0.92) 100%)" }} />
-          <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-6 space-y-8">
+          <div className="relative z-10 min-h-full flex flex-col items-center justify-center text-center p-6 space-y-6">
             <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.6 }}>
               <CheckCircle2 className="h-20 w-20 mx-auto" style={{ color: "hsl(145 55% 42%)" }} />
             </motion.div>
@@ -718,13 +732,44 @@ const LearningOrbDialog = ({
             <motion.p className="text-lg max-w-md" style={{ color: c.subtext }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
               +15 coins earned • {adaptedSteps.length} layers completed
             </motion.p>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="flex flex-col gap-3">
-              <Button size="lg" className="gap-2 text-base px-8 py-6 shadow-lg"
+
+            {/* Performance Feedback */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+              className="w-full max-w-sm rounded-2xl p-5 space-y-3 text-left" style={{ background: "hsl(var(--card))", border: "1.5px solid hsl(var(--border))" }}>
+              <p className="text-xs font-bold uppercase tracking-widest text-center" style={{ color: c.subtext }}>Performance Summary</p>
+              <div className="flex items-center gap-3 px-2 py-2 rounded-lg" style={{ background: quizPassed ? "hsl(145 40% 95%)" : "hsl(25 60% 95%)" }}>
+                {quizPassed ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "hsl(145 50% 40%)" }} /> : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "hsl(25 60% 45%)" }} />}
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: quizPassed ? "hsl(145 35% 25%)" : "hsl(25 40% 25%)" }}>
+                    Knowledge Check: {quizPassed ? "Passed ✓" : "Needs Practice"}
+                  </p>
+                  <p className="text-xs" style={{ color: c.subtext }}>
+                    {quizPassed ? "Great recall — you're building exam readiness." : "Review this concept and try again for stronger retention."}
+                  </p>
+                </div>
+              </div>
+              {journalNote.length > 0 && (
+                <div className="flex items-center gap-3 px-2 py-2 rounded-lg" style={{ background: "hsl(145 40% 95%)" }}>
+                  <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "hsl(145 50% 40%)" }} />
+                  <p className="text-sm" style={{ color: "hsl(145 35% 25%)" }}>Reflection completed ✓</p>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Next Steps */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="flex flex-col gap-3 w-full max-w-sm">
+              {!quizPassed && (
+                <Button size="lg" variant="outline" className="w-full gap-2 text-base py-5"
+                  style={{ borderColor: "hsl(25 60% 50%)", color: "hsl(25 60% 40%)" }}
+                  onClick={() => { setCompleted(false); setCurrentStep(adaptedSteps.length - 1); setQuizSelected(null); setQuizRevealed(false); setAiQuestion(null); completedRef.current = false; }}>
+                  <RefreshCw className="h-4 w-4" /> Practice Again
+                </Button>
+              )}
+              <Button size="lg" className="w-full gap-2 text-base py-5 shadow-lg"
                 style={{ background: "linear-gradient(135deg, hsl(265 72% 48%), hsl(215 80% 42%))", color: "white" }}
-                onClick={() => { onOpenChange(false); window.location.href = "/cosmo-grid"; }}>
-                <Sparkles className="h-5 w-5" /> Launch Cosmo Connection Grid™
+                onClick={() => onOpenChange(false)}>
+                <ArrowRight className="h-5 w-5" /> Back to Grid
               </Button>
-              <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-sm" style={{ color: c.subtext }}>Back to Terms</Button>
             </motion.div>
           </div>
         </DialogContent>
