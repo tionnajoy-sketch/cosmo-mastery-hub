@@ -120,15 +120,40 @@ const Home = () => {
     { name: "Remaining", value: Math.max((totalQuestions || 1) - (totalCorrect || 0), 0) },
   ];
 
-  // Learning style tip
+  // Learning style info
   const learningStyle = profile?.learning_style || "visual";
-  const styleTips: Record<string, string> = {
-    visual: "Based on your learning style, you may benefit most from the Visualize and Metaphor sections inside each study block.",
-    reading: "Based on your learning style, you may benefit most from the Definition, Reflection, and Journal sections inside each study block.",
-    kinesthetic: "Based on your learning style, you may benefit most from the Practice activities and Quiz sections inside each study block.",
-    auditory: "Based on your learning style, you may benefit most from the Metaphor and Affirmation sections inside each study block.",
+  const styleInfo: Record<string, { label: string; icon: any; color: string; description: string; howWeUseIt: string }> = {
+    visual: {
+      label: "Visual Learner",
+      icon: Eye,
+      color: "hsl(215 80% 42%)",
+      description: "You learn best by seeing — images, diagrams, and visual patterns help you understand and remember.",
+      howWeUseIt: "We'll prioritize the Visualize and Metaphor layers, showing you concepts through images and visual connections before diving into definitions.",
+    },
+    reading: {
+      label: "Reading/Writing Learner",
+      icon: BookOpenIcon2,
+      color: "hsl(45 90% 40%)",
+      description: "You learn best through written words — reading definitions, writing reflections, and journaling deepen your understanding.",
+      howWeUseIt: "We'll emphasize the Define, Reflect, and Journal layers, giving you structured text and space to process concepts in your own words.",
+    },
+    kinesthetic: {
+      label: "Kinesthetic Learner",
+      icon: PenLine,
+      color: "hsl(145 65% 32%)",
+      description: "You learn best by doing — hands-on activities, practice scenarios, and interactive exercises make concepts stick.",
+      howWeUseIt: "We'll focus on the Apply and Practice layers, putting you in real scenarios and interactive activities as early as possible.",
+    },
+    auditory: {
+      label: "Auditory Learner",
+      icon: Mic,
+      color: "hsl(275 70% 50%)",
+      description: "You learn best by hearing — spoken explanations, voice guidance, and verbal repetition help you absorb information.",
+      howWeUseIt: "We'll activate TJ's voice guidance on every step and emphasize the Metaphor and Affirmation layers with audio-first delivery.",
+    },
   };
-  const styleTip = styleTips[learningStyle] || styleTips.visual;
+  const currentStyle = styleInfo[learningStyle] || styleInfo.visual;
+  const StyleIcon = currentStyle.icon;
 
    return (
     <div className="min-h-screen flex flex-col" style={{ background: c.gradient }}>
