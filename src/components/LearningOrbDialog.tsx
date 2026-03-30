@@ -854,7 +854,10 @@ const LearningOrbDialog = ({
                 onClick={() => { if (step.key === "quiz") { setQuizSelected(null); setQuizRevealed(false); } }}>
                 <RefreshCw className="h-3.5 w-3.5" /> Explain Again
               </Button>
-              <Button size="sm" className="gap-1 text-sm px-5 shadow-md" style={{ background: step.gradient, color: "white" }} onClick={goNext}>
+              <Button size="sm" className="gap-1 text-sm px-5 shadow-md" 
+                style={{ background: step.gradient, color: "white", opacity: step.key === "quiz" && !quizRevealed ? 0.5 : 1 }} 
+                onClick={goNext}
+                disabled={step.key === "quiz" && !quizRevealed}>
                 {currentStep === adaptedSteps.length - 1 ? "Complete" : "Next"} {currentStep < adaptedSteps.length - 1 && <ArrowRight className="h-4 w-4" />}
               </Button>
             </div>
