@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Sparkles, Flame, Trophy, Brain, Target, TrendingUp, Zap, ChevronRight, BookOpen, GraduationCap, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppHeader from "@/components/AppHeader";
-import LearningOrbDialog from "@/components/LearningOrbDialog";
+import LearningOrchestrator from "@/components/LearningOrchestrator";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 
 interface Term {
@@ -346,7 +346,7 @@ const GameGridPage = () => {
       </div>
 
       {/* Learning Dialog */}
-      <LearningOrbDialog
+      <LearningOrchestrator
         open={!!selectedBlock}
         onOpenChange={(open) => { if (!open) setSelectedBlock(null); }}
         block={selectedBlock}
