@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -12,6 +12,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
+import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import { pageColors } from "@/lib/colors";
 import { fireBlockCompleteConfetti } from "@/lib/confetti";
 import SpeakButton from "@/components/SpeakButton";
@@ -162,9 +163,23 @@ const fetchTTS = async (text: string): Promise<HTMLAudioElement | null> => {
 const LearningOrbDialog = ({
   open, onOpenChange, block, onNotesChange, mode = "uploaded", blockIndex = 0, onComplete,
 }: LearningOrbDialogProps) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
+  const { dna, rules, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
+
+  // Reorder steps based on DNA layer strength
+  const adaptedSteps = useMemo(() => {
+    if (!dna) return STEPS;
+    const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz" };
+    const preferred = LAYER_MAP[dna.layerStrength];
+    if (!preferred) return STEPS;
+    // Keep breakdown first, move preferred step to second position
+    const rest = STEPS.filter(s => s.key !== "breakdown" && s.key !== preferred);
+    const preferredStep = STEPS.find(s => s.key === preferred);
+    if (!preferredStep) return STEPS;
+    return [STEPS[0], preferredStep, ...rest];
+  }, [dna]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -276,7 +291,7 @@ const LearningOrbDialog = ({
   // Auto-fetch etymology on breakdown step
   useEffect(() => {
     if (!block) return;
-    const s = STEPS[currentStep];
+    const s = adaptedSteps[currentStep];
     if (s?.key === "breakdown" && !etymology && !etymLoading) {
       fetchEtymology();
     }
@@ -291,7 +306,7 @@ const LearningOrbDialog = ({
   // Auto-speak on step change
   useEffect(() => {
     if (!block || !voiceEnabled || !autoVoiceRef.current) return;
-    const s = STEPS[currentStep];
+    const s = adaptedSteps[currentStep];
     if (!s) return;
     let textToSpeak = "";
     switch (s.key) {
@@ -315,12 +330,24 @@ const LearningOrbDialog = ({
 
   if (!block) return null;
 
-  const step = STEPS[currentStep];
-  const progressPercent = ((currentStep + 1) / STEPS.length) * 100;
+  const step = adaptedSteps[currentStep];
+  const progressPercent = ((currentStep + 1) / adaptedSteps.length) * 100;
+
+  // DNA-adapted encouragement message
+  const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
   const goNext = () => {
     stopSpeaking();
-    if (currentStep < STEPS.length - 1) {
+    // Track DNA updates based on current step
+    if (step.key === "reflection" && journalNote.length > 0) {
+      updateDNA({ layerCompleted: "reflection", reflectionLength: journalNote.length });
+    } else if (step.key === "application") {
+      updateDNA({ layerCompleted: "application" });
+    } else {
+      updateDNA({ layerCompleted: step.key, timeSpentSeconds: 30 });
+    }
+
+    if (currentStep < adaptedSteps.length - 1) {
       if (soundsEnabled) playChime();
       setCurrentStep(s => s + 1);
     } else {
@@ -362,11 +389,17 @@ const LearningOrbDialog = ({
   const fetchExpandedInfo = async () => {
     setInfoLoading(true);
     try {
+      const depthInstruction = rules.contentDepth === "brief"
+        ? "Keep it short — 2 paragraphs max, simple language."
+        : rules.contentDepth === "deep"
+        ? "Go deep — 4-5 thorough paragraphs with connections to related concepts."
+        : "Keep it concise but thorough — 3-4 paragraphs max.";
+      const programName = profile?.selected_program || "cosmetology";
       const { data } = await supabase.functions.invoke("ai-mentor-chat", {
         body: {
           messages: [{
             role: "user",
-            content: `Provide a deeper, expanded explanation of "${block.term_title}" (${block.definition}). Include: why it matters in cosmetology, how it connects to other concepts, and what a student needs to know for the state board exam. Keep it concise but thorough — 3-4 paragraphs max.`,
+            content: `Provide a deeper, expanded explanation of "${block.term_title}" (${block.definition}). Include: why it matters in ${programName}, how it connects to other concepts, and what a student needs to know for the exam. ${depthInstruction}`,
           }],
           sectionName: "Expanded Information",
         },
@@ -394,11 +427,17 @@ const LearningOrbDialog = ({
   const generateQuizQuestion = async () => {
     setAiLoading(true);
     try {
+      const difficultyHint = rules.difficulty === "guided"
+        ? "Make the question straightforward with clear options. Add a hint."
+        : rules.difficulty === "challenge"
+        ? "Make the question challenging — use scenario-based or application-style questions."
+        : "Standard difficulty for exam preparation.";
+      const programName = profile?.selected_program || "cosmetology";
       const { data } = await supabase.functions.invoke("ai-mentor-chat", {
         body: {
           messages: [{
             role: "user",
-            content: `Create a State Board Cosmetology exam-style multiple choice question about "${block.term_title}". Definition: "${block.definition}". Respond ONLY with JSON: {"question":"...","options":["A)...","B)...","C)...","D)..."],"answer":"the full text of the correct option"}. No markdown.`,
+            content: `Create a ${programName} exam-style multiple choice question about "${block.term_title}". Definition: "${block.definition}". ${difficultyHint} Respond ONLY with JSON: {"question":"...","options":["A)...","B)...","C)...","D)..."],"answer":"the full text of the correct option"}. No markdown.`,
           }],
           sectionName: "State Board Quiz",
         },
@@ -614,7 +653,7 @@ const LearningOrbDialog = ({
                     else if (quizRevealed && isSelected) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
                     else if (quizRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 45%)"; }
                     return (
-                      <motion.button key={i} onClick={() => { if (!quizRevealed) { setQuizSelected(letter); setQuizRevealed(true); if (isCorrect) addCoins(10, "correct"); } }}
+                      <motion.button key={i} onClick={() => { if (!quizRevealed) { setQuizSelected(letter); setQuizRevealed(true); const correct = isCorrect; if (correct) addCoins(10, "correct"); updateDNA({ quizCorrect: correct, layerCompleted: "quiz" }); } }}
                         className="w-full text-left p-4 rounded-xl text-sm font-medium transition-all"
                         style={{ background: bg, border: `2px solid ${border}`, color: c.bodyText }}
                         disabled={quizRevealed}
@@ -665,7 +704,7 @@ const LearningOrbDialog = ({
               You made it. 🎉
             </motion.h2>
             <motion.p className="text-lg max-w-md" style={{ color: c.subtext }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
-              +15 coins earned • {STEPS.length} layers completed
+              +15 coins earned • {adaptedSteps.length} layers completed
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="flex flex-col gap-3">
               <Button size="lg" className="gap-2 text-base px-8 py-6 shadow-lg"
@@ -699,7 +738,7 @@ const LearningOrbDialog = ({
                 <AvatarFallback className="text-xs font-bold" style={{ background: step.color, color: "white" }}>TJ</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <p className="text-xs italic leading-snug" style={{ color: step.color }}>"{step.caption}"</p>
+                <p className="text-xs italic leading-snug" style={{ color: step.color }}>"{getAdaptedCaption(step.caption, step.key)}"</p>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {isSpeaking && (
@@ -717,10 +756,10 @@ const LearningOrbDialog = ({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="font-display text-lg font-bold truncate" style={{ color: c.heading }}>{block.term_title}</h3>
-                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: c.subtext }}>Cosmetology</p>
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: c.subtext }}>{profile?.selected_program || "Cosmetology"}</p>
               </div>
               <div className="flex-shrink-0 text-right">
-                <p className="text-xs font-semibold" style={{ color: step.color }}>Step {currentStep + 1} of {STEPS.length}</p>
+                <p className="text-xs font-semibold" style={{ color: step.color }}>Step {currentStep + 1} of {adaptedSteps.length}</p>
               </div>
             </div>
 
@@ -729,7 +768,7 @@ const LearningOrbDialog = ({
 
             {/* Step indicator pills */}
             <div className="flex items-center justify-center gap-1 mt-2.5">
-              {STEPS.map((s, i) => (
+              {adaptedSteps.map((s, i) => (
                 <div key={s.key} className="h-1.5 rounded-full transition-all duration-300"
                   style={{ width: i === currentStep ? 20 : 6, background: i <= currentStep ? s.color : "hsl(var(--border))", opacity: i <= currentStep ? 1 : 0.4 }} />
               ))}
@@ -759,7 +798,7 @@ const LearningOrbDialog = ({
                 <RefreshCw className="h-3.5 w-3.5" /> Explain Again
               </Button>
               <Button size="sm" className="gap-1 text-sm px-5 shadow-md" style={{ background: step.gradient, color: "white" }} onClick={goNext}>
-                {currentStep === STEPS.length - 1 ? "Complete" : "Next"} {currentStep < STEPS.length - 1 && <ArrowRight className="h-4 w-4" />}
+                {currentStep === adaptedSteps.length - 1 ? "Complete" : "Next"} {currentStep < adaptedSteps.length - 1 && <ArrowRight className="h-4 w-4" />}
               </Button>
             </div>
           </div>
@@ -767,6 +806,22 @@ const LearningOrbDialog = ({
           {/* ═══════ CENTER SECTION ═══════ */}
           <div className="flex-1 overflow-y-auto px-5 sm:px-8 scrollbar-visible" style={{ scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 40%) transparent" }}>
             <div className="max-w-lg mx-auto pb-8 pt-2">
+              {/* DNA Encouragement Banner */}
+              {encouragementMsg && (
+                <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 px-4 py-3 rounded-xl text-center text-sm font-medium"
+                  style={{ background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))", border: "1px solid hsl(var(--border))" }}>
+                  💜 {encouragementMsg}
+                </motion.div>
+              )}
+              {/* Memory Cue Banner */}
+              {rules.addMemoryCues && (step.key === "definition" || step.key === "information") && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  className="mb-4 px-4 py-2 rounded-lg text-xs text-center"
+                  style={{ background: "hsl(45 80% 95%)", color: "hsl(45 50% 30%)", border: "1px solid hsl(45 60% 80%)" }}>
+                  🔑 Key Point: Remember "{block.term_title}" — say it, picture it, connect it to something you know.
+                </motion.div>
+              )}
               <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
             </div>
           </div>
