@@ -20,6 +20,21 @@ import StudentContract from "@/components/StudentContract";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 
+const c = pageColors.home;
+
+interface Section {
+  id: string;
+  name: string;
+  description: string;
+  order: number;
+  color_theme: string;
+}
+
+interface SectionProgress {
+  totalBlocks: number;
+  completedBlocks: number;
+}
+
 const getStatusLabel = (percent: number) => {
   if (percent === 0) return { label: "Just Starting", color: "hsl(200 50% 50%)" };
   if (percent < 40) return { label: "Building Foundation", color: "hsl(25 65% 50%)" };
