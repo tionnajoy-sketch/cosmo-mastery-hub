@@ -37,5 +37,9 @@ export const useStudyBreak = () => {
     sessionStorage.setItem(SESSION_KEY, String(Date.now()));
   }, []);
 
-  return { showCafe, dismissCafe };
+  const openCafe = useCallback(() => {
+    setShowCafe(true);
+  }, []);
+
+  return { showCafe, dismissCafe, openCafe };
 };
