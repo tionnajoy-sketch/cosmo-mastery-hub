@@ -194,6 +194,30 @@ const Home = () => {
               <Gamepad2 className="h-5 w-5" /> Practice Lab
             </Button>
           </div>
+
+          {/* Cafe countdown indicator */}
+          {cafeMinutesLeft !== null && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              onClick={() => openTJCafe()}
+              className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl w-full transition-all hover:scale-[1.01]"
+              style={{
+                background: cafeMinutesLeft === 0
+                  ? "linear-gradient(135deg, hsl(0 75% 50%), hsl(45 90% 55%))"
+                  : "hsl(30 15% 94%)",
+                color: cafeMinutesLeft === 0 ? "white" : "hsl(30 10% 35%)",
+              }}
+            >
+              <Coffee className="h-4 w-4 flex-shrink-0" />
+              <span className="text-sm font-medium">
+                {cafeMinutesLeft === 0
+                  ? "☕ Your TJ Cafe break is ready — take a moment"
+                  : `☕ TJ Cafe in ${cafeMinutesLeft} min`}
+              </span>
+            </motion.button>
+          )}
         </motion.div>
       </div>
 
