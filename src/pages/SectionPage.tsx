@@ -356,10 +356,13 @@ const SectionPage = () => {
 
                       <div className="flex gap-3">
                         <Button className="flex-1 gap-2 py-5 text-sm" style={{ background: accent.stripe, color: "white" }} onClick={() => navigate(`/section/${id}/study/${block.block_number}`)}>
-                          <BookOpen className="h-4 w-4" /> Study Block
+                          <BookOpen className="h-4 w-4" /> Learn
+                        </Button>
+                        <Button variant="outline" className="flex-1 gap-2 py-5 text-sm" style={{ borderColor: accent.stripe, color: accent.stripe }} onClick={() => navigate(`/section/${id}/activity/${block.block_number}`)}>
+                          <Target className="h-4 w-4" /> Practice
                         </Button>
                         <Button variant="outline" className="flex-1 gap-2 py-5 text-sm" style={{ borderColor: accent.stripe, color: accent.stripe }} onClick={() => navigate(`/section/${id}/quiz/${block.block_number}`)}>
-                          <Brain className="h-4 w-4" /> Quiz Block
+                          <Brain className="h-4 w-4" /> Quiz
                         </Button>
                       </div>
                     </CardContent>

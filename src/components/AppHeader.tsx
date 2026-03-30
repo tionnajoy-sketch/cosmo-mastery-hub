@@ -68,6 +68,13 @@ const AppHeader = () => {
                 <MessageCircle className="h-4 w-4 mr-2" /> Ask TJ
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/upload")} className="text-primary">
+                <Upload className="h-4 w-4 mr-2" /> Create With TJ™
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/my-modules")}>
+                <BookOpen className="h-4 w-4 mr-2" /> My Study Modules
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut}>
                 <LogOut className="h-4 w-4 mr-2" /> Sign Out
               </DropdownMenuItem>

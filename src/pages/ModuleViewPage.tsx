@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Sparkles, Dumbbell, Library, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Dumbbell, Library, CheckCircle2, BookOpen } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
 // AskTJ is now global
 import { type UploadedBlock } from "@/components/UploadedTermCard";
@@ -183,10 +183,20 @@ const ModuleViewPage = () => {
                         ))}
                       </div>
 
-                      {/* Block action buttons */}
-                      <div className="mt-4 grid grid-cols-2 gap-3">
+                      {/* Block action buttons — 3 clear modes */}
+                      <div className="mt-4 grid grid-cols-3 gap-2">
                         <Button
-                          className="w-full gap-2 py-5"
+                          className="w-full gap-1.5 py-5 text-xs"
+                          onClick={() => {
+                            setSelectedBlock(groupBlocks[0]);
+                            setSelectedIndex(0);
+                          }}
+                          style={{ background: accent.stripe, color: "hsl(0 0% 100%)" }}
+                        >
+                          <BookOpen className="h-4 w-4" /> Learn
+                        </Button>
+                        <Button
+                          className="w-full gap-1.5 py-5 text-xs"
                           variant="outline"
                           onClick={() => navigate(`/module/${id}/activity/${blockNum}`)}
                           style={{ borderColor: accent.stripe, color: accent.stripe }}
@@ -194,11 +204,12 @@ const ModuleViewPage = () => {
                           <Dumbbell className="h-4 w-4" /> Practice
                         </Button>
                         <Button
-                          className="w-full gap-2 py-5"
+                          className="w-full gap-1.5 py-5 text-xs"
+                          variant="outline"
                           onClick={() => navigate(`/module/${id}/quiz/${blockNum}`)}
-                          style={{ background: accent.stripe, color: "hsl(0 0% 100%)" }}
+                          style={{ borderColor: accent.stripe, color: accent.stripe }}
                         >
-                          <Sparkles className="h-4 w-4" /> Quiz Me
+                          <Sparkles className="h-4 w-4" /> Quiz
                         </Button>
                       </div>
                     </div>

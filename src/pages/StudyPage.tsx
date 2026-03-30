@@ -176,17 +176,7 @@ const StudyPage = () => {
                   ))}
                 </div>
 
-                {/* Action buttons */}
-                {terms.length > 0 && (
-                  <div className="mt-6 space-y-3">
-                    <Button className="w-full py-5 text-base gap-2" style={{ background: c.buttonPrimary, color: "white" }} onClick={() => navigate(`/section/${id}/activity/${block}`)}>
-                      <Gamepad2 className="h-5 w-5" /> Practice Activities
-                    </Button>
-                    <Button className="w-full py-5 text-base gap-2" style={{ background: c.buttonSecondary, color: "white" }} onClick={() => navigate(`/section/${id}/quiz/${block}`)}>
-                      <Brain className="h-5 w-5" /> Quiz Me on This Block
-                    </Button>
-                  </div>
-                )}
+                {/* Mode actions removed — Practice and Quiz are separate modes */}
               </div>
             </motion.div>
           </div>
