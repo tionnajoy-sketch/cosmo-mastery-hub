@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import {
   BookOpen, ArrowRight, Target, TrendingUp,
   CheckCircle2, Flame, Heart, Shield,
-  Brain, Sparkles, Eye, Upload,
+  Brain, Sparkles, Eye, Upload, Gamepad2,
   Pen, MessageSquare, GraduationCap, RefreshCw,
   Lightbulb, PenLine, Wrench, HelpCircle, Mic, Fingerprint,
 } from "lucide-react";
