@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Sparkles, Dumbbell, Library, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Dumbbell, Library, CheckCircle2, BookOpen } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
 // AskTJ is now global
 import { type UploadedBlock } from "@/components/UploadedTermCard";
