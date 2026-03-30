@@ -360,7 +360,10 @@ const QuizPage = () => {
               }}
             >
               <CardContent className="p-6">
-                <p className="text-base leading-relaxed" style={{ color: c.cardText }}>{currentQuestion.question_text}</p>
+                <div className="flex items-start gap-2">
+                  <p className="text-base leading-relaxed flex-1" style={{ color: c.cardText }}>{currentQuestion.question_text}</p>
+                  <SpeakButton text={currentQuestion.question_text} size="icon" className="flex-shrink-0 mt-[-4px]" />
+                </div>
               </CardContent>
             </Card>
 
