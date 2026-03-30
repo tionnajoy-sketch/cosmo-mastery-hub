@@ -366,30 +366,23 @@ const Home = () => {
           </motion.section>
         )}
 
-        {/* ── Continue Studying ── */}
+        {/* ── Quick Actions ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-          <Button
-            className="w-full py-6 text-base font-display font-semibold gap-2 shadow-lg"
-            onClick={() => navigate("/study-modules")}
-          >
-            <BookOpen className="h-5 w-5" /> Start Studying
-          </Button>
-        </motion.section>
-
-        {/* ── Study Modules CTA ── */}
-        <motion.section id="study-sections" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65 }}>
-          <Card className="border-0 shadow-md cursor-pointer hover:shadow-lg transition-shadow bg-card" onClick={() => navigate("/study-modules")}>
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className="p-2.5 rounded-xl" style={{ background: "hsl(185 30% 92%)" }}>
-                <BookOpen className="h-5 w-5" style={{ color: "hsl(185 45% 42%)" }} />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-display text-base font-semibold text-foreground">Study Modules</h3>
-                <p className="text-xs text-muted-foreground">Browse all available sections and continue learning</p>
-              </div>
-              <ArrowRight className="h-5 w-5 text-muted-foreground" />
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              className="py-6 text-sm font-display font-semibold gap-2 shadow-lg"
+              onClick={() => navigate("/learn")}
+            >
+              <BookOpen className="h-5 w-5" /> Learn
+            </Button>
+            <Button
+              variant="secondary"
+              className="py-6 text-sm font-display font-semibold gap-2 shadow-md"
+              onClick={() => navigate("/practice-lab")}
+            >
+              <Gamepad2 className="h-5 w-5" /> Practice Lab
+            </Button>
+          </div>
         </motion.section>
       </div>
 
