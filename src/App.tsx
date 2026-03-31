@@ -42,6 +42,7 @@ import ComprehensiveFinalExamPage from "./pages/ComprehensiveFinalExamPage";
 import CosmoConnectionGridPage from "./pages/CosmoConnectionGridPage";
 import AskTJFullScreen from "./components/AskTJFullScreen";
 import GameGridPage from "./pages/GameGridPage";
+import LearningDNAPage from "./pages/LearningDNAPage";
 import PracticeLabPage from "./pages/PracticeLabPage";
 import TJCafe from "./components/TJCafe";
 import { useStudyBreak } from "./hooks/useStudyBreak";
