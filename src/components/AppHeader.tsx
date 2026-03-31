@@ -15,7 +15,7 @@ import {
   BookOpen, Menu, LogOut, BarChart3, Upload, Sparkles,
   Shield, Gamepad2,
   Volume2, VolumeX, GraduationCap, MessageCircle, Play, Library, Lightbulb, Grid3X3,
-  Coffee, NotebookPen,
+  Coffee, NotebookPen, Brain,
 } from "lucide-react";
 import CoinDisplay from "@/components/CoinDisplay";
 
@@ -74,6 +74,9 @@ const AppHeader = () => {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/insights")}>
                 <NotebookPen className="h-4 w-4 mr-2" /> My Journal
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/learning-dna")}>
+                <Brain className="h-4 w-4 mr-2" /> My Learning DNA
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/upload")} className="text-primary">

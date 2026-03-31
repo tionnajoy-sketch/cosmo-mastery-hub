@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import {
   BookOpen, Target, TrendingUp,
-  CheckCircle2, Flame, Gamepad2, Coffee,
+  CheckCircle2, Flame, Gamepad2, Coffee, Brain,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors } from "@/lib/colors";
@@ -192,6 +192,11 @@ const Home = () => {
             </Button>
             <Button variant="secondary" className="py-7 text-base font-display font-semibold gap-2 shadow-md rounded-xl" onClick={() => navigate("/practice-lab")}>
               <Gamepad2 className="h-5 w-5" /> Practice Lab
+            </Button>
+          </div>
+          <div className="mt-3">
+            <Button variant="ghost" className="w-full py-4 text-sm font-medium gap-2 text-muted-foreground hover:text-foreground" onClick={() => navigate("/learning-dna")}>
+              <Brain className="h-4 w-4" /> Understand My DNA
             </Button>
           </div>
 
