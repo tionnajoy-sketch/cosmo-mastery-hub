@@ -194,6 +194,11 @@ const Home = () => {
               <Gamepad2 className="h-5 w-5" /> Practice Lab
             </Button>
           </div>
+          <div className="mt-3">
+            <Button variant="ghost" className="w-full py-4 text-sm font-medium gap-2 text-muted-foreground hover:text-foreground" onClick={() => navigate("/learning-dna")}>
+              <Brain className="h-4 w-4" /> Understand My DNA
+            </Button>
+          </div>
 
           {/* Cafe countdown indicator */}
           {cafeMinutesLeft !== null && (
