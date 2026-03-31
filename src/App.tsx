@@ -92,6 +92,7 @@ const AppContent = () => {
         <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
         <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />
         <Route path="/cosmo-grid" element={<ProtectedRoute><CosmoConnectionGridPage /></ProtectedRoute>} />
+        <Route path="/learning-dna" element={<ProtectedRoute><LearningDNAPage /></ProtectedRoute>} />
         <Route path="/game-grid" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>

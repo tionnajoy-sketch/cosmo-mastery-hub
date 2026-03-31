@@ -75,6 +75,9 @@ const AppHeader = () => {
               <DropdownMenuItem onClick={() => navigate("/insights")}>
                 <NotebookPen className="h-4 w-4 mr-2" /> My Journal
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/learning-dna")}>
+                <Brain className="h-4 w-4 mr-2" /> My Learning DNA
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/upload")} className="text-primary">
                 <Upload className="h-4 w-4 mr-2" /> Create With TJ™

@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import {
   BookOpen, Target, TrendingUp,
-  CheckCircle2, Flame, Gamepad2, Coffee,
+  CheckCircle2, Flame, Gamepad2, Coffee, Brain,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors } from "@/lib/colors";

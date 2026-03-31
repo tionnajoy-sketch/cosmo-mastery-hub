@@ -152,7 +152,7 @@ const OnboardingPage = () => {
     } as any).eq("id", user.id);
     await refreshProfile();
     setSaving(false);
-    navigate("/");
+    navigate("/learning-dna");
   }, [user, dnaResult, selectedProgram, navigate, refreshProfile]);
 
   return (
