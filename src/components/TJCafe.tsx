@@ -289,7 +289,7 @@ const TJCafe = ({ open, onDismiss, requiredMode = true }: TJCafeProps) => {
   // Cleanup on close
   useEffect(() => {
     if (!open) {
-      if (musicAudioRef.current) { musicAudioRef.current.pause(); setMusicPlaying(false); }
+      stopJazz();
       if (voiceAudioRef.current) { voiceAudioRef.current.pause(); }
       if (soundBathOn && gainRef.current && audioCtxRef.current) {
         gainRef.current.gain.linearRampToValueAtTime(0, audioCtxRef.current.currentTime + 0.5);
