@@ -357,9 +357,9 @@ const TJCafe = ({ open, onDismiss, requiredMode = true }: TJCafeProps) => {
           {/* Audio controls row */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
             className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
-            <Button variant="outline" size="sm" onClick={toggleMusic} disabled={musicLoading}
+            <Button variant="outline" size="sm" onClick={toggleMusic}
               className="border-white/20 text-white hover:bg-white/10 flex-1 text-xs">
-              {musicLoading ? "Loading Jazz…" : musicPlaying ? <><VolumeX className="h-3 w-3 mr-1" /> Pause Jazz</> : <><Volume2 className="h-3 w-3 mr-1" /> Play Jazz</>}
+              {musicPlaying ? <><VolumeX className="h-3 w-3 mr-1" /> Pause Jazz</> : <><Volume2 className="h-3 w-3 mr-1" /> Play Jazz</>}
             </Button>
             <Button variant="outline" size="sm" onClick={toggleSoundBath}
               className="border-white/20 text-white hover:bg-white/10 flex-1 text-xs">
