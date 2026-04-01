@@ -49,12 +49,12 @@ const TJCafe = ({ open, onDismiss, requiredMode = true }: TJCafeProps) => {
   const reflectionWritten = reflectionText.trim().length >= 10;
   const canDismiss = !requiredMode || (breathingDone && affirmationRead && reflectionWritten);
 
-  // Audio state
+  // Audio state — generative jazz via Web Audio API
   const [musicPlaying, setMusicPlaying] = useState(false);
-  const [musicLoading, setMusicLoading] = useState(false);
   const [musicVolume, setMusicVolume] = useState(0.4);
-  const musicAudioRef = useRef<HTMLAudioElement | null>(null);
-  const musicBlobRef = useRef<string | null>(null);
+  const jazzCtxRef = useRef<AudioContext | null>(null);
+  const jazzGainRef = useRef<GainNode | null>(null);
+  const jazzIntervalsRef = useRef<ReturnType<typeof setInterval>[]>([]);
 
   // Sound bath state
   const [soundBathOn, setSoundBathOn] = useState(false);
@@ -108,78 +108,100 @@ const TJCafe = ({ open, onDismiss, requiredMode = true }: TJCafeProps) => {
     }
   }, [open, speak]);
 
-  // Generate jazz music
-  const startMusic = useCallback(async () => {
-    // Check localStorage cache first
-    const cached = localStorage.getItem("tj_cafe_jazz_blob");
-    if (cached) {
-      const audio = new Audio(`data:audio/mpeg;base64,${cached}`);
-      audio.loop = true;
-      audio.volume = musicVolume;
-      musicAudioRef.current = audio;
-      await audio.play();
-      setMusicPlaying(true);
-      return;
-    }
+  // Generative jazz using Web Audio API — no API calls needed
+  const startJazz = useCallback(() => {
+    if (jazzCtxRef.current) return;
+    const ctx = new AudioContext();
+    jazzCtxRef.current = ctx;
+    const master = ctx.createGain();
+    master.gain.value = musicVolume * 0.15;
+    master.connect(ctx.destination);
+    jazzGainRef.current = master;
 
-    setMusicLoading(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-music`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            prompt: "soft R&B jazz lounge, warm piano, gentle saxophone, slow tempo, relaxing, ambient",
-            duration: 30,
-          }),
-        }
-      );
-      if (!response.ok) throw new Error("Music generation failed");
-      const blob = await response.blob();
+    // Warm pad (jazz chords)
+    const padGain = ctx.createGain();
+    padGain.gain.value = 0.3;
+    padGain.connect(master);
+    const padFreqs = [261.6, 329.6, 392, 466.2]; // Cmaj7
+    padFreqs.forEach(f => {
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value = f;
+      const g = ctx.createGain();
+      g.gain.value = 0.08;
+      osc.connect(g);
+      g.connect(padGain);
+      osc.start();
+    });
 
-      // Cache as base64
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = (reader.result as string).split(",")[1];
-        try { localStorage.setItem("tj_cafe_jazz_blob", base64); } catch {}
-      };
-      reader.readAsDataURL(blob);
+    // Slow piano-like melody notes cycling
+    const melodyNotes = [523.3, 587.3, 659.3, 698.5, 784, 659.3, 587.3, 523.3, 466.2, 392, 440, 523.3];
+    let noteIdx = 0;
+    const melodyInterval = setInterval(() => {
+      if (!jazzCtxRef.current) return;
+      const c = jazzCtxRef.current;
+      const osc = c.createOscillator();
+      osc.type = "triangle";
+      osc.frequency.value = melodyNotes[noteIdx % melodyNotes.length] * (0.98 + Math.random() * 0.04);
+      const env = c.createGain();
+      env.gain.setValueAtTime(0, c.currentTime);
+      env.gain.linearRampToValueAtTime(0.12, c.currentTime + 0.1);
+      env.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 2.5);
+      osc.connect(env);
+      env.connect(master);
+      osc.start(c.currentTime);
+      osc.stop(c.currentTime + 3);
+      noteIdx++;
+    }, 2800 + Math.random() * 1200);
+    jazzIntervalsRef.current.push(melodyInterval);
 
-      const url = URL.createObjectURL(blob);
-      musicBlobRef.current = url;
-      const audio = new Audio(url);
-      audio.loop = true;
-      audio.volume = musicVolume;
-      musicAudioRef.current = audio;
-      await audio.play();
-      setMusicPlaying(true);
-    } catch (err) {
-      console.error("Music generation failed:", err);
-    } finally {
-      setMusicLoading(false);
-    }
+    // Soft bass line
+    const bassNotes = [130.8, 146.8, 164.8, 146.8];
+    let bassIdx = 0;
+    const bassInterval = setInterval(() => {
+      if (!jazzCtxRef.current) return;
+      const c = jazzCtxRef.current;
+      const osc = c.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value = bassNotes[bassIdx % bassNotes.length];
+      const env = c.createGain();
+      env.gain.setValueAtTime(0.15, c.currentTime);
+      env.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 3);
+      osc.connect(env);
+      env.connect(master);
+      osc.start(c.currentTime);
+      osc.stop(c.currentTime + 3.5);
+      bassIdx++;
+    }, 3500);
+    jazzIntervalsRef.current.push(bassInterval);
+
+    setMusicPlaying(true);
   }, [musicVolume]);
 
-  const toggleMusic = useCallback(() => {
-    if (musicPlaying && musicAudioRef.current) {
-      musicAudioRef.current.pause();
-      setMusicPlaying(false);
-    } else if (musicAudioRef.current) {
-      musicAudioRef.current.play();
-      setMusicPlaying(true);
-    } else {
-      startMusic();
+  const stopJazz = useCallback(() => {
+    jazzIntervalsRef.current.forEach(clearInterval);
+    jazzIntervalsRef.current = [];
+    if (jazzGainRef.current && jazzCtxRef.current) {
+      jazzGainRef.current.gain.linearRampToValueAtTime(0, jazzCtxRef.current.currentTime + 1);
+      const ctx = jazzCtxRef.current;
+      setTimeout(() => { try { ctx.close(); } catch {} }, 1200);
     }
-  }, [musicPlaying, startMusic]);
+    jazzCtxRef.current = null;
+    jazzGainRef.current = null;
+    setMusicPlaying(false);
+  }, []);
 
-  // Update music volume
+  const toggleMusic = useCallback(() => {
+    if (musicPlaying) {
+      stopJazz();
+    } else {
+      startJazz();
+    }
+  }, [musicPlaying, startJazz, stopJazz]);
+
+  // Update jazz volume
   useEffect(() => {
-    if (musicAudioRef.current) musicAudioRef.current.volume = musicVolume;
+    if (jazzGainRef.current) jazzGainRef.current.gain.value = musicVolume * 0.15;
   }, [musicVolume]);
 
   // Sound bath — binaural beats
@@ -267,7 +289,7 @@ const TJCafe = ({ open, onDismiss, requiredMode = true }: TJCafeProps) => {
   // Cleanup on close
   useEffect(() => {
     if (!open) {
-      if (musicAudioRef.current) { musicAudioRef.current.pause(); setMusicPlaying(false); }
+      stopJazz();
       if (voiceAudioRef.current) { voiceAudioRef.current.pause(); }
       if (soundBathOn && gainRef.current && audioCtxRef.current) {
         gainRef.current.gain.linearRampToValueAtTime(0, audioCtxRef.current.currentTime + 0.5);
@@ -335,9 +357,9 @@ const TJCafe = ({ open, onDismiss, requiredMode = true }: TJCafeProps) => {
           {/* Audio controls row */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
             className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
-            <Button variant="outline" size="sm" onClick={toggleMusic} disabled={musicLoading}
+            <Button variant="outline" size="sm" onClick={toggleMusic}
               className="border-white/20 text-white hover:bg-white/10 flex-1 text-xs">
-              {musicLoading ? "Loading Jazz…" : musicPlaying ? <><VolumeX className="h-3 w-3 mr-1" /> Pause Jazz</> : <><Volume2 className="h-3 w-3 mr-1" /> Play Jazz</>}
+              {musicPlaying ? <><VolumeX className="h-3 w-3 mr-1" /> Pause Jazz</> : <><Volume2 className="h-3 w-3 mr-1" /> Play Jazz</>}
             </Button>
             <Button variant="outline" size="sm" onClick={toggleSoundBath}
               className="border-white/20 text-white hover:bg-white/10 flex-1 text-xs">
