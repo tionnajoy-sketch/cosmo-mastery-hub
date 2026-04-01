@@ -49,12 +49,12 @@ const TJCafe = ({ open, onDismiss, requiredMode = true }: TJCafeProps) => {
   const reflectionWritten = reflectionText.trim().length >= 10;
   const canDismiss = !requiredMode || (breathingDone && affirmationRead && reflectionWritten);
 
-  // Audio state
+  // Audio state — generative jazz via Web Audio API
   const [musicPlaying, setMusicPlaying] = useState(false);
-  const [musicLoading, setMusicLoading] = useState(false);
   const [musicVolume, setMusicVolume] = useState(0.4);
-  const musicAudioRef = useRef<HTMLAudioElement | null>(null);
-  const musicBlobRef = useRef<string | null>(null);
+  const jazzCtxRef = useRef<AudioContext | null>(null);
+  const jazzGainRef = useRef<GainNode | null>(null);
+  const jazzIntervalsRef = useRef<ReturnType<typeof setInterval>[]>([]);
 
   // Sound bath state
   const [soundBathOn, setSoundBathOn] = useState(false);
