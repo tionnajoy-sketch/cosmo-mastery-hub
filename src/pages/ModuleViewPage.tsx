@@ -57,11 +57,13 @@ const ModuleViewPage = () => {
   useEffect(() => {
     if (!id) return;
     const fetchData = async () => {
-      const [modRes, blocksRes] = await Promise.all([
-        supabase.from("uploaded_modules").select("title").eq("id", id).single(),
+      const [modRes, blocksRes, overviewRes] = await Promise.all([
+        supabase.from("uploaded_modules").select("title, detected_subject, document_type, total_chapters").eq("id", id).single(),
         supabase.from("uploaded_module_blocks").select("*").eq("module_id", id).order("block_number").order("created_at"),
+        supabase.from("module_document_overview").select("*").eq("module_id", id).maybeSingle(),
       ]);
       if (modRes.data) setModuleTitle(modRes.data.title);
+      if (overviewRes.data) setOverview(overviewRes.data);
       if (blocksRes.data) {
         setBlocks(blocksRes.data.map((b: any) => ({
           ...b,
