@@ -444,9 +444,10 @@ const LearningOrbDialog = ({
           sectionName: "Expanded Information",
         },
       });
-      setExpandedInfo(data?.response || "");
+      const info = data?.response || "";
+      setExpandedInfo(info);
+      if (info && voiceEnabled) speakText(info.slice(0, 1000));
     } catch {}
-    setInfoLoading(false);
   };
 
   const generateImage = async () => {
@@ -637,6 +638,19 @@ const LearningOrbDialog = ({
       case "information":
         return (
           <motion.div key="information" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4 py-4">
+            {/* TJ Learning Studio — teaching mode menu FIRST */}
+            <div className="border-b border-border pb-4">
+              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Choose How TJ Teaches This</p>
+              <TJLearningStudio
+                termName={block.term_title}
+                definition={block.definition}
+                metaphor={block.metaphor}
+                additionalContent={block.practice_scenario}
+                onContentGenerated={(text) => { if (voiceEnabled) speakText(text.slice(0, 800)); }}
+              />
+            </div>
+
+            {/* Expanded information below */}
             {infoLoading ? (
               <div className="flex items-center justify-center gap-3 py-10">
                 <Loader2 className="h-6 w-6 animate-spin" style={{ color: step.color }} />
@@ -644,6 +658,7 @@ const LearningOrbDialog = ({
               </div>
             ) : expandedInfo ? (
               <>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Deeper Explanation</p>
                 <div className="prose prose-sm max-w-none leading-relaxed" style={{ color: c.bodyText }}>
                   {expandedInfo.split("\n").filter(Boolean).map((p, i) => <p key={i} className="mb-3">{p}</p>)}
                 </div>
@@ -654,17 +669,6 @@ const LearningOrbDialog = ({
                 <Sparkles className="h-4 w-4" /> Load Deeper Information
               </Button>
             )}
-
-            {/* TJ Learning Studio — embedded content engine */}
-            <div className="pt-4 border-t border-border">
-              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">TJ Learning Studio</p>
-              <TJLearningStudio
-                termName={block.term_title}
-                definition={block.definition}
-                metaphor={block.metaphor}
-                additionalContent={block.practice_scenario}
-              />
-            </div>
           </motion.div>
         );
 
@@ -866,7 +870,7 @@ const LearningOrbDialog = ({
         <div className="absolute inset-0 bg-cover bg-center pointer-events-none" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.06, filter: "brightness(1.2)" }} />
         <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.94) 0%, hsl(0 0% 98% / 0.96) 100%)" }} />
 
-        <div className="relative z-10 h-full flex flex-col">
+        <div className="relative z-10 h-full flex flex-col min-h-0">
           {/* ═══════ TOP SECTION ═══════ */}
           <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 border-b" style={{ background: "hsl(var(--background) / 0.95)", backdropFilter: "blur(12px)" }}>
             {/* Avatar + Caption + Voice Controls */}

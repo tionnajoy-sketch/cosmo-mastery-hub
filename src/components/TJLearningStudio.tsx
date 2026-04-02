@@ -30,12 +30,13 @@ interface TJLearningStudioProps {
   additionalContent?: string;
   mode?: "inline" | "panel";
   onAudioScript?: (script: string) => void;
+  onContentGenerated?: (text: string) => void;
 }
 
 type StudioMode = "summary" | "explanation" | "teach-flow" | "explain-again" | "slideshow" | "audio-script";
 
 const TJLearningStudio = ({
-  termName, definition, metaphor, additionalContent, mode = "inline", onAudioScript,
+  termName, definition, metaphor, additionalContent, mode = "inline", onAudioScript, onContentGenerated,
 }: TJLearningStudioProps) => {
   const { profile } = useAuth();
   const { dna } = useDNAAdaptation();
@@ -87,6 +88,7 @@ const TJLearningStudio = ({
       } else {
         setContent(result);
         if (type === "audio-script" && onAudioScript) onAudioScript(result);
+        if (onContentGenerated && result) onContentGenerated(result);
       }
     } catch (e) {
       console.error("Studio error:", e);
@@ -142,7 +144,7 @@ const TJLearningStudio = ({
             exit={{ opacity: 0 }}
           >
             <Card className="border-primary/20">
-              <CardContent className="p-4 prose prose-sm max-w-none dark:prose-invert overflow-y-auto max-h-[50vh]">
+              <CardContent className="p-4 prose prose-sm max-w-none dark:prose-invert">
                 <ReactMarkdown>{content}</ReactMarkdown>
               </CardContent>
             </Card>
