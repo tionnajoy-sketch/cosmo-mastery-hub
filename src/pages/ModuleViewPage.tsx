@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStudyTracker } from "@/hooks/useStudyTracker";
 import { useCoins } from "@/hooks/useCoins";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Loader2, Sparkles, Dumbbell, Library, CheckCircle2, BookOpen, Flame, Trophy, Target, ChevronRight, ChevronDown, Hash } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Dumbbell, Library, CheckCircle2, BookOpen, Flame, Trophy, Target, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type UploadedBlock } from "@/components/UploadedTermCard";
 import AppHeader from "@/components/AppHeader";
