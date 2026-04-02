@@ -30,6 +30,7 @@ interface TJLearningStudioProps {
   additionalContent?: string;
   mode?: "inline" | "panel";
   onAudioScript?: (script: string) => void;
+  onContentGenerated?: (text: string) => void;
 }
 
 type StudioMode = "summary" | "explanation" | "teach-flow" | "explain-again" | "slideshow" | "audio-script";
