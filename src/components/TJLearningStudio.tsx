@@ -144,7 +144,7 @@ const TJLearningStudio = ({
             exit={{ opacity: 0 }}
           >
             <Card className="border-primary/20">
-              <CardContent className="p-4 prose prose-sm max-w-none dark:prose-invert overflow-y-auto max-h-[50vh]">
+              <CardContent className="p-4 prose prose-sm max-w-none dark:prose-invert">
                 <ReactMarkdown>{content}</ReactMarkdown>
               </CardContent>
             </Card>
