@@ -157,7 +157,7 @@ const UploadPage = () => {
     if (droppedFile) handleFileSelect(droppedFile);
   };
 
-  const makeBlockInsert = (block: any, moduleId: string, blockNumber: number) => ({
+  const makeBlockInsert = (block: any, moduleId: string, blockNumber: number, chapterId?: string) => ({
     module_id: moduleId,
     block_number: blockNumber,
     term_title: block.term_title || block.title || "Untitled Term",
@@ -181,6 +181,19 @@ const UploadPage = () => {
     slide_type: block.slide_type || "concept",
     instructor_notes: block.instructor_notes || "",
     image_url: block.image_url || "",
+    // New structural fields
+    chapter_id: chapterId || null,
+    section_title: block.section_title || "",
+    source_text: block.source_text || "",
+    explanation: block.explanation || "",
+    key_concepts: Array.isArray(block.key_concepts) ? block.key_concepts : [],
+    themes: Array.isArray(block.themes) ? block.themes : [],
+    memory_anchors: Array.isArray(block.memory_anchors) ? block.memory_anchors : [],
+    application_steps: Array.isArray(block.application_steps) ? block.application_steps : [],
+    difficulty_level: block.difficulty_level || "intermediate",
+    search_tags: Array.isArray(block.search_tags) ? block.search_tags : [],
+    page_reference: block.page_reference || "",
+    chunk_index: block.chunk_index || 0,
   });
 
   const convertToBlocks = async () => {
