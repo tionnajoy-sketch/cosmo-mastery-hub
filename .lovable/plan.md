@@ -1,126 +1,179 @@
 
 
-## Plan: TJ Reset Café™ Overhaul + My Learning DNA Hub
+## Plan: Intelligent Document Ingestion Engine with Structure-Aware Chunking
 
-Two major systems: (A) transform TJ Cafe into a premium neuroscience-based reset environment, (B) build a new "My Learning DNA" page with evolution tracking.
-
----
-
-### A. TJ Reset Café™ — Full Rebuild
-
-**File: `src/components/TJCafe.tsx`** — Major rewrite (~450 lines)
-
-1. **Rename + Positioning**
-   - Title: "TJ Reset Café™"
-   - Subtitle: "Take a moment to reset and lock in what you've learned"
-   - Micro-education intro: "Your brain doesn't grow during repetition. It grows during rest and integration."
-   - Brain State Indicator at top: "You are entering: Focus Reset Mode" / "Brain State: Integrating + Storing"
-
-2. **Audio System Overhaul**
-   - Two toggle switches (radio-style, only one active at a time): R&B Jazz / Sound Bath
-   - Selecting one stops the other automatically
-   - Audio starts only on user tap (iOS autoplay compliance)
-   - Fallback: "Tap to start sound" button if autoplay blocked
-   - R&B Jazz: generate multiple tracks via edge function, store in array, shuffle playback, prevent back-to-back repeats, continuous loop with `onended` → next track
-   - Sound Bath: same volume slider, same player logic, binaural oscillators loop continuously
-   - Single shared volume slider
-
-3. **Progress Language Update**
-   - Replace "1/3 activities completed" → "You're resetting your brain for retention (1 of 3 complete)"
-   - Replace "Complete 2 more activities" → "Complete 2 more steps to lock in your progress"
-   - Exit button: "Return to learning with clarity"
-
-4. **Identity-Based Rotating Messages**
-   - Array of motivational messages displayed in rotation
-   - "Disciplined learners take intentional pauses...", "This is what separates passers from repeat testers...", etc.
-
-5. **Body Awareness Prompts**
-   - Rotating: "Relax your shoulders", "Unclench your jaw", "Slow your breath", "You don't have to rush this moment"
-
-6. **Time-Based Guidance**
-   - Track time since cafe opened
-   - After 20s: "Slow your breathing… you don't have to rush."
-   - After 40s: "Your body is calming. Stay here."
-
-7. **Activity Structure (Required Flow)**
-   - 3 of 5 activities must be completed: breathing, affirmation, stretch & move, reflection, hydration prompt
-   - Each activity gets a completion checkbox
-
-8. **Reward System (Micro Feedback)**
-   - After each completed action: trigger coin award, show "+Retention ↑" / "+Confidence ↑" micro-signals
-   - Display: "Your brain just stored that. Keep going."
-   - Uses existing `useCoins` context to add coins
-
-9. **Completion Moment**
-   - Subtle glow animation on all-complete
-   - Message: "Your brain just locked in what you learned."
-   - Confetti burst (reuse existing `confetti.ts`)
-
-10. **Access Rules** — No changes needed (already auto-triggers at 60min, manual from menu)
+Transform the upload pipeline from a flat page-by-page term extractor into a structure-aware document intelligence system that understands chapters, sections, headings, and hierarchical content — then applies the TJ Anderson Layer Method to meaningful chunks.
 
 ---
 
-### B. My Learning DNA Hub
+### Current State
 
-**New file: `src/pages/LearningDNAPage.tsx`**
+- **Client-side**: PDF text extracted page-by-page via `pdfjs-dist`, chunked by character count (6000 chars), sent to edge function
+- **Edge function**: Treats each chunk as flat text, creates 1 block per page/slide — cosmetology-only prompt
+- **Database**: `uploaded_modules` (flat metadata) + `uploaded_module_blocks` (flat blocks with `block_number`)
+- **No structure awareness**: No chapters, sections, headings, document outlines, or cross-section understanding
 
-1. **TJ Avatar DNA Explainer Section**
-   - Hero section with TJ voice explanation (auto-play TTS on mount)
-   - Synced captions: short impactful phrases ("You were never taught how your brain works", "Your DNA shows how YOU learn")
-   - Play/Pause/Replay controls
-   - CTA at end: "See My DNA" → scrolls to profile section
+---
 
-2. **User DNA Profile (Visible Data)**
-   - Display dynamic percentages: Visual %, Reflective %, Kinesthetic %, Analytical %
-   - Derived from DNA code + learning metrics
+### What Changes
 
-3. **Human Translation**
-   - "You learn best when you SEE it, then THINK about it, then APPLY it."
-   - DNA Identity Statement: "You are a Visual-Reflective learner..."
+#### Phase 1: Database Schema Updates (Migration)
 
-4. **DNA Evolution Tracking**
-   - "Your Growth as a Learner" section
-   - Retention increase %, Confidence increase %, Focus improvement
-   - Pull from `user_learning_metrics` aggregate data
+**New table: `module_chapters`** — stores detected document structure
 
-5. **DNA Timeline (Progression)**
-   - Week 1 vs Current comparison
-   - Visual progress bars showing growth
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | PK |
+| module_id | uuid | FK to uploaded_modules |
+| chapter_number | integer | Sequential order |
+| title | text | Detected chapter/section title |
+| summary | text | AI-generated chapter summary |
+| page_range_start | integer | Start page |
+| page_range_end | integer | End page |
+| parent_chapter_id | uuid (nullable) | For subsections |
+| metadata | jsonb | Subject type, difficulty, themes, key patterns |
+| created_at | timestamptz | |
 
-6. **Session Feedback**
-   - "Your brain responded best to..." based on recent layer completions
+**New table: `module_document_overview`** — whole-document understanding
 
-7. **Micro Progress Signals**
-   - "+Retention ↑", "+Focus ↑", "+Confidence ↑" badges
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | PK |
+| module_id | uuid | FK, unique |
+| document_title | text | Detected document title |
+| document_type | text | textbook, workbook, lecture_notes, bible, study_guide |
+| subject | text | Auto-detected subject area |
+| total_chapters | integer | |
+| chapter_outline | jsonb | Full outline structure |
+| key_themes | jsonb | Cross-chapter themes |
+| overview_summary | text | Full document summary |
+| created_at | timestamptz | |
 
-**File: `src/components/AppHeader.tsx`** — Add "My Learning DNA" menu item with Brain icon → `/learning-dna`
+**Alter `uploaded_module_blocks`** — add structural metadata columns:
 
-**File: `src/App.tsx`** — Add route `/learning-dna` → `LearningDNAPage`
+- `chapter_id` uuid nullable (FK to module_chapters)
+- `section_title` text default ''
+- `source_text` text default '' (original passage)
+- `explanation` text default '' (plain-language explanation)
+- `key_concepts` jsonb default '[]'
+- `themes` jsonb default '[]'
+- `memory_anchors` jsonb default '[]'
+- `application_steps` jsonb default '[]'
+- `difficulty_level` text default 'intermediate'
+- `search_tags` jsonb default '[]'
+- `page_reference` text default ''
+- `chunk_index` integer default 0
 
-**File: `src/pages/Home.tsx`** — Add "Understand My DNA" button on dashboard → navigates to `/learning-dna`
+**Alter `uploaded_modules`** — add:
 
-**File: `src/pages/OnboardingPage.tsx`** — After DNA quiz completion, auto-navigate to `/learning-dna` on first experience (add flag check)
+- `document_type` text default ''
+- `detected_subject` text default ''
+- `total_chapters` integer default 0
+- `processing_phase` text default 'uploading' (uploading, analyzing_structure, generating_overview, processing_chunks, ready)
+
+#### Phase 2: New Edge Function — `analyze-document-structure`
+
+A new edge function that runs BEFORE `process-upload`. It receives the full extracted text and detects:
+
+1. Document title
+2. Chapter/section boundaries (via heading patterns, numbering, page breaks)
+3. Subject area
+4. Document type
+5. Returns a structured outline with page ranges per chapter
+
+Uses Gemini Flash for speed. Returns:
+```json
+{
+  "document_title": "Milady Standard Cosmetology Ch. 7",
+  "document_type": "textbook",
+  "subject": "cosmetology",
+  "chapters": [
+    { "number": 1, "title": "Introduction to Skin Structure", "page_start": 1, "page_end": 4, "subsections": [...] }
+  ],
+  "key_themes": ["anatomy", "safety", "client care"],
+  "overview_summary": "..."
+}
+```
+
+#### Phase 3: Upgraded `process-upload` Edge Function
+
+**Subject-agnostic system prompt** — Remove hardcoded "cosmetology" framing. Instead, receive detected subject from Phase 2 and adapt:
+
+- The prompt dynamically inserts the detected subject
+- Works for cosmetology, Bible study, nursing, history, etc.
+- Keeps TJ Anderson Layer Method as the transformation engine
+
+**Expanded output schema** per block:
+
+- `source_text` — original passage text
+- `explanation` — plain-language "what this passage says"
+- `key_concepts` — array of important terms/ideas
+- `themes` — thematic tags
+- `memory_anchors` — mnemonics and recall aids
+- `application_steps` — practical steps
+- `difficulty_level` — beginner/intermediate/advanced
+- `search_tags` — for retrieval
+- `page_reference` — "Chapter 3, pp. 45-47"
+- `section_title` — which section this came from
+
+#### Phase 4: Smart Chunking in Client (`src/lib/pdfParser.ts`)
+
+Replace character-count chunking with structure-aware chunking:
+
+1. After structure analysis returns chapters, group pages by chapter/section
+2. Each chunk = one section (or subsection if too large)
+3. Attach metadata: `{ chapterNumber, sectionTitle, pageRange, chunkIndex }`
+4. Fall back to character-based chunking if no structure detected
+
+Add new function: `chunkByStructure(pages, chapters)` alongside existing `chunkPages`.
+
+#### Phase 5: Updated Upload Flow (`src/pages/UploadPage.tsx`)
+
+New multi-phase processing UI:
+
+1. **"Analyzing document structure..."** (20-35%) — calls `analyze-document-structure`
+2. **"Building document overview..."** (35-45%) — saves chapters + overview to DB
+3. **"Processing Chapter X of Y..."** (45-90%) — processes each chapter's chunks
+4. **"Finalizing..."** (90-100%) — saves, updates status
+
+Enhanced summary shows: detected chapters, sections per chapter, blocks created per chapter, subject detected.
+
+#### Phase 6: Document Overview UI (`src/pages/ModuleViewPage.tsx`)
+
+Add a collapsible "Document Overview" section at top of module view:
+
+- Document title and detected subject
+- Chapter-by-chapter outline (expandable)
+- Key themes across document
+- Overall summary
+- Each chapter section groups its blocks
+
+#### Phase 7: Conversational Queries (Ask TJ Integration)
+
+Update `ai-mentor-chat` edge function to accept module context:
+
+- When user asks "break down chapter 3" or "quiz me on this chapter" — retrieve relevant chunks from `uploaded_module_blocks` filtered by `chapter_id`
+- Use `search_tags` and `key_concepts` for retrieval
+- Pass structured chunks as context to AI for accurate answers
 
 ---
 
 ### Technical Details
 
-- **Jazz playlist**: Generate 3 tracks on first cafe visit via `elevenlabs-music` edge function, cache all in `localStorage` as base64. On subsequent visits, load from cache. Shuffle array, track last played index to prevent repeats.
-- **Exclusive audio toggle**: When jazz starts, stop sound bath oscillators. When sound bath starts, pause jazz audio element.
-- **Time-based messages**: Use `useEffect` with `setTimeout` at 20s and 40s after cafe opens.
-- **Reward integration**: Import `useCoins` context in TJCafe, call `addCoins(2)` after each activity completion with "+Retention ↑" toast.
-- **DNA percentages**: Calculate from `user_learning_metrics` table — aggregate `layers_completed` arrays across all terms to determine which layers the user engages with most.
-- **DNA evolution**: Compare earliest vs latest `user_learning_metrics` entries for retention/confidence deltas.
-- **Captions system**: Array of `{text, startMs, endMs}` objects, advance based on TTS audio `currentTime`.
-- **Onboarding trigger**: Check `profile.has_completed_onboarding` — if just set to true (first time), redirect to `/learning-dna` instead of `/`.
+- **Structure detection heuristics**: The edge function looks for patterns like "Chapter X", "CHAPTER X", numbered sections (1.1, 1.2), ALL-CAPS headings, significant font-size changes (when available from PDF metadata), and page break patterns
+- **Subject detection**: AI analyzes first ~3000 chars of document to determine subject area, then all subsequent prompts adapt terminology and framing
+- **Backward compatibility**: Existing modules continue working — new columns have defaults, old blocks just lack the new metadata
+- **Token management**: Structure analysis uses Flash model on condensed text (first line of each page + detected headings). Per-chunk processing stays within token limits by chunking at section boundaries
+- **Error resilience**: If structure detection fails, falls back to current page-based chunking
 
 ### Files to Create
-1. `src/pages/LearningDNAPage.tsx`
+1. `supabase/functions/analyze-document-structure/index.ts`
 
 ### Files to Modify
-1. `src/components/TJCafe.tsx` — Full overhaul
-2. `src/components/AppHeader.tsx` — Add "My Learning DNA" menu item
-3. `src/App.tsx` — Add `/learning-dna` route
-4. `src/pages/Home.tsx` — Add "Understand My DNA" button
-5. `src/pages/OnboardingPage.tsx` — Redirect to DNA page on first completion
+1. `src/lib/pdfParser.ts` — add `chunkByStructure()` function
+2. `src/pages/UploadPage.tsx` — multi-phase processing flow
+3. `supabase/functions/process-upload/index.ts` — subject-agnostic prompt, expanded output schema
+4. `src/pages/ModuleViewPage.tsx` — document overview section, chapter grouping
+5. `src/components/UploadedTermCard.tsx` — display new fields (source text, explanation, key concepts)
+6. Database migration — new tables + altered columns
 
