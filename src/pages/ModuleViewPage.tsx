@@ -154,76 +154,75 @@ const ModuleViewPage = () => {
         </div>
       </div>
 
-        {/* Document Overview */}
-        {overview && (
-          <div className="mb-5">
-            <button
-              onClick={() => setOverviewOpen(!overviewOpen)}
-              className="w-full rounded-xl p-4 text-left transition-all"
-              style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-display text-sm font-semibold text-white">Document Overview</h3>
-                  <p className="text-[11px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                    {overview.subject && <span className="capitalize">{overview.subject}</span>}
-                    {overview.document_type && <span> · {overview.document_type.replace(/_/g, " ")}</span>}
-                    {overview.total_chapters > 0 && <span> · {overview.total_chapters} chapters</span>}
-                  </p>
-                </div>
-                <motion.div animate={{ rotate: overviewOpen ? 90 : 0 }} transition={{ duration: 0.2 }}>
-                  <ChevronRight className="h-4 w-4" style={{ color: "hsl(0 0% 100% / 0.4)" }} />
-                </motion.div>
+      {/* Document Overview */}
+      {overview && (
+        <div className="max-w-7xl mx-auto px-4 mb-5">
+          <button
+            onClick={() => setOverviewOpen(!overviewOpen)}
+            className="w-full rounded-xl p-4 text-left transition-all"
+            style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-display text-sm font-semibold text-white">Document Overview</h3>
+                <p className="text-[11px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                  {overview.subject && <span className="capitalize">{overview.subject}</span>}
+                  {overview.document_type && <span> · {overview.document_type.replace(/_/g, " ")}</span>}
+                  {overview.total_chapters > 0 && <span> · {overview.total_chapters} chapters</span>}
+                </p>
               </div>
-            </button>
-            <AnimatePresence>
-              {overviewOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="rounded-b-xl px-4 py-3 space-y-3" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
-                    {overview.overview_summary && (
-                      <p className="text-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                        {overview.overview_summary}
-                      </p>
-                    )}
-                    {Array.isArray(overview.key_themes) && overview.key_themes.length > 0 && (
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Key Themes</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {overview.key_themes.map((theme: string, i: number) => (
-                            <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-medium"
-                              style={{ background: "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 75%)" }}>
-                              {theme}
-                            </span>
-                          ))}
-                        </div>
+              <motion.div animate={{ rotate: overviewOpen ? 90 : 0 }} transition={{ duration: 0.2 }}>
+                <ChevronRight className="h-4 w-4" style={{ color: "hsl(0 0% 100% / 0.4)" }} />
+              </motion.div>
+            </div>
+          </button>
+          <AnimatePresence>
+            {overviewOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="rounded-b-xl px-4 py-3 space-y-3" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+                  {overview.overview_summary && (
+                    <p className="text-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                      {overview.overview_summary}
+                    </p>
+                  )}
+                  {Array.isArray(overview.key_themes) && overview.key_themes.length > 0 && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Key Themes</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {overview.key_themes.map((theme: string, i: number) => (
+                          <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                            style={{ background: "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 75%)" }}>
+                            {theme}
+                          </span>
+                        ))}
                       </div>
-                    )}
-                    {Array.isArray(overview.chapter_outline) && overview.chapter_outline.length > 0 && (
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Chapters</p>
-                        <div className="space-y-1">
-                          {overview.chapter_outline.map((ch: any, i: number) => (
-                            <div key={i} className="flex items-center gap-2 text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-                              <span className="font-mono text-[10px] w-5 text-right" style={{ color: "hsl(45 80% 60%)" }}>{ch.number || i + 1}</span>
-                              <span>{ch.title}</span>
-                              {ch.page_start && <span className="text-[9px] opacity-50">pp. {ch.page_start}-{ch.page_end}</span>}
-                            </div>
-                          ))}
-                        </div>
+                    </div>
+                  )}
+                  {Array.isArray(overview.chapter_outline) && overview.chapter_outline.length > 0 && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Chapters</p>
+                      <div className="space-y-1">
+                        {overview.chapter_outline.map((ch: any, i: number) => (
+                          <div key={i} className="flex items-center gap-2 text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+                            <span className="font-mono text-[10px] w-5 text-right" style={{ color: "hsl(45 80% 60%)" }}>{ch.number || i + 1}</span>
+                            <span>{ch.title}</span>
+                            {ch.page_start && <span className="text-[9px] opacity-50">pp. {ch.page_start}-{ch.page_end}</span>}
+                          </div>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
-      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* ─── Colorful Grid grouped by block ─── */}
       <div className="max-w-7xl mx-auto px-4 pb-12 space-y-8">
