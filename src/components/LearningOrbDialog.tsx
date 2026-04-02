@@ -314,9 +314,7 @@ const LearningOrbDialog = ({
     if (s?.key === "quiz" && !block.quiz_question && !aiQuestion && !aiLoading) {
       generateQuizQuestion();
     }
-    if (s?.key === "information" && !expandedInfo && !infoLoading) {
-      fetchExpandedInfo();
-    }
+    // Information step: do NOT auto-fetch — let student choose via TJLearningStudio menu
   }, [currentStep, block?.id]);
 
   // Auto-speak on step change
