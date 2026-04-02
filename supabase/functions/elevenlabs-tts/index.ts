@@ -62,6 +62,13 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      // Quota exceeded — return 402 so client falls back to browser TTS
+      if (errorText.includes("quota_exceeded") || errorText.includes("insufficient_credits")) {
+        return new Response(JSON.stringify({ error: "Voice credits exhausted" }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       throw new Error(`ElevenLabs API error [${response.status}]: ${errorText}`);
     }
 
