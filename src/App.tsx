@@ -112,7 +112,10 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CoinProvider>
-            <AppContent />
+            <BackgroundUploadProvider>
+              <AppContent />
+              <BackgroundUploadBanner />
+            </BackgroundUploadProvider>
           </CoinProvider>
         </AuthProvider>
       </BrowserRouter>
