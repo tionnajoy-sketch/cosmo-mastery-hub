@@ -756,25 +756,46 @@ export type Database = {
       }
       tts_cache: {
         Row: {
+          cache_hits: number
           created_at: string
           id: string
+          is_always_cache: boolean
+          last_accessed_at: string
+          original_text: string
           storage_path: string
           text_hash: string
           text_preview: string
+          usage_type: string
+          voice_id: string
+          voice_settings: Json
         }
         Insert: {
+          cache_hits?: number
           created_at?: string
           id?: string
+          is_always_cache?: boolean
+          last_accessed_at?: string
+          original_text?: string
           storage_path: string
           text_hash: string
           text_preview?: string
+          usage_type?: string
+          voice_id?: string
+          voice_settings?: Json
         }
         Update: {
+          cache_hits?: number
           created_at?: string
           id?: string
+          is_always_cache?: boolean
+          last_accessed_at?: string
+          original_text?: string
           storage_path?: string
           text_hash?: string
           text_preview?: string
+          usage_type?: string
+          voice_id?: string
+          voice_settings?: Json
         }
         Relationships: []
       }
