@@ -27,9 +27,25 @@ const SpeakButton = ({ text, label, size = "icon", className = "", onComplete }:
     }
   }, []);
 
+  const speakWithBrowser = useCallback((plainText: string) => {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(plainText);
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+    // Try to pick a warm female voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v => /samantha|karen|victoria|zira|female/i.test(v.name));
+    if (preferred) utterance.voice = preferred;
+    utterance.onend = () => { setSpeaking(false); onComplete?.(); };
+    utterance.onerror = () => { setSpeaking(false); };
+    setSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  }, [onComplete]);
+
   const handleSpeak = useCallback(async () => {
     if (speaking || loading) {
       cleanup();
+      window.speechSynthesis.cancel();
       setSpeaking(false);
       setLoading(false);
       return;
@@ -64,8 +80,17 @@ const SpeakButton = ({ text, label, size = "icon", className = "", onComplete }:
       );
 
       if (!response.ok) {
-        console.error("TTS failed:", response.status);
+        console.warn("ElevenLabs TTS unavailable, falling back to browser voice");
         setLoading(false);
+        speakWithBrowser(plainText);
+        return;
+      }
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("audio")) {
+        console.warn("TTS returned non-audio, falling back to browser voice");
+        setLoading(false);
+        speakWithBrowser(plainText);
         return;
       }
 
@@ -89,11 +114,11 @@ const SpeakButton = ({ text, label, size = "icon", className = "", onComplete }:
       setSpeaking(true);
       await audio.play();
     } catch (e) {
-      console.error("TTS error:", e);
+      console.warn("TTS error, falling back to browser voice:", e);
       setLoading(false);
-      setSpeaking(false);
+      speakWithBrowser(plainText);
     }
-  }, [text, speaking, loading, cleanup, onComplete]);
+  }, [text, speaking, loading, cleanup, onComplete, speakWithBrowser]);
 
   return (
     <Button
