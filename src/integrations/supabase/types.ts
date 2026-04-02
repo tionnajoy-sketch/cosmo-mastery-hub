@@ -754,6 +754,30 @@ export type Database = {
           },
         ]
       }
+      tts_cache: {
+        Row: {
+          created_at: string
+          id: string
+          storage_path: string
+          text_hash: string
+          text_preview: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          storage_path: string
+          text_hash: string
+          text_preview?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          storage_path?: string
+          text_hash?: string
+          text_preview?: string
+        }
+        Relationships: []
+      }
       uploaded_module_blocks: {
         Row: {
           affirmation: string
