@@ -339,7 +339,7 @@ const UploadPage = () => {
                 </CardContent>
               </Card>
             ) : (
-              <Button onClick={convertToBlocks} className="w-full py-6 text-base gap-2">
+              <Button onClick={handleConvert} className="w-full py-6 text-base gap-2">
                 <Sparkles className="h-5 w-5" /> Convert to TJ Blocks
               </Button>
             )}
