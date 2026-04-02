@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AppHeader from "@/components/AppHeader";
-import { extractPdfText, chunkPages, type ParsedPage } from "@/lib/pdfParser";
+import { extractPdfText, chunkPages, chunkByStructure, type ParsedPage, type ChapterInfo } from "@/lib/pdfParser";
 
 interface ConversionSummary {
   totalPagesInDoc: number;
@@ -41,6 +41,9 @@ interface ConversionSummary {
   quizBankCreated: number;
   chunksProcessed: number;
   totalChunks: number;
+  detectedSubject?: string;
+  documentType?: string;
+  chaptersDetected?: number;
 }
 
 const compressImage = async (file: File, maxDimension = 1600, quality = 0.7): Promise<string> => {
@@ -154,7 +157,7 @@ const UploadPage = () => {
     if (droppedFile) handleFileSelect(droppedFile);
   };
 
-  const makeBlockInsert = (block: any, moduleId: string, blockNumber: number) => ({
+  const makeBlockInsert = (block: any, moduleId: string, blockNumber: number, chapterId?: string) => ({
     module_id: moduleId,
     block_number: blockNumber,
     term_title: block.term_title || block.title || "Untitled Term",
@@ -178,6 +181,19 @@ const UploadPage = () => {
     slide_type: block.slide_type || "concept",
     instructor_notes: block.instructor_notes || "",
     image_url: block.image_url || "",
+    // New structural fields
+    chapter_id: chapterId || null,
+    section_title: block.section_title || "",
+    source_text: block.source_text || "",
+    explanation: block.explanation || "",
+    key_concepts: Array.isArray(block.key_concepts) ? block.key_concepts : [],
+    themes: Array.isArray(block.themes) ? block.themes : [],
+    memory_anchors: Array.isArray(block.memory_anchors) ? block.memory_anchors : [],
+    application_steps: Array.isArray(block.application_steps) ? block.application_steps : [],
+    difficulty_level: block.difficulty_level || "intermediate",
+    search_tags: Array.isArray(block.search_tags) ? block.search_tags : [],
+    page_reference: block.page_reference || "",
+    chunk_index: block.chunk_index || 0,
   });
 
   const convertToBlocks = async () => {
@@ -194,11 +210,12 @@ const UploadPage = () => {
       const isImage = imageTypes.includes(file.type) || /\.(jpe?g|png|webp|gif)$/i.test(file.name);
 
       // Step 1: Parse content
-      let contentChunks: string[] = [];
+      let parsedPages: ParsedPage[] = [];
       let imageDataUrl: string | null = null;
       let totalPagesInDoc = 0;
       let processedPageNumbers: number[] = [];
       let skippedPages: number[] = [];
+      let fullText = "";
 
       if (isImage) {
         setProgressMessage("Compressing and reading image(s)...");
@@ -211,159 +228,267 @@ const UploadPage = () => {
           allDataUrls.push(await compressImage(imagesToProcess[i]));
           processedPageNumbers.push(i + 1);
         }
-        
-        for (let i = 0; i < allDataUrls.length; i++) {
-          contentChunks.push(`[IMAGE] Analyze image ${i + 1} of ${allDataUrls.length} and create TJ Learning Blocks from the visible content.`);
-        }
         imageDataUrl = allDataUrls[0];
+        // For images, skip structure analysis
+        const contentChunks: string[] = allDataUrls.map((_, i) =>
+          `[IMAGE] Analyze image ${i + 1} of ${allDataUrls.length}`
+        );
         (contentChunks as any).__allImageDataUrls = allDataUrls;
-      } else if (isPdf) {
+        
+        // Create module
+        setProgress(25);
+        setProgressMessage("Creating module...");
+        const { data: moduleData, error: moduleError } = await supabase
+          .from("uploaded_modules")
+          .insert({
+            user_id: user.id,
+            title: file.name.replace(/\.[^/.]+$/, ""),
+            status: "processing",
+            source_filename: file.name,
+            is_instructor_mode: false,
+            processing_phase: "processing_chunks",
+          })
+          .select()
+          .single();
+        if (moduleError) throw moduleError;
+
+        // Process images directly
+        const allBlocks: any[] = [];
+        const allQuizBankQuestions: any[] = [];
+        for (let i = 0; i < contentChunks.length; i++) {
+          setProgress(30 + Math.floor(((i + 1) / contentChunks.length) * 50));
+          setProgressMessage(`Analyzing image ${i + 1} of ${contentChunks.length}...`);
+          const requestBody: any = {
+            content: contentChunks[i],
+            moduleId: moduleData.id,
+            filename: file.name,
+            chunkIndex: i + 1,
+            totalChunks: contentChunks.length,
+            imageDataUrl: allDataUrls[i],
+          };
+          const { data, error } = await supabase.functions.invoke("process-upload", { body: requestBody });
+          if (error) { console.error(`Image ${i + 1} failed:`, error); continue; }
+          allBlocks.push(...(data?.blocks || []));
+          allQuizBankQuestions.push(...(data?.quiz_bank_questions || []));
+        }
+
+        // Save blocks
+        setProgress(85);
+        setProgressMessage("Saving TJ Blocks...");
+        if (allBlocks.length > 0) {
+          const blocksToInsert = allBlocks.map((block: any) =>
+            makeBlockInsert(block, moduleData.id, block.page_number || 1)
+          );
+          const { error: insertError } = await supabase.from("uploaded_module_blocks").insert(blocksToInsert);
+          if (insertError) throw insertError;
+        }
+        if (allQuizBankQuestions.length > 0) {
+          await supabase.from("uploaded_module_quiz_bank").insert(
+            allQuizBankQuestions.map((q: any) => ({
+              module_id: moduleData.id, question_text: q.question_text || "",
+              option_a: q.option_a || "", option_b: q.option_b || "",
+              option_c: q.option_c || "", option_d: q.option_d || "",
+              correct_option: q.correct_option || "A", explanation: q.explanation || "",
+              source_slide: q.source_slide || null,
+            }))
+          );
+        }
+        await supabase.from("uploaded_modules").update({ status: "ready", processing_phase: "ready" }).eq("id", moduleData.id);
+        setProgress(100);
+        setProgressMessage("Complete!");
+        setSummary({
+          totalPagesInDoc, pagesProcessed: processedPageNumbers, pagesSkipped: [],
+          blocksCreated: allBlocks.length, totalTerms: allBlocks.length,
+          quizBankCreated: allQuizBankQuestions.length, chunksProcessed: contentChunks.length,
+          totalChunks: contentChunks.length,
+        });
+        toast({ title: "Conversion complete!", description: `Created ${allBlocks.length} TJ Blocks.` });
+        return;
+      }
+
+      // For text-based documents (PDF, TXT, etc.)
+      if (isPdf) {
         setProgressMessage("Extracting text from PDF pages...");
         setProgress(10);
-
         const range = pageMode === "range" ? { start: pageStart, end: pageEnd } : undefined;
         const parsed = await extractPdfText(file, range);
         totalPagesInDoc = parsed.totalPages;
-
-        if (parsed.pages.length === 0) {
-          throw new Error("No text could be extracted from this PDF. It may be image-based or scanned. Try a text-based PDF.");
+        parsedPages = parsed.pages;
+        if (parsedPages.length === 0) {
+          throw new Error("No text could be extracted from this PDF. It may be image-based or scanned.");
         }
-
-        processedPageNumbers = parsed.pages.map((p) => p.pageNumber);
-
-        // Figure out which pages were skipped (had no text)
+        processedPageNumbers = parsedPages.map((p) => p.pageNumber);
         const startP = range ? range.start : 1;
         const endP = range ? Math.min(range.end, totalPagesInDoc) : totalPagesInDoc;
         for (let i = startP; i <= endP; i++) {
-          if (!processedPageNumbers.includes(i)) {
-            skippedPages.push(i);
-          }
+          if (!processedPageNumbers.includes(i)) skippedPages.push(i);
         }
-
-        // Chunk the pages for multi-pass processing
-        // Chunk pages — send 3-5 pages per chunk for strict 1:1 slide-to-block mapping
-        const pageChunks = chunkPages(parsed.pages, 6000);
-        contentChunks = pageChunks.map((chunk) =>
-          chunk.map((p) => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n")
-        );
+        fullText = parsedPages.map((p) => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n");
       } else if (isText) {
         const text = textContent || (await file.text());
         totalPagesInDoc = 1;
         processedPageNumbers = [1];
-        // Chunk long text files
-        const chunkSize = 10000;
-        for (let i = 0; i < text.length; i += chunkSize) {
-          contentChunks.push(text.slice(i, i + chunkSize));
-        }
+        parsedPages = [{ pageNumber: 1, text }];
+        fullText = text;
       } else {
-        // Non-PDF, non-text: upload to storage and send reference
+        // Non-PDF, non-text: upload to storage
         setProgress(15);
         setProgressMessage("Uploading document...");
         const filePath = `${user.id}/${Date.now()}_${file.name}`;
         const { error: uploadError } = await supabase.storage.from("uploads").upload(filePath, file);
         if (uploadError) throw uploadError;
-        contentChunks = [`[FILE:${filePath}] ${file.name}`];
         totalPagesInDoc = 1;
         processedPageNumbers = [1];
+        parsedPages = [{ pageNumber: 1, text: `[FILE:${filePath}] ${file.name}` }];
+        fullText = parsedPages[0].text;
       }
 
-      setProgress(25);
-      setProgressMessage("Creating module...");
+      // ═══ PHASE 1: Analyze Document Structure ═══
+      setProgress(20);
+      setProgressMessage("Analyzing document structure...");
 
-      // Step 2: Create module record
+      let structureData: any = null;
+      let chapters: ChapterInfo[] = [];
+      let detectedSubject = "";
+      let documentType = "";
+
+      try {
+        const { data: structResult, error: structError } = await supabase.functions.invoke("analyze-document-structure", {
+          body: { content: fullText.slice(0, 12000), filename: file.name },
+        });
+        if (!structError && structResult && structResult.chapters) {
+          structureData = structResult;
+          chapters = structResult.chapters || [];
+          detectedSubject = structResult.subject || "";
+          documentType = structResult.document_type || "";
+        }
+      } catch (e) {
+        console.warn("Structure analysis failed, falling back to flat chunking:", e);
+      }
+
+      // ═══ PHASE 2: Create Module + Save Overview ═══
+      setProgress(35);
+      setProgressMessage("Building document overview...");
+
       const { data: moduleData, error: moduleError } = await supabase
         .from("uploaded_modules")
         .insert({
           user_id: user.id,
-          title: file.name.replace(/\.[^/.]+$/, ""),
+          title: structureData?.document_title || file.name.replace(/\.[^/.]+$/, ""),
           status: "processing",
           source_filename: file.name,
           is_instructor_mode: false,
+          document_type: documentType,
+          detected_subject: detectedSubject,
+          total_chapters: chapters.length,
+          processing_phase: "generating_overview",
         })
         .select()
         .single();
-
       if (moduleError) throw moduleError;
 
-      // Step 3: Process each chunk through the AI
-      const allBlocks: any[] = [];
-      const allQuizBankQuestions: any[] = [];
-      const totalChunks = contentChunks.length;
-
-      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-        const chunkProgress = 30 + Math.floor(((chunkIndex + 1) / totalChunks) * 50);
-        setProgress(chunkProgress);
-        setProgressMessage(
-          `Analyzing content... (pass ${chunkIndex + 1} of ${totalChunks})`
-        );
-
-        const requestBody: any = {
-          content: contentChunks[chunkIndex],
-          moduleId: moduleData.id,
-          filename: file.name,
-          chunkIndex: chunkIndex + 1,
-          totalChunks,
-        };
-        // Include image data for image uploads
-        const allImageUrls = (contentChunks as any).__allImageDataUrls;
-        if (allImageUrls && allImageUrls[chunkIndex]) {
-          requestBody.imageDataUrl = allImageUrls[chunkIndex];
-        } else if (imageDataUrl && chunkIndex === 0) {
-          requestBody.imageDataUrl = imageDataUrl;
-        }
-
-        const { data, error } = await supabase.functions.invoke("process-upload", {
-          body: requestBody,
+      // Save document overview if structure was detected
+      if (structureData) {
+        await supabase.from("module_document_overview").insert({
+          module_id: moduleData.id,
+          document_title: structureData.document_title || "",
+          document_type: documentType,
+          subject: detectedSubject,
+          total_chapters: chapters.length,
+          chapter_outline: structureData.chapters || [],
+          key_themes: structureData.key_themes || [],
+          overview_summary: structureData.overview_summary || "",
         });
-
-        if (error) {
-          console.error(`Chunk ${chunkIndex + 1} failed:`, error);
-          // Continue processing remaining chunks instead of failing entirely
-          continue;
-        }
-
-        const blocks = data?.blocks || [];
-        const quizQ = data?.quiz_bank_questions || [];
-        allBlocks.push(...blocks);
-        allQuizBankQuestions.push(...quizQ);
       }
 
-      setProgress(85);
+      // Save chapters
+      const chapterIdMap: Record<number, string> = {};
+      if (chapters.length > 0) {
+        for (const ch of chapters) {
+          const { data: chData } = await supabase.from("module_chapters").insert({
+            module_id: moduleData.id,
+            chapter_number: ch.number,
+            title: ch.title,
+            page_range_start: ch.page_start,
+            page_range_end: ch.page_end,
+            metadata: { subsections: ch.subsections || [] },
+          }).select("id").single();
+          if (chData) chapterIdMap[ch.number] = chData.id;
+        }
+      }
+
+      // ═══ PHASE 3: Structure-Aware Chunking + Processing ═══
+      await supabase.from("uploaded_modules").update({ processing_phase: "processing_chunks" }).eq("id", moduleData.id);
+
+      const structuredChunks = chunkByStructure(parsedPages, chapters, 6000);
+      const totalChunks = structuredChunks.length;
+      const allBlocks: any[] = [];
+      const allQuizBankQuestions: any[] = [];
+
+      for (let i = 0; i < totalChunks; i++) {
+        const chunk = structuredChunks[i];
+        const chunkProgress = 45 + Math.floor(((i + 1) / totalChunks) * 40);
+        setProgress(chunkProgress);
+        setProgressMessage(
+          chapters.length > 0
+            ? `Processing Chapter ${chunk.chapterNumber}: ${chunk.sectionTitle} (${i + 1}/${totalChunks})...`
+            : `Analyzing content... (pass ${i + 1} of ${totalChunks})`
+        );
+
+        const chunkContent = chunk.pages.map((p) => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n");
+
+        const requestBody: any = {
+          content: chunkContent,
+          moduleId: moduleData.id,
+          filename: file.name,
+          chunkIndex: i + 1,
+          totalChunks,
+          subject: detectedSubject,
+          documentType,
+          chapterNumber: chunk.chapterNumber,
+          sectionTitle: chunk.sectionTitle,
+          pageRange: chunk.pageRange,
+        };
+
+        const { data, error } = await supabase.functions.invoke("process-upload", { body: requestBody });
+        if (error) { console.error(`Chunk ${i + 1} failed:`, error); continue; }
+
+        const blocks = (data?.blocks || []).map((b: any) => ({
+          ...b,
+          _chapterNumber: chunk.chapterNumber,
+          _chunkIndex: chunk.chunkIndex,
+        }));
+        allBlocks.push(...blocks);
+        allQuizBankQuestions.push(...(data?.quiz_bank_questions || []));
+      }
+
+      // ═══ PHASE 4: Save Everything ═══
+      setProgress(88);
       setProgressMessage("Saving TJ Blocks...");
 
-      // Step 4: 1:1 slide-to-block mapping — each block gets its page number
       if (allBlocks.length > 0) {
         const blocksToInsert = allBlocks.map((block: any) => {
-          // Use page_number from AI response as the block_number (1:1 mapping)
           const pageNum = block.page_number || 1;
-          return makeBlockInsert(block, moduleData.id, pageNum);
+          const chapterId = chapterIdMap[block._chapterNumber] || null;
+          return makeBlockInsert(block, moduleData.id, pageNum, chapterId);
         });
-
         const { error: insertError } = await supabase.from("uploaded_module_blocks").insert(blocksToInsert);
         if (insertError) throw insertError;
       }
-      
-      const actualBlockCount = allBlocks.length;
 
-      // Insert quiz bank questions
       if (allQuizBankQuestions.length > 0) {
-        const qbToInsert = allQuizBankQuestions.map((q: any) => ({
-          module_id: moduleData.id,
-          question_text: q.question_text || "",
-          option_a: q.option_a || "",
-          option_b: q.option_b || "",
-          option_c: q.option_c || "",
-          option_d: q.option_d || "",
-          correct_option: q.correct_option || "A",
-          explanation: q.explanation || "",
-          source_slide: q.source_slide || null,
-        }));
-
-        await supabase.from("uploaded_module_quiz_bank").insert(qbToInsert);
+        await supabase.from("uploaded_module_quiz_bank").insert(
+          allQuizBankQuestions.map((q: any) => ({
+            module_id: moduleData.id, question_text: q.question_text || "",
+            option_a: q.option_a || "", option_b: q.option_b || "",
+            option_c: q.option_c || "", option_d: q.option_d || "",
+            correct_option: q.correct_option || "A", explanation: q.explanation || "",
+            source_slide: q.source_slide || null,
+          }))
+        );
       }
 
-      await supabase.from("uploaded_modules").update({ status: "ready" }).eq("id", moduleData.id);
-
+      await supabase.from("uploaded_modules").update({ status: "ready", processing_phase: "ready" }).eq("id", moduleData.id);
       setProgress(100);
       setProgressMessage("Complete!");
 
@@ -371,20 +496,21 @@ const UploadPage = () => {
         totalPagesInDoc,
         pagesProcessed: processedPageNumbers,
         pagesSkipped: skippedPages,
-        blocksCreated: actualBlockCount,
+        blocksCreated: allBlocks.length,
         totalTerms: allBlocks.length,
         quizBankCreated: allQuizBankQuestions.length,
         chunksProcessed: totalChunks,
         totalChunks,
+        detectedSubject: detectedSubject || undefined,
+        documentType: documentType || undefined,
+        chaptersDetected: chapters.length || undefined,
       };
       setSummary(convSummary);
 
       toast({
         title: "Conversion complete!",
-        description: `Created ${actualBlockCount} TJ Blocks with ${allBlocks.length} terms from ${processedPageNumbers.length} pages.`,
+        description: `Created ${allBlocks.length} TJ Blocks${chapters.length > 0 ? ` across ${chapters.length} chapters` : ""}.`,
       });
-
-      // Don't auto-navigate so user can see the summary
     } catch (e: any) {
       console.error("Conversion error:", e);
       toast({ title: "Conversion failed", description: e.message || "Please try again.", variant: "destructive" });
@@ -614,10 +740,31 @@ const UploadPage = () => {
                   <h3 className="text-lg font-bold text-foreground">Conversion Summary</h3>
                 </div>
 
+                {/* Detected structure info */}
+                {(summary.detectedSubject || summary.chaptersDetected) && (
+                  <div className="bg-primary/5 rounded-lg p-3 mb-4">
+                    {summary.detectedSubject && (
+                      <p className="text-sm text-foreground mb-1">
+                        <span className="font-semibold">Subject Detected:</span> {summary.detectedSubject}
+                      </p>
+                    )}
+                    {summary.documentType && (
+                      <p className="text-sm text-foreground mb-1">
+                        <span className="font-semibold">Document Type:</span> {summary.documentType}
+                      </p>
+                    )}
+                    {summary.chaptersDetected && summary.chaptersDetected > 0 && (
+                      <p className="text-sm text-foreground">
+                        <span className="font-semibold">Chapters Detected:</span> {summary.chaptersDetected}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-muted/50 rounded-lg p-3">
                     <p className="text-2xl font-bold text-foreground">{summary.totalPagesInDoc}</p>
-                    <p className="text-xs text-muted-foreground">Total Pages in PDF</p>
+                    <p className="text-xs text-muted-foreground">Total Pages</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-3">
                     <p className="text-2xl font-bold text-foreground">{summary.pagesProcessed.length}</p>
@@ -628,10 +775,6 @@ const UploadPage = () => {
                     <p className="text-xs text-muted-foreground">TJ Blocks Created</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-3">
-                    <p className="text-2xl font-bold text-primary">{summary.totalTerms}</p>
-                    <p className="text-xs text-muted-foreground">Total Terms Extracted</p>
-                  </div>
-                  <div className="bg-muted/50 rounded-lg p-3">
                     <p className="text-2xl font-bold text-foreground">{summary.quizBankCreated}</p>
                     <p className="text-xs text-muted-foreground">Quiz Bank Questions</p>
                   </div>
@@ -639,7 +782,7 @@ const UploadPage = () => {
 
                 {summary.totalChunks > 1 && (
                   <p className="text-xs text-muted-foreground mb-3">
-                    Document was processed in {summary.totalChunks} passes to ensure full coverage.
+                    Document was processed in {summary.totalChunks} structure-aware passes.
                   </p>
                 )}
 

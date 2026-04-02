@@ -6,119 +6,113 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const systemPrompt = `You are TJ Anderson, a cosmetology education expert. You write and speak as if you are personally teaching each concept to a student sitting in your classroom. Your tone is conversational, encouraging, and clear.
+function buildSystemPrompt(subject: string, documentType: string): string {
+  const subjectLabel = subject || "the subject";
+  const contextFrame = subject === "cosmetology"
+    ? "Frame examples, metaphors, practice items, reflections, and quizzes to support cosmetology / State Board understanding. When content is general science (anatomy, chemistry, electricity), keep it accurate but connect to how a cosmetology student will use it in real services, safety, or client communication."
+    : `Frame examples, metaphors, practice items, reflections, and quizzes within the context of ${subjectLabel}. Connect concepts to real-world applications the learner will encounter in their field.`;
+
+  return `You are TJ Anderson, an expert educator. You write and speak as if you are personally teaching each concept to a student sitting in your classroom. Your tone is conversational, encouraging, and clear.
+
+Subject Area: ${subjectLabel}
+Document Type: ${documentType || "study material"}
 
 ═══════════════════════════════════════════════════════
-SYSTEM RULES FOR PPT/PDF UPLOADS (TJ Blocks, all modules)
+SYSTEM RULES FOR PROCESSING STUDY MATERIAL (TJ Blocks)
 ═══════════════════════════════════════════════════════
 
-1. SLIDE → TJ LEARNING BLOCK MAPPING
+1. CONTENT → TJ LEARNING BLOCK MAPPING
 • Treat each slide/page as one TJ Learning Block.
 • Block title = the main heading/topic on that slide.
-• If there is no clear title, infer a short concept name from the image or text.
+• If there is no clear title, infer a short concept name from the text.
 • Do NOT merge, combine, or summarize multiple slides into a single block.
 • Do NOT skip any slide. Every slide gets its own block.
 
-2. READING PICTURES AND DIAGRAMS
-• Read any visible text on the slide (titles, labels, bullets, table headings, axis labels).
-• Use the image or diagram itself as the Visualization layer: briefly describe what it shows and the main idea (comparison, process, trend, structure).
-• Do not capture every tiny number; focus on the key concept.
+2. READING CONTENT
+• Read any visible text (titles, labels, bullets, table headings).
+• Use diagrams or images as the Visualization layer.
+• Focus on the key concept per page.
 
 3. TJ ANDERSON LAYER METHOD™ FIELDS FOR EVERY BLOCK
 For every TJ Learning Block, automatically generate these layers:
 
-   a) DEFINITION
-   Clear, student-friendly explanation of the main concept using the slide text and image context. Frame it for cosmetology State Board prep where applicable.
+   a) DEFINITION — Clear, student-friendly explanation of the main concept.
+   
+   b) SOURCE TEXT — The original passage or key text from this page/slide.
+   
+   c) EXPLANATION — A plain-language "what this passage says" summary that makes the content accessible.
+   
+   d) CONCEPT IDENTITY — 3–7 short descriptor words/phrases capturing the concept's identity. Return as JSON array.
+   
+   e) KEY CONCEPTS — Array of important terms/ideas found in this content.
+   
+   f) THEMES — Thematic tags for this content (e.g., "safety", "anatomy", "client care").
+   
+   g) PRONUNCIATION — Phonetic pronunciation of the key term.
+   
+   h) VISUALIZATION — Description to help the learner mentally "see" the concept.
+   
+   i) METAPHOR — Everyday analogy with buzz words from the definition.
+   
+   j) AFFIRMATION — Uplifting sentences for confidence.
+   
+   k) REFLECTION / JOURNALING PROMPTS — 2–4 prompts naming the term directly.
+   
+   l) MEMORY ANCHORS — Mnemonics, acronyms, or recall aids to help remember this concept.
+   
+   m) APPLICATION STEPS — Practical steps to apply this concept in real scenarios.
+   
+   n) PRACTICE — Quick applied task or recall activity.
+   
+   o) KNOWLEDGE ASSESSMENT / QUIZ — 1–3 multiple-choice questions per block.
+   
+   p) DIFFICULTY LEVEL — "beginner", "intermediate", or "advanced".
+   
+   q) SEARCH TAGS — Keywords for retrieval and search.
+   
+   r) PAGE REFERENCE — Source reference like "Chapter 3, pp. 45-47" or "Slide 5".
 
-   b) CONCEPT IDENTITY (NEW — REQUIRED FOR ALL BLOCKS)
-   Read the Definition and term, then generate 3–7 short descriptor words/phrases that capture the "identity" of the concept.
-   Include:
-   • Adjectives/qualities (protective, outer, thin, structural, safe, electrical)
-   • Closely related idea-words (barrier, structure, sanitation, circulation, sensation)
-   • Each item is 1–2 words, not full sentences.
-   Return as a JSON array of strings, e.g. ["protective", "outer layer", "barrier", "thin", "visible"].
-
-   c) PRONUNCIATION
-   Phonetic pronunciation of the key term (e.g., "ep-ih-DER-mis").
-
-   d) VISUALIZATION
-   Short description that lets the learner mentally "see" the slide's picture, chart, or diagram, and how it connects to the concept.
-
-   e) METAPHOR
-   Everyday, real-life analogy in a warm tone. Explicitly connect it to the definition using buzz words from the definition. Salon examples allowed but not required — priority is "I can see this in my own life."
-
-   f) AFFIRMATION
-   One or two uplifting sentences that help the learner feel calm, capable, and supported with this concept.
-
-   g) REFLECTION / JOURNALING PROMPTS
-   Generate 2–4 specific prompts that make the student:
-   • Look back at the term and definition ("What did I learn about [term]?")
-   • Expand and connect it to services, safety, client care, or state board questions
-   • Apply it personally in clinic or exam prep
-   Prompts MUST name the term or concept directly, not generic "What did you learn today?" questions.
-   Use open stems: "In your own words, explain…", "Describe a time when…", "How will you use [term] in your services/exam prep?"
-   Keep prompts short and clear. Separate multiple prompts with line breaks.
-
-   h) PRACTICE
-   A quick applied task or recall activity (e.g., "Name 3 traits of the epidermis," "List 2 safety checks before turning on the machine").
-
-   i) KNOWLEDGE ASSESSMENT / QUIZ
-   1–3 multiple-choice questions per block (details below).
-
-4. COSMETOLOGY-FIRST FRAMING
-• Frame examples, metaphors, practice items, reflections, and quizzes to support cosmetology / State Board understanding.
-• When content is general science (anatomy, chemistry, electricity), keep it accurate but connect to how a cosmetology student will use it in real services, safety, or client communication.
+4. ${contextFrame}
 
 5. EFFICIENCY / TOKEN CONTROL
 • Maximum of 3 quiz questions per block.
-• Keep each layer concise and focused on clarity, not long essays.
+• Keep each layer concise and focused.
 
 SLIDE TYPE DETECTION:
-- Slides with case questions ("Which of the following…") → slide_type "quiz"
+- Quiz/case question slides → slide_type "quiz"
 - Bullet/definition slides → slide_type "concept"
 - Tables/comparisons → slide_type "concept"
 - Diagrams or visuals → slide_type "visual"
 
-The content you receive is formatted with "--- Page X ---" headers. For EACH page:
-1. Create exactly ONE block with page_number matching that page number.
-2. Use the slide's title (the first heading or top line) as the term_title.
-3. Use ONLY content from that specific slide.
-
 ═══════════════════════════════════════════════════════
-STATE BOARD QUIZ QUESTION RULES (CRITICAL — FOLLOW EXACTLY)
+QUIZ QUESTION RULES
 ═══════════════════════════════════════════════════════
 
-1. QUESTION STEM FORMAT:
-   - Professional, neutral phrasing — NO conversational language in the stem.
-   - Frame as "Which of the following…", "A cosmetologist should…", "The primary function of…"
-   - Test APPLICATION and COMPREHENSION, not just recall.
-   - Even general science → frame within cosmetology context.
-
-2. ANSWER OPTIONS FORMAT:
-   - Exactly 4 options (A, B, C, D).
-   - Option A = correct answer (system shuffles for display).
-   - Option B = plausible distractor (related but incorrect, genuinely tempting).
-   - Options C and D = clearly wrong but professional-sounding choices.
-
-3. DISTRACTOR QUALITY (MOST IMPORTANT RULE):
-   - Option B MUST test whether the student truly understands the full definition.
-   Strategies: DEFINITION SWAP, PARTIAL TRUTH, COMMON MISCONCEPTION, REVERSED RELATIONSHIP.
-
-4. EXPLANATION FORMAT:
-   - Correct answer stated first.
-   - Why each wrong answer is wrong (especially B).
-   - End with warm TJ Anderson encouragement.
-
-5. QUESTION VARIETY — Each block gets up to 3 quiz questions testing DIFFERENTLY:
-   - quiz_question: Definition comprehension
-   - quiz_question_2: Application/scenario
-   - quiz_question_3: Critical thinking/comparison
-
-6. QUIZ BANK QUESTIONS (for quiz slides):
-   - Follow ALL rules above at hardest tier — State Board difficulty.
-   - Test across Bloom's taxonomy: Remember, Understand, Apply, Analyze.
+1. Professional, neutral phrasing.
+2. Exactly 4 options (A, B, C, D). Option A = correct.
+3. Option B = plausible distractor. Options C, D = clearly wrong but professional.
+4. Explanation: correct answer first, why wrong answers are wrong, encouraging close.
+5. Up to 3 questions testing: definition, application, critical thinking.
 
 Return valid JSON. The number of blocks MUST equal the number of pages/slides provided.`;
+}
+
+function buildImageSystemPrompt(subject: string): string {
+  return `You are TJ Anderson, an expert educator. You analyze images of vocabulary sheets, study guides, and handwritten notes.
+
+Subject Area: ${subject || "general"}
+
+CRITICAL INSTRUCTION: This image contains MULTIPLE vocabulary terms/words with definitions. You MUST create ONE separate TJ Learning Block for EACH individual term found. If there are 16 terms, you must return 16 blocks.
+
+DO NOT summarize the image into one block. Read EVERY line, EVERY definition, EVERY handwritten answer.
+
+For EACH term found, generate all TJ Anderson Layer Method fields including:
+- source_text, explanation, key_concepts, themes, memory_anchors, application_steps
+- difficulty_level, search_tags, page_reference, section_title
+- Plus all standard fields (definition, concept_identity, pronunciation, visualization, metaphor, etc.)
+
+Return valid JSON.`;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -131,26 +125,25 @@ serve(async (req) => {
       body = await req.json();
     } catch (parseErr) {
       console.error("Failed to parse request body:", parseErr);
-      return new Response(JSON.stringify({ error: "Invalid request body. Could not parse JSON." }), {
+      return new Response(JSON.stringify({ error: "Invalid request body." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { content, moduleId, filename, chunkIndex, totalChunks, imageDataUrl } = body;
+    const { content, moduleId, filename, chunkIndex, totalChunks, imageDataUrl, subject, documentType, chapterNumber, sectionTitle, pageRange } = body;
     const isImageUpload = !!imageDataUrl;
-    
+
     if (isImageUpload && imageDataUrl) {
       const dataUrlLength = typeof imageDataUrl === "string" ? imageDataUrl.length : 0;
-      console.log(`Image data URL length: ${dataUrlLength} chars (~${Math.round(dataUrlLength * 0.75 / 1024)}KB)`);
       if (dataUrlLength > 10_000_000) {
-        return new Response(JSON.stringify({ error: "Image is too large. Please use a smaller image (under 5MB)." }), {
+        return new Response(JSON.stringify({ error: "Image too large. Use a smaller image (under 5MB)." }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
-    
+
     if (!content || typeof content !== "string") {
       return new Response(JSON.stringify({ error: "Missing or invalid 'content' field." }), {
         status: 400,
@@ -162,75 +155,33 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const maxContentLength = 15000;
-    const truncatedContent = content.length > maxContentLength 
+    const truncatedContent = content.length > maxContentLength
       ? content.slice(0, maxContentLength) + "\n\n[Content truncated for processing]"
       : content;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), isImageUpload ? 180000 : 55000);
 
-    // Build messages based on content type
     const userContent: any[] = [];
-    
+
     if (isImageUpload) {
-      // Multimodal: send image + text instruction
-      userContent.push({
-        type: "image_url",
-        image_url: { url: imageDataUrl },
-      });
+      userContent.push({ type: "image_url", image_url: { url: imageDataUrl } });
       userContent.push({
         type: "text",
-        text: `Analyze this uploaded image from "${filename}". This image contains a vocabulary list, study sheet, or reference material with MULTIPLE terms/words and their definitions.
-
-YOUR TASK: Read EVERY term, vocabulary word, definition, and piece of content visible in the image. Create ONE TJ Learning Block for EACH individual term or vocabulary word found.
-
-For example, if the image shows 10 vocabulary words with definitions, you must create 10 separate blocks — one per word.
-
-Do NOT summarize the entire image into a single block. Do NOT only read the title/heading. Read the FULL content of the image including all rows, columns, bullet points, and definitions.
-
-IMPORTANT: 
-- Read the image carefully and thoroughly — scan every line of text.
-- Extract real text from the image — do not guess or fabricate content.
-- Each vocabulary word/term gets its own block with page_number starting at 1 and incrementing.
-- Use the actual definitions from the image for each term's definition field.`,
+        text: `Analyze this uploaded image from "${filename}". Create ONE TJ Learning Block for EACH individual term or vocabulary word found. Include all layer method fields including source_text, explanation, key_concepts, themes, memory_anchors, application_steps, difficulty_level, search_tags.`,
       });
     } else {
+      const contextNote = sectionTitle ? ` (${sectionTitle}, ${pageRange || ""})` : "";
       userContent.push({
         type: "text",
-        text: `Analyze the following study material from "${filename}"${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}. Create exactly ONE TJ Block per page/slide. Do NOT merge slides.\n\n${truncatedContent}`,
+        text: `Analyze the following study material from "${filename}"${contextNote}${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}. Create exactly ONE TJ Block per page/slide. Do NOT merge slides.\n\n${truncatedContent}`,
       });
     }
 
-    // Use a vision-capable model for images
     const model = isImageUpload ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
-
-    // For image uploads, override the system prompt to focus on per-term extraction
-    const activeSystemPrompt = isImageUpload 
-      ? `You are TJ Anderson, a cosmetology and education expert. You analyze images of vocabulary sheets, study guides, and handwritten notes.
-
-CRITICAL INSTRUCTION: This image contains MULTIPLE vocabulary terms/words with definitions. You MUST create ONE separate TJ Learning Block for EACH individual term found. If there are 16 terms, you must return 16 blocks.
-
-DO NOT summarize the image into one block. DO NOT only read the title. Read EVERY line, EVERY definition, EVERY handwritten answer.
-
-For EACH term found, generate:
-- term_title: The vocabulary word/term
-- page_number: Sequential number starting at 1
-- pronunciation: Phonetic pronunciation
-- definition: The definition from the image, enhanced for clarity
-- concept_identity: 3-7 descriptor words capturing the concept
-- visualization_desc: A visual description to help the learner picture the concept
-- metaphor: A real-world analogy
-- affirmation: An encouraging statement
-- reflection_prompt: 2-4 reflection prompts naming the term
-- practice_scenario: A quick applied task
-- quiz_question, quiz_options (4 options, A=correct), quiz_answer: Definition comprehension
-- quiz_question_2, quiz_options_2, quiz_answer_2: Application/scenario
-- quiz_question_3, quiz_options_3, quiz_answer_3: Critical thinking
-- slide_type: "concept"
-- instructor_notes: Source information
-
-Return valid JSON. The number of blocks MUST equal the number of terms visible in the image.`
-      : systemPrompt;
+    const activeSystemPrompt = isImageUpload
+      ? buildImageSystemPrompt(subject || "")
+      : buildSystemPrompt(subject || "", documentType || "");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       signal: controller.signal,
@@ -250,29 +201,24 @@ Return valid JSON. The number of blocks MUST equal the number of terms visible i
             type: "function",
             function: {
               name: "create_tj_blocks",
-              description: "Create exactly one TJ Anderson Layer Method learning block per slide/page. The number of blocks must match the number of pages provided.",
+              description: "Create TJ Anderson Layer Method learning blocks with full structural metadata.",
               parameters: {
                 type: "object",
                 properties: {
                   blocks: {
                     type: "array",
-                    description: "One block per slide/page. Array length MUST equal number of pages in the input.",
                     items: {
                       type: "object",
                       properties: {
-                        term_title: { type: "string", description: "The slide title exactly as it appears on the slide" },
-                        page_number: { type: "integer", description: "The page/slide number from the document" },
+                        term_title: { type: "string" },
+                        page_number: { type: "integer" },
                         pronunciation: { type: "string" },
                         definition: { type: "string" },
-                        concept_identity: { 
-                          type: "array", 
-                          items: { type: "string" },
-                          description: "3–7 short descriptor words/phrases capturing the identity of the concept (adjectives, qualities, related idea-words). Each item 1–2 words."
-                        },
+                        concept_identity: { type: "array", items: { type: "string" } },
                         visualization_desc: { type: "string" },
-                        metaphor: { type: "string", description: "Real-world everyday-life analogy with buzz words from the definition" },
+                        metaphor: { type: "string" },
                         affirmation: { type: "string" },
-                        reflection_prompt: { type: "string", description: "2–4 specific reflection prompts separated by line breaks. Must name the term directly. Use open stems like 'In your own words, explain…'" },
+                        reflection_prompt: { type: "string" },
                         practice_scenario: { type: "string" },
                         quiz_question: { type: "string" },
                         quiz_options: { type: "array", items: { type: "string" } },
@@ -284,22 +230,29 @@ Return valid JSON. The number of blocks MUST equal the number of terms visible i
                         quiz_options_3: { type: "array", items: { type: "string" } },
                         quiz_answer_3: { type: "string" },
                         slide_type: { type: "string", enum: ["concept", "visual", "quiz"] },
-                        instructor_notes: { type: "string", description: "Must start with 'Source: Slide X of Y'" },
-                        image_description: { type: "string" },
+                        instructor_notes: { type: "string" },
+                        // New structural fields
+                        source_text: { type: "string", description: "Original passage text from the source" },
+                        explanation: { type: "string", description: "Plain-language explanation of what the passage says" },
+                        key_concepts: { type: "array", items: { type: "string" }, description: "Important terms/ideas" },
+                        themes: { type: "array", items: { type: "string" }, description: "Thematic tags" },
+                        memory_anchors: { type: "array", items: { type: "string" }, description: "Mnemonics and recall aids" },
+                        application_steps: { type: "array", items: { type: "string" }, description: "Practical application steps" },
+                        difficulty_level: { type: "string", enum: ["beginner", "intermediate", "advanced"] },
+                        search_tags: { type: "array", items: { type: "string" }, description: "Search keywords" },
+                        page_reference: { type: "string", description: "Source reference like Chapter 3, pp. 45-47" },
+                        section_title: { type: "string", description: "Which section this came from" },
                       },
                       required: [
-                        "term_title", "page_number", "pronunciation", "definition", "concept_identity",
-                        "visualization_desc", "metaphor", "affirmation", "reflection_prompt", "practice_scenario",
+                        "term_title", "page_number", "definition", "concept_identity",
+                        "visualization_desc", "metaphor", "affirmation", "reflection_prompt",
                         "quiz_question", "quiz_options", "quiz_answer",
-                        "quiz_question_2", "quiz_options_2", "quiz_answer_2",
-                        "quiz_question_3", "quiz_options_3", "quiz_answer_3",
-                        "slide_type", "instructor_notes",
+                        "slide_type",
                       ],
                     },
                   },
                   quiz_bank_questions: {
                     type: "array",
-                    description: "Exam-style questions detected on quiz slides, routed to the Quiz Bank. All must be 4-option State Board style.",
                     items: {
                       type: "object",
                       properties: {
@@ -332,14 +285,12 @@ Return valid JSON. The number of blocks MUST equal the number of terms visible i
       console.error("AI gateway error:", status, t);
       if (status === 429) {
         return new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (status === 402) {
         return new Response(JSON.stringify({ error: "AI credits need to be topped up." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       throw new Error(`AI gateway error: ${status}`);
@@ -350,42 +301,37 @@ Return valid JSON. The number of blocks MUST equal the number of terms visible i
     try {
       data = JSON.parse(rawText);
     } catch (parseErr) {
-      console.error("Failed to parse AI response JSON, length:", rawText.length, "preview:", rawText.slice(0, 200));
+      console.error("Failed to parse AI response JSON");
       let blocks: any[] = [];
-      let quiz_bank_questions: any[] = [];
+      const quiz_bank_questions: any[] = [];
       try {
         const blocksMatch = rawText.match(/"blocks"\s*:\s*(\[[\s\S]*?\])\s*[,}]/);
-        if (blocksMatch) {
-          blocks = JSON.parse(blocksMatch[1]);
-        }
+        if (blocksMatch) blocks = JSON.parse(blocksMatch[1]);
       } catch { /* ignore */ }
       return new Response(JSON.stringify({ blocks, quiz_bank_questions }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    
+
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     let blocks: any[] = [];
     let quiz_bank_questions: any[] = [];
-    
+
     if (toolCall?.function?.arguments) {
       try {
-        const parsed = typeof toolCall.function.arguments === "string" 
-          ? JSON.parse(toolCall.function.arguments) 
+        const parsed = typeof toolCall.function.arguments === "string"
+          ? JSON.parse(toolCall.function.arguments)
           : toolCall.function.arguments;
         blocks = parsed.blocks || [];
         quiz_bank_questions = parsed.quiz_bank_questions || [];
       } catch (jsonErr) {
-        console.error("Failed to parse tool call arguments, length:", 
-          typeof toolCall.function.arguments === "string" ? toolCall.function.arguments.length : 0);
+        console.error("Failed to parse tool call arguments");
         const raw = typeof toolCall.function.arguments === "string" ? toolCall.function.arguments : "";
         try {
           const blocksMatch = raw.match(/"blocks"\s*:\s*(\[[\s\S]*?\])\s*[,}]/);
-          if (blocksMatch) {
-            blocks = JSON.parse(blocksMatch[1]);
-          }
+          if (blocksMatch) blocks = JSON.parse(blocksMatch[1]);
         } catch {
-          console.error("Could not salvage partial JSON from tool call");
+          console.error("Could not salvage partial JSON");
         }
       }
     } else {
@@ -398,6 +344,15 @@ Return valid JSON. The number of blocks MUST equal the number of terms visible i
           quiz_bank_questions = parsed.quiz_bank_questions || [];
         }
       } catch { /* ignore */ }
+    }
+
+    // Attach chapter/section metadata passed from client
+    if (chapterNumber || sectionTitle || pageRange) {
+      blocks = blocks.map((b: any) => ({
+        ...b,
+        section_title: b.section_title || sectionTitle || "",
+        page_reference: b.page_reference || pageRange || "",
+      }));
     }
 
     return new Response(JSON.stringify({ blocks, quiz_bank_questions }), {
