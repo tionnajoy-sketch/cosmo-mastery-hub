@@ -444,9 +444,10 @@ const LearningOrbDialog = ({
           sectionName: "Expanded Information",
         },
       });
-      setExpandedInfo(data?.response || "");
+      const info = data?.response || "";
+      setExpandedInfo(info);
+      if (info && voiceEnabled) speakText(info.slice(0, 1000));
     } catch {}
-    setInfoLoading(false);
   };
 
   const generateImage = async () => {
