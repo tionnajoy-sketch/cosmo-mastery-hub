@@ -36,7 +36,7 @@ interface TJLearningStudioProps {
 type StudioMode = "summary" | "explanation" | "teach-flow" | "explain-again" | "slideshow" | "audio-script";
 
 const TJLearningStudio = ({
-  termName, definition, metaphor, additionalContent, mode = "inline", onAudioScript,
+  termName, definition, metaphor, additionalContent, mode = "inline", onAudioScript, onContentGenerated,
 }: TJLearningStudioProps) => {
   const { profile } = useAuth();
   const { dna } = useDNAAdaptation();
