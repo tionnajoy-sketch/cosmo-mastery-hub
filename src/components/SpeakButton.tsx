@@ -76,7 +76,7 @@ const SpeakButton = ({ text, label, size = "icon", className = "", onComplete, u
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ text: plainText }),
+          body: JSON.stringify({ text: plainText, usageType }),
         }
       );
 
