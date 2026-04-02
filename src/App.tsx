@@ -48,6 +48,7 @@ import LearningDNAPage from "./pages/LearningDNAPage";
 import PracticeLabPage from "./pages/PracticeLabPage";
 import TJCafe from "./components/TJCafe";
 import { useStudyBreak } from "./hooks/useStudyBreak";
+import VoiceCacheDashboard from "./pages/VoiceCacheDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
