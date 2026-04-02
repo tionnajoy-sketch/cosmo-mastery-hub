@@ -785,10 +785,10 @@ const LearningOrbDialog = ({
 
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="fixed inset-0 max-w-none w-screen h-screen m-0 p-0 gap-0 border-0 rounded-none translate-x-0 translate-y-0 top-0 left-0 data-[state=open]:slide-in-from-bottom-0 overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.12 }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.88) 0%, hsl(0 0% 98% / 0.92) 100%)" }} />
-          <div className="relative z-10 min-h-full flex flex-col items-center justify-center text-center p-6 space-y-6">
+        <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }}>
+          <div className="absolute inset-0 bg-cover bg-center pointer-events-none" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.12 }} />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.88) 0%, hsl(0 0% 98% / 0.92) 100%)" }} />
+          <div className="relative z-10 flex-1 overflow-y-auto flex flex-col items-center justify-center text-center p-6 space-y-6" style={{ WebkitOverflowScrolling: "touch" }}>
             <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.6 }}>
               <CheckCircle2 className="h-20 w-20 mx-auto" style={{ color: "hsl(145 55% 42%)" }} />
             </motion.div>
