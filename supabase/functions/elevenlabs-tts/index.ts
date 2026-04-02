@@ -7,6 +7,15 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const DEFAULT_VOICE_ID = "b3Sj49ffEoyFHYHBRE2z";
+const DEFAULT_SETTINGS = {
+  stability: 0.55,
+  similarity_boost: 0.75,
+  style: 0.35,
+  use_speaker_boost: true,
+  speed: 0.95,
+};
+
 async function hashText(text: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(text);
@@ -21,7 +30,9 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json();
+    const body = await req.json();
+    const { text, voiceId, voiceSettings, usageType } = body;
+
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
     if (!ELEVENLABS_API_KEY) {
       throw new Error("ELEVENLABS_API_KEY is not configured");
@@ -34,49 +45,56 @@ serve(async (req) => {
       });
     }
 
-    // Trim to 5000 chars max for TTS
     const trimmedText = text.slice(0, 5000);
+    const activeVoiceId = voiceId || DEFAULT_VOICE_ID;
+    const activeSettings = voiceSettings || DEFAULT_SETTINGS;
+    const activeUsageType = usageType || "dynamic";
 
-    // Create supabase admin client for cache operations
+    // Hash includes text + voiceId + settings for unique cache key
+    const cacheKey = `${trimmedText}|${activeVoiceId}|${JSON.stringify(activeSettings)}`;
+    const textHash = await hashText(cacheKey);
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Hash the text to check cache
-    const textHash = await hashText(trimmedText);
-
     // Check cache
     const { data: cached } = await supabaseAdmin
       .from("tts_cache")
-      .select("storage_path")
+      .select("storage_path, id")
       .eq("text_hash", textHash)
       .maybeSingle();
 
     if (cached?.storage_path) {
-      // Cache hit — fetch from storage and stream back
       const { data: fileData, error: dlError } = await supabaseAdmin.storage
         .from("tts-cache")
         .download(cached.storage_path);
 
       if (fileData && !dlError) {
-        console.log("TTS cache hit:", trimmedText.slice(0, 60));
+        console.log("TTS cache HIT:", trimmedText.slice(0, 60));
+        // Increment cache hits (fire-and-forget)
+        supabaseAdmin
+          .from("tts_cache")
+          .update({
+            cache_hits: (cached as any).cache_hits ? (cached as any).cache_hits + 1 : 1,
+            last_accessed_at: new Date().toISOString(),
+          })
+          .eq("id", cached.id)
+          .then(() => {});
+
         return new Response(fileData, {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "audio/mpeg",
-          },
+          headers: { ...corsHeaders, "Content-Type": "audio/mpeg" },
         });
       }
-      // If download failed, fall through to generate fresh
       console.warn("Cache file missing, regenerating:", cached.storage_path);
     }
 
     // Cache miss — call ElevenLabs
-    const voiceId = "b3Sj49ffEoyFHYHBRE2z";
+    console.log("TTS cache MISS:", trimmedText.slice(0, 60));
 
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=mp3_44100_128`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${activeVoiceId}/stream?output_format=mp3_44100_128`,
       {
         method: "POST",
         headers: {
@@ -86,13 +104,7 @@ serve(async (req) => {
         body: JSON.stringify({
           text: trimmedText,
           model_id: "eleven_turbo_v2_5",
-          voice_settings: {
-            stability: 0.55,
-            similarity_boost: 0.75,
-            style: 0.35,
-            use_speaker_boost: true,
-            speed: 0.95,
-          },
+          voice_settings: activeSettings,
         }),
       }
     );
@@ -101,25 +113,24 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error("ElevenLabs TTS error:", response.status, errorText);
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Voice rate limited. Please wait a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ error: "Voice rate limited. Please wait a moment." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
       if (errorText.includes("quota_exceeded") || errorText.includes("insufficient_credits")) {
-        return new Response(JSON.stringify({ error: "Voice credits exhausted" }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ error: "Voice credits exhausted" }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
       throw new Error(`ElevenLabs API error [${response.status}]: ${errorText}`);
     }
 
-    // Read the full audio into memory so we can both cache and return it
     const audioBytes = await response.arrayBuffer();
     const audioUint8 = new Uint8Array(audioBytes);
 
-    // Store in cache (fire-and-forget, don't block the response)
+    // Store in cache
     const storagePath = `${textHash}.mp3`;
     const cachePromise = (async () => {
       try {
@@ -137,7 +148,14 @@ serve(async (req) => {
           {
             text_hash: textHash,
             text_preview: trimmedText.slice(0, 100),
+            original_text: trimmedText,
             storage_path: storagePath,
+            voice_id: activeVoiceId,
+            voice_settings: activeSettings,
+            usage_type: activeUsageType,
+            cache_hits: 0,
+            is_always_cache: ["greeting", "onboarding", "affirmation", "lesson"].includes(activeUsageType),
+            last_accessed_at: new Date().toISOString(),
           },
           { onConflict: "text_hash" }
         );
@@ -147,20 +165,16 @@ serve(async (req) => {
       }
     })();
 
-    // Wait briefly for cache to save, but don't block too long
     await Promise.race([cachePromise, new Promise((r) => setTimeout(r, 3000))]);
 
     return new Response(audioUint8, {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "audio/mpeg",
-      },
+      headers: { ...corsHeaders, "Content-Type": "audio/mpeg" },
     });
   } catch (e) {
     console.error("TTS error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });

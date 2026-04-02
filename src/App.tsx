@@ -48,6 +48,7 @@ import LearningDNAPage from "./pages/LearningDNAPage";
 import PracticeLabPage from "./pages/PracticeLabPage";
 import TJCafe from "./components/TJCafe";
 import { useStudyBreak } from "./hooks/useStudyBreak";
+import VoiceCacheDashboard from "./pages/VoiceCacheDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -96,6 +97,7 @@ const AppContent = () => {
         <Route path="/cosmo-grid" element={<ProtectedRoute><CosmoConnectionGridPage /></ProtectedRoute>} />
         <Route path="/learning-dna" element={<ProtectedRoute><LearningDNAPage /></ProtectedRoute>} />
         <Route path="/game-grid" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
+        <Route path="/voice-cache" element={<ProtectedRoute><VoiceCacheDashboard /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />
