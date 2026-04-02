@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,14 +22,15 @@ import {
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Upload, FileText, Loader2, Sparkles, Lock,
+  Upload, FileText, Loader2, Sparkles, Lock,
   BookOpen, Eye, Lightbulb, Heart, MessageCircle, Brain,
   Search, Layers, Wand2, CheckCircle2, Mail, ExternalLink,
   AlertTriangle, ImageIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AppHeader from "@/components/AppHeader";
-import { extractPdfText, chunkPages, chunkByStructure, type ParsedPage, type ChapterInfo } from "@/lib/pdfParser";
+import { extractPdfText } from "@/lib/pdfParser";
+import { useBackgroundUpload } from "@/contexts/BackgroundUploadContext";
 
 interface ConversionSummary {
   totalPagesInDoc: number;
