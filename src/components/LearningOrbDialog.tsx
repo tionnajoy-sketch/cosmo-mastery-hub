@@ -918,7 +918,7 @@ const LearningOrbDialog = ({
             </button>
             <AnimatePresence>
               {showNeuro && (
-                <motion.p initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="text-[10px] text-center overflow-hidden leading-relaxed mt-1 px-4" style={{ color: c.subtext }}>
+                <motion.p initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="text-[10px] text-center overflow-visible leading-relaxed mt-1 px-4" style={{ color: c.subtext }}>
                   {step.neuroNote}
                 </motion.p>
               )}
@@ -945,7 +945,7 @@ const LearningOrbDialog = ({
           </div>
 
           {/* ═══════ CENTER SECTION ═══════ */}
-          <div className="flex-1 overflow-y-auto px-5 sm:px-8 scrollbar-visible" style={{ scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 40%) transparent" }}>
+          <div className="flex-1 overflow-y-auto px-5 sm:px-8 scrollbar-visible" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 40%) transparent" }}>
             <div className="max-w-lg mx-auto pb-8 pt-2">
               {/* DNA Encouragement Banner */}
               {encouragementMsg && (

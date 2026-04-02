@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel, SelectSeparator } from "@/components/ui/select";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { BookOpen } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -60,7 +60,7 @@ const Signup = () => {
     });
 
     if (error) {
-      toast({ title: "Oops!", description: error.message, variant: "destructive" });
+      toast.error(error.message);
       setLoading(false);
       return;
     }
@@ -81,10 +81,7 @@ const Signup = () => {
     }
 
     setLoading(false);
-    toast({
-      title: "You're in! 🎉",
-      description: "Check your email to verify your account, then sign in.",
-    });
+    toast.success("You're in! 🎉 Check your email to verify your account, then sign in.");
     navigate("/login");
   };
 
@@ -162,14 +159,33 @@ const Signup = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Program</Label>
+                <Label>Choose Your Learning Path</Label>
                 <Select value={program} onValueChange={setProgram}>
-                  <SelectTrigger><SelectValue placeholder="Select your program" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select your learning path" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Cosmetology">Cosmetology</SelectItem>
-                    <SelectItem value="Real Estate">Real Estate</SelectItem>
-                    <SelectItem value="Barbering" disabled>Barbering (coming soon)</SelectItem>
-                    <SelectItem value="Nursing" disabled>Nursing (coming soon)</SelectItem>
+                    <SelectLabel className="text-xs font-semibold text-primary pl-3">Available Now</SelectLabel>
+                    <SelectItem value="Cosmetology">Cosmetology State Board Prep</SelectItem>
+                    <SelectSeparator />
+                    <SelectLabel className="text-xs font-semibold text-muted-foreground pl-3">Coming Soon</SelectLabel>
+                    {[
+                      "Real Estate Exam Prep",
+                      "Medical Terminology",
+                      "Esthetics State Board Prep",
+                      "Barbering State Board Prep",
+                      "Nail Technology State Board Prep",
+                      "CNA / Nurse Aide Exam Prep",
+                      "Insurance License Prep",
+                      "ACT / SAT Prep",
+                      "Bible Study",
+                      "Educator / Paraprofessional Prep",
+                    ].map((path) => (
+                      <div key={path} onPointerDown={(e) => {
+                        e.preventDefault();
+                        toast("This learning path is coming soon and will be powered by the TJ Anderson Layer Method™.");
+                      }}>
+                        <SelectItem value={path} disabled className="opacity-50">{path}</SelectItem>
+                      </div>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
