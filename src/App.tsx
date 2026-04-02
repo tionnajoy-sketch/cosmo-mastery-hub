@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ScrollToTop from "@/components/ScrollToTop";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CoinProvider } from "@/hooks/useCoins";
+import { BackgroundUploadProvider } from "@/contexts/BackgroundUploadContext";
+import BackgroundUploadBanner from "@/components/BackgroundUploadBanner";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
