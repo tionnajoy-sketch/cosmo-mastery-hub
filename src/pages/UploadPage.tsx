@@ -740,10 +740,31 @@ const UploadPage = () => {
                   <h3 className="text-lg font-bold text-foreground">Conversion Summary</h3>
                 </div>
 
+                {/* Detected structure info */}
+                {(summary.detectedSubject || summary.chaptersDetected) && (
+                  <div className="bg-primary/5 rounded-lg p-3 mb-4">
+                    {summary.detectedSubject && (
+                      <p className="text-sm text-foreground mb-1">
+                        <span className="font-semibold">Subject Detected:</span> {summary.detectedSubject}
+                      </p>
+                    )}
+                    {summary.documentType && (
+                      <p className="text-sm text-foreground mb-1">
+                        <span className="font-semibold">Document Type:</span> {summary.documentType}
+                      </p>
+                    )}
+                    {summary.chaptersDetected && summary.chaptersDetected > 0 && (
+                      <p className="text-sm text-foreground">
+                        <span className="font-semibold">Chapters Detected:</span> {summary.chaptersDetected}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-muted/50 rounded-lg p-3">
                     <p className="text-2xl font-bold text-foreground">{summary.totalPagesInDoc}</p>
-                    <p className="text-xs text-muted-foreground">Total Pages in PDF</p>
+                    <p className="text-xs text-muted-foreground">Total Pages</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-3">
                     <p className="text-2xl font-bold text-foreground">{summary.pagesProcessed.length}</p>
@@ -754,10 +775,6 @@ const UploadPage = () => {
                     <p className="text-xs text-muted-foreground">TJ Blocks Created</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-3">
-                    <p className="text-2xl font-bold text-primary">{summary.totalTerms}</p>
-                    <p className="text-xs text-muted-foreground">Total Terms Extracted</p>
-                  </div>
-                  <div className="bg-muted/50 rounded-lg p-3">
                     <p className="text-2xl font-bold text-foreground">{summary.quizBankCreated}</p>
                     <p className="text-xs text-muted-foreground">Quiz Bank Questions</p>
                   </div>
@@ -765,7 +782,7 @@ const UploadPage = () => {
 
                 {summary.totalChunks > 1 && (
                   <p className="text-xs text-muted-foreground mb-3">
-                    Document was processed in {summary.totalChunks} passes to ensure full coverage.
+                    Document was processed in {summary.totalChunks} structure-aware passes.
                   </p>
                 )}
 
