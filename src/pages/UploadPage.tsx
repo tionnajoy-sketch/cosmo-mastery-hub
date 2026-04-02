@@ -430,7 +430,6 @@ const UploadPage = () => {
                     onClick={() => {
                       setFile(null);
                       setSummary(null);
-                      setProgress(0);
                       setDetectedPageCount(null);
                       setPageMode("all");
                     }}
