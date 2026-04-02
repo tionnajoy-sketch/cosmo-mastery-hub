@@ -1,58 +1,79 @@
 
-Goal: make the lesson view behave like a true full-page learning screen: the teaching-mode menu stays accessible above the lesson text, long content scrolls naturally on phone/tablet/desktop, and narration begins automatically when a step opens.
 
-What I found:
-- `src/components/LearningOrbDialog.tsx` already has a scroll container, but the full-screen dialog layout still risks scroll trapping because the dialog root uses a grid wrapper and the flex column ancestors do not clearly opt into shrinking/scrolling behavior.
-- The “How TJ teaches this” menu the user is referring to lives inside `TJLearningStudio`, but in the Information step it is rendered after the long `expandedInfo` block, so the menu can be pushed below the fold.
-- `src/components/TJLearningStudio.tsx` still contains a hard stop on long generated content: `overflow-y-auto max-h-[50vh]`, which recreates the trapped-card feeling.
-- Auto-read exists in `LearningOrbDialog`, but it only reads the short intro/opening text and step intros. It does not automatically read the main long-form content once that content is actually loaded/generated.
+## Plan: Background Document Processing + Resume Incomplete Uploads
 
-Implementation plan:
+### Problem
+The upload/processing pipeline runs entirely inside `UploadPage.tsx` as a client-side async function. When the user navigates away, React unmounts the component and kills all in-flight API calls. The module gets stuck in "processing" status with no blocks saved, and there's no way to resume.
 
-1. Rebuild the lesson shell for reliable scrolling
-- File: `src/components/LearningOrbDialog.tsx`
-- Change the full-screen dialog body from a fragile grid/flex combination to a strict full-height column with `min-h-0` / `min-w-0` on the right ancestors.
-- Make the center lesson body the only scrolling region.
-- Keep header/progress and step navigation pinned above the content area.
-- Preserve iPhone momentum scrolling with `WebkitOverflowScrolling: "touch"`.
+---
 
-2. Move the teaching-mode menu above long-form lesson text
-- File: `src/components/LearningOrbDialog.tsx`
-- In the Information step, render the `TJLearningStudio` controls before the long explanation block, not after it.
-- Add a small section label such as “Choose how TJ teaches this” so slideshow / explain again / audio script is visible immediately.
+### What Changes
 
-3. Remove trapped-card scrolling inside TJLearningStudio
-- File: `src/components/TJLearningStudio.tsx`
-- Remove `max-h-[50vh]` and inner `overflow-y-auto` from the generated-content card.
-- Let slideshow, explanation, teach-flow, and audio-script content expand naturally within the page’s main scroll area.
-- Keep the controls compact and readable on mobile/tablet.
+#### 1. Background Processing Context (New File)
 
-4. Make long explanation content read like a full-page lesson
-- File: `src/components/LearningOrbDialog.tsx`
-- Keep the main explanation block in the scrollable body with generous spacing and no inner fixed-height wrapper.
-- Verify “Why This Step Matters,” “Explain Again,” slideshow, and deeper explanation all flow in the same vertical reading surface.
+**Create `src/contexts/BackgroundUploadContext.tsx`**
 
-5. Make narration start automatically for the visible content
-- Files: `src/components/LearningOrbDialog.tsx`, `src/components/TJLearningStudio.tsx`
-- Keep the existing auto-voice on open, but extend it so:
-  - when expanded information finishes loading, TJ automatically starts reading that explanation;
-  - when a TJLearningStudio mode generates content, the first visible teaching output can auto-read as well;
-  - slideshow mode can auto-read the current slide’s speaker note/body.
-- Ensure manual Speak buttons still work and do not conflict with auto-play.
+A React context mounted at the App level (never unmounts) that:
 
-6. Keep the page “fully open” on tablet/mobile
-- Files: `src/components/LearningOrbDialog.tsx`, `src/components/ui/dialog.tsx`
-- Audit the dialog wrapper classes so the full-screen lesson is not constrained by inherited modal sizing behavior.
-- If needed, introduce a variant-friendly class adjustment so full-screen learning dialogs don’t inherit the default centered modal behavior.
+- Holds the active processing state (progress, message, moduleId)
+- Runs the entire `convertToBlocks` pipeline in a ref-stable callback that survives route changes
+- Exposes: `startProcessing(file, options)`, `progress`, `progressMessage`, `isProcessing`, `activeModuleId`
+- Shows a persistent floating toast/banner at the bottom of the screen when processing is active (visible on any page)
+- On completion, shows a toast with a link to the finished module
 
-Files to modify:
-- `src/components/LearningOrbDialog.tsx`
-- `src/components/TJLearningStudio.tsx`
-- `src/components/ui/dialog.tsx` (only if the current base dialog wrapper is still constraining the full-screen lesson shell)
+The actual processing logic (structure analysis → chunking → API calls → saving blocks) moves here from UploadPage.
 
-Expected result:
-- Users can scroll up and down through long lessons smoothly.
-- The teaching options menu appears above the text where users can reach it right away.
-- Slideshow / explanation / teach-flow content no longer feels trapped inside a card.
-- The lesson opens as a true full-page experience.
-- TJ begins reading the visible lesson content automatically instead of only reading a short intro.
+#### 2. Simplify UploadPage
+
+**Modify `src/pages/UploadPage.tsx`**
+
+- Remove the `convertToBlocks` function body — instead call `startProcessing()` from the background context
+- Keep the file selection UI, page range picker, and mode selector
+- When processing is active, show a card saying "Your document is being processed. You can navigate away — we'll notify you when it's done." with a progress bar reading from the context
+- When not processing, show the normal upload UI
+
+#### 3. Persistent Processing Indicator
+
+**Create `src/components/BackgroundUploadBanner.tsx`**
+
+A small fixed-position banner at the bottom of the screen (visible on all pages) that shows:
+- Module name being processed
+- Progress bar + current phase message
+- Appears only when background processing is active
+- On completion: "✓ [Module Name] is ready!" with a "View Module" link
+- Auto-dismisses after 8 seconds on completion
+
+#### 4. Resume/Retry Stuck Modules
+
+**Modify `src/pages/MyModulesPage.tsx`**
+
+- For modules with `status = 'processing'` or `processing_phase != 'ready'`, show a "Retry" button instead of "View"
+- Retry deletes existing partial blocks for that module, resets status to 'uploading', and navigates to UploadPage with a query param `?retry=MODULE_ID`
+- UploadPage detects the retry param and shows a message: "This module didn't finish processing. Please re-upload the file to try again."
+
+#### 5. Mount Context in App
+
+**Modify `src/App.tsx`**
+
+- Wrap with `BackgroundUploadProvider`
+- Render `BackgroundUploadBanner` inside the provider (always visible)
+
+---
+
+### Technical Details
+
+- Processing logic uses refs (not state) for the loop variables so React re-renders on other pages don't interfere with the async pipeline
+- Progress updates use `setState` on the context so the banner re-renders across pages
+- The context stores `moduleId` so if the user returns to UploadPage mid-processing, it can show the current progress
+- No edge function architecture change needed — the same sequential chunk-processing pattern works, just hosted in a persistent context instead of a page component
+- For the Bible-sized document that failed: the user will need to re-upload since the partial module has no blocks saved (the blocks are only saved after ALL chunks complete). The retry flow handles this gracefully.
+
+### Files to Create
+1. `src/contexts/BackgroundUploadContext.tsx`
+2. `src/components/BackgroundUploadBanner.tsx`
+
+### Files to Modify
+1. `src/pages/UploadPage.tsx` — delegate processing to context
+2. `src/pages/MyModulesPage.tsx` — retry button for stuck modules
+3. `src/App.tsx` — mount provider + banner
+
