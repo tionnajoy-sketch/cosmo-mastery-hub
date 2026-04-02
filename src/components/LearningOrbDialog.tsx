@@ -314,9 +314,7 @@ const LearningOrbDialog = ({
     if (s?.key === "quiz" && !block.quiz_question && !aiQuestion && !aiLoading) {
       generateQuizQuestion();
     }
-    if (s?.key === "information" && !expandedInfo && !infoLoading) {
-      fetchExpandedInfo();
-    }
+    // Information step: do NOT auto-fetch — let student choose via TJLearningStudio menu
   }, [currentStep, block?.id]);
 
   // Auto-speak on step change
@@ -637,38 +635,27 @@ const LearningOrbDialog = ({
 
       case "information":
         return (
-          <motion.div key="information" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4 py-4">
-            {/* TJ Learning Studio — teaching mode menu FIRST */}
-            <div className="border-b border-border pb-4">
-              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Choose How TJ Teaches This</p>
+          <motion.div key="information" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-4">
+            {/* Short intro context */}
+            <div className="text-center space-y-2">
+              <h3 className="font-display text-xl font-bold" style={{ color: step.color }}>{block.term_title}</h3>
+              <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+                {block.affirmation || `Let's explore ${block.term_title} more deeply. Choose how you'd like TJ to teach this concept.`}
+              </p>
+            </div>
+
+            {/* TJ Learning Studio — the ONLY teaching system for this step */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Choose How TJ Teaches This</p>
               <TJLearningStudio
                 termName={block.term_title}
                 definition={block.definition}
                 metaphor={block.metaphor}
                 additionalContent={block.practice_scenario}
-                onContentGenerated={(text) => { if (voiceEnabled) speakText(text.slice(0, 800)); }}
+                onAudioScript={(script) => { if (voiceEnabled) speakText(script.slice(0, 1200)); }}
+                onContentGenerated={(text) => { if (voiceEnabled) speakText(text.slice(0, 1000)); }}
               />
             </div>
-
-            {/* Expanded information below */}
-            {infoLoading ? (
-              <div className="flex items-center justify-center gap-3 py-10">
-                <Loader2 className="h-6 w-6 animate-spin" style={{ color: step.color }} />
-                <p className="text-sm" style={{ color: c.subtext }}>Loading deeper explanation…</p>
-              </div>
-            ) : expandedInfo ? (
-              <>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Deeper Explanation</p>
-                <div className="prose prose-sm max-w-none leading-relaxed" style={{ color: c.bodyText }}>
-                  {expandedInfo.split("\n").filter(Boolean).map((p, i) => <p key={i} className="mb-3">{p}</p>)}
-                </div>
-                <SpeakButton text={expandedInfo} size="sm" label="Listen" />
-              </>
-            ) : (
-              <Button onClick={fetchExpandedInfo} className="gap-2" style={{ background: step.gradient, color: "white" }}>
-                <Sparkles className="h-4 w-4" /> Load Deeper Information
-              </Button>
-            )}
           </motion.div>
         );
 
@@ -798,10 +785,10 @@ const LearningOrbDialog = ({
 
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="fixed inset-0 max-w-none w-screen h-screen m-0 p-0 gap-0 border-0 rounded-none translate-x-0 translate-y-0 top-0 left-0 data-[state=open]:slide-in-from-bottom-0 overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.12 }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.88) 0%, hsl(0 0% 98% / 0.92) 100%)" }} />
-          <div className="relative z-10 min-h-full flex flex-col items-center justify-center text-center p-6 space-y-6">
+        <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }}>
+          <div className="absolute inset-0 bg-cover bg-center pointer-events-none" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.12 }} />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.88) 0%, hsl(0 0% 98% / 0.92) 100%)" }} />
+          <div className="relative z-10 flex-1 overflow-y-auto flex flex-col items-center justify-center text-center p-6 space-y-6" style={{ WebkitOverflowScrolling: "touch" }}>
             <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.6 }}>
               <CheckCircle2 className="h-20 w-20 mx-auto" style={{ color: "hsl(145 55% 42%)" }} />
             </motion.div>
@@ -865,12 +852,12 @@ const LearningOrbDialog = ({
   /* ─── Main Layout ─── */
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) stopSpeaking(); onOpenChange(o); }}>
-      <DialogContent className="fixed inset-0 max-w-none w-screen h-screen m-0 p-0 gap-0 border-0 rounded-none translate-x-0 translate-y-0 top-0 left-0 data-[state=open]:slide-in-from-bottom-0" style={{ background: "hsl(var(--background))" }}>
+      <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }}>
         {/* Subtle BG */}
         <div className="absolute inset-0 bg-cover bg-center pointer-events-none" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.06, filter: "brightness(1.2)" }} />
         <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.94) 0%, hsl(0 0% 98% / 0.96) 100%)" }} />
 
-        <div className="relative z-10 h-full flex flex-col min-h-0">
+        <div className="relative z-10 flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* ═══════ TOP SECTION ═══════ */}
           <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 border-b" style={{ background: "hsl(var(--background) / 0.95)", backdropFilter: "blur(12px)" }}>
             {/* Avatar + Caption + Voice Controls */}
@@ -949,7 +936,7 @@ const LearningOrbDialog = ({
           </div>
 
           {/* ═══════ CENTER SECTION ═══════ */}
-          <div className="flex-1 overflow-y-auto px-5 sm:px-8 scrollbar-visible" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 40%) transparent" }}>
+          <div className="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-8 scrollbar-visible" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-y", scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 40%) transparent" }}>
             <div className="max-w-lg mx-auto pb-8 pt-2">
               {/* DNA Encouragement Banner */}
               {encouragementMsg && (
