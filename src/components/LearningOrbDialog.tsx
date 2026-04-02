@@ -936,7 +936,7 @@ const LearningOrbDialog = ({
           </div>
 
           {/* ═══════ CENTER SECTION ═══════ */}
-          <div className="flex-1 overflow-y-auto px-5 sm:px-8 scrollbar-visible" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 40%) transparent" }}>
+          <div className="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-8 scrollbar-visible" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-y", scrollbarWidth: "auto", scrollbarColor: "hsl(0 0% 40%) transparent" }}>
             <div className="max-w-lg mx-auto pb-8 pt-2">
               {/* DNA Encouragement Banner */}
               {encouragementMsg && (
