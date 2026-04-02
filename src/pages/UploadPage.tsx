@@ -41,6 +41,9 @@ interface ConversionSummary {
   quizBankCreated: number;
   chunksProcessed: number;
   totalChunks: number;
+  detectedSubject?: string;
+  documentType?: string;
+  chaptersDetected?: number;
 }
 
 const compressImage = async (file: File, maxDimension = 1600, quality = 0.7): Promise<string> => {
