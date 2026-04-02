@@ -60,7 +60,7 @@ const Signup = () => {
     });
 
     if (error) {
-      toast({ title: "Oops!", description: error.message, variant: "destructive" });
+      toast.error(error.message);
       setLoading(false);
       return;
     }
