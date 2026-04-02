@@ -8,9 +8,10 @@ interface SpeakButtonProps {
   size?: "sm" | "icon" | "default";
   className?: string;
   onComplete?: () => void;
+  usageType?: "greeting" | "lesson" | "affirmation" | "onboarding" | "faq" | "dynamic";
 }
 
-const SpeakButton = ({ text, label, size = "icon", className = "", onComplete }: SpeakButtonProps) => {
+const SpeakButton = ({ text, label, size = "icon", className = "", onComplete, usageType = "dynamic" }: SpeakButtonProps) => {
   const [speaking, setSpeaking] = useState(false);
   const [loading, setLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
