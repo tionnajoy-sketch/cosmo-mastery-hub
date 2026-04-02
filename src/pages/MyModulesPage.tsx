@@ -23,6 +23,7 @@ import {
   Layers3,
   CheckCircle2,
   Clock3,
+  RotateCcw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -182,6 +183,16 @@ const MyModulesPage = () => {
     toast({ title: "Module deleted" });
   };
 
+  const handleRetry = async (mod: Module) => {
+    // Delete partial blocks and reset module
+    await supabase.from("uploaded_module_blocks").delete().eq("module_id", mod.id);
+    await supabase.from("uploaded_module_quiz_bank").delete().eq("module_id", mod.id);
+    await supabase.from("uploaded_modules").delete().eq("id", mod.id);
+    setModules((prev) => prev.filter((m) => m.id !== mod.id));
+    toast({ title: "Module cleared — please re-upload" });
+    navigate("/upload");
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary via-primary to-primary/95">
       <AppHeader />
@@ -333,7 +344,19 @@ const MyModulesPage = () => {
                       <Progress value={progress} className="h-1.5 bg-background/60" />
                     </div>
 
-                    <ArrowRight className="h-4 w-4 mt-2 text-card-foreground/80" />
+                    <div className="mt-2 flex items-center gap-2">
+                      <ArrowRight className="h-4 w-4 text-card-foreground/80" />
+                      {!isReady && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="h-6 text-[10px] gap-1 px-2"
+                          onClick={(e) => { e.stopPropagation(); handleRetry(mod); }}
+                        >
+                          <RotateCcw className="h-3 w-3" /> Retry
+                        </Button>
+                      )}
+                    </div>
                   </motion.button>
                 );
               })}
