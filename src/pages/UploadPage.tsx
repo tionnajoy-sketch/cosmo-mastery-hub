@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AppHeader from "@/components/AppHeader";
-import { extractPdfText, chunkPages, type ParsedPage } from "@/lib/pdfParser";
+import { extractPdfText, chunkPages, chunkByStructure, type ParsedPage, type ChapterInfo } from "@/lib/pdfParser";
 
 interface ConversionSummary {
   totalPagesInDoc: number;
