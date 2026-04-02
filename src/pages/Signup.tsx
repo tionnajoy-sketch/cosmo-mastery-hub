@@ -81,10 +81,7 @@ const Signup = () => {
     }
 
     setLoading(false);
-    toast({
-      title: "You're in! 🎉",
-      description: "Check your email to verify your account, then sign in.",
-    });
+    toast.success("You're in! 🎉 Check your email to verify your account, then sign in.");
     navigate("/login");
   };
 
