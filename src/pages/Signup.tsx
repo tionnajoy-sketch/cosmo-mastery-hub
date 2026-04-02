@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel, SelectSeparator } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel, SelectSeparator, SelectGroup } from "@/components/ui/select";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { BookOpen } from "lucide-react";
@@ -162,30 +162,34 @@ const Signup = () => {
                 <Label>Choose Your Learning Path</Label>
                 <Select value={program} onValueChange={setProgram}>
                   <SelectTrigger><SelectValue placeholder="Select your learning path" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectLabel className="text-xs font-semibold text-primary pl-3">Available Now</SelectLabel>
-                    <SelectItem value="Cosmetology">Cosmetology State Board Prep</SelectItem>
+                    <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel className="text-xs font-semibold text-primary pl-3">Available Now</SelectLabel>
+                      <SelectItem value="Cosmetology">Cosmetology State Board Prep</SelectItem>
+                    </SelectGroup>
                     <SelectSeparator />
-                    <SelectLabel className="text-xs font-semibold text-muted-foreground pl-3">Coming Soon</SelectLabel>
-                    {[
-                      "Real Estate Exam Prep",
-                      "Medical Terminology",
-                      "Esthetics State Board Prep",
-                      "Barbering State Board Prep",
-                      "Nail Technology State Board Prep",
-                      "CNA / Nurse Aide Exam Prep",
-                      "Insurance License Prep",
-                      "ACT / SAT Prep",
-                      "Bible Study",
-                      "Educator / Paraprofessional Prep",
-                    ].map((path) => (
-                      <div key={path} onPointerDown={(e) => {
-                        e.preventDefault();
-                        toast("This learning path is coming soon and will be powered by the TJ Anderson Layer Method™.");
-                      }}>
-                        <SelectItem value={path} disabled className="opacity-50">{path}</SelectItem>
-                      </div>
-                    ))}
+                    <SelectGroup>
+                      <SelectLabel className="text-xs font-semibold text-muted-foreground pl-3">Coming Soon</SelectLabel>
+                      {[
+                        "Real Estate Exam Prep",
+                        "Medical Terminology",
+                        "Esthetics State Board Prep",
+                        "Barbering State Board Prep",
+                        "Nail Technology State Board Prep",
+                        "CNA / Nurse Aide Exam Prep",
+                        "Insurance License Prep",
+                        "ACT / SAT Prep",
+                        "Bible Study",
+                        "Educator / Paraprofessional Prep",
+                      ].map((path) => (
+                        <div key={path} onPointerDown={(e) => {
+                          e.preventDefault();
+                          toast("This learning path is coming soon and will be powered by the TJ Anderson Layer Method™.");
+                        }}>
+                          <SelectItem value={path} disabled className="opacity-50">{path}</SelectItem>
+                        </div>
+                      ))}
+                    </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
