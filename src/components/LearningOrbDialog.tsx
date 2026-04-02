@@ -852,12 +852,12 @@ const LearningOrbDialog = ({
   /* ─── Main Layout ─── */
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) stopSpeaking(); onOpenChange(o); }}>
-      <DialogContent className="fixed inset-0 max-w-none w-screen h-screen m-0 p-0 gap-0 border-0 rounded-none translate-x-0 translate-y-0 top-0 left-0 data-[state=open]:slide-in-from-bottom-0" style={{ background: "hsl(var(--background))" }}>
+      <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }}>
         {/* Subtle BG */}
         <div className="absolute inset-0 bg-cover bg-center pointer-events-none" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.06, filter: "brightness(1.2)" }} />
         <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.94) 0%, hsl(0 0% 98% / 0.96) 100%)" }} />
 
-        <div className="relative z-10 h-full flex flex-col min-h-0">
+        <div className="relative z-10 flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* ═══════ TOP SECTION ═══════ */}
           <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 border-b" style={{ background: "hsl(var(--background) / 0.95)", backdropFilter: "blur(12px)" }}>
             {/* Avatar + Caption + Voice Controls */}
