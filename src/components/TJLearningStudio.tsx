@@ -88,6 +88,7 @@ const TJLearningStudio = ({
       } else {
         setContent(result);
         if (type === "audio-script" && onAudioScript) onAudioScript(result);
+        if (onContentGenerated && result) onContentGenerated(result);
       }
     } catch (e) {
       console.error("Studio error:", e);
