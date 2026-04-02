@@ -90,18 +90,22 @@ const TJLearningStudio = ({
 
       if (type === "teach-flow") {
         try {
-          const cleaned = result.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+          const cleaned = sanitizeContent(result);
           setTeachSteps(JSON.parse(cleaned));
-        } catch { setContent(result); }
+        } catch { setContent(sanitizeContent(result)); }
       } else if (type === "slideshow") {
         try {
-          const cleaned = result.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+          const cleaned = sanitizeContent(result);
           setSlides(JSON.parse(cleaned));
-        } catch { setContent(result); }
+          // Auto-read first slide
+          const parsed = JSON.parse(cleaned);
+          if (parsed[0] && onContentGenerated) onContentGenerated(`${parsed[0].heading}. ${parsed[0].body}. ${parsed[0].speakerNote || ""}`);
+        } catch { setContent(sanitizeContent(result)); }
       } else {
-        setContent(result);
-        if (type === "audio-script" && onAudioScript) onAudioScript(result);
-        if (onContentGenerated && result) onContentGenerated(result);
+        const cleaned = sanitizeContent(result);
+        setContent(cleaned);
+        if (type === "audio-script" && onAudioScript) onAudioScript(cleaned);
+        if (onContentGenerated && cleaned) onContentGenerated(cleaned);
       }
     } catch (e) {
       console.error("Studio error:", e);
