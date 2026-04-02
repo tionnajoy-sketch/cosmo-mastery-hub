@@ -183,6 +183,16 @@ const MyModulesPage = () => {
     toast({ title: "Module deleted" });
   };
 
+  const handleRetry = async (mod: Module) => {
+    // Delete partial blocks and reset module
+    await supabase.from("uploaded_module_blocks").delete().eq("module_id", mod.id);
+    await supabase.from("uploaded_module_quiz_bank").delete().eq("module_id", mod.id);
+    await supabase.from("uploaded_modules").delete().eq("id", mod.id);
+    setModules((prev) => prev.filter((m) => m.id !== mod.id));
+    toast({ title: "Module cleared — please re-upload" });
+    navigate("/upload");
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary via-primary to-primary/95">
       <AppHeader />
