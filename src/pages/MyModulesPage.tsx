@@ -344,7 +344,19 @@ const MyModulesPage = () => {
                       <Progress value={progress} className="h-1.5 bg-background/60" />
                     </div>
 
-                    <ArrowRight className="h-4 w-4 mt-2 text-card-foreground/80" />
+                    <div className="mt-2 flex items-center gap-2">
+                      <ArrowRight className="h-4 w-4 text-card-foreground/80" />
+                      {!isReady && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="h-6 text-[10px] gap-1 px-2"
+                          onClick={(e) => { e.stopPropagation(); handleRetry(mod); }}
+                        >
+                          <RotateCcw className="h-3 w-3" /> Retry
+                        </Button>
+                      )}
+                    </div>
                   </motion.button>
                 );
               })}
