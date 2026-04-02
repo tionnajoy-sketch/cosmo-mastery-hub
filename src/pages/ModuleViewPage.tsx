@@ -51,6 +51,8 @@ const ModuleViewPage = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [completedTerms, setCompletedTerms] = useState<Set<string>>(new Set());
   const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set());
+  const [overview, setOverview] = useState<any>(null);
+  const [overviewOpen, setOverviewOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
