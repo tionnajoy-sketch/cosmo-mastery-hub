@@ -8,6 +8,19 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import ReactMarkdown from "react-markdown";
 
+/** Strip code fences, JSON/metadata fragments, and voice_id leaks from AI output */
+const sanitizeContent = (text: string): string => {
+  let cleaned = text
+    .replace(/```json\n?/g, "").replace(/```\n?/g, "")
+    .replace(/\{[^{}]*"voice_id"[^{}]*\}/g, "")
+    .replace(/\{[^{}]*"model_id"[^{}]*\}/g, "")
+    .replace(/^\s*\{[\s\S]{0,40}"(voice|model|text|request)"[\s\S]*?\}\s*/gm, "")
+    .trim();
+  // Remove leading/trailing stray braces from partial JSON
+  if (cleaned.startsWith("{") && !cleaned.includes("\n")) cleaned = "";
+  return cleaned;
+};
+
 interface TeachStep {
   step: number;
   title: string;
