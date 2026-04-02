@@ -5,12 +5,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStudyTracker } from "@/hooks/useStudyTracker";
 import { useCoins } from "@/hooks/useCoins";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Loader2, Sparkles, Dumbbell, Library, CheckCircle2, BookOpen, Flame, Trophy, Target, ChevronRight, Circle } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Dumbbell, Library, CheckCircle2, BookOpen, Flame, Trophy, Target, ChevronRight, ChevronDown, FileText, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { type UploadedBlock } from "@/components/UploadedTermCard";
 import AppHeader from "@/components/AppHeader";
 import LearningOrchestrator from "@/components/LearningOrchestrator";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const TILE_COLORS = [
   { bg: "hsl(346 55% 50%)", glow: "hsl(346 55% 50% / 0.4)" },
