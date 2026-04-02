@@ -134,6 +134,107 @@ export type Database = {
           },
         ]
       }
+      module_chapters: {
+        Row: {
+          chapter_number: number
+          created_at: string
+          id: string
+          metadata: Json
+          module_id: string
+          page_range_end: number
+          page_range_start: number
+          parent_chapter_id: string | null
+          summary: string
+          title: string
+        }
+        Insert: {
+          chapter_number?: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          module_id: string
+          page_range_end?: number
+          page_range_start?: number
+          parent_chapter_id?: string | null
+          summary?: string
+          title?: string
+        }
+        Update: {
+          chapter_number?: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          module_id?: string
+          page_range_end?: number
+          page_range_start?: number
+          parent_chapter_id?: string | null
+          summary?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_chapters_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "uploaded_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_chapters_parent_chapter_id_fkey"
+            columns: ["parent_chapter_id"]
+            isOneToOne: false
+            referencedRelation: "module_chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      module_document_overview: {
+        Row: {
+          chapter_outline: Json
+          created_at: string
+          document_title: string
+          document_type: string
+          id: string
+          key_themes: Json
+          module_id: string
+          overview_summary: string
+          subject: string
+          total_chapters: number
+        }
+        Insert: {
+          chapter_outline?: Json
+          created_at?: string
+          document_title?: string
+          document_type?: string
+          id?: string
+          key_themes?: Json
+          module_id: string
+          overview_summary?: string
+          subject?: string
+          total_chapters?: number
+        }
+        Update: {
+          chapter_outline?: Json
+          created_at?: string
+          document_title?: string
+          document_type?: string
+          id?: string
+          key_themes?: Json
+          module_id?: string
+          overview_summary?: string
+          subject?: string
+          total_chapters?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_document_overview_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: true
+            referencedRelation: "uploaded_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posttest_results: {
         Row: {
           completed_at: string
@@ -656,15 +757,23 @@ export type Database = {
       uploaded_module_blocks: {
         Row: {
           affirmation: string
+          application_steps: Json
           block_number: number
+          chapter_id: string | null
+          chunk_index: number
           concept_identity: Json
           created_at: string
           definition: string
+          difficulty_level: string
+          explanation: string
           id: string
           image_url: string
           instructor_notes: string
+          key_concepts: Json
+          memory_anchors: Json
           metaphor: string
           module_id: string
+          page_reference: string
           practice_scenario: string
           pronunciation: string
           quiz_answer: string
@@ -677,23 +786,35 @@ export type Database = {
           quiz_question_2: string
           quiz_question_3: string
           reflection_prompt: string
+          search_tags: Json
+          section_title: string
           slide_type: string
+          source_text: string
           term_title: string
+          themes: Json
           user_notes: string
           video_url: string
           visualization_desc: string
         }
         Insert: {
           affirmation?: string
+          application_steps?: Json
           block_number?: number
+          chapter_id?: string | null
+          chunk_index?: number
           concept_identity?: Json
           created_at?: string
           definition?: string
+          difficulty_level?: string
+          explanation?: string
           id?: string
           image_url?: string
           instructor_notes?: string
+          key_concepts?: Json
+          memory_anchors?: Json
           metaphor?: string
           module_id: string
+          page_reference?: string
           practice_scenario?: string
           pronunciation?: string
           quiz_answer?: string
@@ -706,23 +827,35 @@ export type Database = {
           quiz_question_2?: string
           quiz_question_3?: string
           reflection_prompt?: string
+          search_tags?: Json
+          section_title?: string
           slide_type?: string
+          source_text?: string
           term_title?: string
+          themes?: Json
           user_notes?: string
           video_url?: string
           visualization_desc?: string
         }
         Update: {
           affirmation?: string
+          application_steps?: Json
           block_number?: number
+          chapter_id?: string | null
+          chunk_index?: number
           concept_identity?: Json
           created_at?: string
           definition?: string
+          difficulty_level?: string
+          explanation?: string
           id?: string
           image_url?: string
           instructor_notes?: string
+          key_concepts?: Json
+          memory_anchors?: Json
           metaphor?: string
           module_id?: string
+          page_reference?: string
           practice_scenario?: string
           pronunciation?: string
           quiz_answer?: string
@@ -735,13 +868,24 @@ export type Database = {
           quiz_question_2?: string
           quiz_question_3?: string
           reflection_prompt?: string
+          search_tags?: Json
+          section_title?: string
           slide_type?: string
+          source_text?: string
           term_title?: string
+          themes?: Json
           user_notes?: string
           video_url?: string
           visualization_desc?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "uploaded_module_blocks_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "module_chapters"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "uploaded_module_blocks_module_id_fkey"
             columns: ["module_id"]
@@ -804,29 +948,41 @@ export type Database = {
       uploaded_modules: {
         Row: {
           created_at: string
+          detected_subject: string
+          document_type: string
           id: string
           is_instructor_mode: boolean
+          processing_phase: string
           source_filename: string
           status: string
           title: string
+          total_chapters: number
           user_id: string
         }
         Insert: {
           created_at?: string
+          detected_subject?: string
+          document_type?: string
           id?: string
           is_instructor_mode?: boolean
+          processing_phase?: string
           source_filename?: string
           status?: string
           title?: string
+          total_chapters?: number
           user_id: string
         }
         Update: {
           created_at?: string
+          detected_subject?: string
+          document_type?: string
           id?: string
           is_instructor_mode?: boolean
+          processing_phase?: string
           source_filename?: string
           status?: string
           title?: string
+          total_chapters?: number
           user_id?: string
         }
         Relationships: [
