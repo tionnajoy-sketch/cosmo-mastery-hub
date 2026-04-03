@@ -35,6 +35,7 @@ const LAYER_TO_STEP: Record<string, string> = {
   K: "quiz",
   B: "breakdown",
   N: "recognize",
+  S: "scripture",
 };
 
 function parseRetention(char: string | null): DNAProfile["retention"] {
