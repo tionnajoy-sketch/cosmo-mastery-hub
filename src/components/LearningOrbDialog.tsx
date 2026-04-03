@@ -53,6 +53,14 @@ const STEPS: StepDef[] = [
     neuroNote: "Cognitive labeling anchors meaning in your semantic memory network.",
   },
   {
+    key: "scripture",
+    label: "Scripture",
+    color: "hsl(30 60% 42%)",
+    gradient: "linear-gradient(135deg, hsl(30 60% 42%), hsl(25 65% 50%))",
+    caption: "Let's read the original passage together…",
+    neuroNote: "Reading source material in context strengthens comprehension and retention through contextual encoding.",
+  },
+  {
     key: "breakdown",
     label: "Break It Down",
     color: "hsl(185 55% 42%)",
@@ -165,18 +173,25 @@ const LearningOrbDialog = ({
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
 
+  // Filter out scripture step if block has no source text/page reference
+  const hasScripture = !!(block?.source_text || block?.page_reference);
+  const availableSteps = useMemo(() => {
+    if (hasScripture) return STEPS;
+    return STEPS.filter(s => s.key !== "scripture");
+  }, [hasScripture]);
+
   // Reorder steps based on DNA layer strength
   const adaptedSteps = useMemo(() => {
-    if (!dna) return STEPS;
-    const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz", B: "breakdown", N: "recognize" };
+    if (!dna) return availableSteps;
+    const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz", B: "breakdown", N: "recognize", S: "scripture" };
     const preferred = LAYER_MAP[dna.layerStrength];
-    if (!preferred) return STEPS;
+    if (!preferred) return availableSteps;
     // Keep first step (Visualize), move preferred step to second position
-    const rest = STEPS.filter(s => s.key !== STEPS[0].key && s.key !== preferred);
-    const preferredStep = STEPS.find(s => s.key === preferred);
-    if (!preferredStep) return STEPS;
-    return [STEPS[0], preferredStep, ...rest];
-  }, [dna]);
+    const rest = availableSteps.filter(s => s.key !== availableSteps[0].key && s.key !== preferred);
+    const preferredStep = availableSteps.find(s => s.key === preferred);
+    if (!preferredStep) return availableSteps;
+    return [availableSteps[0], preferredStep, ...rest];
+  }, [dna, availableSteps]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -316,6 +331,9 @@ const LearningOrbDialog = ({
         break;
       case "definition":
         textToSpeak = `Okay… now let's understand what ${block.term_title} actually means. ${block.definition}. Just sit with that for a moment.`;
+        break;
+      case "scripture":
+        textToSpeak = `Let's read the original passage together. ${block.page_reference || ""}. ${block.source_text || `This passage gives us the foundation for understanding ${block.term_title}.`}`;
         break;
       case "metaphor":
         textToSpeak = `Stay with me… this is where it starts to click. ${block.metaphor || `Think of ${block.term_title} as something you already know from your daily life.`}`;
@@ -539,7 +557,24 @@ const LearningOrbDialog = ({
           </motion.div>
         );
 
-      case "visual":
+      case "scripture":
+        return (
+          <motion.div key="scripture" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center text-center space-y-6 py-6">
+            {block.page_reference && (
+              <p className="text-lg font-semibold" style={{ color: step.color }}>{block.page_reference}</p>
+            )}
+            {block.source_text ? (
+              <blockquote className="p-5 rounded-xl border-l-4 text-base sm:text-lg leading-loose text-left max-w-lg" style={{ borderColor: step.color, background: "hsl(var(--card))", color: c.bodyText }}>
+                "{block.source_text}"
+              </blockquote>
+            ) : (
+              <p className="text-base leading-relaxed max-w-lg" style={{ color: c.bodyText }}>
+                This passage is referenced at {block.page_reference || "this point in the text"}. Open your source material to read along.
+              </p>
+            )}
+            <SpeakButton text={`${block.page_reference || ""}. ${block.source_text || block.definition}`} size="sm" label="Listen to passage" />
+          </motion.div>
+        );
         return (
           <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center space-y-5 py-4">
             <TJVisualEngine

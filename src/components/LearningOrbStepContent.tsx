@@ -310,6 +310,40 @@ const StepContent = (props: StepContentProps) => {
         </div>
       );
 
+    case "scripture":
+      return (
+        <div className="space-y-4">
+          {block.page_reference && (
+            <motion.div
+              className="flex items-center gap-2"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <span className="text-base font-semibold" style={{ color: stepColor }}>{block.page_reference}</span>
+            </motion.div>
+          )}
+          {block.source_text && (
+            <motion.blockquote
+              className="p-5 rounded-xl border-l-4 text-base leading-loose"
+              style={{ borderColor: stepColor, background: c.tabInactive, color: c.bodyText }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              "{block.source_text}"
+            </motion.blockquote>
+          )}
+          <SpeakButton
+            text={`${block.page_reference || ""}. ${block.source_text || block.definition}`}
+            size="sm"
+            label="Listen to passage"
+            onComplete={props.handleAudioComplete}
+          />
+          <BrainNote text="Reading the original passage helps you connect the concept to its source context." />
+        </div>
+      );
+
     case "breakdown":
       return <EtymologyBreakdown block={block} />;
 
