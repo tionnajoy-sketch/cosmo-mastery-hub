@@ -1,57 +1,29 @@
 
 
-## Plan: TTS Audio Caching System — Keep Your Voice, Cut Costs by 90%+
+## Plan: Add Scripture References to Genesis Study Blocks
 
-### The Problem
-Every time TJ speaks, even if it's the exact same text it already read before, it makes a new API call to ElevenLabs and burns credits. Educational apps repeat the same content constantly — definitions, instructions, explanations, welcome messages.
+### What Changes
 
-### The Solution
-Build a **server-side audio cache** using the database's file storage. Before calling ElevenLabs, hash the text and check if we already have the audio stored. If yes, serve the cached file instantly (zero credits used, faster playback). If no, call ElevenLabs once, store the result, then serve it.
+The database already stores `page_reference` (e.g., "Genesis 5:16-25") and `source_text` on each block. These fields just need to be surfaced in the UI.
 
-This means every unique piece of text only costs credits **once, ever**. The second student (or the same student revisiting) gets it for free.
+### 1. Extend `UploadedBlock` interface
+**File: `src/components/UploadedTermCard.tsx`** — Add optional fields to the interface:
+- `page_reference?: string`
+- `source_text?: string`
+- `section_title?: string`
 
----
+### 2. Show scripture reference in the Definition tab
+**File: `src/components/UploadedTermCard.tsx`** — In the `"definition"` case of `renderContent()`:
+- Add a styled scripture reference badge above the definition showing `block.page_reference` (e.g., "Genesis 6:11-17")
+- If `source_text` exists, show it in a styled blockquote below the definition so students can read the actual passage
 
-### How It Works
+### 3. Show scripture reference in the block header
+**File: `src/components/UploadedTermCard.tsx`** — In the card header area where `block.term_title` is displayed:
+- Add a small subtitle line showing `block.page_reference` in muted text beneath the title
 
-```text
-User taps "Listen"
-       │
-       ▼
-  Hash the text ──► Check storage for cached audio
-       │                    │
-       │              Found? ──► YES ──► Stream cached MP3 (0 credits)
-       │                    │
-       │              NO ───► Call ElevenLabs ──► Save MP3 to storage ──► Stream to user
-```
-
-### What Gets Built
-
-**1. Database table: `tts_cache`**
-- `id` (uuid), `text_hash` (text, unique index), `text_preview` (first 100 chars for debugging), `storage_path` (text), `created_at` (timestamp)
-- RLS: service role only (edge function access)
-
-**2. Storage bucket: `tts-cache`**
-- Private bucket, accessed only by the edge function
-
-**3. Updated edge function: `elevenlabs-tts/index.ts`**
-- Before calling ElevenLabs: SHA-256 hash the text, query `tts_cache` for a match
-- Cache hit: fetch audio from storage bucket, stream it back
-- Cache miss: call ElevenLabs, upload the MP3 to storage, insert a `tts_cache` row, stream the audio back
-- The client-side code in all 7 files stays completely unchanged — same endpoint, same request format
-
-**4. No client-side changes needed**
-- All 7 components (`SpeakButton`, `AIMentorChat`, `AskTJFullScreen`, `LearningOrbDialog`, `TJCafe`, `WelcomePage`, `LearningDNAPage`) already call the same edge function — they'll automatically benefit from caching
-
-### Credit Savings Estimate
-- Welcome page narration, term definitions, common explanations: cached after first play
-- Returning students hear all previously-generated audio at zero cost
-- Only truly new, never-before-spoken text costs credits
-- Expected reduction: **80-95% fewer API calls** over time
-
-### Files to Create
-- Database migration (new `tts_cache` table + storage bucket)
+### 4. Pass the fields through from ModuleViewPage
+**File: `src/pages/ModuleViewPage.tsx`** — The `select("*")` query already fetches all columns including `page_reference`, `source_text`, and `section_title`. The spread `...b` in the mapping already passes them through. No changes needed here.
 
 ### Files to Modify
-- `supabase/functions/elevenlabs-tts/index.ts` — add cache-check-before-call logic
+1. `src/components/UploadedTermCard.tsx` — Add fields to interface + display scripture reference in definition tab and header
 
