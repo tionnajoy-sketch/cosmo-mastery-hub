@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { fetchTTSWithFallback } from "@/lib/browserTTS";
 import { motion, AnimatePresence } from "framer-motion";
 import { Coffee, Wind, Droplets, Heart, Sparkles, X, Check, Volume2, VolumeX, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/button";
