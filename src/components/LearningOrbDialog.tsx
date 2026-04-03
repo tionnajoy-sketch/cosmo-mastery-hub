@@ -53,6 +53,14 @@ const STEPS: StepDef[] = [
     neuroNote: "Cognitive labeling anchors meaning in your semantic memory network.",
   },
   {
+    key: "scripture",
+    label: "Scripture",
+    color: "hsl(30 60% 42%)",
+    gradient: "linear-gradient(135deg, hsl(30 60% 42%), hsl(25 65% 50%))",
+    caption: "Let's read the original passage together…",
+    neuroNote: "Reading source material in context strengthens comprehension and retention through contextual encoding.",
+  },
+  {
     key: "breakdown",
     label: "Break It Down",
     color: "hsl(185 55% 42%)",
