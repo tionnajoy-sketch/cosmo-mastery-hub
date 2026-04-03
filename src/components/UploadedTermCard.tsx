@@ -203,19 +203,27 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
       case "definition":
         return (
           <div>
+            <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
+            {block.video_url && <VideoPlayer url={block.video_url} />}
+          </div>
+        );
+
+      case "scripture":
+        return (
+          <div className="space-y-4">
             {block.page_reference && (
-              <div className="flex items-center gap-2 mb-3">
-                <BookOpen className="h-4 w-4" style={{ color: c.tabActive }} />
-                <span className="text-sm font-medium" style={{ color: c.tabActive }}>{block.page_reference}</span>
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" style={{ color: c.tabActive }} />
+                <span className="text-base font-semibold" style={{ color: c.tabActive }}>{block.page_reference}</span>
               </div>
             )}
-            <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
             {block.source_text && (
-              <blockquote className="mt-4 p-4 rounded-lg border-l-4 italic text-sm leading-relaxed" style={{ borderColor: `${c.tabActive}33`, background: c.tabInactive, color: c.bodyText }}>
+              <blockquote className="p-5 rounded-xl border-l-4 text-base leading-loose" style={{ borderColor: c.tabActive, background: c.tabInactive, color: c.bodyText }}>
                 "{block.source_text}"
               </blockquote>
             )}
-            {block.video_url && <VideoPlayer url={block.video_url} />}
+            <SpeakButton text={`${block.page_reference || ""}. ${block.source_text || block.definition}`} label="Listen to passage" size="default" />
+            <BrainNote text="Reading the original passage helps you connect the concept to its source context." />
           </div>
         );
 
