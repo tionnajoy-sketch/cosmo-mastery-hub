@@ -43,6 +43,9 @@ export interface UploadedBlock {
   instructor_notes?: string;
   slide_type?: string;
   video_url?: string;
+  page_reference?: string;
+  source_text?: string;
+  section_title?: string;
 }
 
 type TabType = "definition" | "identity" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
