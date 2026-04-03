@@ -173,18 +173,25 @@ const LearningOrbDialog = ({
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
 
+  // Filter out scripture step if block has no source text/page reference
+  const hasScripture = !!(block?.source_text || block?.page_reference);
+  const availableSteps = useMemo(() => {
+    if (hasScripture) return STEPS;
+    return STEPS.filter(s => s.key !== "scripture");
+  }, [hasScripture]);
+
   // Reorder steps based on DNA layer strength
   const adaptedSteps = useMemo(() => {
-    if (!dna) return STEPS;
-    const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz", B: "breakdown", N: "recognize" };
+    if (!dna) return availableSteps;
+    const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz", B: "breakdown", N: "recognize", S: "scripture" };
     const preferred = LAYER_MAP[dna.layerStrength];
-    if (!preferred) return STEPS;
+    if (!preferred) return availableSteps;
     // Keep first step (Visualize), move preferred step to second position
-    const rest = STEPS.filter(s => s.key !== STEPS[0].key && s.key !== preferred);
-    const preferredStep = STEPS.find(s => s.key === preferred);
-    if (!preferredStep) return STEPS;
-    return [STEPS[0], preferredStep, ...rest];
-  }, [dna]);
+    const rest = availableSteps.filter(s => s.key !== availableSteps[0].key && s.key !== preferred);
+    const preferredStep = availableSteps.find(s => s.key === preferred);
+    if (!preferredStep) return availableSteps;
+    return [availableSteps[0], preferredStep, ...rest];
+  }, [dna, availableSteps]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completed, setCompleted] = useState(false);

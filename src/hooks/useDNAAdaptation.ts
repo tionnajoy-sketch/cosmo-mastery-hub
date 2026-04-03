@@ -23,7 +23,7 @@ export interface AdaptationRules {
 }
 
 // 9-step sequence: Visualize → Define → Break It Down → Recognize → Metaphor → Information → Reflect → Apply → Assess
-const DEFAULT_STEPS = ["visual", "definition", "breakdown", "recognize", "metaphor", "information", "reflection", "application", "quiz"];
+const DEFAULT_STEPS = ["visual", "definition", "scripture", "breakdown", "recognize", "metaphor", "information", "reflection", "application", "quiz"];
 
 const LAYER_TO_STEP: Record<string, string> = {
   D: "definition",
