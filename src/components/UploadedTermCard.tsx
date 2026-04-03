@@ -48,7 +48,7 @@ export interface UploadedBlock {
   section_title?: string;
 }
 
-type TabType = "definition" | "identity" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
+type TabType = "definition" | "scripture" | "identity" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
 
 interface UploadedTermCardProps {
   block: UploadedBlock;
@@ -74,6 +74,7 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   // Personalized tab ordering based on learning style
   const uploadedTabIcons: Record<TabType, React.ReactNode> = {
     definition: <BookOpen className="h-3.5 w-3.5" />,
+    scripture: <BookOpen className="h-3.5 w-3.5" />,
     identity: <Fingerprint className="h-3.5 w-3.5" />,
     pronunciation: <Mic className="h-3.5 w-3.5" />,
     visualize: <Eye className="h-3.5 w-3.5" />,
@@ -87,9 +88,11 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
 
   const identityItems = Array.isArray(block.concept_identity) ? block.concept_identity : [];
   const hasIdentity = identityItems.length > 0;
+  const hasScripture = !!(block.source_text || block.page_reference);
 
   const allTabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Define" },
+    ...(hasScripture ? [{ key: "scripture" as TabType, label: "Scripture" }] : []),
     ...(hasIdentity ? [{ key: "identity" as TabType, label: "Identity" }] : []),
     { key: "pronunciation", label: "Pronounce" },
     { key: "visualize", label: "Visualize" },
@@ -200,19 +203,27 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
       case "definition":
         return (
           <div>
+            <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
+            {block.video_url && <VideoPlayer url={block.video_url} />}
+          </div>
+        );
+
+      case "scripture":
+        return (
+          <div className="space-y-4">
             {block.page_reference && (
-              <div className="flex items-center gap-2 mb-3">
-                <BookOpen className="h-4 w-4" style={{ color: c.tabActive }} />
-                <span className="text-sm font-medium" style={{ color: c.tabActive }}>{block.page_reference}</span>
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" style={{ color: c.tabActive }} />
+                <span className="text-base font-semibold" style={{ color: c.tabActive }}>{block.page_reference}</span>
               </div>
             )}
-            <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
             {block.source_text && (
-              <blockquote className="mt-4 p-4 rounded-lg border-l-4 italic text-sm leading-relaxed" style={{ borderColor: `${c.tabActive}33`, background: c.tabInactive, color: c.bodyText }}>
+              <blockquote className="p-5 rounded-xl border-l-4 text-base leading-loose" style={{ borderColor: c.tabActive, background: c.tabInactive, color: c.bodyText }}>
                 "{block.source_text}"
               </blockquote>
             )}
-            {block.video_url && <VideoPlayer url={block.video_url} />}
+            <SpeakButton text={`${block.page_reference || ""}. ${block.source_text || block.definition}`} label="Listen to passage" size="default" />
+            <BrainNote text="Reading the original passage helps you connect the concept to its source context." />
           </div>
         );
 
