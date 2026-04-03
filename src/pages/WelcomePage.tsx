@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { fetchTTSWithFallback } from "@/lib/browserTTS";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -141,24 +142,8 @@ const WelcomePage = () => {
   const playVoice = useCallback(async (text: string) => {
     cleanup();
     try {
-      const cleanText = text.replace(/[#*_~`]/g, "").replace(/\s+/g, " ").trim().slice(0, 5000);
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text: cleanText }),
-        }
-      );
-      if (!res.ok) return;
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      audioUrlRef.current = url;
-      const audio = new Audio(url);
+      const audio = await fetchTTSWithFallback(text, { usageType: "onboarding" });
+      if (!audio) return;
       audioRef.current = audio;
       audio.onended = () => setIsPlaying(false);
       setIsPlaying(true);

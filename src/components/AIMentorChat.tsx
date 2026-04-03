@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { fetchTTSWithFallback } from "@/lib/browserTTS";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -133,30 +134,8 @@ const AIMentorChat = ({ sectionName, sectionId, blockNumber, terms, learningStyl
 
     try {
       setIsSpeaking(true);
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text: plainText }),
-        }
-      );
-
-      if (!response.ok) {
-        console.error("TTS failed:", response.status);
-        setIsSpeaking(false);
-        return;
-      }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      audioUrlRef.current = audioUrl;
-
-      const audio = new Audio(audioUrl);
+      const audio = await fetchTTSWithFallback(plainText, { usageType: "dynamic" });
+      if (!audio) { setIsSpeaking(false); return; }
       audioRef.current = audio;
       audio.onended = () => {
         setIsSpeaking(false);

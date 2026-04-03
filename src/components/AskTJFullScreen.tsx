@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { fetchTTSWithFallback } from "@/lib/browserTTS";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins } from "@/hooks/useCoins";
@@ -99,16 +100,8 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
     if (!plain) return;
     try {
       setIsSpeaking(true);
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-        body: JSON.stringify({ text: plain }),
-      });
-      if (!response.ok) { setIsSpeaking(false); return; }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      audioUrlRef.current = url;
-      const audio = new Audio(url);
+      const audio = await fetchTTSWithFallback(plain, { usageType: "dynamic" });
+      if (!audio) { setIsSpeaking(false); return; }
       audioRef.current = audio;
       audio.onended = () => { setIsSpeaking(false); audioRef.current = null; };
       audio.onerror = () => { setIsSpeaking(false); };

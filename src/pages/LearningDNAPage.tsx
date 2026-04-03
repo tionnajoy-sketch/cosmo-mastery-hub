@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { fetchTTSWithFallback } from "@/lib/browserTTS";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -138,18 +139,8 @@ const LearningDNAPage = () => {
     }, 200);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ text: EXPLAINER_TEXT }),
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const audio = new Audio(URL.createObjectURL(blob));
+      const audio = await fetchTTSWithFallback(EXPLAINER_TEXT, { usageType: "lesson" });
+      if (audio) {
         audioRef.current = audio;
         audio.onended = () => {
           setIsPlaying(false);
