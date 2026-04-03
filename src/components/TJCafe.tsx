@@ -71,27 +71,11 @@ const TJCafe = ({ open, onDismiss, requiredMode = true }: TJCafeProps) => {
   const speak = useCallback(async (text: string) => {
     try {
       setSpeaking(true);
-      const cleanText = text.replace(/["""]/g, "").replace(/\s+/g, " ").trim().slice(0, 2000);
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text: cleanText }),
-        }
-      );
-      if (!response.ok) throw new Error("TTS failed");
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
+      const audio = await fetchTTSWithFallback(text, { usageType: "affirmation" });
+      if (!audio) { setSpeaking(false); return; }
       if (voiceAudioRef.current) {
         voiceAudioRef.current.pause();
-        URL.revokeObjectURL(voiceAudioRef.current.src);
       }
-      const audio = new Audio(url);
       voiceAudioRef.current = audio;
       audio.onended = () => setSpeaking(false);
       await audio.play();

@@ -153,21 +153,8 @@ interface LearningOrbDialogProps {
 }
 
 /* ─── TTS Helper ─── */
-const fetchTTS = async (text: string): Promise<HTMLAudioElement | null> => {
-  const plain = text.replace(/#{1,6}\s/g, "").replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1").replace(/`(.*?)`/g, "$1").replace(/[-*]\s/g, "").replace(/\n{2,}/g, ". ").replace(/\n/g, " ").trim();
-  if (!plain) return null;
-  try {
-    const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-      body: JSON.stringify({ text: plain }),
-    });
-    if (!resp.ok) return null;
-    const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
-    return new Audio(url);
-  } catch { return null; }
-};
+import { fetchTTSWithFallback } from "@/lib/browserTTS";
+const fetchTTS = (text: string): Promise<HTMLAudioElement | null> => fetchTTSWithFallback(text, { usageType: "lesson" });
 
 /* ─── Main Component ─── */
 const LearningOrbDialog = ({
