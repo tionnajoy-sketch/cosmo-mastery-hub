@@ -420,9 +420,14 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
   return (
     <Card className="border-0 shadow-md overflow-hidden" style={{ background: c.card }}>
       <CardContent className="p-5">
-        <div className="flex items-center gap-1 mb-1">
-          <h3 className="font-display text-xl font-semibold" style={{ color: c.termHeading }}>{block.term_title}</h3>
-          <SpeakButton text={block.term_title} />
+        <div className="mb-1">
+          <div className="flex items-center gap-1">
+            <h3 className="font-display text-xl font-semibold" style={{ color: c.termHeading }}>{block.term_title}</h3>
+            <SpeakButton text={block.term_title} />
+          </div>
+          {block.page_reference && (
+            <p className="text-xs mt-0.5" style={{ color: c.subtext }}>{block.page_reference}</p>
+          )}
         </div>
 
         {block.instructor_notes && (
