@@ -557,7 +557,24 @@ const LearningOrbDialog = ({
           </motion.div>
         );
 
-      case "visual":
+      case "scripture":
+        return (
+          <motion.div key="scripture" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center text-center space-y-6 py-6">
+            {block.page_reference && (
+              <p className="text-lg font-semibold" style={{ color: step.color }}>{block.page_reference}</p>
+            )}
+            {block.source_text ? (
+              <blockquote className="p-5 rounded-xl border-l-4 text-base sm:text-lg leading-loose text-left max-w-lg" style={{ borderColor: step.color, background: "hsl(var(--card))", color: c.bodyText }}>
+                "{block.source_text}"
+              </blockquote>
+            ) : (
+              <p className="text-base leading-relaxed max-w-lg" style={{ color: c.bodyText }}>
+                This passage is referenced at {block.page_reference || "this point in the text"}. Open your source material to read along.
+              </p>
+            )}
+            <SpeakButton text={`${block.page_reference || ""}. ${block.source_text || block.definition}`} size="sm" label="Listen to passage" />
+          </motion.div>
+        );
         return (
           <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center space-y-5 py-4">
             <TJVisualEngine
