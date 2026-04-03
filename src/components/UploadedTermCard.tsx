@@ -88,9 +88,11 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
 
   const identityItems = Array.isArray(block.concept_identity) ? block.concept_identity : [];
   const hasIdentity = identityItems.length > 0;
+  const hasScripture = !!(block.source_text || block.page_reference);
 
   const allTabs: { key: TabType; label: string }[] = [
     { key: "definition", label: "Define" },
+    ...(hasScripture ? [{ key: "scripture" as TabType, label: "Scripture" }] : []),
     ...(hasIdentity ? [{ key: "identity" as TabType, label: "Identity" }] : []),
     { key: "pronunciation", label: "Pronounce" },
     { key: "visualize", label: "Visualize" },
