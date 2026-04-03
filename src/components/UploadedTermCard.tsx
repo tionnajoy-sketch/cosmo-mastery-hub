@@ -48,7 +48,7 @@ export interface UploadedBlock {
   section_title?: string;
 }
 
-type TabType = "definition" | "identity" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
+type TabType = "definition" | "scripture" | "identity" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
 
 interface UploadedTermCardProps {
   block: UploadedBlock;
