@@ -332,6 +332,9 @@ const LearningOrbDialog = ({
       case "definition":
         textToSpeak = `Okay… now let's understand what ${block.term_title} actually means. ${block.definition}. Just sit with that for a moment.`;
         break;
+      case "scripture":
+        textToSpeak = `Let's read the original passage together. ${block.page_reference || ""}. ${block.source_text || `This passage gives us the foundation for understanding ${block.term_title}.`}`;
+        break;
       case "metaphor":
         textToSpeak = `Stay with me… this is where it starts to click. ${block.metaphor || `Think of ${block.term_title} as something you already know from your daily life.`}`;
         break;
