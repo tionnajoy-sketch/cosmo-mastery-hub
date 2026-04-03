@@ -200,7 +200,18 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
       case "definition":
         return (
           <div>
+            {block.page_reference && (
+              <div className="flex items-center gap-2 mb-3">
+                <BookOpen className="h-4 w-4" style={{ color: c.tabActive }} />
+                <span className="text-sm font-medium" style={{ color: c.tabActive }}>{block.page_reference}</span>
+              </div>
+            )}
             <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
+            {block.source_text && (
+              <blockquote className="mt-4 p-4 rounded-lg border-l-4 italic text-sm leading-relaxed" style={{ borderColor: `${c.tabActive}33`, background: c.tabInactive, color: c.bodyText }}>
+                "{block.source_text}"
+              </blockquote>
+            )}
             {block.video_url && <VideoPlayer url={block.video_url} />}
           </div>
         );
