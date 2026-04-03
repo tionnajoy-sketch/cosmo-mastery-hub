@@ -202,8 +202,34 @@ const UploadedTermCard = ({ block, onNotesChange }: UploadedTermCardProps) => {
     switch (activeTab) {
       case "definition":
         return (
-          <div>
-            <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
+          <div className="space-y-4">
+            <div className={hasScripture ? "grid grid-cols-1 md:grid-cols-2 gap-4" : ""}>
+              {/* TJ Framework Breakdown */}
+              <div className="space-y-2">
+                <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: c.tabActive }}>TJ Framework</p>
+                <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
+              </div>
+              {/* Original Source Material */}
+              {hasScripture && (
+                <div className="space-y-2">
+                  <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: c.subtext }}>Original Source</p>
+                  {block.page_reference && (
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <BookOpen className="h-3.5 w-3.5" style={{ color: c.tabActive }} />
+                      <span className="text-xs font-semibold" style={{ color: c.tabActive }}>{block.page_reference}</span>
+                    </div>
+                  )}
+                  {block.source_text ? (
+                    <blockquote className="p-3 rounded-lg border-l-3 text-sm leading-relaxed italic" style={{ borderColor: c.tabActive, background: c.tabInactive, color: c.bodyText }}>
+                      "{block.source_text}"
+                    </blockquote>
+                  ) : block.page_reference ? (
+                    <p className="text-sm italic" style={{ color: c.subtext }}>Refer to {block.page_reference} in your source material.</p>
+                  ) : null}
+                  <SpeakButton text={`${block.page_reference || ""}. ${block.source_text || ""}`} label="Listen" size="sm" usageType="lesson" />
+                </div>
+              )}
+            </div>
             {block.video_url && <VideoPlayer url={block.video_url} />}
           </div>
         );
