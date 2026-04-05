@@ -16,6 +16,20 @@ const DEFAULT_SETTINGS = {
   speed: 0.95,
 };
 
+function createBrowserFallbackResponse(reason: string) {
+  return new Response(
+    JSON.stringify({ fallback: "browser", reason, error: reason }),
+    {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        "X-TTS-Fallback": "browser",
+      },
+    }
+  );
+}
+
 async function hashText(text: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(text);
@@ -113,18 +127,12 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error("ElevenLabs TTS error:", response.status, errorText);
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Voice rate limited. Please wait a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return createBrowserFallbackResponse("Voice rate limited. Please wait a moment.");
       }
       if (errorText.includes("quota_exceeded") || errorText.includes("insufficient_credits")) {
-        return new Response(
-          JSON.stringify({ error: "Voice credits exhausted" }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return createBrowserFallbackResponse("Voice credits exhausted");
       }
-      throw new Error(`ElevenLabs API error [${response.status}]: ${errorText}`);
+      return createBrowserFallbackResponse(`Voice temporarily unavailable (${response.status})`);
     }
 
     const audioBytes = await response.arrayBuffer();
@@ -172,9 +180,6 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("TTS error:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return createBrowserFallbackResponse(e instanceof Error ? e.message : "Unknown error");
   }
 });

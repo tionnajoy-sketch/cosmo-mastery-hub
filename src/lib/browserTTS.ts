@@ -2,6 +2,44 @@
  * Browser-based Speech Synthesis fallback for when ElevenLabs credits are exhausted.
  * Returns an object that mimics HTMLAudioElement's play/pause pattern.
  */
+const TTS_COOLDOWN_UNTIL_KEY = "tj-tts-cooldown-until";
+const TTS_COOLDOWN_REASON_KEY = "tj-tts-cooldown-reason";
+const CREDIT_EXHAUSTED_COOLDOWN_MS = 30 * 60 * 1000;
+const RATE_LIMIT_COOLDOWN_MS = 60 * 1000;
+
+function getTTSCooldownUntil(): number {
+  const raw = window.localStorage.getItem(TTS_COOLDOWN_UNTIL_KEY);
+  const parsed = raw ? Number(raw) : 0;
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function markTTSUnavailable(reason: string, durationMs: number) {
+  window.localStorage.setItem(TTS_COOLDOWN_UNTIL_KEY, String(Date.now() + durationMs));
+  window.localStorage.setItem(TTS_COOLDOWN_REASON_KEY, reason);
+}
+
+function clearTTSUnavailable() {
+  window.localStorage.removeItem(TTS_COOLDOWN_UNTIL_KEY);
+  window.localStorage.removeItem(TTS_COOLDOWN_REASON_KEY);
+}
+
+function getTTSCooldownReason(): string | null {
+  return window.localStorage.getItem(TTS_COOLDOWN_REASON_KEY);
+}
+
+function applyTTSCooldown(status: number, reason?: string) {
+  const normalizedReason = reason?.toLowerCase() || "";
+
+  if (status === 402 || normalizedReason.includes("credit") || normalizedReason.includes("quota")) {
+    markTTSUnavailable(reason || "Voice credits exhausted", CREDIT_EXHAUSTED_COOLDOWN_MS);
+    return;
+  }
+
+  if (status === 429 || normalizedReason.includes("rate limit")) {
+    markTTSUnavailable(reason || "Voice rate limited", RATE_LIMIT_COOLDOWN_MS);
+  }
+}
+
 function pickVoice(): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis.getVoices();
   return voices.find(v => /samantha|karen|victoria|zira|female/i.test(v.name)) || voices[0] || null;
@@ -62,6 +100,12 @@ export async function fetchTTSWithFallback(
 
   if (!plain) return null;
 
+  const cooldownUntil = getTTSCooldownUntil();
+  if (cooldownUntil > Date.now()) {
+    console.warn("TTS temporarily unavailable, using browser voice:", getTTSCooldownReason() || "temporary cooldown");
+    return createBrowserAudioShim(plain);
+  }
+
   try {
     const resp = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
@@ -77,18 +121,23 @@ export async function fetchTTSWithFallback(
     );
 
     if (!resp.ok) {
+      const errorText = await resp.text().catch(() => "");
+      applyTTSCooldown(resp.status, errorText);
       console.warn("TTS API unavailable (status " + resp.status + "), using browser voice");
       return createBrowserAudioShim(plain);
     }
 
     const ct = resp.headers.get("content-type") || "";
     if (!ct.includes("audio")) {
+      const payload = await resp.clone().json().catch(() => null);
+      applyTTSCooldown(resp.status, payload?.reason || payload?.error);
       console.warn("TTS returned non-audio, using browser voice");
       return createBrowserAudioShim(plain);
     }
 
     const blob = await resp.blob();
     const url = URL.createObjectURL(blob);
+    clearTTSUnavailable();
     return new Audio(url);
   } catch (e) {
     console.warn("TTS fetch error, using browser voice:", e);
