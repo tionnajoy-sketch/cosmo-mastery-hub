@@ -1,102 +1,77 @@
 
-## Plan: TJ DNA Adaptive Guidance Center + Tone Modes + Bible Scripture-First
+Goal: make the DNA area truly interactive, ensure deep-teaching content is built into lessons instead of feeling optional/missing, and make narration start cleanly when students enter major screens.
 
-This is a large feature set. I'll implement it in phases within this session.
+What I found
+- The DNA page already has tappable code tiles, but the experience is still light: it shows one short explanation at a time and does not fully translate the whole code into an interactive learner blueprint.
+- The deep-teaching structure exists only inside the Information step behind a “Teach Me Deeper” button in `src/components/LearningOrbDialog.tsx`, so students can easily miss it.
+- The lesson prompt asks for the right sections, but the UI renders them as one markdown block instead of distinct expandable teaching cards.
+- Auto-voice is not global. It exists in isolated places (`WelcomePage`, `LearningOrbDialog`, DNA explainer), and the lesson dialog intentionally skips speaking on the first step (`currentStep > 0`), which makes the first visible screen feel silent.
+- The sound toggle currently controls “sounds” in general, but narration is not managed as a shared cross-page system, so page-to-page speaking feels inconsistent.
 
----
+Implementation plan
 
-### Phase 1: TJ Tone Modes (Replace Paid Voice with Text Tone)
+1. Upgrade the DNA hub into a true learner profile center
+- Enhance `src/pages/LearningDNAPage.tsx` so the code is shown as:
+  - full-code summary,
+  - interactive tiles for Layer / Engagement / Retention / Confidence,
+  - a simple-language “Human Translation” sentence,
+  - stronger “How I Learn Best / What Throws Me Off / TJ Recommends Next / Best Study Order” cards.
+- Expand each DNA character tap into a richer card with:
+  - what this part means,
+  - what TJ changes because of it,
+  - what the learner may notice in lessons.
+- Add a compact numeric/letter legend so users understand why a number or letter maps to “building / developing / strong.”
 
-**New file: `src/lib/tjTone.ts`**
-- Define 5 tone modes: Hype TJ, Gentle TJ, Calm TJ, Direct TJ, Encouraging TJ
-- Each tone has a set of phrase templates, prefixes, and emotional modifiers
-- Export a `applyTone(text, toneMode, context)` function that rewrites prompts/captions
-- Store selected tone in `profiles.tone_preference`
+2. Make deep teaching visible and structured in every lesson
+- Refactor the Information step in `src/components/LearningOrbDialog.tsx` so the learner clearly sees the six teaching sections:
+  - Simple Explanation
+  - The Lesson
+  - History & Origin
+  - Why It Matters
+  - How This Fits You
+- Keep the menu-first behavior, but once a learner chooses the deeper lesson, render the response as separate styled sections/cards instead of one long markdown blob.
+- Personalize “How This Fits You” more explicitly using DNA and selected TJ tone so it feels learner-specific.
 
-**Modify: `src/components/SpeakButton.tsx`**
-- Add a "muted" mode that shows the text in the selected TJ tone style instead of calling TTS
-- Keep the voice infrastructure intact so it can be reactivated with a single flag
+3. Improve the deep-teaching prompt and fallback behavior
+- Tighten the AI prompt in `LearningOrbDialog.tsx` so each requested section is always returned with usable content.
+- Add graceful fallback text when one section is sparse or missing, especially for History & Origin and learner-fit explanations.
+- Use existing tone logic from `useTJTone` so the written teaching voice matches the chosen TJ style even before live voice is restored.
 
-**New file: `src/hooks/useTJTone.ts`**
-- Hook that reads `profile.tone_preference` and provides `getTonedText()` helper
+4. Make auto-narration consistent across major pages
+- Create a shared narration pattern in `src/lib/browserTTS.ts` (or a small shared helper/hook) to:
+  - stop any current narration before new narration starts,
+  - support route/screen-level playback,
+  - avoid stacking.
+- Apply that pattern to:
+  - `src/pages/Home.tsx`
+  - `src/pages/LearningDNAPage.tsx`
+  - `src/pages/WelcomePage.tsx`
+  - `src/components/LearningOrbDialog.tsx`
+- Ensure the first visible content on entry is narrated, including the first lesson step.
 
----
+5. Fix the lesson auto-voice behavior
+- Update `LearningOrbDialog.tsx` so narration starts on the first visible step instead of skipping step 0.
+- Keep the current stop-on-navigation behavior, but make step speech based on visible content and adapted tone.
+- For Bible/scripture content, narrate in the right order:
+  - reference,
+  - scripture text,
+  - then the plain explanation.
 
-### Phase 2: Expanded TJ DNA Profile Page
+6. Clarify voice toggle behavior
+- Keep the existing header toggle, but treat it as narration control for page guidance as well.
+- Ensure manual `SpeakButton` playback and auto-page narration use the same underlying stop/start rules so they do not conflict.
+- Preserve browser fallback behavior while paid voice remains limited.
 
-**Modify: `src/pages/LearningDNAPage.tsx`**
-- Add 5 new interactive sections:
-  - **My DNA Type** — visual display of the 4-character code
-  - **How I Learn Best** — based on layer strength
-  - **What Throws Me Off** — based on low retention/confidence signals
-  - **TJ Recommends Next** — smart recommendation from learning metrics
-  - **Best Study Order for Me** — shows the DNA-adapted step sequence
-- Make each DNA code character tappable → shows popover explaining that dimension
-- Keep the design clean, soft, blueprint-like
+Files to update
+- `src/pages/LearningDNAPage.tsx`
+- `src/components/LearningOrbDialog.tsx`
+- `src/lib/browserTTS.ts`
+- `src/pages/Home.tsx`
+- `src/pages/WelcomePage.tsx`
+- `src/components/SpeakButton.tsx`
 
-**Modify: `src/pages/Home.tsx`**
-- Highlight the TJ DNA Code button on Welcome Back screen with a glowing/pulsing accent
-
----
-
-### Phase 3: Bible Study "Scripture First" Flow
-
-**Modify: `src/components/LearningOrbDialog.tsx`**
-- For Bible/religious modules, reorder steps to: Scripture → Read Along → Plain Meaning → Deep Explanation → History/Context → Personal Application → Reflect With TJ
-- Add a toggle: "Read Scripture First" vs "Show Explanation First" (default: Scripture First)
-- Ensure `source_text` displays the actual verse text before any TJ framework explanation
-
-**Modify: `src/components/LearningOrbStepContent.tsx`**
-- Update scripture step labels to match: "Scripture", "Read Along", "Plain Meaning", etc.
-
----
-
-### Phase 4: Auto-Voice Reactivation with Smart Playback
-
-**Modify: `src/components/LearningOrbDialog.tsx`**
-- Re-enable auto-speak on step entry but with guard against stacking
-- When leaving a screen, cancel any active playback
-- In Bible mode, auto-read scripture reference → text → then explanation
-
-**Modify: `src/pages/WelcomePage.tsx`**
-- Auto-read welcome content on entry
-
----
-
-### Phase 5: Deeper Teaching Layers per Concept
-
-**Modify: `src/components/LearningOrbStepContent.tsx`**
-- For the "information" step, structure content as:
-  - Simple explanation
-  - Deeper lesson
-  - Word origin/history
-  - Why it matters
-  - How it fits YOU (based on DNA)
-- Use DNA profile to reorder these sub-sections
-
----
-
-### Phase 6: Onboarding Flow Adjustment
-
-**Modify: `src/pages/OnboardingPage.tsx`**
-- Show the DNA result/orientation screen (step 4) before Welcome Back
-- Returning users skip straight to Welcome Back
-- New users must complete onboarding including DNA setup first
-
----
-
-### Note on "Base44"
-Base44 is an external no-code platform and cannot be directly integrated into this React/Vite codebase. Instead, I'll build the adaptive learner cards, DNA recommendations, and personalized blocks as native React components using the existing DNA system — achieving the same goal natively.
-
-### Files to Create
-1. `src/lib/tjTone.ts` — Tone mode definitions and text transformer
-2. `src/hooks/useTJTone.ts` — Hook for accessing tone in components
-
-### Files to Modify
-1. `src/pages/LearningDNAPage.tsx` — Expanded interactive DNA profile
-2. `src/pages/Home.tsx` — Highlighted DNA button
-3. `src/components/LearningOrbDialog.tsx` — Bible Scripture-First + auto-voice
-4. `src/components/LearningOrbStepContent.tsx` — Deeper teaching layers + Bible labels
-5. `src/components/SpeakButton.tsx` — Tone-aware text mode
-6. `src/hooks/useDNAAdaptation.ts` — Enhanced adaptation rules for tone
-7. `src/pages/OnboardingPage.tsx` — Flow reorder
+Technical notes
+- The DNA interactivity is partially there already; this is mainly a UX/data-translation expansion, not a rebuild.
+- The deep-teaching content is not absent in logic; it is too hidden and too loosely rendered. The fix is both prompt structure and UI structure.
+- The auto-voice issue is architectural: narration is page-local right now, not coordinated app-wide.
+- I would preserve the current menu-first Information step behavior and layer the richer teaching experience on top of it rather than reverting to auto-dumping text immediately.
