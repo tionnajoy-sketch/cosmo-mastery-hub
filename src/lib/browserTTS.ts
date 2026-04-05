@@ -101,36 +101,31 @@ export async function fetchTTSWithFallback(
  * so callers can treat it like `new Audio(url)`.
  */
 function createBrowserAudioShim(text: string): HTMLAudioElement {
-  // We create a real Audio element but override play() to use speechSynthesis
   const audio = new Audio();
-  let ended = false;
 
-  const originalPlay = audio.play.bind(audio);
   audio.play = () => {
     return new Promise<void>((resolve) => {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.95;
-      utterance.pitch = 1.0;
-      const voices = window.speechSynthesis.getVoices();
-      const preferred = voices.find(v => /samantha|karen|victoria|zira|female/i.test(v.name));
-      if (preferred) utterance.voice = preferred;
-      utterance.onend = () => {
-        ended = true;
-        audio.dispatchEvent(new Event("ended"));
-      };
-      utterance.onerror = () => {
-        audio.dispatchEvent(new Event("error"));
-      };
-      window.speechSynthesis.speak(utterance);
-      resolve();
+      ensureVoices().then(() => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95;
+        utterance.pitch = 1.0;
+        const voice = pickVoice();
+        if (voice) utterance.voice = voice;
+        utterance.onend = () => {
+          audio.dispatchEvent(new Event("ended"));
+        };
+        utterance.onerror = () => {
+          audio.dispatchEvent(new Event("error"));
+        };
+        window.speechSynthesis.speak(utterance);
+        resolve();
+      });
     });
   };
 
-  const originalPause = audio.pause.bind(audio);
   audio.pause = () => {
     window.speechSynthesis.cancel();
-    try { originalPause(); } catch {}
   };
 
   return audio;
