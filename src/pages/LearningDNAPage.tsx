@@ -458,7 +458,7 @@ const LearningDNAPage = () => {
                     breakdown: "Break It Down", recognize: "Recognize", metaphor: "Metaphor",
                     information: "Information", reflection: "Reflect", application: "Apply", quiz: "Assess",
                   };
-                  const isStrength = stepKey === (STYLE_MAP[layerStrength] ? stepKey : "");
+                  const _isStrength = stepKey === (STYLE_MAP[layerStrength] ? stepKey : "");
                   return (
                     <div key={stepKey} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ background: i === 0 || i === 1 ? `${primaryStyle.color}10` : "transparent" }}>
                       <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: i < 2 ? primaryStyle.color : "hsl(var(--muted-foreground))" }}>
