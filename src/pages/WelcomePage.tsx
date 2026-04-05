@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { fetchTTSWithFallback } from "@/lib/browserTTS";
+import { stopGlobalNarration } from "@/hooks/useAutoNarrate";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
