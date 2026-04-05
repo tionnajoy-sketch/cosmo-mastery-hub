@@ -202,7 +202,7 @@ const LearningDNAPage = () => {
   const confidenceGrowth = currentMetrics && earliestMetrics ? currentMetrics.confidence - earliestMetrics.confidence : 0;
 
   // Top layers
-  const topLayers = useMemo(() => {
+  const _topLayers = useMemo(() => {
     const counts: Record<string, number> = {};
     metrics.forEach(m => {
       const layers = Array.isArray(m.layers_completed) ? m.layers_completed : [];
