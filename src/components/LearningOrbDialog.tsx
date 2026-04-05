@@ -361,7 +361,7 @@ const LearningOrbDialog = ({
         textToSpeak = `Alright… let's see what you've built. This is not about being perfect… it's about showing yourself what you know.`;
         break;
     }
-    if (textToSpeak && currentStep > 0) {
+    if (textToSpeak) {
       setTimeout(() => speakText(textToSpeak), 200);
     }
   }, [currentStep, etymology, expandedInfo]);
