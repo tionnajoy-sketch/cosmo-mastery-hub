@@ -681,7 +681,6 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
         );
 
       case "information": {
-        const ReactMarkdown = require("react-markdown").default;
         return (
           <motion.div key="information" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-4">
             {/* Short intro context */}
