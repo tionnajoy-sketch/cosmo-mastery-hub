@@ -316,7 +316,7 @@ const LearningDNAPage = () => {
                       >
                         <div
                           className={`w-16 h-16 rounded-xl flex flex-col items-center justify-center font-display text-2xl font-bold text-white transition-all ${isExpanded ? "ring-2 ring-offset-2 ring-offset-background scale-110" : "hover:scale-105"}`}
-                          style={{ background: primaryStyle.color, ringColor: primaryStyle.color }}
+                          style={{ background: primaryStyle.color }}
                         >
                           {char}
                           <span className="text-[8px] font-normal opacity-70 mt-0.5">{info?.label?.split(" ")[0]}</span>
