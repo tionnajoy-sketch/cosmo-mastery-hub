@@ -86,7 +86,7 @@ const DNA_CHAR_INFO: Record<number, { label: string; icon: any; getDescription: 
 
 const LearningDNAPage = () => {
   const { profile, user } = useAuth();
-  const { tone, toneProfile, getGreeting } = useTJTone();
+  const { tone, toneProfile } = useTJTone();
   const { rules } = useDNAAdaptation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [captionIdx, setCaptionIdx] = useState(-1);
