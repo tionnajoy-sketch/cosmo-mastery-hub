@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
+import { useTJTone } from "@/hooks/useTJTone";
 import { pageColors } from "@/lib/colors";
 import { fireBlockCompleteConfetti } from "@/lib/confetti";
 import SpeakButton from "@/components/SpeakButton";
@@ -172,7 +173,7 @@ const LearningOrbDialog = ({
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
-
+  const { adaptCaption, toneProfile } = useTJTone();
   // Filter out scripture step if block has no source text/page reference
   const hasScripture = !!(block?.source_text || block?.page_reference);
   const availableSteps = useMemo(() => {
@@ -889,7 +890,7 @@ const LearningOrbDialog = ({
                 <AvatarFallback className="text-xs font-bold" style={{ background: step.color, color: "white" }}>TJ</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <p className="text-xs italic leading-snug" style={{ color: step.color }}>"{getAdaptedCaption(step.caption, step.key)}"</p>
+                <p className="text-xs italic leading-snug" style={{ color: step.color }}>"{adaptCaption(step.key, getAdaptedCaption(step.caption, step.key))}"</p>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {isSpeaking && (

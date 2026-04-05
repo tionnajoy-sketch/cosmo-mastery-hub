@@ -18,6 +18,7 @@ interface Profile {
   dna_engagement: number;
   dna_retention: string | null;
   dna_confidence: string | null;
+  tone_preference: string | null;
 }
 
 interface AuthContextType {
