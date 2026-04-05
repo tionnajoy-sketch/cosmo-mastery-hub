@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Play, Pause, RotateCcw, Sparkles, TrendingUp,
-  Eye, Mic, PenLine, Zap, ChevronDown, ChevronUp,
+  Eye, Mic, PenLine, Zap,
   BookOpen, Target, Lightbulb, ListOrdered, AlertTriangle,
 } from "lucide-react";
 import { TJ_TONES, type TJToneMode } from "@/lib/tjTone";
