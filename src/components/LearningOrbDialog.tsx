@@ -7,8 +7,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, RefreshCw, Sparkles,
   Loader2, CheckCircle2, XCircle, Volume2, VolumeX,
-  Square, Pause, Play, Mic,
+  Square,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
