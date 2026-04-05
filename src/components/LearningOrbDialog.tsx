@@ -7,8 +7,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, RefreshCw, Sparkles,
   Loader2, CheckCircle2, XCircle, Volume2, VolumeX,
-  Square, Pause, Play, Mic,
+  Square,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
@@ -434,24 +435,47 @@ const LearningOrbDialog = ({
     setInfoLoading(true);
     try {
       const depthInstruction = rules.contentDepth === "brief"
-        ? "Keep it short — 2 paragraphs max, simple language."
+        ? "Keep each section to 1-2 sentences."
         : rules.contentDepth === "deep"
-        ? "Go deep — 4-5 thorough paragraphs with connections to related concepts."
-        : "Keep it concise but thorough — 3-4 paragraphs max.";
+        ? "Go deep with thorough paragraphs and connections."
+        : "Keep it concise but thorough — 2-3 sentences each.";
       const programName = profile?.selected_program || "cosmetology";
+      const dnaLayer = dna?.layerStrength || "D";
+      const toneMode = toneProfile || "encouraging";
       const { data } = await supabase.functions.invoke("ai-mentor-chat", {
         body: {
           messages: [{
             role: "user",
-            content: `Provide a deeper, expanded explanation of "${block.term_title}" (${block.definition}). Include: why it matters in ${programName}, how it connects to other concepts, and what a student needs to know for the exam. ${depthInstruction}`,
+            content: `You are TJ Anderson, a warm and knowledgeable mentor. Provide a deeper teaching for "${block.term_title}" (definition: "${block.definition}").
+
+Structure your response with these EXACT section headers using markdown ##:
+
+## Simple Explanation
+A clear, plain-language explanation anyone can understand.
+
+## The Lesson
+Teach the concept more deeply — help the student truly understand it, not just memorize it.
+
+## History & Origin
+Where did this word or concept come from? What's the etymology or historical background?
+
+## Why It Matters
+Why is this important in ${programName}? Connect it to real practice and career success.
+
+## How This Fits You
+Personalize this for a learner whose strongest learning layer is "${dnaLayer}" and who prefers a "${toneMode}" teaching style. Speak directly to them.
+
+${depthInstruction}
+Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
           }],
-          sectionName: "Expanded Information",
+          sectionName: "Deep Teaching",
         },
       });
       const info = data?.response || "";
       setExpandedInfo(info);
       if (info && voiceEnabled) speakText(info.slice(0, 1000));
     } catch {}
+    setInfoLoading(false);
   };
 
   const generateImage = async () => {
@@ -656,20 +680,58 @@ const LearningOrbDialog = ({
           </motion.div>
         );
 
-      case "information":
+      case "information": {
         return (
           <motion.div key="information" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-4">
             {/* Short intro context */}
             <div className="text-center space-y-2">
               <h3 className="font-display text-xl font-bold" style={{ color: step.color }}>{block.term_title}</h3>
               <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
-                {block.affirmation || `Let's explore ${block.term_title} more deeply. Choose how you'd like TJ to teach this concept.`}
+                {block.affirmation || `Let's explore ${block.term_title} more deeply.`}
               </p>
             </div>
 
-            {/* TJ Learning Studio — the ONLY teaching system for this step */}
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Choose How TJ Teaches This</p>
+            {/* Deep Teaching Content — auto-generated */}
+            {!expandedInfo && !infoLoading && (
+              <div className="text-center py-4">
+                <Button onClick={fetchExpandedInfo} className="gap-2 shadow-md" style={{ background: step.gradient, color: "white" }}>
+                  <Sparkles className="h-4 w-4" /> Teach Me Deeper
+                </Button>
+                <p className="text-xs mt-2" style={{ color: c.subtext }}>History, origin, why it matters & how it fits you</p>
+              </div>
+            )}
+
+            {infoLoading && (
+              <div className="flex items-center justify-center gap-3 py-8">
+                <Loader2 className="h-6 w-6 animate-spin" style={{ color: step.color }} />
+                <p className="text-sm" style={{ color: c.subtext }}>TJ is preparing your lesson…</p>
+              </div>
+            )}
+
+            {expandedInfo && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                className="prose prose-sm max-w-none space-y-1"
+                style={{ color: c.bodyText }}>
+                <ReactMarkdown
+                  components={{
+                    h2: ({ children }: any) => (
+                      <div className="flex items-center gap-2 mt-5 mb-2 pt-3 border-t" style={{ borderColor: "hsl(var(--border))" }}>
+                        <div className="w-1.5 h-5 rounded-full" style={{ background: step.gradient }} />
+                        <h4 className="font-display text-base font-bold m-0" style={{ color: step.color }}>{children}</h4>
+                      </div>
+                    ),
+                    p: ({ children }: any) => <p className="text-sm leading-relaxed mb-2" style={{ color: c.bodyText }}>{children}</p>,
+                  }}
+                >{expandedInfo}</ReactMarkdown>
+                <div className="pt-3">
+                  <SpeakButton text={expandedInfo.slice(0, 2000)} size="sm" label="Listen to lesson" />
+                </div>
+              </motion.div>
+            )}
+
+            {/* TJ Learning Studio — additional modes */}
+            <div className="space-y-2 pt-3 border-t" style={{ borderColor: "hsl(var(--border))" }}>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">More Ways to Learn</p>
               <TJLearningStudio
                 termName={block.term_title}
                 definition={block.definition}
@@ -681,6 +743,7 @@ const LearningOrbDialog = ({
             </div>
           </motion.div>
         );
+      }
 
       case "reflection":
         return (
