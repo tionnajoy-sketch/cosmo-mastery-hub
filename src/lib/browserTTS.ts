@@ -2,21 +2,38 @@
  * Browser-based Speech Synthesis fallback for when ElevenLabs credits are exhausted.
  * Returns an object that mimics HTMLAudioElement's play/pause pattern.
  */
+function pickVoice(): SpeechSynthesisVoice | null {
+  const voices = window.speechSynthesis.getVoices();
+  return voices.find(v => /samantha|karen|victoria|zira|female/i.test(v.name)) || voices[0] || null;
+}
+
+/** Ensure voices are loaded (some browsers load async) */
+function ensureVoices(): Promise<void> {
+  return new Promise((resolve) => {
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) { resolve(); return; }
+    window.speechSynthesis.onvoiceschanged = () => resolve();
+    // Timeout fallback — speak even without preferred voice
+    setTimeout(resolve, 500);
+  });
+}
+
 export function speakWithBrowserTTS(
   text: string,
   onEnd?: () => void,
   onError?: () => void
 ): { pause: () => void } {
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 0.95;
-  utterance.pitch = 1.0;
-  const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(v => /samantha|karen|victoria|zira|female/i.test(v.name));
-  if (preferred) utterance.voice = preferred;
-  utterance.onend = () => onEnd?.();
-  utterance.onerror = () => onError?.();
-  window.speechSynthesis.speak(utterance);
+  ensureVoices().then(() => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+    const voice = pickVoice();
+    if (voice) utterance.voice = voice;
+    utterance.onend = () => onEnd?.();
+    utterance.onerror = () => onError?.();
+    window.speechSynthesis.speak(utterance);
+  });
   return {
     pause: () => window.speechSynthesis.cancel(),
   };
