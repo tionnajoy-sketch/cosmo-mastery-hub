@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAutoNarrate } from "@/hooks/useAutoNarrate";
 import { useStudyTracker } from "@/hooks/useStudyTracker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -119,6 +120,16 @@ const Home = () => {
   }, []);
 
   const firstName = profile?.name?.split(" ")[0] || "Student";
+
+  // Auto-narrate on page entry
+  useAutoNarrate(() => {
+    const dnaConfidence = profile?.dna_confidence;
+    if (!dnaConfidence) return `Welcome back, ${firstName}. Every step you take builds something real. Let's keep going.`;
+    const code = dnaConfidence.charCodeAt(0);
+    if (code <= 104) return `Welcome back, ${firstName}. You're doing better than you think. Let's take it one step at a time.`;
+    if (code <= 113) return `Welcome back, ${firstName}. You're building real knowledge. Trust the process — it's working.`;
+    return `Welcome back, ${firstName}. You're showing real confidence. Let's push even further today.`;
+  }, 1000);
 
   // DNA-driven confidence message
   const dnaConfidence = profile?.dna_confidence;

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { fetchTTSWithFallback } from "@/lib/browserTTS";
+import { useAutoNarrate, stopGlobalNarration } from "@/hooks/useAutoNarrate";
 import { useAuth } from "@/hooks/useAuth";
 import { useTJTone } from "@/hooks/useTJTone";
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
@@ -7,13 +8,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Play, Pause, RotateCcw, Sparkles, TrendingUp,
-  Eye, Mic, PenLine, Zap,
+  Eye, Mic, PenLine, Zap, ChevronDown,
   BookOpen, Target, Lightbulb, ListOrdered, AlertTriangle,
 } from "lucide-react";
 import { TJ_TONES, type TJToneMode } from "@/lib/tjTone";
+import SpeakButton from "@/components/SpeakButton";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 
@@ -42,47 +45,107 @@ const STYLE_MAP: Record<string, { label: string; icon: any; color: string }> = {
   N: { label: "Recognition", icon: Eye, color: "hsl(275 70% 50%)" },
 };
 
-/* ── DNA Character Explanations ── */
-const DNA_CHAR_INFO: Record<number, { label: string; icon: any; getDescription: (char: string) => string }> = {
+/* ── DNA Character Explanations (richer) ── */
+const DNA_CHAR_INFO: Record<number, {
+  label: string;
+  icon: any;
+  color: string;
+  getDescription: (char: string) => string;
+  getWhatTJChanges: (char: string) => string;
+  getWhatYouNotice: (char: string) => string;
+}> = {
   0: {
     label: "Layer Strength",
     icon: Brain,
+    color: "hsl(265 60% 50%)",
     getDescription: (char: string) => {
       const name = STYLE_MAP[char.toUpperCase()]?.label || "Unknown";
-      return `Your strongest learning layer is "${name}". This means your brain responds best when content starts with ${name.toLowerCase()} approaches. TJ reorders every lesson to lead with this strength.`;
+      return `Your strongest learning layer is "${name}". Your brain responds best when content starts with ${name.toLowerCase()} approaches.`;
     },
+    getWhatTJChanges: (char: string) => {
+      const name = STYLE_MAP[char.toUpperCase()]?.label || "visual";
+      return `TJ reorders every lesson so your strongest layer (${name}) comes right after the opening — putting you in your comfort zone early.`;
+    },
+    getWhatYouNotice: (_char: string) => `You'll notice your preferred learning style appears early in each block, making concepts click faster.`,
   },
   1: {
     label: "Engagement",
     icon: Zap,
+    color: "hsl(42 70% 50%)",
     getDescription: (char: string) => {
       const level = parseInt(char) || 5;
-      if (level <= 3) return `Your engagement level is ${level}/9. TJ keeps lessons short and interactive to maintain your focus. Shorter content blocks and more activities help you stay engaged.`;
-      if (level <= 6) return `Your engagement level is ${level}/9. You're moderately engaged — TJ gives you a balanced mix of reading, listening, and doing.`;
-      return `Your engagement level is ${level}/9. You're highly engaged — TJ gives you deeper content and more challenging material because you thrive on it.`;
+      if (level <= 3) return `Your engagement is ${level}/9 — building. TJ keeps content short and interactive.`;
+      if (level <= 6) return `Your engagement is ${level}/9 — developing. TJ gives you a balanced mix.`;
+      return `Your engagement is ${level}/9 — strong! TJ pushes deeper content your way.`;
+    },
+    getWhatTJChanges: (char: string) => {
+      const level = parseInt(char) || 5;
+      if (level <= 3) return "Shorter content blocks, more interactive elements, frequent check-ins.";
+      if (level <= 6) return "Balanced reading and interactive content with periodic engagement hooks.";
+      return "Deeper content blocks, fewer interruptions, more challenging material.";
+    },
+    getWhatYouNotice: (char: string) => {
+      const level = parseInt(char) || 5;
+      if (level <= 3) return "Lessons feel bite-sized and interactive so you stay locked in.";
+      if (level <= 6) return "A comfortable pace that mixes reading with doing.";
+      return "More depth and freedom to explore without frequent interruptions.";
     },
   },
   2: {
     label: "Retention",
     icon: Target,
+    color: "hsl(145 55% 40%)",
     getDescription: (char: string) => {
       const code = char.toUpperCase().charCodeAt(0) - 65;
-      if (code < 8) return `Your retention is building. TJ adds extra memory cues, summaries, and repetition to help concepts stick. You'll see key points highlighted more often.`;
-      if (code < 17) return `Your retention is developing. TJ provides a balanced approach with periodic reviews and memory anchors.`;
-      return `Your retention is strong! You hold onto information well. TJ can go deeper without as much repetition.`;
+      if (code < 8) return `Your retention is building (A-H range). TJ adds extra memory cues and repetition.`;
+      if (code < 17) return `Your retention is developing (I-Q range). TJ provides periodic reviews and memory anchors.`;
+      return `Your retention is strong (R-Z range)! You hold onto information well.`;
+    },
+    getWhatTJChanges: (char: string) => {
+      const code = char.toUpperCase().charCodeAt(0) - 65;
+      if (code < 8) return "Extra memory cues, highlighted key points, more repetition and summaries.";
+      if (code < 17) return "Periodic memory anchors and spaced review prompts.";
+      return "Less repetition, deeper dives, and faster progression through content.";
+    },
+    getWhatYouNotice: (char: string) => {
+      const code = char.toUpperCase().charCodeAt(0) - 65;
+      if (code < 8) return "You'll see key points highlighted more often and get more review opportunities.";
+      if (code < 17) return "Balanced review moments woven into your learning flow.";
+      return "TJ trusts your memory and moves efficiently through material.";
     },
   },
   3: {
     label: "Confidence",
     icon: Sparkles,
+    color: "hsl(215 70% 50%)",
     getDescription: (char: string) => {
       const code = char.toLowerCase().charCodeAt(0) - 97;
-      if (code < 8) return `Your confidence is still growing — and that's okay. TJ uses a supportive, guided tone with extra encouragement and smaller steps so you never feel overwhelmed.`;
-      if (code < 17) return `Your confidence is developing. TJ balances challenge with support, giving you room to grow while still cheering you on.`;
-      return `Your confidence is high! TJ challenges you with harder questions, deeper content, and less hand-holding because you're ready for it.`;
+      if (code < 8) return `Your confidence is growing (a-h range). TJ uses a supportive tone with smaller steps.`;
+      if (code < 17) return `Your confidence is developing (i-q range). TJ balances challenge with support.`;
+      return `Your confidence is high (r-z range)! TJ challenges you with harder material.`;
+    },
+    getWhatTJChanges: (char: string) => {
+      const code = char.toLowerCase().charCodeAt(0) - 97;
+      if (code < 8) return "Gentler language, more encouragement, smaller learning increments.";
+      if (code < 17) return "A balanced approach — supportive but with room to stretch.";
+      return "More challenging questions, less hand-holding, higher expectations.";
+    },
+    getWhatYouNotice: (char: string) => {
+      const code = char.toLowerCase().charCodeAt(0) - 97;
+      if (code < 8) return "TJ feels like a patient mentor — never rushing, always encouraging.";
+      if (code < 17) return "TJ pushes you gently while still cheering you on.";
+      return "TJ treats you like you're ready — higher-level questions and deeper dives.";
     },
   },
 };
+
+/* ── Legend data ── */
+const LEGEND_ITEMS = [
+  { segment: "L", label: "Layer Strength", format: "Letter (V, D, M…)", example: "V = Visual learner" },
+  { segment: "E", label: "Engagement", format: "Number 0–9", example: "7 = highly engaged" },
+  { segment: "R", label: "Retention", format: "Uppercase A–Z", example: "A–H = building, I–Q = developing, R–Z = strong" },
+  { segment: "C", label: "Confidence", format: "Lowercase a–z", example: "a–h = growing, i–q = developing, r–z = high" },
+];
 
 const LearningDNAPage = () => {
   const { profile, user } = useAuth();
@@ -93,6 +156,7 @@ const LearningDNAPage = () => {
   const [hasPlayed, setHasPlayed] = useState(false);
   const [expandedChar, setExpandedChar] = useState<number | null>(null);
   const [selectedTone, setSelectedTone] = useState<TJToneMode>(tone);
+  const [showLegend, setShowLegend] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef(0);
@@ -101,6 +165,13 @@ const LearningDNAPage = () => {
   const [metrics, setMetrics] = useState<any[]>([]);
   const [earliestMetrics, setEarliestMetrics] = useState<{ retention: number; confidence: number } | null>(null);
   const [currentMetrics, setCurrentMetrics] = useState<{ retention: number; confidence: number } | null>(null);
+
+  // Auto-narrate on page entry
+  const firstName = profile?.name?.split(" ")[0] || "there";
+  useAutoNarrate(() =>
+    `Hey ${firstName}… this is your Learning DNA. It's a blueprint of how your brain learns best. Let me walk you through it.`,
+    1200
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -113,7 +184,6 @@ const LearningDNAPage = () => {
     });
   }, [user]);
 
-  // Save tone preference
   const handleToneChange = async (t: TJToneMode) => {
     setSelectedTone(t);
     if (user) {
@@ -139,7 +209,6 @@ const LearningDNAPage = () => {
     return code < 8 ? "building" : code < 17 ? "developing" : "strong";
   }, [dnaRetention]);
 
-  // Style percentages
   const stylePercentages = useMemo(() => {
     const base = { Visual: 25, Reflective: 25, Kinesthetic: 25, Analytical: 25 };
     const boostMap: Record<string, string> = { V: "Visual", R: "Reflective", K: "Kinesthetic", D: "Analytical", A: "Kinesthetic", M: "Visual", I: "Analytical" };
@@ -149,20 +218,27 @@ const LearningDNAPage = () => {
     return Object.fromEntries(Object.entries(base).map(([k, v]) => [k, Math.round((v / total) * 100)]));
   }, [layerStrength]);
 
-  const identityStatement = useMemo(() => {
+  // Human Translation
+  const humanTranslation = useMemo(() => {
     const primary = STYLE_MAP[layerStrength]?.label || "Visual";
     const verbs: Record<string, string> = {
       V: "SEE it", D: "ANALYZE it", M: "CONNECT it to something familiar",
       I: "UNDERSTAND the deeper details", R: "REFLECT on what it means",
       A: "APPLY it to real scenarios", K: "PRACTICE it hands-on",
+      B: "BREAK IT DOWN piece by piece", N: "RECOGNIZE it in context",
     };
     const verb = verbs[layerStrength] || "SEE it";
-    return `You are a ${primary} learner. You learn best when you ${verb}, then process it, then test yourself.`;
+    return `You are a ${primary}-${confidenceLevel === "building" ? "Guided" : confidenceLevel === "developing" ? "Growing" : "Independent"} learner. You understand best when you ${verb}, then process it, then test yourself.`;
+  }, [layerStrength, confidenceLevel]);
+
+  const identityAffirmation = useMemo(() => {
+    const primary = STYLE_MAP[layerStrength]?.label || "Visual";
+    const secondaryMap: Record<string, string> = { V: "Reflective", D: "Analytical", M: "Creative", I: "Deep-Thinker", R: "Introspective", A: "Practical", K: "Hands-On" };
+    const secondary = secondaryMap[layerStrength] || "Reflective";
+    return `You are a ${primary}-${secondary} learner. You understand through ${primary.toLowerCase()} input and master through ${secondary.toLowerCase()} processing.`;
   }, [layerStrength]);
 
-  // How I Learn Best
   const howILearnBest = useMemo(() => {
-    const _style = STYLE_MAP[layerStrength]?.label || "Visual";
     const methods: Record<string, string[]> = {
       V: ["Images and diagrams before text", "Color-coded notes and highlights", "Visual metaphors that paint a picture"],
       D: ["Step-by-step logical breakdowns", "Data, facts, and structured analysis", "Comparing and contrasting ideas"],
@@ -171,11 +247,12 @@ const LearningDNAPage = () => {
       R: ["Journaling and self-reflection", "Quiet processing time after learning", "Connecting concepts to personal experience"],
       A: ["Hands-on practice and scenarios", "Real-world application exercises", "Learning by doing, not just reading"],
       K: ["Interactive activities and movement", "Practice labs and simulations", "Physical engagement with material"],
+      B: ["Breaking words into roots and parts", "Understanding etymology and structure", "Deconstructing complex ideas"],
+      N: ["Identifying concepts in context", "Pattern recognition exercises", "Matching and classification activities"],
     };
     return methods[layerStrength] || methods.V;
   }, [layerStrength]);
 
-  // What Throws Me Off
   const whatThrowsMeOff = useMemo(() => {
     const issues: string[] = [];
     if (confidenceLevel === "building") issues.push("Feeling overwhelmed by too much content at once", "Self-doubt when facing difficult questions");
@@ -186,7 +263,6 @@ const LearningDNAPage = () => {
     return issues;
   }, [confidenceLevel, retentionLevel, profile?.dna_engagement]);
 
-  // TJ Recommends Next
   const recommendations = useMemo(() => {
     const recs: string[] = [];
     if (confidenceLevel === "building") recs.push("Try the Practice Lab to build confidence through repetition");
@@ -197,22 +273,12 @@ const LearningDNAPage = () => {
     return recs.slice(0, 3);
   }, [confidenceLevel, retentionLevel, layerStrength]);
 
-  // Growth deltas
   const retentionGrowth = currentMetrics && earliestMetrics ? currentMetrics.retention - earliestMetrics.retention : 0;
   const confidenceGrowth = currentMetrics && earliestMetrics ? currentMetrics.confidence - earliestMetrics.confidence : 0;
 
-  // Top layers
-  const _topLayers = useMemo(() => {
-    const counts: Record<string, number> = {};
-    metrics.forEach(m => {
-      const layers = Array.isArray(m.layers_completed) ? m.layers_completed : [];
-      layers.forEach((l: string) => { counts[l] = (counts[l] || 0) + 1; });
-    });
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k);
-  }, [metrics]);
-
   /* ── TTS Explainer ── */
   const playExplainer = useCallback(async () => {
+    stopGlobalNarration();
     if (isPlaying) {
       audioRef.current?.pause();
       setIsPlaying(false);
@@ -256,6 +322,13 @@ const LearningDNAPage = () => {
   const primaryStyle = STYLE_MAP[layerStrength] || STYLE_MAP.V;
   const PrimaryIcon = primaryStyle.icon;
 
+  const segmentColors = [
+    DNA_CHAR_INFO[0].color,
+    DNA_CHAR_INFO[1].color,
+    DNA_CHAR_INFO[2].color,
+    DNA_CHAR_INFO[3].color,
+  ];
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <AppHeader />
@@ -298,12 +371,18 @@ const LearningDNAPage = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <Card className="border-0 shadow-md bg-card">
               <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="h-5 w-5" style={{ color: primaryStyle.color }} />
-                  <h2 className="font-display text-lg font-bold text-foreground">Your DNA Code</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5" style={{ color: primaryStyle.color }} />
+                    <h2 className="font-display text-lg font-bold text-foreground">Your DNA Code</h2>
+                  </div>
+                  <SpeakButton text={humanTranslation} size="sm" label="Listen" />
                 </div>
 
-                {/* Tappable code tiles */}
+                {/* Code format label */}
+                <p className="text-[10px] text-center text-muted-foreground font-mono mb-2 tracking-widest">[ L ] [ E ] [ R ] [ C ]</p>
+
+                {/* Tappable code tiles — each with its own color */}
                 <div className="flex items-center justify-center gap-3 mb-4">
                   {dnaCode.split("").map((char, i) => {
                     const info = DNA_CHAR_INFO[i];
@@ -316,7 +395,7 @@ const LearningDNAPage = () => {
                       >
                         <div
                           className={`w-16 h-16 rounded-xl flex flex-col items-center justify-center font-display text-2xl font-bold text-white transition-all ${isExpanded ? "ring-2 ring-offset-2 ring-offset-background scale-110" : "hover:scale-105"}`}
-                          style={{ background: primaryStyle.color }}
+                          style={{ background: info?.color || primaryStyle.color }}
                         >
                           {char}
                           <span className="text-[8px] font-normal opacity-70 mt-0.5">{info?.label?.split(" ")[0]}</span>
@@ -326,7 +405,7 @@ const LearningDNAPage = () => {
                   })}
                 </div>
 
-                {/* Expanded explanation */}
+                {/* Expanded rich explanation */}
                 <AnimatePresence>
                   {expandedChar !== null && dnaCode[expandedChar] && (
                     <motion.div
@@ -335,14 +414,26 @@ const LearningDNAPage = () => {
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-4 rounded-xl mb-4" style={{ background: `${primaryStyle.color}12`, border: `1.5px solid ${primaryStyle.color}30` }}>
-                        <div className="flex items-center gap-2 mb-2">
-                          {(() => { const Icon = DNA_CHAR_INFO[expandedChar]?.icon || Brain; return <Icon className="h-4 w-4" style={{ color: primaryStyle.color }} />; })()}
-                          <p className="text-sm font-bold" style={{ color: primaryStyle.color }}>{DNA_CHAR_INFO[expandedChar]?.label}</p>
+                      <div className="p-4 rounded-xl mb-4 space-y-3" style={{ background: `${DNA_CHAR_INFO[expandedChar]?.color}08`, border: `1.5px solid ${DNA_CHAR_INFO[expandedChar]?.color}25` }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          {(() => { const Icon = DNA_CHAR_INFO[expandedChar]?.icon || Brain; return <Icon className="h-4 w-4" style={{ color: DNA_CHAR_INFO[expandedChar]?.color }} />; })()}
+                          <p className="text-sm font-bold" style={{ color: DNA_CHAR_INFO[expandedChar]?.color }}>{DNA_CHAR_INFO[expandedChar]?.label}</p>
                         </div>
-                        <p className="text-sm leading-relaxed text-foreground">
-                          {DNA_CHAR_INFO[expandedChar]?.getDescription(dnaCode[expandedChar])}
-                        </p>
+                        {/* What this means */}
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">What this means</p>
+                          <p className="text-sm leading-relaxed text-foreground">{DNA_CHAR_INFO[expandedChar]?.getDescription(dnaCode[expandedChar])}</p>
+                        </div>
+                        {/* What TJ changes */}
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">What TJ changes because of it</p>
+                          <p className="text-sm leading-relaxed text-foreground">{DNA_CHAR_INFO[expandedChar]?.getWhatTJChanges(dnaCode[expandedChar])}</p>
+                        </div>
+                        {/* What you'll notice */}
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">What you'll notice in lessons</p>
+                          <p className="text-sm leading-relaxed text-foreground">{DNA_CHAR_INFO[expandedChar]?.getWhatYouNotice(dnaCode[expandedChar])}</p>
+                        </div>
                       </div>
                     </motion.div>
                   )}
@@ -352,10 +443,42 @@ const LearningDNAPage = () => {
                   Tap any code block to learn what it means
                 </p>
 
-                {/* Identity Statement */}
-                <div className="p-4 rounded-xl bg-secondary">
-                  <p className="text-sm text-foreground leading-relaxed font-medium">{identityStatement}</p>
+                {/* Human Translation */}
+                <div className="p-4 rounded-xl bg-secondary mb-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">🧬 Human Translation</p>
+                  <p className="text-sm text-foreground leading-relaxed font-medium">{humanTranslation}</p>
                 </div>
+
+                {/* Identity Affirmation */}
+                <div className="p-4 rounded-xl" style={{ background: `${primaryStyle.color}08`, border: `1.5px solid ${primaryStyle.color}20` }}>
+                  <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: primaryStyle.color }}>✨ Your Learning Identity</p>
+                  <p className="text-sm text-foreground leading-relaxed italic">{identityAffirmation}</p>
+                </div>
+
+                {/* Legend (collapsible) */}
+                <Collapsible open={showLegend} onOpenChange={setShowLegend}>
+                  <CollapsibleTrigger asChild>
+                    <button className="w-full flex items-center justify-center gap-1 mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                      <ChevronDown className={`h-3 w-3 transition-transform ${showLegend ? "rotate-180" : ""}`} />
+                      {showLegend ? "Hide" : "Show"} DNA Legend
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="mt-3 p-4 rounded-xl bg-secondary space-y-2">
+                      {LEGEND_ITEMS.map((item, i) => (
+                        <div key={item.segment} className="flex items-start gap-3">
+                          <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: segmentColors[i] }}>
+                            {item.segment}
+                          </span>
+                          <div>
+                            <p className="text-xs font-semibold text-foreground">{item.label} <span className="font-normal text-muted-foreground">({item.format})</span></p>
+                            <p className="text-[11px] text-muted-foreground">{item.example}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </CardContent>
             </Card>
           </motion.div>
@@ -458,7 +581,6 @@ const LearningDNAPage = () => {
                     breakdown: "Break It Down", recognize: "Recognize", metaphor: "Metaphor",
                     information: "Information", reflection: "Reflect", application: "Apply", quiz: "Assess",
                   };
-                  const _isStrength = stepKey === (STYLE_MAP[layerStrength] ? stepKey : "");
                   return (
                     <div key={stepKey} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ background: i === 0 || i === 1 ? `${primaryStyle.color}10` : "transparent" }}>
                       <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: i < 2 ? primaryStyle.color : "hsl(var(--muted-foreground))" }}>

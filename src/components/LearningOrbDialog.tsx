@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { stopGlobalNarration } from "@/hooks/useAutoNarrate";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -268,9 +269,10 @@ const LearningOrbDialog = ({
     }
   }, [block?.id]);
 
-  // AUTO-VOICE: speak on tile open
+  // AUTO-VOICE: speak on tile open (including step 0)
   useEffect(() => {
     if (!block || !open || autoVoiceRef.current || !voiceEnabled) return;
+    stopGlobalNarration(); // stop any page-level narration
     autoVoiceRef.current = true;
     const timer = setTimeout(() => {
       speakText(`Let's learn about ${block.term_title}. ${block.term_title}. ${block.definition}`);
@@ -359,7 +361,7 @@ const LearningOrbDialog = ({
         textToSpeak = `Alright… let's see what you've built. This is not about being perfect… it's about showing yourself what you know.`;
         break;
     }
-    if (textToSpeak && currentStep > 0) {
+    if (textToSpeak) {
       setTimeout(() => speakText(textToSpeak), 200);
     }
   }, [currentStep, etymology, expandedInfo]);
@@ -709,22 +711,55 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
             )}
 
             {expandedInfo && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="prose prose-sm max-w-none space-y-1"
-                style={{ color: c.bodyText }}>
-                <ReactMarkdown
-                  components={{
-                    h2: ({ children }: any) => (
-                      <div className="flex items-center gap-2 mt-5 mb-2 pt-3 border-t" style={{ borderColor: "hsl(var(--border))" }}>
-                        <div className="w-1.5 h-5 rounded-full" style={{ background: step.gradient }} />
-                        <h4 className="font-display text-base font-bold m-0" style={{ color: step.color }}>{children}</h4>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                {(() => {
+                  // Parse the markdown into structured sections
+                  const sections = expandedInfo.split(/^## /m).filter(Boolean).map(s => {
+                    const lines = s.trim().split("\n");
+                    const title = lines[0]?.trim() || "";
+                    const body = lines.slice(1).join("\n").trim();
+                    return { title, body };
+                  });
+                  const sectionIcons: Record<string, string> = {
+                    "Simple Explanation": "💡",
+                    "The Lesson": "📖",
+                    "History & Origin": "🏛️",
+                    "Why It Matters": "⭐",
+                    "How This Fits You": "🧬",
+                  };
+                  if (sections.length === 0) {
+                    return (
+                      <div className="prose prose-sm max-w-none" style={{ color: c.bodyText }}>
+                        <ReactMarkdown>{expandedInfo}</ReactMarkdown>
                       </div>
-                    ),
-                    p: ({ children }: any) => <p className="text-sm leading-relaxed mb-2" style={{ color: c.bodyText }}>{children}</p>,
-                  }}
-                >{expandedInfo}</ReactMarkdown>
-                <div className="pt-3">
-                  <SpeakButton text={expandedInfo.slice(0, 2000)} size="sm" label="Listen to lesson" />
+                    );
+                  }
+                  return sections.map((sec, i) => (
+                    <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+                      className="rounded-xl overflow-hidden"
+                      style={{ background: "hsl(var(--card))", border: "1.5px solid hsl(var(--border))" }}
+                    >
+                      <div className="px-4 py-3 flex items-center gap-2" style={{ background: `${step.color}08`, borderBottom: "1px solid hsl(var(--border))" }}>
+                        <span className="text-base">{sectionIcons[sec.title] || "📝"}</span>
+                        <h4 className="font-display text-sm font-bold m-0" style={{ color: step.color }}>{sec.title}</h4>
+                      </div>
+                      <div className="px-4 py-3">
+                        <div className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+                          <ReactMarkdown
+                            components={{
+                              p: ({ children }: any) => <p className="mb-2 last:mb-0">{children}</p>,
+                            }}
+                          >{sec.body || "Content is being prepared…"}</ReactMarkdown>
+                        </div>
+                        <div className="mt-2">
+                          <SpeakButton text={`${sec.title}. ${sec.body}`.slice(0, 500)} size="icon" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  ));
+                })()}
+                <div className="pt-2">
+                  <SpeakButton text={expandedInfo.slice(0, 2000)} size="sm" label="Listen to full lesson" />
                 </div>
               </motion.div>
             )}
