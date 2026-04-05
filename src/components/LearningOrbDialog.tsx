@@ -15,6 +15,7 @@ import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import { useTJTone } from "@/hooks/useTJTone";
 import { applyToneToCaption, type TJToneMode } from "@/lib/tjTone";
+import { pageColors } from "@/lib/colors";
 import { fireBlockCompleteConfetti } from "@/lib/confetti";
 import SpeakButton from "@/components/SpeakButton";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
