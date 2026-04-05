@@ -129,6 +129,7 @@ const WelcomePage = () => {
   const audioUrlRef = useRef<string | null>(null);
 
   const cleanup = useCallback(() => {
+    stopGlobalNarration();
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
