@@ -162,7 +162,7 @@ const LearningDNAPage = () => {
 
   // How I Learn Best
   const howILearnBest = useMemo(() => {
-    const style = STYLE_MAP[layerStrength]?.label || "Visual";
+    const _style = STYLE_MAP[layerStrength]?.label || "Visual";
     const methods: Record<string, string[]> = {
       V: ["Images and diagrams before text", "Color-coded notes and highlights", "Visual metaphors that paint a picture"],
       D: ["Step-by-step logical breakdowns", "Data, facts, and structured analysis", "Comparing and contrasting ideas"],
