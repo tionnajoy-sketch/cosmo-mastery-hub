@@ -434,24 +434,47 @@ const LearningOrbDialog = ({
     setInfoLoading(true);
     try {
       const depthInstruction = rules.contentDepth === "brief"
-        ? "Keep it short — 2 paragraphs max, simple language."
+        ? "Keep each section to 1-2 sentences."
         : rules.contentDepth === "deep"
-        ? "Go deep — 4-5 thorough paragraphs with connections to related concepts."
-        : "Keep it concise but thorough — 3-4 paragraphs max.";
+        ? "Go deep with thorough paragraphs and connections."
+        : "Keep it concise but thorough — 2-3 sentences each.";
       const programName = profile?.selected_program || "cosmetology";
+      const dnaLayer = dna?.layerStrength || "D";
+      const toneMode = toneProfile || "encouraging";
       const { data } = await supabase.functions.invoke("ai-mentor-chat", {
         body: {
           messages: [{
             role: "user",
-            content: `Provide a deeper, expanded explanation of "${block.term_title}" (${block.definition}). Include: why it matters in ${programName}, how it connects to other concepts, and what a student needs to know for the exam. ${depthInstruction}`,
+            content: `You are TJ Anderson, a warm and knowledgeable mentor. Provide a deeper teaching for "${block.term_title}" (definition: "${block.definition}").
+
+Structure your response with these EXACT section headers using markdown ##:
+
+## Simple Explanation
+A clear, plain-language explanation anyone can understand.
+
+## The Lesson
+Teach the concept more deeply — help the student truly understand it, not just memorize it.
+
+## History & Origin
+Where did this word or concept come from? What's the etymology or historical background?
+
+## Why It Matters
+Why is this important in ${programName}? Connect it to real practice and career success.
+
+## How This Fits You
+Personalize this for a learner whose strongest learning layer is "${dnaLayer}" and who prefers a "${toneMode}" teaching style. Speak directly to them.
+
+${depthInstruction}
+Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
           }],
-          sectionName: "Expanded Information",
+          sectionName: "Deep Teaching",
         },
       });
       const info = data?.response || "";
       setExpandedInfo(info);
       if (info && voiceEnabled) speakText(info.slice(0, 1000));
     } catch {}
+    setInfoLoading(false);
   };
 
   const generateImage = async () => {
