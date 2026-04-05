@@ -173,7 +173,7 @@ const LearningOrbDialog = ({
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
-
+  const { adaptCaption, toneProfile } = useTJTone();
   // Filter out scripture step if block has no source text/page reference
   const hasScripture = !!(block?.source_text || block?.page_reference);
   const availableSteps = useMemo(() => {
