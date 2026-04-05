@@ -890,7 +890,7 @@ const LearningOrbDialog = ({
                 <AvatarFallback className="text-xs font-bold" style={{ background: step.color, color: "white" }}>TJ</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <p className="text-xs italic leading-snug" style={{ color: step.color }}>"{getAdaptedCaption(step.caption, step.key)}"</p>
+                <p className="text-xs italic leading-snug" style={{ color: step.color }}>"{adaptCaption(step.key, getAdaptedCaption(step.caption, step.key))}"</p>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {isSpeaking && (
