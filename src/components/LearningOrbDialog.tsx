@@ -269,9 +269,10 @@ const LearningOrbDialog = ({
     }
   }, [block?.id]);
 
-  // AUTO-VOICE: speak on tile open
+  // AUTO-VOICE: speak on tile open (including step 0)
   useEffect(() => {
     if (!block || !open || autoVoiceRef.current || !voiceEnabled) return;
+    stopGlobalNarration(); // stop any page-level narration
     autoVoiceRef.current = true;
     const timer = setTimeout(() => {
       speakText(`Let's learn about ${block.term_title}. ${block.term_title}. ${block.definition}`);
