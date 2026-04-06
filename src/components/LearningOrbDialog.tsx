@@ -688,7 +688,6 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
       case "information": {
         return (
           <motion.div key="information" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-4">
-            {/* Short intro context */}
             <div className="text-center space-y-2">
               <h3 className="font-display text-xl font-bold" style={{ color: step.color }}>{block.term_title}</h3>
               <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
@@ -696,16 +695,7 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
               </p>
             </div>
 
-            {/* Deep Teaching Content — auto-generated */}
-            {!expandedInfo && !infoLoading && (
-              <div className="text-center py-4">
-                <Button onClick={fetchExpandedInfo} className="gap-2 shadow-md" style={{ background: step.gradient, color: "white" }}>
-                  <Sparkles className="h-4 w-4" /> Teach Me Deeper
-                </Button>
-                <p className="text-xs mt-2" style={{ color: c.subtext }}>History, origin, why it matters & how it fits you</p>
-              </div>
-            )}
-
+            {/* Auto-loading deep teaching content */}
             {infoLoading && (
               <div className="flex items-center justify-center gap-3 py-8">
                 <Loader2 className="h-6 w-6 animate-spin" style={{ color: step.color }} />
@@ -716,7 +706,6 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
             {expandedInfo && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                 {(() => {
-                  // Parse the markdown into structured sections
                   const sections = expandedInfo.split(/^## /m).filter(Boolean).map(s => {
                     const lines = s.trim().split("\n");
                     const title = lines[0]?.trim() || "";
@@ -765,6 +754,14 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                   <SpeakButton text={expandedInfo.slice(0, 2000)} size="sm" label="Listen to full lesson" />
                 </div>
               </motion.div>
+            )}
+
+            {!expandedInfo && !infoLoading && (
+              <div className="text-center py-4">
+                <Button onClick={fetchExpandedInfo} className="gap-2 shadow-md" style={{ background: step.gradient, color: "white" }}>
+                  <Sparkles className="h-4 w-4" /> Load Lesson
+                </Button>
+              </div>
             )}
 
             {/* TJ Learning Studio — additional modes */}
