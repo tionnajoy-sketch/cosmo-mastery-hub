@@ -320,7 +320,10 @@ const LearningOrbDialog = ({
     if (s?.key === "quiz" && !block.quiz_question && !aiQuestion && !aiLoading) {
       generateQuizQuestion();
     }
-    // Information step: do NOT auto-fetch — let student choose via TJLearningStudio menu
+    // Auto-fetch deep teaching when landing on the Information step
+    if (s?.key === "information" && !expandedInfo && !infoLoading) {
+      fetchExpandedInfo();
+    }
   }, [currentStep, block?.id]);
 
   // Auto-speak on step change
