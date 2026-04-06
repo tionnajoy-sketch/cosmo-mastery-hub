@@ -607,16 +607,16 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
             <SpeakButton text={`${block.page_reference || ""}. ${block.source_text || block.definition}`} size="sm" label="Listen to passage" />
             
             {/* Embedded lesson for scripture blocks */}
-            {(block.definition || block.explanation) && (
+            {block.definition && (
               <div className="w-full max-w-lg space-y-3">
                 <div className="p-4 rounded-xl" style={{ background: `${step.color}08`, border: `1.5px solid ${step.color}20` }}>
                   <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: step.color }}>📖 Plain Meaning</p>
                   <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
                 </div>
-                {block.explanation && (
+                {(block as any).explanation && (
                   <div className="p-4 rounded-xl" style={{ background: "hsl(var(--secondary))" }}>
                     <p className="text-[10px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">💡 Deeper Explanation</p>
-                    <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.explanation}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{(block as any).explanation}</p>
                   </div>
                 )}
                 {block.metaphor && (
