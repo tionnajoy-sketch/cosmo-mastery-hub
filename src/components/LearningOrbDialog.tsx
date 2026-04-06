@@ -589,7 +589,7 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
 
       case "scripture":
         return (
-          <motion.div key="scripture" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center text-center space-y-6 py-6">
+          <motion.div key="scripture" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center space-y-6 py-6">
             {block.page_reference && (
               <p className="text-lg font-semibold" style={{ color: step.color }}>{block.page_reference}</p>
             )}
@@ -598,11 +598,35 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                 "{block.source_text}"
               </blockquote>
             ) : (
-              <p className="text-base leading-relaxed max-w-lg" style={{ color: c.bodyText }}>
-                This passage is referenced at {block.page_reference || "this point in the text"}. Open your source material to read along.
-              </p>
+              <div className="p-5 rounded-xl text-center max-w-lg" style={{ background: "hsl(var(--card))", border: "1.5px solid hsl(var(--border))" }}>
+                <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>
+                  This passage is referenced at {block.page_reference || "this point in the text"}.
+                </p>
+              </div>
             )}
             <SpeakButton text={`${block.page_reference || ""}. ${block.source_text || block.definition}`} size="sm" label="Listen to passage" />
+            
+            {/* Embedded lesson for scripture blocks */}
+            {(block.definition || block.explanation) && (
+              <div className="w-full max-w-lg space-y-3">
+                <div className="p-4 rounded-xl" style={{ background: `${step.color}08`, border: `1.5px solid ${step.color}20` }}>
+                  <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: step.color }}>📖 Plain Meaning</p>
+                  <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
+                </div>
+                {block.explanation && (
+                  <div className="p-4 rounded-xl" style={{ background: "hsl(var(--secondary))" }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">💡 Deeper Explanation</p>
+                    <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.explanation}</p>
+                  </div>
+                )}
+                {block.metaphor && (
+                  <div className="p-4 rounded-xl" style={{ background: "hsl(var(--secondary))" }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">🌿 What This Means For You</p>
+                    <p className="text-sm leading-relaxed italic" style={{ color: c.bodyText }}>{block.metaphor}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
         );
         return (
