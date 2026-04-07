@@ -14,7 +14,7 @@ const SOUND_KEY = "cosmoprep_sounds_enabled";
 export const useSoundsEnabled = () => {
   const [enabled, setEnabled] = useState(() => {
     const stored = localStorage.getItem(SOUND_KEY);
-    return stored !== "false";
+    return stored === "true";
   });
   const toggle = useCallback(() => {
     setEnabled((prev) => {
