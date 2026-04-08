@@ -74,7 +74,7 @@ const StrategyPage = () => {
           <div className="text-center mb-8">
             <Target className="h-10 w-10 mx-auto mb-3" style={{ color: c.heading }} />
             <h1 className="font-display text-3xl font-bold mb-2" style={{ color: c.heading }}>
-              The TJ Anderson Layer Method
+              The TJ Anderson Layer Method™: Core Cross Agent™
             </h1>
             <p className="text-base leading-relaxed" style={{ color: c.subtext }}>
               A proven 4-step strategy for answering state board exam questions with confidence.

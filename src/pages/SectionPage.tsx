@@ -214,7 +214,7 @@ const SectionPage = () => {
           <Card className="border-0 shadow-sm mb-8" style={{ background: c.tipBg }}>
             <CardContent className="p-5">
               <p className="font-display text-sm font-semibold mb-3" style={{ color: c.tipText }}>
-                The TJ Anderson Layer Method™
+                The TJ Anderson Layer Method™: Core Cross Agent™
               </p>
               <div className="flex items-center justify-between gap-1">
                 {[

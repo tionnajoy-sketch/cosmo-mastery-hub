@@ -40,7 +40,7 @@ const Login = () => {
             <BookOpen className="h-7 w-7 text-foreground" />
             <span className="font-display text-3xl font-bold text-foreground tracking-tight">TJ Anderson Test Prep</span>
           </div>
-          <p className="text-sm text-muted-foreground">Powered by the TJ Anderson Layer Method™</p>
+          <p className="text-sm text-muted-foreground">Powered by the TJ Anderson Layer Method™: Core Cross Agent™</p>
         </div>
 
         <Card className="border border-border shadow-sm bg-card">

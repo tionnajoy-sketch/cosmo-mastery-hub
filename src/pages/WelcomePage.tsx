@@ -64,7 +64,7 @@ This app was built for the student who:
 • Needs it broken down in real language
 • Needs reassurance and guidance
 
-That's where the TJ Anderson Layer Method™ comes in.
+That's where the TJ Anderson Layer Method™: Core Cross Agent™ comes in.
 
 This is not about memorizing to pass a test.
 
@@ -81,7 +81,7 @@ Let's get to work.
 
 — Tionna ✨`;
 
-const ABOUT_ME_TEXT = `My name is Tionna Joy Anderson, and I am a licensed cosmetologist, educator, and creator of the TJ Anderson Layer Method™.
+const ABOUT_ME_TEXT = `My name is Tionna Joy Anderson, and I am a licensed cosmetologist, educator, and creator of the TJ Anderson Layer Method™: Core Cross Agent™.
 
 With over 20 years in the beauty industry and a background in business, leadership, and education, I've spent years helping people grow in both skill and confidence.
 
@@ -187,7 +187,7 @@ const WelcomePage = () => {
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <Heart className="h-8 w-8 mx-auto mb-3" style={{ color: "hsl(346 45% 56%)" }} />
           <h1 className="font-display text-3xl font-bold text-foreground mb-1">A Message From Tionna</h1>
-          <p className="text-sm text-muted-foreground">Powered by The TJ Anderson Layer Method™</p>
+          <p className="text-sm text-muted-foreground">Powered by The TJ Anderson Layer Method™: Core Cross Agent™</p>
 
           {/* Voice Controls */}
           <div className="flex items-center justify-center gap-3 mt-4">
@@ -236,7 +236,7 @@ const WelcomePage = () => {
         {/* TJ Anderson Layer Method™ */}
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-display text-xl font-semibold text-foreground">The TJ Anderson Layer Method™</h2>
+            <h2 className="font-display text-xl font-semibold text-foreground">The TJ Anderson Layer Method™: Core Cross Agent™</h2>
             <SpeakButton text={METHOD_TEXT} label="Listen" size="sm" />
           </div>
           <p className="text-sm text-muted-foreground mb-4">

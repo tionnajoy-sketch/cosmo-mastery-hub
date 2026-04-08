@@ -5,7 +5,7 @@ const AppFooter = () => (
         Copyright © {new Date().getFullYear()} Tionna Anderson
       </p>
       <p className="text-xs text-muted-foreground/70 leading-relaxed">
-        The TJ Anderson Layer Method™ is a proprietary learning framework created by Tionna Anderson.
+        The TJ Anderson Layer Method™: Core Cross Agent™ is a proprietary learning framework created by Tionna Anderson.
         Unauthorized reproduction, distribution, or instructional replication is prohibited.
       </p>
       <a

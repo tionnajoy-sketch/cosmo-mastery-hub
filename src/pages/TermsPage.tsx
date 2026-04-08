@@ -25,7 +25,7 @@ const TermsPage = () => {
             <p>
               All content, curriculum, study materials, questions, metaphors, affirmations, and educational
               frameworks within CosmoPrep™ are the exclusive intellectual property of Tionna Joy Anderson
-              ("the Author"). This includes, but is not limited to, the TJ Anderson Layer Method™, all
+              ("the Author"). This includes, but is not limited to, the TJ Anderson Layer Method™: Core Cross Agent™, all
               original definitions, metaphors, affirmations, quiz questions, and supporting content.
             </p>
             <p>
@@ -48,7 +48,7 @@ const TermsPage = () => {
             <ul className="list-disc pl-5 space-y-1">
               <li>Copy, reproduce, distribute, or transmit any content from CosmoPrep™</li>
               <li>Take screenshots, screen recordings, or photographs of content for commercial use or redistribution</li>
-              <li>Create derivative works based on the TJ Anderson Layer Method™ or any CosmoPrep™ materials</li>
+              <li>Create derivative works based on the TJ Anderson Layer Method™: Core Cross Agent™ or any CosmoPrep™ materials</li>
               <li>Reverse engineer, decompile, or attempt to extract the source code of the application</li>
               <li>Share, resell, or sublicense access to any part of the platform</li>
               <li>Use any content for the purpose of training artificial intelligence models</li>
@@ -58,7 +58,7 @@ const TermsPage = () => {
           <section>
             <h2 className="font-display text-xl font-semibold text-foreground">4. Trademark Notice</h2>
             <p>
-              "CosmoPrep" and "TJ Anderson Layer Method" are trademarks of Tionna Joy Anderson.
+              "CosmoPrep," "TJ Anderson Layer Method," and "Core Cross Agent" are trademarks of Tionna Joy Anderson.
               Unauthorized use of these marks is strictly prohibited and may result in legal action.
             </p>
           </section>

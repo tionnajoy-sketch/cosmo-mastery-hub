@@ -49,7 +49,7 @@ const LayerReveal = ({ word, onClose }: Props) => {
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-lg bg-slate-900 border-white/10 text-white">
         <div className="text-center mb-4">
-          <p className="text-xs text-white/40 uppercase tracking-wider mb-1">TJ Anderson Layer Method™</p>
+          <p className="text-xs text-white/40 uppercase tracking-wider mb-1">TJ Anderson Layer Method™: Core Cross Agent™</p>
           <h3 className="text-2xl font-display font-bold" style={{ color: layer.color }}>{word.word}</h3>
           <p className="text-xs text-white/50 mt-1">{word.category}</p>
         </div>

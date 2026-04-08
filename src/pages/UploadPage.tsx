@@ -163,7 +163,7 @@ const UploadPage = () => {
             Turn Your Notes Into TJ Anderson Study Blocks
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-            Upload your notes, slides, or documents and the system will transform them into structured TJ Anderson Layer Method™ learning blocks designed to help you understand and retain key concepts.
+            Upload your notes, slides, or documents and the system will transform them into structured TJ Anderson Layer Method™: Core Cross Agent™ learning blocks designed to help you understand and retain key concepts.
           </p>
           <p className="text-xs italic mb-8" style={{ color: "hsl(185 30% 50%)" }}>
             You're in a safe place to learn, not to be perfect. Take your time.
@@ -488,7 +488,7 @@ const UploadPage = () => {
                 <p className="text-sm font-bold text-foreground">Example</p>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                If a student uploads notes about skin structure, the system will generate learning blocks such as <strong className="text-foreground">Epidermis</strong>, <strong className="text-foreground">Dermis</strong>, <strong className="text-foreground">Subcutaneous Layer</strong>, <strong className="text-foreground">Melanin</strong>, and <strong className="text-foreground">Sebaceous Glands</strong>. Each concept will be organized into TJ learning blocks that follow the TJ Anderson Layer Method™ framework.
+                If a student uploads notes about skin structure, the system will generate learning blocks such as <strong className="text-foreground">Epidermis</strong>, <strong className="text-foreground">Dermis</strong>, <strong className="text-foreground">Subcutaneous Layer</strong>, <strong className="text-foreground">Melanin</strong>, and <strong className="text-foreground">Sebaceous Glands</strong>. Each concept will be organized into TJ learning blocks that follow the TJ Anderson Layer Method™: Core Cross Agent™ framework.
               </p>
             </CardContent>
           </Card>

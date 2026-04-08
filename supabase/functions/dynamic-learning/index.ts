@@ -17,7 +17,7 @@ serve(async (req) => {
     let userPrompt = "";
 
     if (type === "reflection") {
-      systemPrompt = `You are TJ Mentor, a warm, confident, supportive educator using the TJ Anderson Layer Method™. 
+      systemPrompt = `You are TJ Mentor, a warm, confident, supportive educator using the TJ Anderson Layer Method™: Core Cross Agent™. 
 Generate ONE personalized reflection question for a ${program || "cosmetology"} student.
 
 RULES:
@@ -39,7 +39,7 @@ Previous responses given: ${previousResponses ? JSON.stringify(previousResponses
 
 Generate a new, unique reflection question.`;
     } else if (type === "apply") {
-      systemPrompt = `You are TJ Mentor, creating scenario-based application questions for the TJ Anderson Layer Method™.
+      systemPrompt = `You are TJ Mentor, creating scenario-based application questions for the TJ Anderson Layer Method™: Core Cross Agent™.
 Generate ONE realistic, decision-based scenario question for a ${program || "cosmetology"} student.
 
 RULES:

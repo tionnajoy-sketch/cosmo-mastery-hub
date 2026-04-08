@@ -139,7 +139,7 @@ const AskTJFullScreen = ({ sectionName, sectionId, blockNumber, terms, learningS
     setLoading(true);
     setPhase("evaluating");
     try {
-      const evalPrompt = `The student was asked: "${currentQuestion}"\n\nTheir answer: "${answer}"\n\nEvaluate their response. Classify it as CORRECT, PARTIALLY_CORRECT, or INCORRECT. Start your response with one of these three words, then provide your teaching response. If incorrect, teach the full concept using TJ Anderson Layer Method: word breakdown, definition, visualization description, metaphor, and application.`;
+      const evalPrompt = `The student was asked: "${currentQuestion}"\n\nTheir answer: "${answer}"\n\nEvaluate their response. Classify it as CORRECT, PARTIALLY_CORRECT, or INCORRECT. Start your response with one of these three words, then provide your teaching response. If incorrect, teach the full concept using the TJ Anderson Layer Method™: Core Cross Agent™: word breakdown, definition, visualization description, metaphor, and application.`;
       
       const response = await callAI([
         ...messages,
