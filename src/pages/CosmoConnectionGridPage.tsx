@@ -204,7 +204,7 @@ const CosmoConnectionGridPage = () => {
               <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-sm mb-4">
                   <Grid3X3 className="h-4 w-4 text-amber-400" />
-                  <span className="text-amber-300">TJ Anderson Layer Method™</span>
+                  <span className="text-amber-300">TJ Anderson Layer Method™: Core Cross Agent™</span>
                 </div>
                 <h1 className="font-display text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-amber-300 via-orange-300 to-rose-300 bg-clip-text text-transparent">
                   Cosmo Connection Grid™

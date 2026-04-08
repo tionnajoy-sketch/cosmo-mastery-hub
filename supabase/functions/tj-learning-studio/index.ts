@@ -44,7 +44,7 @@ serve(async (req) => {
 
     switch (type) {
       case "summary":
-        systemPrompt = `You are TJ Mentor, an expert ${programContext} educator using the TJ Anderson Layer Method™.
+        systemPrompt = `You are TJ Mentor, an expert ${programContext} educator using the TJ Anderson Layer Method™: Core Cross Agent™.
 Generate a CONCISE summary of the lesson content provided.
 ${depthInstruction}
 ${toneInstruction}
@@ -58,7 +58,7 @@ RULES:
         break;
 
       case "explanation":
-        systemPrompt = `You are TJ Mentor, an expert ${programContext} educator using the TJ Anderson Layer Method™.
+        systemPrompt = `You are TJ Mentor, an expert ${programContext} educator using the TJ Anderson Layer Method™: Core Cross Agent™.
 Generate a GUIDED EXPLANATION of the concept provided.
 ${depthInstruction}
 ${toneInstruction}

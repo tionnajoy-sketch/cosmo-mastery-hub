@@ -40,7 +40,7 @@ const quickActions = [
   { label: "✨ Explain simply", prompt: "Explain the current topic to me in simple, beginner-friendly language." },
   { label: "🎨 Give me a metaphor", prompt: "Give me a TJ-style metaphor to help me understand the current topic better." },
   { label: "📝 Quiz me", prompt: "Quiz me on this topic with a state board style question. Include 4 answer choices." },
-  { label: "🧠 Break it down TJ style", prompt: "Break this down TJ style. Give me a full TJ Anderson Layer Method block: Definition, Concept Identity, Visual explanation, Metaphor, Affirmation, Reflection questions, and a Quiz question with answer choices." },
+  { label: "🧠 Break it down TJ style", prompt: "Break this down TJ style. Give me a full TJ Anderson Layer Method™: Core Cross Agent™ block: Definition, Concept Identity, Visual explanation, Metaphor, Affirmation, Reflection questions, and a Quiz question with answer choices." },
   { label: "💡 Why does this matter?", prompt: "Why does this matter in cosmetology? Connect it to real salon work and client experiences." },
   { label: "💜 Encourage me", prompt: "I need some encouragement right now. Remind me why I'm capable of passing the state board exam." },
 ];

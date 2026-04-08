@@ -184,7 +184,7 @@ const Signup = () => {
                       ].map((path) => (
                         <div key={path} onPointerDown={(e) => {
                           e.preventDefault();
-                          toast("This learning path is coming soon and will be powered by the TJ Anderson Layer Method™.");
+                          toast("This learning path is coming soon and will be powered by the TJ Anderson Layer Method™: Core Cross Agent™.");
                         }}>
                           <SelectItem value={path} disabled className="opacity-50">{path}</SelectItem>
                         </div>

@@ -10,7 +10,7 @@ import { Brain, ArrowRight, Sparkles, BookOpen, Eye, Headphones, Hand } from "lu
 import AppFooter from "@/components/AppFooter";
 
 const styleInfo: Record<string, { label: string; icon: any; color: string; tip: string }> = {
-  visual: { label: "Visual Learner", icon: Eye, color: "hsl(265 40% 55%)", tip: "You learn best through images, diagrams, and metaphors. The Picture and Metaphor layers in the TJ Anderson Layer Method™ will be especially powerful for you." },
+  visual: { label: "Visual Learner", icon: Eye, color: "hsl(265 40% 55%)", tip: "You learn best through images, diagrams, and metaphors. The Picture and Metaphor layers in the TJ Anderson Layer Method™: Core Cross Agent™ will be especially powerful for you." },
   reading: { label: "Reading/Writing Learner", icon: BookOpen, color: "hsl(185 45% 40%)", tip: "You retain information by reading and writing. The Definition layer and Journal will be your strongest tools." },
   kinesthetic: { label: "Hands-On Learner", icon: Hand, color: "hsl(25 65% 50%)", tip: "You learn by doing. Activities like Build the Body, Word Scramble, and Mnemonic Builder are designed for you." },
   auditory: { label: "Auditory Learner", icon: Headphones, color: "hsl(346 45% 56%)", tip: "You learn best through listening and speaking. Try reading the Affirmations out loud and discussing metaphors with a study partner." },

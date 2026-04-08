@@ -33,7 +33,7 @@ SYSTEM RULES FOR PROCESSING STUDY MATERIAL (TJ Blocks)
 • Use diagrams or images as the Visualization layer.
 • Focus on the key concept per page.
 
-3. TJ ANDERSON LAYER METHOD™ FIELDS FOR EVERY BLOCK
+3. TJ ANDERSON LAYER METHOD™: CORE CROSS AGENT™ FIELDS FOR EVERY BLOCK
 For every TJ Learning Block, automatically generate these layers:
 
    a) DEFINITION — Clear, student-friendly explanation of the main concept.
@@ -106,7 +106,7 @@ CRITICAL INSTRUCTION: This image contains MULTIPLE vocabulary terms/words with d
 
 DO NOT summarize the image into one block. Read EVERY line, EVERY definition, EVERY handwritten answer.
 
-For EACH term found, generate all TJ Anderson Layer Method fields including:
+For EACH term found, generate all TJ Anderson Layer Method™: Core Cross Agent™ fields including:
 - source_text, explanation, key_concepts, themes, memory_anchors, application_steps
 - difficulty_level, search_tags, page_reference, section_title
 - Plus all standard fields (definition, concept_identity, pronunciation, visualization, metaphor, etc.)
@@ -201,7 +201,7 @@ serve(async (req) => {
             type: "function",
             function: {
               name: "create_tj_blocks",
-              description: "Create TJ Anderson Layer Method learning blocks with full structural metadata.",
+              description: "Create TJ Anderson Layer Method™: Core Cross Agent™ learning blocks with full structural metadata.",
               parameters: {
                 type: "object",
                 properties: {
