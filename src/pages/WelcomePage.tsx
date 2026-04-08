@@ -233,7 +233,7 @@ const WelcomePage = () => {
           </Card>
         </motion.section>
 
-        {/* TJ Anderson Layer Method™ */}
+        {/* TJ Anderson Layer Method™: Core Cross Agent™ */}
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-display text-xl font-semibold text-foreground">The TJ Anderson Layer Method™: Core Cross Agent™</h2>

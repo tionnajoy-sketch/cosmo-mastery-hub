@@ -504,7 +504,7 @@ const UploadPage = () => {
               Instructor Mode
             </DialogTitle>
             <DialogDescription className="text-sm leading-relaxed pt-2">
-              Instructor Mode is designed for licensed educators and cosmetology schools using the TJ Anderson Layer Method™ to create structured curriculum blocks for their students. This feature allows instructors to upload lesson plans, slides, and classroom materials and automatically convert them into TJ curriculum blocks.
+              Instructor Mode is designed for licensed educators and cosmetology schools using the TJ Anderson Layer Method™: Core Cross Agent™ to create structured curriculum blocks for their students. This feature allows instructors to upload lesson plans, slides, and classroom materials and automatically convert them into TJ curriculum blocks.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 pt-2">
