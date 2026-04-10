@@ -181,9 +181,7 @@ export const BackgroundUploadProvider: React.FC<{ children: React.ReactNode }> =
         const allQuizBankQuestions: any[] = [];
         for (let i = 0; i < allDataUrls.length; i++) {
           setProgress(30 + Math.floor(((i + 1) / allDataUrls.length) * 50), `Analyzing image ${i + 1} of ${allDataUrls.length}...`);
-          const { data, error } = await supabase.functions.invoke("process-upload", {
-            body: { content: `[IMAGE] Analyze image ${i + 1} of ${allDataUrls.length}`, moduleId: moduleData.id, filename: file.name, chunkIndex: i + 1, totalChunks: allDataUrls.length, imageDataUrl: allDataUrls[i] },
-          });
+          const { data, error } = await invokeWithRetry("process-upload", { content: `[IMAGE] Analyze image ${i + 1} of ${allDataUrls.length}`, moduleId: moduleData.id, filename: file.name, chunkIndex: i + 1, totalChunks: allDataUrls.length, imageDataUrl: allDataUrls[i] });
           if (error) { console.error(`Image ${i + 1} failed:`, error); continue; }
           allBlocks.push(...(data?.blocks || []));
           allQuizBankQuestions.push(...(data?.quiz_bank_questions || []));
@@ -301,8 +299,7 @@ export const BackgroundUploadProvider: React.FC<{ children: React.ReactNode }> =
               : `Processing ${batch[0].title} (${i + 1}/${totalBatches})...`
           );
 
-          const { data, error } = await supabase.functions.invoke("process-upload", {
-            body: {
+          const { data, error } = await invokeWithRetry("process-upload", {
               content: `[SEGMENTED ${detectedContentType.toUpperCase()} BATCH]`,
               moduleId: moduleData.id,
               filename: file.name,
@@ -312,7 +309,6 @@ export const BackgroundUploadProvider: React.FC<{ children: React.ReactNode }> =
               documentType,
               contentType: detectedContentType,
               segmentedUnits: batch,
-            },
           });
           if (error) { console.error(`Batch ${i + 1} failed:`, error); continue; }
           allBlocks.push(...(data?.blocks || []));
@@ -332,9 +328,7 @@ export const BackgroundUploadProvider: React.FC<{ children: React.ReactNode }> =
           );
 
           const chunkContent = chunk.pages.map(p => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n");
-          const { data, error } = await supabase.functions.invoke("process-upload", {
-            body: { content: chunkContent, moduleId: moduleData.id, filename: file.name, chunkIndex: i + 1, totalChunks, subject: detectedSubject, documentType, chapterNumber: chunk.chapterNumber, sectionTitle: chunk.sectionTitle, pageRange: chunk.pageRange },
-          });
+          const { data, error } = await invokeWithRetry("process-upload", { content: chunkContent, moduleId: moduleData.id, filename: file.name, chunkIndex: i + 1, totalChunks, subject: detectedSubject, documentType, chapterNumber: chunk.chapterNumber, sectionTitle: chunk.sectionTitle, pageRange: chunk.pageRange });
           if (error) { console.error(`Chunk ${i + 1} failed:`, error); continue; }
           const blocks = (data?.blocks || []).map((b: any) => ({ ...b, _chapterNumber: chunk.chapterNumber, _chunkIndex: chunk.chunkIndex }));
           allBlocks.push(...blocks);
