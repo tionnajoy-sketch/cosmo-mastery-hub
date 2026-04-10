@@ -1,6 +1,5 @@
 import * as pdfjsLib from "pdfjs-dist";
 
-// Use the bundled worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
 
 export interface ParsedPage {
@@ -11,6 +10,64 @@ export interface ParsedPage {
 export interface ParsedDocument {
   totalPages: number;
   pages: ParsedPage[];
+}
+
+interface PdfTextItem {
+  str?: string;
+  transform?: number[];
+  hasEOL?: boolean;
+}
+
+function getItemX(item: PdfTextItem): number {
+  return Array.isArray(item.transform) ? item.transform[4] ?? 0 : 0;
+}
+
+function getItemY(item: PdfTextItem): number {
+  return Array.isArray(item.transform) ? item.transform[5] ?? 0 : 0;
+}
+
+function buildTextLines(items: PdfTextItem[]): string[] {
+  const rows: Array<{ y: number; items: PdfTextItem[] }> = [];
+
+  for (const item of items) {
+    const text = item.str?.trim();
+    if (!text) continue;
+
+    const y = getItemY(item);
+    const matchingRow = rows.find((row) => Math.abs(row.y - y) <= 2.5);
+
+    if (matchingRow) {
+      matchingRow.items.push({ ...item, str: text });
+      matchingRow.y = (matchingRow.y + y) / 2;
+    } else {
+      rows.push({ y, items: [{ ...item, str: text }] });
+    }
+  }
+
+  const groupedLines = rows
+    .sort((a, b) => b.y - a.y)
+    .map((row) =>
+      row.items
+        .sort((a, b) => getItemX(a) - getItemX(b))
+        .map((item) => item.str?.trim() || "")
+        .filter(Boolean)
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim()
+    )
+    .filter(Boolean);
+
+  if (groupedLines.length > 0) {
+    return groupedLines;
+  }
+
+  return items
+    .map((item) => item.str?.trim() || "")
+    .filter(Boolean)
+    .join(" ")
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 export async function extractPdfText(
@@ -29,10 +86,7 @@ export async function extractPdfText(
   for (let i = startPage; i <= endPage; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
-    const text = content.items
-      .map((item: any) => item.str)
-      .join(" ")
-      .trim();
+    const text = buildTextLines(content.items as PdfTextItem[]).join("\n").trim();
 
     if (text.length > 0) {
       pages.push({ pageNumber: i, text });
@@ -97,7 +151,6 @@ export function chunkByStructure(
   maxCharsPerChunk: number = 8000
 ): StructuredChunk[] {
   if (!chapters || chapters.length === 0) {
-    // Fallback to flat chunking
     const flat = chunkPages(pages, maxCharsPerChunk);
     return flat.map((chunk, i) => ({
       pages: chunk,
@@ -111,14 +164,12 @@ export function chunkByStructure(
   const chunks: StructuredChunk[] = [];
 
   for (const chapter of chapters) {
-    // Get pages belonging to this chapter
     const chapterPages = pages.filter(
       (p) => p.pageNumber >= chapter.page_start && p.pageNumber <= chapter.page_end
     );
 
     if (chapterPages.length === 0) continue;
 
-    // If chapter has subsections, chunk by subsection
     if (chapter.subsections && chapter.subsections.length > 0) {
       for (const sub of chapter.subsections) {
         const subPages = chapterPages.filter(
@@ -126,7 +177,6 @@ export function chunkByStructure(
         );
         if (subPages.length === 0) continue;
 
-        // Further split if too large
         const subChunks = chunkPages(subPages, maxCharsPerChunk);
         subChunks.forEach((sc, i) => {
           chunks.push({
@@ -139,7 +189,6 @@ export function chunkByStructure(
         });
       }
     } else {
-      // No subsections — chunk the whole chapter
       const chapterChunks = chunkPages(chapterPages, maxCharsPerChunk);
       chapterChunks.forEach((cc, i) => {
         chunks.push({
@@ -153,7 +202,6 @@ export function chunkByStructure(
     }
   }
 
-  // Add any pages not covered by chapters
   const coveredPages = new Set<number>();
   chapters.forEach((ch) => {
     for (let i = ch.page_start; i <= ch.page_end; i++) coveredPages.add(i);
