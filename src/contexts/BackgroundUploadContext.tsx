@@ -270,7 +270,10 @@ export const BackgroundUploadProvider: React.FC<{ children: React.ReactNode }> =
 
       if (segResult.units.length > 0 && (detectedContentType === "dictionary" || detectedContentType === "math")) {
         // ═══ SEGMENTED PATH: send pre-split units in batches ═══
-        const batches = batchUnits(segResult.units, 4000);
+        const batches =
+          detectedContentType === "dictionary"
+            ? batchUnits(segResult.units, 1600, 8)
+            : batchUnits(segResult.units, 4000, 12);
         const totalBatches = batches.length;
 
         for (let i = 0; i < totalBatches; i++) {
@@ -281,10 +284,9 @@ export const BackgroundUploadProvider: React.FC<{ children: React.ReactNode }> =
               : `Processing ${batch[0].title} (${i + 1}/${totalBatches})...`
           );
 
-          const batchContent = batch.map(u => `${u.title}: ${u.body}`).join("\n\n");
           const { data, error } = await supabase.functions.invoke("process-upload", {
             body: {
-              content: batchContent,
+              content: `[SEGMENTED ${detectedContentType.toUpperCase()} BATCH]`,
               moduleId: moduleData.id,
               filename: file.name,
               chunkIndex: i + 1,

@@ -431,8 +431,15 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("Process upload error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500,
+    const isAbortError = e instanceof Error && e.name === "AbortError";
+    return new Response(JSON.stringify({
+      error: isAbortError
+        ? "Processing timed out while generating blocks for this upload batch."
+        : e instanceof Error
+          ? e.message
+          : "Unknown error"
+    }), {
+      status: isAbortError ? 504 : 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

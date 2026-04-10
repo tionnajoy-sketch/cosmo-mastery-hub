@@ -65,34 +65,71 @@ const MATH_CONTENT_SIGNALS = [
   /\bf\(x\)/i,
 ];
 
+function isPageMarkerLine(line: string): boolean {
+  return /^[\s:;,.\-–—|]*page\s*\d+[\s:;,.\-–—|]*$/i.test(line.trim());
+}
+
+function normalizeDictionaryToken(token: string): string {
+  return token.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9'’-]+$/g, "").trim();
+}
+
+function extractDictionaryTokens(line: string): string[] {
+  return line
+    .split(/\s+/)
+    .map(normalizeDictionaryToken)
+    .filter((token) => token.length > 0)
+    .filter((token) => /^[A-Za-z][A-Za-z'’-]{0,24}$/.test(token) || /^[A-Za-z]$/.test(token));
+}
+
+function looksLikeFlattenedWordRun(line: string): boolean {
+  const cleaned = line.replace(/\s+/g, " ").trim();
+  if (!cleaned || isPageMarkerLine(cleaned)) return false;
+  if (/[.!?]{2,}/.test(cleaned)) return false;
+
+  const tokens = extractDictionaryTokens(cleaned);
+  const rawParts = cleaned.split(/\s+/).filter(Boolean);
+
+  if (rawParts.length < 4) return false;
+  if (tokens.length / rawParts.length < 0.8) return false;
+
+  const averageTokenLength = tokens.reduce((sum, token) => sum + token.length, 0) / Math.max(tokens.length, 1);
+  return averageTokenLength <= 12;
+}
+
 function looksLikeDictionary(lines: string[]): boolean {
-  const nonEmpty = lines.filter((l) => l.trim().length > 0);
+  const nonEmpty = lines
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .filter((line) => !isPageMarkerLine(line));
+
   if (nonEmpty.length < 3) return false;
 
   let wordLineCt = 0;
   let hasLongParagraph = false;
 
   for (const line of nonEmpty) {
-    const t = line.trim();
-    // A line longer than 300 chars is likely a paragraph, not a word entry
-    if (t.length > 300) { hasLongParagraph = true; continue; }
-    // Lines that look like individual word/term entries:
-    // - "word — definition" or "word: definition" pattern
-    // - Short standalone word/phrase (under 120 chars, starts with letter/number)
-    // - Numbered list items like "1. word" or "1) word"
-    const hasSeparator = /[:\-—–]\s*.{3,}/.test(t);
-    const isShortEntry = t.length < 120 && /^[A-Za-z0-9]/.test(t);
-    const isNumberedItem = /^\d+[.)]\s+/.test(t);
+    if (looksLikeFlattenedWordRun(line)) {
+      wordLineCt++;
+      continue;
+    }
+
+    if (line.length > 300) {
+      hasLongParagraph = true;
+      continue;
+    }
+
+    const hasSeparator = /[:\-—–=]\s*.{3,}/.test(line);
+    const isShortEntry = line.length < 120 && /^[A-Za-z0-9]/.test(line);
+    const isNumberedItem = /^\d+[.)]\s+/.test(line);
+
     if (hasSeparator || isShortEntry || isNumberedItem) {
       wordLineCt++;
     }
   }
 
-  // If most lines are long paragraphs, not a dictionary
   if (hasLongParagraph && wordLineCt < nonEmpty.length * 0.5) return false;
 
-  // If >40% of lines look like word entries AND we have enough of them
-  return nonEmpty.length >= 5 && wordLineCt / nonEmpty.length > 0.4;
+  return nonEmpty.length >= 5 && wordLineCt / nonEmpty.length > 0.45;
 }
 
 function looksLikeMath(text: string): boolean {
@@ -118,7 +155,7 @@ export function detectContentType(text: string): ContentType {
 function isNonWordLine(line: string): boolean {
   const t = line.trim().toLowerCase();
   if (t.length === 0) return true;
-  // Page headers / footers / titles
+  if (isPageMarkerLine(line)) return true;
   if (/^page\s*\d+/i.test(t)) return true;
   if (/^(chapter|unit|section)\s*\d+/i.test(t) && t.length < 40) return true;
   if (/^(name|date|period|class)\s*[:\-_]/i.test(t)) return true;
@@ -131,30 +168,43 @@ function segmentDictionary(text: string): SegmentedUnit[] {
   const units: SegmentedUnit[] = [];
   let idx = 0;
 
+  const pushWordUnit = (term: string, body?: string) => {
+    const cleanTerm = term.trim();
+    if (!cleanTerm || isNonWordLine(cleanTerm)) return;
+    units.push({
+      index: idx++,
+      title: cleanTerm,
+      body: body?.trim() || cleanTerm,
+      unitType: "word_entry",
+      parentIndex: null,
+    });
+  };
+
   for (const raw of lines) {
     const line = raw.trim();
     if (isNonWordLine(line)) continue;
 
-    // Strip leading numbering like "1. ", "1) ", "• ", "- "
-    const stripped = line.replace(/^\d+[.)]\s+/, "").replace(/^[•\-\*]\s+/, "").trim();
-    if (!stripped) continue;
+    const stripped = line
+      .replace(/^\d+[.)]\s+/, "")
+      .replace(/^[•\-\*]\s+/, "")
+      .trim();
 
-    // Try to split "word — definition" or "word: definition" or "word = definition"
+    if (!stripped || isNonWordLine(stripped)) continue;
+
+    if (looksLikeFlattenedWordRun(stripped)) {
+      const tokens = extractDictionaryTokens(stripped);
+      for (const token of tokens) pushWordUnit(token);
+      continue;
+    }
+
     const sepMatch = stripped.match(/^(.+?)\s*[:\-—–=]\s+(.+)$/);
     const title = sepMatch ? sepMatch[1].trim() : stripped;
     const body = sepMatch ? `${sepMatch[1].trim()}: ${sepMatch[2].trim()}` : stripped;
 
-    // Skip if the "title" is suspiciously long (likely a sentence, not a term)
     if (!sepMatch && title.split(/\s+/).length > 12) continue;
-
-    units.push({
-      index: idx++,
-      title,
-      body,
-      unitType: "word_entry",
-      parentIndex: null,
-    });
+    pushWordUnit(title, body);
   }
+
   return units;
 }
 
@@ -189,7 +239,6 @@ function segmentMath(text: string): SegmentedUnit[] {
       continue;
     }
 
-    // Check if this line is a heading
     const isHeading = MATH_HEADING_PATTERNS.some((p) => p.test(line)) || /^#{1,4}\s/.test(line);
     if (isHeading) {
       if (current) sections.push(current);
@@ -207,28 +256,21 @@ function segmentMath(text: string): SegmentedUnit[] {
   const units: SegmentedUnit[] = [];
   let idx = 0;
 
-  // Create a parent lesson unit
-  const lessonTitle =
-    sections.find((s) => s.type === "lesson_overview")?.heading || "Lesson";
+  const lessonTitle = sections.find((s) => s.type === "lesson_overview")?.heading || "Lesson";
   const parentIdx = idx;
   units.push({
     index: idx++,
     title: lessonTitle,
-    body: sections
-      .find((s) => s.type === "lesson_overview")
-      ?.lines.join("\n")
-      .trim() || "",
+    body: sections.find((s) => s.type === "lesson_overview")?.lines.join("\n").trim() || "",
     unitType: "lesson_overview",
     parentIndex: null,
   });
 
-  // Process each section as child units
   for (const sec of sections) {
     if (sec.type === "lesson_overview") continue;
     const body = sec.lines.join("\n").trim();
     if (!body) continue;
 
-    // For worked examples and practice, break further by numbering
     if (
       sec.type === "worked_example" ||
       sec.type === "guided_practice" ||
@@ -248,8 +290,8 @@ function segmentMath(text: string): SegmentedUnit[] {
                 ? i < items.length / 3
                   ? "easy"
                   : i < (items.length * 2) / 3
-                  ? "medium"
-                  : "challenge"
+                    ? "medium"
+                    : "challenge"
                 : undefined,
           });
         }
@@ -270,7 +312,6 @@ function segmentMath(text: string): SegmentedUnit[] {
 }
 
 function splitByNumbering(text: string): string[] {
-  // Split by patterns like "1.", "1)", "#1", "Problem 1"
   const parts = text.split(/(?=(?:^|\n)\s*(?:\d+[.)]\s|#\d+|(?:problem|example|exercise)\s*\d+))/im);
   return parts.map((p) => p.trim()).filter((p) => p.length > 0);
 }
@@ -302,7 +343,6 @@ function segmentGeneral(text: string): SegmentedUnit[] {
   for (const raw of lines) {
     const line = raw.trim();
 
-    // Detect headings: markdown-style, ALL CAPS short lines, numbered sections
     const isHeading =
       /^#{1,4}\s/.test(line) ||
       (line.length > 2 && line.length < 80 && line === line.toUpperCase() && /[A-Z]/.test(line)) ||
@@ -312,7 +352,6 @@ function segmentGeneral(text: string): SegmentedUnit[] {
       flushCurrent();
       currentTitle = line.replace(/^#{1,4}\s*/, "");
     } else if (line.length === 0 && currentBody.length > 0) {
-      // Double blank line = new section for long bodies
       const bodyLen = currentBody.join("\n").length;
       if (bodyLen > 500) {
         flushCurrent();
@@ -358,22 +397,28 @@ export function segmentDocument(
  */
 export function batchUnits(
   units: SegmentedUnit[],
-  maxCharsPerBatch = 4000
+  maxCharsPerBatch = 4000,
+  maxUnitsPerBatch = Number.POSITIVE_INFINITY
 ): SegmentedUnit[][] {
   const batches: SegmentedUnit[][] = [];
   let current: SegmentedUnit[] = [];
   let currentSize = 0;
 
   for (const unit of units) {
-    const unitSize = unit.title.length + unit.body.length + 50; // overhead
-    if (currentSize + unitSize > maxCharsPerBatch && current.length > 0) {
+    const unitSize = unit.title.length + unit.body.length + 50;
+    const exceedsCharLimit = currentSize + unitSize > maxCharsPerBatch;
+    const exceedsUnitLimit = current.length >= maxUnitsPerBatch;
+
+    if ((exceedsCharLimit || exceedsUnitLimit) && current.length > 0) {
       batches.push(current);
       current = [];
       currentSize = 0;
     }
+
     current.push(unit);
     currentSize += unitSize;
   }
+
   if (current.length > 0) batches.push(current);
 
   return batches;
