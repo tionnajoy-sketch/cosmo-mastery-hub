@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { extractPdfText, chunkByStructure, type ParsedPage, type ChapterInfo } from "@/lib/pdfParser";
+import { segmentDocument, batchUnits, type ContentType } from "@/lib/documentSegmenter";
 
 interface ConversionSummary {
   blocksCreated: number;
