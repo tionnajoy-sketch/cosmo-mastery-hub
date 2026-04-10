@@ -66,20 +66,33 @@ const MATH_CONTENT_SIGNALS = [
 ];
 
 function looksLikeDictionary(lines: string[]): boolean {
-  // Dictionary heuristic: many short lines, most have a clear "word — definition" pattern
   const nonEmpty = lines.filter((l) => l.trim().length > 0);
   if (nonEmpty.length < 3) return false;
 
   let wordLineCt = 0;
+  let hasLongParagraph = false;
+
   for (const line of nonEmpty) {
     const t = line.trim();
-    // Short line with a separator or just a word/phrase
-    if (t.length < 200 && (/[:\-—–]\s*.{5,}/.test(t) || /^[A-Za-z]/.test(t))) {
+    // A line longer than 300 chars is likely a paragraph, not a word entry
+    if (t.length > 300) { hasLongParagraph = true; continue; }
+    // Lines that look like individual word/term entries:
+    // - "word — definition" or "word: definition" pattern
+    // - Short standalone word/phrase (under 120 chars, starts with letter/number)
+    // - Numbered list items like "1. word" or "1) word"
+    const hasSeparator = /[:\-—–]\s*.{3,}/.test(t);
+    const isShortEntry = t.length < 120 && /^[A-Za-z0-9]/.test(t);
+    const isNumberedItem = /^\d+[.)]\s+/.test(t);
+    if (hasSeparator || isShortEntry || isNumberedItem) {
       wordLineCt++;
     }
   }
-  // If >60 % of lines look like word entries, treat as dictionary
-  return wordLineCt / nonEmpty.length > 0.6;
+
+  // If most lines are long paragraphs, not a dictionary
+  if (hasLongParagraph && wordLineCt < nonEmpty.length * 0.5) return false;
+
+  // If >40% of lines look like word entries AND we have enough of them
+  return nonEmpty.length >= 5 && wordLineCt / nonEmpty.length > 0.4;
 }
 
 function looksLikeMath(text: string): boolean {
@@ -122,10 +135,17 @@ function segmentDictionary(text: string): SegmentedUnit[] {
     const line = raw.trim();
     if (isNonWordLine(line)) continue;
 
-    // Try to split "word — definition" or "word: definition"
-    const sepMatch = line.match(/^(.+?)\s*[:\-—–]\s+(.+)$/);
-    const title = sepMatch ? sepMatch[1].trim() : line;
-    const body = sepMatch ? `${sepMatch[1].trim()}: ${sepMatch[2].trim()}` : line;
+    // Strip leading numbering like "1. ", "1) ", "• ", "- "
+    const stripped = line.replace(/^\d+[.)]\s+/, "").replace(/^[•\-\*]\s+/, "").trim();
+    if (!stripped) continue;
+
+    // Try to split "word — definition" or "word: definition" or "word = definition"
+    const sepMatch = stripped.match(/^(.+?)\s*[:\-—–=]\s+(.+)$/);
+    const title = sepMatch ? sepMatch[1].trim() : stripped;
+    const body = sepMatch ? `${sepMatch[1].trim()}: ${sepMatch[2].trim()}` : stripped;
+
+    // Skip if the "title" is suspiciously long (likely a sentence, not a term)
+    if (!sepMatch && title.split(/\s+/).length > 12) continue;
 
     units.push({
       index: idx++,
