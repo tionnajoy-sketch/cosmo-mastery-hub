@@ -3,6 +3,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { extractPdfText, chunkByStructure, type ParsedPage, type ChapterInfo } from "@/lib/pdfParser";
 import { segmentDocument, batchUnits, type ContentType } from "@/lib/documentSegmenter";
 
+// Retry wrapper for edge function invocations that may hit transient 503 errors
+async function invokeWithRetry(fnName: string, body: any, maxRetries = 3): Promise<{ data: any; error: any }> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const { data, error } = await supabase.functions.invoke(fnName, { body });
+    const errMsg = error?.message || data?.error || "";
+    const is503 = String(errMsg).includes("503") || String(errMsg).includes("temporarily unavailable") || data?.fallback === true;
+    if (is503 && attempt < maxRetries - 1) {
+      const backoff = Math.min(3000 * Math.pow(2, attempt), 15000);
+      console.warn(`${fnName} returned 503, retrying in ${backoff}ms (attempt ${attempt + 1}/${maxRetries})`);
+      await new Promise(r => setTimeout(r, backoff));
+      continue;
+    }
+    return { data, error };
+  }
+  return { data: null, error: new Error("Max retries exceeded") };
+}
+
 interface ConversionSummary {
   blocksCreated: number;
   quizBankCreated: number;
