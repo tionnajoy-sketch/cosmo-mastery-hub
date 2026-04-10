@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { extractPdfText, chunkByStructure, type ParsedPage, type ChapterInfo } from "@/lib/pdfParser";
+import { segmentDocument, batchUnits, type ContentType } from "@/lib/documentSegmenter";
 
 interface ConversionSummary {
   blocksCreated: number;
@@ -254,29 +255,72 @@ export const BackgroundUploadProvider: React.FC<{ children: React.ReactNode }> =
         if (chData) chapterIdMap[ch.number] = chData.id;
       }
 
-      // PHASE 3: Chunk + process
+      // PHASE 3: Segment + process
       await supabase.from("uploaded_modules").update({ processing_phase: "processing_chunks" }).eq("id", moduleData.id);
-      const structuredChunks = chunkByStructure(parsedPages, chapters, 6000);
-      const totalChunks = structuredChunks.length;
+
+      // ═══ PRE-PROCESSING SEGMENTATION LAYER ═══
+      // Segment raw text into individual learning units BEFORE TJ conversion
+      setProgress(40, "Segmenting content into learning units...");
+      const segResult = segmentDocument(fullText);
+      const detectedContentType: ContentType = segResult.contentType;
+      console.log(`Document segmented as "${detectedContentType}" — ${segResult.units.length} units found`);
+
       const allBlocks: any[] = [];
       const allQuizBankQuestions: any[] = [];
 
-      for (let i = 0; i < totalChunks; i++) {
-        const chunk = structuredChunks[i];
-        setProgress(45 + Math.floor(((i + 1) / totalChunks) * 40),
-          chapters.length > 0
-            ? `Processing Chapter ${chunk.chapterNumber}: ${chunk.sectionTitle} (${i + 1}/${totalChunks})...`
-            : `Analyzing content... (pass ${i + 1} of ${totalChunks})`
-        );
+      if (segResult.units.length > 0 && (detectedContentType === "dictionary" || detectedContentType === "math")) {
+        // ═══ SEGMENTED PATH: send pre-split units in batches ═══
+        const batches = batchUnits(segResult.units, 6000);
+        const totalBatches = batches.length;
 
-        const chunkContent = chunk.pages.map(p => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n");
-        const { data, error } = await supabase.functions.invoke("process-upload", {
-          body: { content: chunkContent, moduleId: moduleData.id, filename: file.name, chunkIndex: i + 1, totalChunks, subject: detectedSubject, documentType, chapterNumber: chunk.chapterNumber, sectionTitle: chunk.sectionTitle, pageRange: chunk.pageRange },
-        });
-        if (error) { console.error(`Chunk ${i + 1} failed:`, error); continue; }
-        const blocks = (data?.blocks || []).map((b: any) => ({ ...b, _chapterNumber: chunk.chapterNumber, _chunkIndex: chunk.chunkIndex }));
-        allBlocks.push(...blocks);
-        allQuizBankQuestions.push(...(data?.quiz_bank_questions || []));
+        for (let i = 0; i < totalBatches; i++) {
+          const batch = batches[i];
+          setProgress(45 + Math.floor(((i + 1) / totalBatches) * 40),
+            detectedContentType === "dictionary"
+              ? `Converting words ${batch[0].index + 1}–${batch[batch.length - 1].index + 1} of ${segResult.units.length}...`
+              : `Processing ${batch[0].title} (${i + 1}/${totalBatches})...`
+          );
+
+          const batchContent = batch.map(u => `${u.title}: ${u.body}`).join("\n\n");
+          const { data, error } = await supabase.functions.invoke("process-upload", {
+            body: {
+              content: batchContent,
+              moduleId: moduleData.id,
+              filename: file.name,
+              chunkIndex: i + 1,
+              totalChunks: totalBatches,
+              subject: detectedSubject,
+              documentType,
+              contentType: detectedContentType,
+              segmentedUnits: batch,
+            },
+          });
+          if (error) { console.error(`Batch ${i + 1} failed:`, error); continue; }
+          allBlocks.push(...(data?.blocks || []));
+          allQuizBankQuestions.push(...(data?.quiz_bank_questions || []));
+        }
+      } else {
+        // ═══ LEGACY PATH: structure-aware chunking for general content ═══
+        const structuredChunks = chunkByStructure(parsedPages, chapters, 6000);
+        const totalChunks = structuredChunks.length;
+
+        for (let i = 0; i < totalChunks; i++) {
+          const chunk = structuredChunks[i];
+          setProgress(45 + Math.floor(((i + 1) / totalChunks) * 40),
+            chapters.length > 0
+              ? `Processing Chapter ${chunk.chapterNumber}: ${chunk.sectionTitle} (${i + 1}/${totalChunks})...`
+              : `Analyzing content... (pass ${i + 1} of ${totalChunks})`
+          );
+
+          const chunkContent = chunk.pages.map(p => `--- Page ${p.pageNumber} ---\n${p.text}`).join("\n\n");
+          const { data, error } = await supabase.functions.invoke("process-upload", {
+            body: { content: chunkContent, moduleId: moduleData.id, filename: file.name, chunkIndex: i + 1, totalChunks, subject: detectedSubject, documentType, chapterNumber: chunk.chapterNumber, sectionTitle: chunk.sectionTitle, pageRange: chunk.pageRange },
+          });
+          if (error) { console.error(`Chunk ${i + 1} failed:`, error); continue; }
+          const blocks = (data?.blocks || []).map((b: any) => ({ ...b, _chapterNumber: chunk.chapterNumber, _chunkIndex: chunk.chunkIndex }));
+          allBlocks.push(...blocks);
+          allQuizBankQuestions.push(...(data?.quiz_bank_questions || []));
+        }
       }
 
       // PHASE 4: Save
