@@ -179,8 +179,15 @@ Generate 4-6 slides for brief, 6-8 for standard, 8-12 for deep.`;
       throw new Error("AI gateway error");
     }
 
-    const data = await response.json();
-    const content_result = data.choices?.[0]?.message?.content || "";
+    const rawText = await response.text();
+    let content_result = "";
+    try {
+      const data = JSON.parse(rawText);
+      content_result = data.choices?.[0]?.message?.content || "";
+    } catch {
+      console.error("Failed to parse AI response, using raw text");
+      content_result = rawText || "Sorry, I couldn't generate a response. Please try again.";
+    }
 
     return new Response(JSON.stringify({ content: content_result, type }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
