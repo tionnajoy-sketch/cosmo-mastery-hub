@@ -270,7 +270,7 @@ export const BackgroundUploadProvider: React.FC<{ children: React.ReactNode }> =
 
       if (segResult.units.length > 0 && (detectedContentType === "dictionary" || detectedContentType === "math")) {
         // ═══ SEGMENTED PATH: send pre-split units in batches ═══
-        const batches = batchUnits(segResult.units, 6000);
+        const batches = batchUnits(segResult.units, 4000);
         const totalBatches = batches.length;
 
         for (let i = 0; i < totalBatches; i++) {

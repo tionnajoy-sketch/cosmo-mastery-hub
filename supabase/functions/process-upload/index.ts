@@ -224,7 +224,7 @@ serve(async (req) => {
       : content;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), isImageUpload ? 180000 : 55000);
+    const timeout = setTimeout(() => controller.abort(), isImageUpload ? 180000 : 120000);
 
     const userContent: any[] = [];
 

@@ -358,7 +358,7 @@ export function segmentDocument(
  */
 export function batchUnits(
   units: SegmentedUnit[],
-  maxCharsPerBatch = 6000
+  maxCharsPerBatch = 4000
 ): SegmentedUnit[][] {
   const batches: SegmentedUnit[][] = [];
   let current: SegmentedUnit[] = [];
