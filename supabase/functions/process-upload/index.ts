@@ -255,14 +255,7 @@ serve(async (req) => {
       ? buildImageSystemPrompt(subject || "")
       : buildSystemPrompt(subject || "", documentType || "", isSegmented ? contentType : undefined);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      signal: controller.signal,
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const requestBody = JSON.stringify({
         model,
         messages: [
           { role: "system", content: activeSystemPrompt },
@@ -346,13 +339,36 @@ serve(async (req) => {
           },
         ],
         tool_choice: { type: "function", function: { name: "create_tj_blocks" } },
-      }),
-    });
+      });
+
+    // Retry loop for transient 503 errors
+    const MAX_RETRIES = 3;
+    let response: Response | null = null;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      if (attempt > 0) {
+        const backoff = Math.min(2000 * Math.pow(2, attempt - 1), 10000);
+        console.log(`Retry attempt ${attempt + 1} after ${backoff}ms`);
+        await new Promise(r => setTimeout(r, backoff));
+      }
+
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        signal: controller.signal,
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+      });
+
+      if (response.status !== 503) break;
+      console.error(`AI gateway returned 503 on attempt ${attempt + 1}`);
+    }
     clearTimeout(timeout);
 
-    if (!response.ok) {
-      const status = response.status;
-      const t = await response.text();
+    if (!response || !response.ok) {
+      const status = response?.status || 500;
+      const t = response ? await response.text() : "No response";
       console.error("AI gateway error:", status, t);
       if (status === 429) {
         return new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
@@ -362,6 +378,11 @@ serve(async (req) => {
       if (status === 402) {
         return new Response(JSON.stringify({ error: "AI credits need to be topped up." }), {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (status === 503) {
+        return new Response(JSON.stringify({ error: "AI service is temporarily unavailable. Please try again in a moment.", fallback: true }), {
+          status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       throw new Error(`AI gateway error: ${status}`);
