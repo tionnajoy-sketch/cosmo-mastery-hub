@@ -6,32 +6,70 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-function buildSystemPrompt(subject: string, documentType: string): string {
+function buildSystemPrompt(subject: string, documentType: string, contentType?: string): string {
   const subjectLabel = subject || "the subject";
   const contextFrame = subject === "cosmetology"
     ? "Frame examples, metaphors, practice items, reflections, and quizzes to support cosmetology / State Board understanding. When content is general science (anatomy, chemistry, electricity), keep it accurate but connect to how a cosmetology student will use it in real services, safety, or client communication."
     : `Frame examples, metaphors, practice items, reflections, and quizzes within the context of ${subjectLabel}. Connect concepts to real-world applications the learner will encounter in their field.`;
 
+  // Content-type specific instructions
+  let segmentationRules = "";
+
+  if (contentType === "dictionary") {
+    segmentationRules = `
+═══════════════════════════════════════════════════════
+DICTIONARY / WORD LIST MODE
+═══════════════════════════════════════════════════════
+The content has been pre-segmented into INDIVIDUAL word entries.
+• Each entry below is ONE word/term. Create exactly ONE TJ block per entry.
+• Do NOT merge entries. Do NOT skip entries.
+• The "title" field = the word/term. Use it as term_title.
+• The "body" field = the raw text (may include a definition). Expand upon it.
+• Generate all TJ layers for each single word independently.
+`;
+  } else if (contentType === "math") {
+    segmentationRules = `
+═══════════════════════════════════════════════════════
+MATH / STRUCTURED LESSON MODE
+═══════════════════════════════════════════════════════
+The content has been pre-segmented into hierarchical learning units:
+• lesson_overview — overall lesson introduction
+• vocabulary — key terms for the lesson
+• explanation — concept explanation
+• worked_example — fully solved step-by-step example
+• guided_practice — partially worked problem for the student to complete
+• independent_practice — student solves alone (tagged easy/medium/challenge)
+• answer_key — solutions
+
+CRITICAL RULES FOR MATH BLOCKS:
+1. For worked_example units: Include COMPLETE step-by-step solutions. Show every step.
+2. For guided_practice: Show setup and first steps. Leave 1-2 steps for the student.
+3. For independent_practice: Present the problem only. Store the solution in instructor_notes.
+4. Generate quiz questions that test the SAME skill at varying difficulty.
+5. For each practice block, set the difficulty_level field to the tagged difficulty.
+6. Include "why this works" reasoning in the explanation field.
+`;
+  }
+
   return `You are TJ Anderson, an expert educator. You write and speak as if you are personally teaching each concept to a student sitting in your classroom. Your tone is conversational, encouraging, and clear.
 
 Subject Area: ${subjectLabel}
 Document Type: ${documentType || "study material"}
-
+${segmentationRules}
 ═══════════════════════════════════════════════════════
 SYSTEM RULES FOR PROCESSING STUDY MATERIAL (TJ Blocks)
 ═══════════════════════════════════════════════════════
 
 1. CONTENT → TJ LEARNING BLOCK MAPPING
-• Treat each slide/page as one TJ Learning Block.
-• Block title = the main heading/topic on that slide.
-• If there is no clear title, infer a short concept name from the text.
-• Do NOT merge, combine, or summarize multiple slides into a single block.
-• Do NOT skip any slide. Every slide gets its own block.
+• Each pre-segmented unit becomes ONE TJ Learning Block.
+• Block title = the unit title or main heading.
+• Do NOT merge, combine, or summarize multiple units into a single block.
+• Do NOT skip any unit. Every unit gets its own block.
 
 2. READING CONTENT
 • Read any visible text (titles, labels, bullets, table headings).
 • Use diagrams or images as the Visualization layer.
-• Focus on the key concept per page.
+• Focus on the key concept per unit.
 
 3. TJ ANDERSON LAYER METHOD™: CORE CROSS AGENT™ FIELDS FOR EVERY BLOCK
 For every TJ Learning Block, automatically generate these layers:
@@ -83,6 +121,8 @@ SLIDE TYPE DETECTION:
 - Bullet/definition slides → slide_type "concept"
 - Tables/comparisons → slide_type "concept"
 - Diagrams or visuals → slide_type "visual"
+- Math worked examples → slide_type "concept"
+- Practice problems → slide_type "quiz"
 
 ═══════════════════════════════════════════════════════
 QUIZ QUESTION RULES
@@ -94,7 +134,7 @@ QUIZ QUESTION RULES
 4. Explanation: correct answer first, why wrong answers are wrong, encouraging close.
 5. Up to 3 questions testing: definition, application, critical thinking.
 
-Return valid JSON. The number of blocks MUST equal the number of pages/slides provided.`;
+Return valid JSON. The number of blocks MUST equal the number of units provided.`;
 }
 
 function buildImageSystemPrompt(subject: string): string {
@@ -114,6 +154,22 @@ For EACH term found, generate all TJ Anderson Layer Method™: Core Cross Agent�
 Return valid JSON.`;
 }
 
+/**
+ * Format pre-segmented units into a structured prompt the AI can parse clearly.
+ */
+function formatSegmentedContent(units: any[]): string {
+  return units.map((u: any, i: number) => {
+    const header = `═══ UNIT ${i + 1} ═══`;
+    const meta = [
+      `Title: ${u.title}`,
+      `Type: ${u.unitType}`,
+      u.difficulty ? `Difficulty: ${u.difficulty}` : null,
+      u.parentIndex !== null && u.parentIndex !== undefined ? `Parent: Unit ${u.parentIndex + 1}` : null,
+    ].filter(Boolean).join(" | ");
+    return `${header}\n${meta}\n\n${u.body}`;
+  }).join("\n\n");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -131,8 +187,14 @@ serve(async (req) => {
       });
     }
 
-    const { content, moduleId, filename, chunkIndex, totalChunks, imageDataUrl, subject, documentType, chapterNumber, sectionTitle, pageRange } = body;
+    const {
+      content, moduleId, filename, chunkIndex, totalChunks,
+      imageDataUrl, subject, documentType, chapterNumber, sectionTitle, pageRange,
+      // New segmented-mode fields
+      contentType, segmentedUnits,
+    } = body;
     const isImageUpload = !!imageDataUrl;
+    const isSegmented = !!segmentedUnits && Array.isArray(segmentedUnits) && segmentedUnits.length > 0;
 
     if (isImageUpload && imageDataUrl) {
       const dataUrlLength = typeof imageDataUrl === "string" ? imageDataUrl.length : 0;
@@ -170,6 +232,14 @@ serve(async (req) => {
         type: "text",
         text: `Analyze this uploaded image from "${filename}". Create ONE TJ Learning Block for EACH individual term or vocabulary word found. Include all layer method fields including source_text, explanation, key_concepts, themes, memory_anchors, application_steps, difficulty_level, search_tags.`,
       });
+    } else if (isSegmented) {
+      // ═══ SEGMENTED MODE: units are already split by client ═══
+      const formattedUnits = formatSegmentedContent(segmentedUnits);
+      const unitCount = segmentedUnits.length;
+      userContent.push({
+        type: "text",
+        text: `The following content from "${filename}" has been pre-segmented into ${unitCount} individual learning units. Create EXACTLY ONE TJ Block per unit. Do NOT merge units. Do NOT skip any unit.\n\nContent type: ${contentType || "general"}\n\n${formattedUnits}`,
+      });
     } else {
       const contextNote = sectionTitle ? ` (${sectionTitle}, ${pageRange || ""})` : "";
       userContent.push({
@@ -181,7 +251,7 @@ serve(async (req) => {
     const model = isImageUpload ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
     const activeSystemPrompt = isImageUpload
       ? buildImageSystemPrompt(subject || "")
-      : buildSystemPrompt(subject || "", documentType || "");
+      : buildSystemPrompt(subject || "", documentType || "", isSegmented ? contentType : undefined);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       signal: controller.signal,
@@ -231,7 +301,6 @@ serve(async (req) => {
                         quiz_answer_3: { type: "string" },
                         slide_type: { type: "string", enum: ["concept", "visual", "quiz"] },
                         instructor_notes: { type: "string" },
-                        // New structural fields
                         source_text: { type: "string", description: "Original passage text from the source" },
                         explanation: { type: "string", description: "Plain-language explanation of what the passage says" },
                         key_concepts: { type: "array", items: { type: "string" }, description: "Important terms/ideas" },
