@@ -16,7 +16,7 @@ import {
   Brain, Play, Pause, RotateCcw, Sparkles, TrendingUp,
   Eye, Mic, PenLine, Zap, ChevronDown, ChevronRight, ArrowRight, CheckCircle2,
   BookOpen, Target, Lightbulb, ListOrdered, AlertTriangle,
-  Shield, HeartPulse, RefreshCw, Compass, BarChart3, Layers,
+  Shield, HeartPulse, RefreshCw, Compass, BarChart3, Layers, Dna, Wand2, ArrowDown,
 } from "lucide-react";
 import { TJ_TONES, type TJToneMode } from "@/lib/tjTone";
 import SpeakButton from "@/components/SpeakButton";
