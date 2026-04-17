@@ -1,84 +1,65 @@
 
 
-User wants 4 changes:
-1. **Word-by-word highlighting during audio playback** — sync TTS with visible text highlighting
-2. **Collapsible DNA Code sections** — each section on LearningDNAPage as its own accordion
-3. **Guided DNA navigation** — step-by-step guidance through sections so students don't skip
-4. **Convert hamburger menu → button grid** — accessible from every screen
+User wants the DNA primer (Step 1) to be interactive: instead of static text, each learning style and each DNA component should be a clickable tab/card that expands to show its full definition.
 
-Let me check key files quickly to confirm scope.
+Let me check the current LearningDNAPage Step 1 structure quickly.
+<lov-tool-use id="toolu_vrtx_01UfmsbiQGkRyvtGcd9WWFkG" name="code--view" integration-id="code" data="{\"file_path\": \"src/pages/LearningDNAPage.tsx\", \"lines\": \"1-120\"}">
+</lov-tool-use>
 
-Investigating: SpeakButton (TTS source), LearningDNAPage structure, AppHeader menu.
+<lov-tool-use id="toolu_vrtx_01JJ1JoGr1JVz3hNkizL4Etq" name="code--view" integration-id="code" data="{\"file_path\": \"src/pages/LearningDNAPage.tsx\", \"lines\": \"1-200\"}">
+</lov-tool-use>
+I have enough context. The user wants the learning styles (Visual, Metaphorical, Reflective, Analytical, Informational, Applied) and the DNA segments (Layer Strength, Engagement, Retention, Confidence) to be clickable tabs that reveal definitions when clicked.
 
-Already have:
-- `SpeakButton.tsx` uses `fetchTTSWithFallback` returning `HTMLAudioElement` 
-- Browser TTS uses `SpeechSynthesisUtterance` which supports `boundary` event for word timing
-- ElevenLabs audio doesn't have word boundaries — need fallback estimation (split text by words, time-distribute by audio duration)
-- `LearningDNAPage` has 6+ sections rendered as `SectionCard` components in a single scroll
-- `AppHeader` uses `DropdownMenu` with list items
+<lov-plan>
 
-## Plan
+## Plan: Interactive Tabs for Learning Styles & DNA Segments
 
-### 1. Word-by-word audio highlighting
-Create a new `HighlightedSpeech` component (and `useSpeechHighlight` hook) that:
-- Wraps text in word-spans with index keys
-- For browser TTS: use `utterance.onboundary` event (`charIndex`) to compute current word
-- For ElevenLabs audio: estimate word timing by `audio.duration / wordCount` and update on `audio.ontimeupdate`
-- Active word gets highlighted style (yellow/primary background, slight scale)
-- Add new exported helper in `browserTTS.ts` to surface word-boundary callbacks
-- Update `SpeakButton` to optionally accept `targetRef` or `onWordChange` callback OR introduce a sibling component `<ReadAlongText text={...} />` with built-in play button
+The user wants the **6 learning styles** and the **4 DNA segments** in the primer/intro area of the Learning DNA page to be clickable — each one reveals a clear, plain-language explanation when tapped. Right now they're either static labels or single-glance text.
 
-**Approach**: Add a new component `src/components/ReadAlongText.tsx` — drop-in replacement for paragraphs that need read-along. Wraps text + play button + word highlighting. Keep `SpeakButton` unchanged for icon-only uses.
+### What I'll change
 
-Apply on:
-- LearningDNAPage section bodies
-- WelcomePage foreword/about/method text
-- LearningOrbDialog definition/information cards
-- TermListItem definition
+**File: `src/pages/LearningDNAPage.tsx`** — only one file touched.
 
-### 2. Collapsible DNA sections
-Refactor `LearningDNAPage`:
-- Wrap each `SectionCard` in `Accordion` from `@/components/ui/accordion`
-- Default: only first section open
-- Each section header shows: icon, title, completion checkmark, chevron
-- Persist open state per section in localStorage
+#### 1. Learning Styles tab group (Step 1 of the intro)
 
-### 3. Guided DNA navigation
-Add a "step indicator" + "Next Section" button at the bottom of each opened DNA section:
-- Track which sections user has viewed (localStorage `dna_sections_viewed`)
-- "Continue to: [Next Section Name]" button auto-scrolls + opens next accordion
-- Top progress bar: "Section 2 of 6 — keep going"
-- First-time visitor: only first section enabled, others locked with "Read previous section first" tooltip until viewed
-- Add a "Start Tour" CTA at top to walk through all sections sequentially
+Replace the static style chips with a `Tabs` component (using existing `@/components/ui/tabs`) containing 6 tabs:
 
-### 4. Menu as button grid + global access
-Refactor `AppHeader` dropdown:
-- Replace `DropdownMenu` with `Sheet` (slide-in from right)
-- Inside sheet: 2-column grid of large tap-target buttons with icon + label (matching the reference screenshot's tile style — gradient backgrounds, rounded corners, icon centered, label below)
-- Keep grouped sections: Core (Dashboard, Learn, Practice, Progress, Final Exam), Resources (Foreword, Ask TJ, TJ Cafe, Journal, DNA), Premium (Create With TJ, My Modules), Account (Sign Out)
-- `AppHeader` already renders on most pages — confirm it's on every screen; if any page lacks it, add it
-- Menu button stays in top-right always; sheet has explicit close button
+| Tab | Definition (shown on click) |
+|---|---|
+| **Visual** | You learn best by seeing — diagrams, colors, charts, and imagery anchor concepts in your memory. |
+| **Metaphorical** | You learn best through stories and comparisons — when a new idea is tied to something familiar, it sticks. |
+| **Reflective** | You learn best by pausing to think — journaling, summarizing, and asking "what does this mean to me?" |
+| **Analytical** | You learn best by breaking things apart — definitions, structure, logic, and step-by-step reasoning. |
+| **Informational** | You learn best with detailed reading — facts, context, and the "why" behind every concept. |
+| **Applied** | You learn best by doing — practice problems, real-world scenarios, and hands-on examples. |
 
-### Files to create
-- `src/components/ReadAlongText.tsx` — text + play button with word-by-word highlight
-- `src/hooks/useWordHighlight.ts` — handles boundary events + time-based fallback
-- `src/components/AppMenuSheet.tsx` — button-grid navigation sheet
+Each tab shows: icon + label header, plain definition, "How TJ teaches you this way" sentence, and a "ReadAlong" listen button. The user's matched style gets a small "Your style" badge on its tab trigger.
 
-### Files to modify
-- `src/lib/browserTTS.ts` — expose `onBoundary` callback through `fetchTTSWithFallback` options; attach to browser TTS shim
-- `src/components/SpeakButton.tsx` — optional `onWordChange` prop forwarding
-- `src/components/AppHeader.tsx` — replace dropdown with sheet trigger
-- `src/pages/LearningDNAPage.tsx` — accordion structure + guided navigation + progress + lock state
-- `src/pages/WelcomePage.tsx` — use `ReadAlongText` for foreword/about/method
-- `src/components/LearningOrbDialog.tsx` — use `ReadAlongText` for definition + information cards
-- `src/components/TermListItem.tsx` — use `ReadAlongText` for definition
-- Verify `AppHeader` is present on: SectionPage, StudyPage, ActivityPage, QuizPage, all exam pages — add if missing
+#### 2. DNA Segments tab group (Step 1 of the intro, below styles)
+
+Replace the static `LEGEND_ITEMS` grid with a 4-tab group:
+
+| Tab | Definition (shown on click) |
+|---|---|
+| **L — Layer Strength** | The first letter. Shows which learning approach unlocks your brain fastest (e.g., V = Visual). TJ leads every lesson with this layer. |
+| **E — Engagement** | The number 0–9. Measures how much content you can take in at once. Lower = shorter blocks. Higher = deeper dives. |
+| **R — Retention** | The uppercase letter A–Z. Tracks how well concepts stick. A–H = building, I–Q = developing, R–Z = strong recall. |
+| **C — Confidence** | The lowercase letter a–z. Tracks how sure you feel. Lower = more encouragement and smaller steps. Higher = harder challenges. |
+
+Each tab shows: the segment letter visualized as a tile, the plain definition, "What TJ adjusts for you," and the user's current value highlighted (e.g., "Yours: 7/9").
+
+#### 3. Visual treatment
+
+- Tabs styled as **horizontally scrollable pill buttons** on mobile (595px viewport) since 6 tabs won't fit in a row otherwise.
+- Active tab: filled background with the style's color.
+- Inactive tabs: subtle outline.
+- Content area: animated fade-in (`AnimatePresence`) when switching tabs.
+- Default selected tab: the user's own style/value, so they see themselves first.
 
 ### Technical notes
-- Word highlighting uses `<span data-word-idx={i}>` wrappers; active span gets `bg-primary/20 rounded px-0.5 transition-colors`
-- For browser TTS: `utterance.addEventListener('boundary', e => onWord(e.charIndex))` then map char→word index
-- For ElevenLabs (no boundary events): on `play` capture `audio.duration`, then `setInterval` (or `requestAnimationFrame`) computes `currentWord = floor(audio.currentTime / audio.duration * wordCount)` — accurate enough for read-along
-- Pause/stop/seek all reset highlight
-- Accordion uses existing `@/components/ui/accordion` (Radix); state stored in `useState<string[]>` synced to localStorage
-- Sheet uses existing `@/components/ui/sheet`; grid uses Tailwind `grid grid-cols-2 gap-3`
+
+- Use existing `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` from `@/components/ui/tabs`.
+- Add two small data arrays (`LEARNING_STYLES_INFO` and `DNA_SEGMENTS_INFO`) at top of file alongside existing constants.
+- Wrap definitions in `ReadAlongText` so the audio-highlight feature applies here too.
+- No DB changes, no new files, no other pages affected.
 
