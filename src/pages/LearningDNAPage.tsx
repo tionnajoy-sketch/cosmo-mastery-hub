@@ -7,12 +7,14 @@ import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import ReadAlongText from "@/components/ReadAlongText";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Play, Pause, RotateCcw, Sparkles, TrendingUp,
-  Eye, Mic, PenLine, Zap, ChevronDown, ChevronRight,
+  Eye, Mic, PenLine, Zap, ChevronDown, ChevronRight, ArrowRight, CheckCircle2,
   BookOpen, Target, Lightbulb, ListOrdered, AlertTriangle,
   Shield, HeartPulse, RefreshCw, Compass, BarChart3, Layers,
 } from "lucide-react";
@@ -108,22 +110,99 @@ const LEGEND_ITEMS = [
   { segment: "C", label: "Confidence", format: "Lowercase a–z", example: "a–h = growing, i–q = developing, r–z = high" },
 ];
 
-/* ── Section Card wrapper ── */
-const SectionCard = ({ icon: Icon, iconColor, title, delay = 0, children }: {
+/* ── Ordered DNA Section list (for guided flow) ── */
+const DNA_SECTION_ORDER = [
+  { id: "brain",       title: "How My Brain Learns" },
+  { id: "stops",       title: "What Stops Me From Learning" },
+  { id: "combat",      title: "How To Combat It" },
+  { id: "recovery",    title: "My Learning Recovery Plan" },
+  { id: "progression", title: "My Progression" },
+  { id: "tj-uses",     title: "How TJ Uses My DNA" },
+  { id: "type",        title: "My DNA Type" },
+  { id: "best",        title: "How I Learn Best" },
+  { id: "throws",      title: "What Throws Me Off" },
+  { id: "next",        title: "TJ Recommends Next" },
+  { id: "order",       title: "Best Study Order for Me" },
+  { id: "tone",        title: "TJ's Teaching Style" },
+] as const;
+type DNASectionId = (typeof DNA_SECTION_ORDER)[number]["id"];
+
+const VIEWED_KEY = "tj-dna-viewed-sections";
+
+/* ── Collapsible Section Card with guided next-step ── */
+const SectionCard = ({
+  id, icon: Icon, iconColor, title, delay = 0, children,
+  openSection, setOpenSection, viewedSections, markViewed,
+}: {
+  id: DNASectionId;
   icon: any; iconColor: string; title: string; delay?: number; children: React.ReactNode;
-}) => (
-  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}>
-    <Card className="border-0 shadow-md bg-card">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-2 mb-3">
-          <Icon className="h-5 w-5" style={{ color: iconColor }} />
-          <h3 className="font-display text-base font-semibold text-foreground">{title}</h3>
-        </div>
-        {children}
-      </CardContent>
-    </Card>
-  </motion.div>
-);
+  openSection: string | undefined;
+  setOpenSection: (v: string | undefined) => void;
+  viewedSections: Set<string>;
+  markViewed: (id: string) => void;
+}) => {
+  const isOpen = openSection === id;
+  const isViewed = viewedSections.has(id);
+  const orderIdx = DNA_SECTION_ORDER.findIndex((s) => s.id === id);
+  const next = DNA_SECTION_ORDER[orderIdx + 1];
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }} id={`dna-section-${id}`}>
+      <Card className="border-0 shadow-md bg-card overflow-hidden">
+        <Accordion
+          type="single"
+          collapsible
+          value={isOpen ? id : ""}
+          onValueChange={(v) => {
+            const newVal = v || undefined;
+            setOpenSection(newVal);
+            if (newVal === id) markViewed(id);
+          }}
+        >
+          <AccordionItem value={id} className="border-b-0">
+            <AccordionTrigger className="px-6 py-4 hover:no-underline group">
+              <div className="flex items-center gap-3 flex-1 text-left">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${iconColor}15` }}>
+                  <Icon className="h-4.5 w-4.5" style={{ color: iconColor }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Section {orderIdx + 1} of {DNA_SECTION_ORDER.length}
+                  </p>
+                  <h3 className="font-display text-base font-semibold text-foreground truncate">{title}</h3>
+                </div>
+                {isViewed && <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="px-6 pb-6 pt-0 space-y-4">
+                {children}
+                {next && (
+                  <div className="pt-3 border-t flex items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">Up next: <span className="font-medium text-foreground">{next.title}</span></p>
+                    <button
+                      onClick={() => {
+                        markViewed(id);
+                        setOpenSection(next.id);
+                        setTimeout(() => {
+                          document.getElementById(`dna-section-${next.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 120);
+                      }}
+                      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors"
+                      style={{ background: iconColor, color: "white" }}
+                    >
+                      Continue <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </Card>
+    </motion.div>
+  );
+};
 
 const LearningDNAPage = () => {
   const { profile, user } = useAuth();
@@ -137,6 +216,27 @@ const LearningDNAPage = () => {
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Guided section navigation
+  const [openSection, setOpenSection] = useState<string | undefined>(DNA_SECTION_ORDER[0].id);
+  const [viewedSections, setViewedSections] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem(VIEWED_KEY);
+      return new Set(raw ? JSON.parse(raw) : [DNA_SECTION_ORDER[0].id]);
+    } catch { return new Set([DNA_SECTION_ORDER[0].id]); }
+  });
+  const markViewed = useCallback((id: string) => {
+    setViewedSections((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev); next.add(id);
+      try { localStorage.setItem(VIEWED_KEY, JSON.stringify([...next])); } catch { /* noop */ }
+      return next;
+    });
+  }, []);
+  const sharedSectionProps = { openSection, setOpenSection, viewedSections, markViewed };
+  const viewedCount = viewedSections.size;
+  const totalSections = DNA_SECTION_ORDER.length;
+  const guideProgress = Math.round((viewedCount / totalSections) * 100);
 
   // Metrics
   const [metrics, setMetrics] = useState<any[]>([]);
@@ -382,6 +482,24 @@ const LearningDNAPage = () => {
           </Card>
         </motion.div>
 
+        {/* ── Guided Progress Bar ── */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <Card className="border-0 shadow-md bg-card">
+            <CardContent className="p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground">Your DNA Journey</p>
+                <p className="text-xs font-bold text-primary">{viewedCount} of {totalSections} sections</p>
+              </div>
+              <Progress value={guideProgress} className="h-2" />
+              <p className="text-[11px] text-muted-foreground">
+                {viewedCount < totalSections
+                  ? "Tap each section in order — don't skip. Every part of your DNA matters."
+                  : "You've explored every section of your DNA. Powerful work."}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
         {/* ── Tutorial Flow ── */}
         <AnimatePresence>
           {showTutorial && (
@@ -504,9 +622,13 @@ const LearningDNAPage = () => {
         </motion.div>
 
         {/* ── 1. How My Brain Learns ── */}
-        <SectionCard icon={Brain} iconColor="hsl(265 60% 50%)" title="How My Brain Learns" delay={0.25}>
+        <SectionCard icon={Brain} iconColor="hsl(265 60% 50%)" title="How My Brain Learns" delay={0.25} id="brain" {...sharedSectionProps}>
           <div className="p-4 rounded-xl bg-secondary mb-4">
-            <p className="text-sm leading-relaxed text-foreground">{howMyBrainLearns.process}</p>
+            <ReadAlongText
+              text={howMyBrainLearns.process}
+              textClassName="text-sm text-foreground"
+              usageType="lesson"
+            />
           </div>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Your natural learning sequence:</p>
           <div className="space-y-2">
@@ -517,13 +639,10 @@ const LearningDNAPage = () => {
               </div>
             ))}
           </div>
-          <div className="mt-3">
-            <SpeakButton text={`${howMyBrainLearns.process} ${howMyBrainLearns.steps.join(". ")}`} size="sm" label="Listen" />
-          </div>
         </SectionCard>
 
         {/* ── 2. What Stops Me From Learning ── */}
-        <SectionCard icon={AlertTriangle} iconColor="hsl(25 70% 50%)" title="What Stops Me From Learning" delay={0.3}>
+        <SectionCard icon={AlertTriangle} iconColor="hsl(25 70% 50%)" title="What Stops Me From Learning" delay={0.3} id="stops" {...sharedSectionProps}>
           <div className="space-y-3">
             {whatStopsMe.map((item, i) => (
               <Collapsible key={i}>
@@ -554,7 +673,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── 3. How To Combat It ── */}
-        <SectionCard icon={Shield} iconColor="hsl(145 55% 40%)" title="How To Combat It" delay={0.35}>
+        <SectionCard icon={Shield} iconColor="hsl(145 55% 40%)" title="How To Combat It" delay={0.35} id="combat" {...sharedSectionProps}>
           <div className="space-y-3">
             {combatStrategies.map((item, i) => (
               <div key={i} className="p-4 rounded-xl" style={{ background: "hsl(145 40% 96%)", border: "1px solid hsl(145 30% 88%)" }}>
@@ -566,7 +685,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── 4. My Learning Recovery Plan ── */}
-        <SectionCard icon={HeartPulse} iconColor="hsl(320 55% 48%)" title="My Learning Recovery Plan" delay={0.4}>
+        <SectionCard icon={HeartPulse} iconColor="hsl(320 55% 48%)" title="My Learning Recovery Plan" delay={0.4} id="recovery" {...sharedSectionProps}>
           <p className="text-xs text-muted-foreground mb-3">When you feel stuck, overwhelmed, or lost — follow these steps:</p>
           <div className="space-y-2">
             {recoveryPlan.map((item, i) => (
@@ -585,7 +704,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── 5. My Progression ── */}
-        <SectionCard icon={TrendingUp} iconColor="hsl(145 55% 40%)" title="My Progression" delay={0.45}>
+        <SectionCard icon={TrendingUp} iconColor="hsl(145 55% 40%)" title="My Progression" delay={0.45} id="progression" {...sharedSectionProps}>
           <div className="grid grid-cols-3 gap-3 mb-4">
             {[
               { label: "Retention", level: retentionLevel, growth: retentionGrowth, color: "hsl(145 55% 40%)" },
@@ -625,7 +744,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── 6. How TJ Uses My DNA ── */}
-        <SectionCard icon={Compass} iconColor="hsl(320 55% 48%)" title="How TJ Uses My DNA" delay={0.5}>
+        <SectionCard icon={Compass} iconColor="hsl(320 55% 48%)" title="How TJ Uses My DNA" delay={0.5} id="tj-uses" {...sharedSectionProps}>
           <div className="space-y-3">
             {howTJUsesDNA.map((item, i) => {
               const ItemIcon = item.icon;
@@ -645,7 +764,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── My DNA Type ── */}
-        <SectionCard icon={PrimaryIcon} iconColor={primaryStyle.color} title="My DNA Type" delay={0.55}>
+        <SectionCard icon={PrimaryIcon} iconColor={primaryStyle.color} title="My DNA Type" delay={0.55} id="type" {...sharedSectionProps}>
           <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: `${primaryStyle.color}10` }}>
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: primaryStyle.color }}>
               <PrimaryIcon className="h-6 w-6 text-white" />
@@ -658,7 +777,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── How I Learn Best ── */}
-        <SectionCard icon={Lightbulb} iconColor="hsl(42 70% 50%)" title="How I Learn Best" delay={0.6}>
+        <SectionCard icon={Lightbulb} iconColor="hsl(42 70% 50%)" title="How I Learn Best" delay={0.6} id="best" {...sharedSectionProps}>
           <div className="space-y-2">
             {howILearnBest.map((item, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary">
@@ -670,7 +789,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── What Throws Me Off ── */}
-        <SectionCard icon={AlertTriangle} iconColor="hsl(25 70% 50%)" title="What Throws Me Off" delay={0.65}>
+        <SectionCard icon={AlertTriangle} iconColor="hsl(25 70% 50%)" title="What Throws Me Off" delay={0.65} id="throws" {...sharedSectionProps}>
           <div className="space-y-2">
             {whatThrowsMeOff.map((item, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-lg" style={{ background: "hsl(25 60% 97%)" }}>
@@ -682,7 +801,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── TJ Recommends Next ── */}
-        <SectionCard icon={Target} iconColor="hsl(145 55% 40%)" title="TJ Recommends Next" delay={0.7}>
+        <SectionCard icon={Target} iconColor="hsl(145 55% 40%)" title="TJ Recommends Next" delay={0.7} id="next" {...sharedSectionProps}>
           <div className="space-y-2">
             {recommendations.map((rec, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-lg" style={{ background: "hsl(145 40% 96%)" }}>
@@ -694,7 +813,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── Best Study Order ── */}
-        <SectionCard icon={ListOrdered} iconColor="hsl(265 60% 50%)" title="Best Study Order for Me" delay={0.75}>
+        <SectionCard icon={ListOrdered} iconColor="hsl(265 60% 50%)" title="Best Study Order for Me" delay={0.75} id="order" {...sharedSectionProps}>
           <p className="text-xs text-muted-foreground mb-3">TJ reorders every lesson to match your DNA. Here's your personalized sequence:</p>
           <div className="space-y-1.5">
             {rules.stepOrder.map((stepKey, i) => {
@@ -711,7 +830,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── TJ Tone Selector ── */}
-        <SectionCard icon={Mic} iconColor={toneProfile.color} title="TJ's Teaching Style" delay={0.8}>
+        <SectionCard icon={Mic} iconColor={toneProfile.color} title="TJ's Teaching Style" delay={0.8} id="tone" {...sharedSectionProps}>
           <p className="text-xs text-muted-foreground mb-4">Choose how TJ speaks to you throughout the app</p>
           <div className="grid grid-cols-1 gap-2">
             {(Object.entries(TJ_TONES) as [TJToneMode, typeof TJ_TONES[TJToneMode]][]).map(([key, t]) => (
