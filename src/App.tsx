@@ -50,6 +50,7 @@ import TJCafe from "./components/TJCafe";
 import { useStudyBreak } from "./hooks/useStudyBreak";
 import VoiceCacheDashboard from "./pages/VoiceCacheDashboard";
 import NotFound from "./pages/NotFound";
+import GlobalMenuFab from "@/components/GlobalMenuFab";
 
 const queryClient = new QueryClient();
 
@@ -102,6 +103,7 @@ const AppContent = () => {
       </Routes>
       <AskTJFullScreen />
       <TJCafe open={showCafe} onDismiss={dismissCafe} requiredMode={!isManual} />
+      <GlobalMenuFab />
     </>
   );
 };
