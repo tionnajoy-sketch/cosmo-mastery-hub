@@ -1,48 +1,84 @@
 
 
-## Plan: Rename to "TJ Anderson Layer Method™: Core Cross Agent™"
+User wants 4 changes:
+1. **Word-by-word highlighting during audio playback** — sync TTS with visible text highlighting
+2. **Collapsible DNA Code sections** — each section on LearningDNAPage as its own accordion
+3. **Guided DNA navigation** — step-by-step guidance through sections so students don't skip
+4. **Convert hamburger menu → button grid** — accessible from every screen
 
-### What Changes
+Let me check key files quickly to confirm scope.
 
-Update every reference to the TJ Anderson Layer Method across the entire app so the full name reads **TJ Anderson Layer Method™: Core Cross Agent™** — with both names trademarked.
+Investigating: SpeakButton (TTS source), LearningDNAPage structure, AppHeader menu.
 
-Short references (headers, badges, subtitles) will use contextually appropriate forms:
-- Full: "TJ Anderson Layer Method™: Core Cross Agent™"
-- Medium: "TJ Layer Method™: Core Cross Agent™"
-- Short/tagline contexts: keep "TJ Anderson Layer Method™" where adding the subtitle would break layout
+Already have:
+- `SpeakButton.tsx` uses `fetchTTSWithFallback` returning `HTMLAudioElement` 
+- Browser TTS uses `SpeechSynthesisUtterance` which supports `boundary` event for word timing
+- ElevenLabs audio doesn't have word boundaries — need fallback estimation (split text by words, time-distribute by audio duration)
+- `LearningDNAPage` has 6+ sections rendered as `SectionCard` components in a single scroll
+- `AppHeader` uses `DropdownMenu` with list items
 
-### Files to Modify (~19 files with references)
+## Plan
 
-1. **`index.html`** — Update `<title>` and `<meta>` tags
-2. **`src/components/AppFooter.tsx`** — Update copyright notice
-3. **`src/pages/Login.tsx`** — "Powered by" subtitle
-4. **`src/pages/WelcomePage.tsx`** — Header subtitle, method layers section title, voice script
-5. **`src/pages/StrategyPage.tsx`** — Section heading
-6. **`src/pages/UploadPage.tsx`** — Description text and instructor mode dialog
-7. **`src/pages/LearningDNAPage.tsx`** — DNA explanation references
-8. **`src/pages/PretestResultsPage.tsx`** — Learning style tips
-9. **`src/pages/OnboardingPage.tsx`** — Onboarding text
-10. **`src/pages/TermsPage.tsx`** — Legal/trademark section (add Core Cross Agent™ to trademark notice)
-11. **`src/components/AIMentorChat.tsx`** — Quick-prompt text
-12. **`src/components/LearningOrbDialog.tsx`** — AI prompt references
-13. **`src/components/LearningOrchestrator.tsx`** — Any method references
-14. **`src/components/cosmo-grid/LayerReveal.tsx`** — Overlay label
-15. **`src/components/StudentContract.tsx`** — Contract text
-16. **`src/components/AppHeader.tsx`** — If method name appears
-17. **`src/pages/Signup.tsx`** — If method name appears
-18. **`src/pages/Home.tsx`** — Dashboard references
-19. **`supabase/functions/process-upload/index.ts`** — AI prompt references
+### 1. Word-by-word audio highlighting
+Create a new `HighlightedSpeech` component (and `useSpeechHighlight` hook) that:
+- Wraps text in word-spans with index keys
+- For browser TTS: use `utterance.onboundary` event (`charIndex`) to compute current word
+- For ElevenLabs audio: estimate word timing by `audio.duration / wordCount` and update on `audio.ontimeupdate`
+- Active word gets highlighted style (yellow/primary background, slight scale)
+- Add new exported helper in `browserTTS.ts` to surface word-boundary callbacks
+- Update `SpeakButton` to optionally accept `targetRef` or `onWordChange` callback OR introduce a sibling component `<ReadAlongText text={...} />` with built-in play button
 
-### Trademark & Legal Updates
+**Approach**: Add a new component `src/components/ReadAlongText.tsx` — drop-in replacement for paragraphs that need read-along. Wraps text + play button + word highlighting. Keep `SpeakButton` unchanged for icon-only uses.
 
-In `TermsPage.tsx` section 4 (Trademark Notice), update to:
-> "CosmoPrep," "TJ Anderson Layer Method," and "Core Cross Agent" are trademarks of Tionna Joy Anderson.
+Apply on:
+- LearningDNAPage section bodies
+- WelcomePage foreword/about/method text
+- LearningOrbDialog definition/information cards
+- TermListItem definition
 
-In `AppFooter.tsx`:
-> The TJ Anderson Layer Method™: Core Cross Agent™ is a proprietary learning framework created by Tionna Anderson.
+### 2. Collapsible DNA sections
+Refactor `LearningDNAPage`:
+- Wrap each `SectionCard` in `Accordion` from `@/components/ui/accordion`
+- Default: only first section open
+- Each section header shows: icon, title, completion checkmark, chevron
+- Persist open state per section in localStorage
 
-### Approach
-- Global find-and-replace of "TJ Anderson Layer Method™" → "TJ Anderson Layer Method™: Core Cross Agent™" as the default
-- In tight UI spots (buttons, badges, small labels), use the shorter form or just "Core Cross Agent™" where appropriate
-- Ensure ™ appears after both "Layer Method" and "Core Cross Agent" in all instances
+### 3. Guided DNA navigation
+Add a "step indicator" + "Next Section" button at the bottom of each opened DNA section:
+- Track which sections user has viewed (localStorage `dna_sections_viewed`)
+- "Continue to: [Next Section Name]" button auto-scrolls + opens next accordion
+- Top progress bar: "Section 2 of 6 — keep going"
+- First-time visitor: only first section enabled, others locked with "Read previous section first" tooltip until viewed
+- Add a "Start Tour" CTA at top to walk through all sections sequentially
+
+### 4. Menu as button grid + global access
+Refactor `AppHeader` dropdown:
+- Replace `DropdownMenu` with `Sheet` (slide-in from right)
+- Inside sheet: 2-column grid of large tap-target buttons with icon + label (matching the reference screenshot's tile style — gradient backgrounds, rounded corners, icon centered, label below)
+- Keep grouped sections: Core (Dashboard, Learn, Practice, Progress, Final Exam), Resources (Foreword, Ask TJ, TJ Cafe, Journal, DNA), Premium (Create With TJ, My Modules), Account (Sign Out)
+- `AppHeader` already renders on most pages — confirm it's on every screen; if any page lacks it, add it
+- Menu button stays in top-right always; sheet has explicit close button
+
+### Files to create
+- `src/components/ReadAlongText.tsx` — text + play button with word-by-word highlight
+- `src/hooks/useWordHighlight.ts` — handles boundary events + time-based fallback
+- `src/components/AppMenuSheet.tsx` — button-grid navigation sheet
+
+### Files to modify
+- `src/lib/browserTTS.ts` — expose `onBoundary` callback through `fetchTTSWithFallback` options; attach to browser TTS shim
+- `src/components/SpeakButton.tsx` — optional `onWordChange` prop forwarding
+- `src/components/AppHeader.tsx` — replace dropdown with sheet trigger
+- `src/pages/LearningDNAPage.tsx` — accordion structure + guided navigation + progress + lock state
+- `src/pages/WelcomePage.tsx` — use `ReadAlongText` for foreword/about/method
+- `src/components/LearningOrbDialog.tsx` — use `ReadAlongText` for definition + information cards
+- `src/components/TermListItem.tsx` — use `ReadAlongText` for definition
+- Verify `AppHeader` is present on: SectionPage, StudyPage, ActivityPage, QuizPage, all exam pages — add if missing
+
+### Technical notes
+- Word highlighting uses `<span data-word-idx={i}>` wrappers; active span gets `bg-primary/20 rounded px-0.5 transition-colors`
+- For browser TTS: `utterance.addEventListener('boundary', e => onWord(e.charIndex))` then map char→word index
+- For ElevenLabs (no boundary events): on `play` capture `audio.duration`, then `setInterval` (or `requestAnimationFrame`) computes `currentWord = floor(audio.currentTime / audio.duration * wordCount)` — accurate enough for read-along
+- Pause/stop/seek all reset highlight
+- Accordion uses existing `@/components/ui/accordion` (Radix); state stored in `useState<string[]>` synced to localStorage
+- Sheet uses existing `@/components/ui/sheet`; grid uses Tailwind `grid grid-cols-2 gap-3`
 
