@@ -191,17 +191,14 @@ function segmentDictionary(text: string): SegmentedUnit[] {
 
     if (!stripped || isNonWordLine(stripped)) continue;
 
-    if (looksLikeFlattenedWordRun(stripped)) {
-      const tokens = extractDictionaryTokens(stripped);
-      for (const token of tokens) pushWordUnit(token);
-      continue;
-    }
-
+    // IDEA-FIRST RULE: never split a flattened prose line into per-word blocks.
+    // Only treat as a vocabulary entry if it looks like "term: definition" or a short term line.
     const sepMatch = stripped.match(/^(.+?)\s*[:\-—–=]\s+(.+)$/);
     const title = sepMatch ? sepMatch[1].trim() : stripped;
     const body = sepMatch ? `${sepMatch[1].trim()}: ${sepMatch[2].trim()}` : stripped;
 
-    if (!sepMatch && title.split(/\s+/).length > 12) continue;
+    // Skip multi-word lines without a separator (likely prose, not a glossary entry)
+    if (!sepMatch && title.split(/\s+/).length > 6) continue;
     pushWordUnit(title, body);
   }
 
