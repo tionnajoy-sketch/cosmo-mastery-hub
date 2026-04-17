@@ -111,6 +111,44 @@ const LEGEND_ITEMS = [
   { segment: "C", label: "Confidence", format: "Lowercase a–z", example: "a–h = growing, i–q = developing, r–z = high" },
 ];
 
+/* ── Interactive Learning Styles (clickable tabs) ── */
+const LEARNING_STYLES_INFO = [
+  { id: "V", label: "Visual", icon: Eye, color: "hsl(215 80% 50%)",
+    definition: "You learn best by seeing. Diagrams, colors, charts, and imagery anchor concepts in your memory faster than plain text.",
+    tjAction: "TJ leads every lesson with a visual — an image, diagram, or color-coded breakdown — before introducing the words." },
+  { id: "M", label: "Metaphorical", icon: Sparkles, color: "hsl(42 80% 50%)",
+    definition: "You learn best through stories and comparisons. When a new idea is tied to something familiar, it sticks.",
+    tjAction: "TJ opens lessons with a story or metaphor — connecting unfamiliar terms to everyday situations you already know." },
+  { id: "R", label: "Reflective", icon: PenLine, color: "hsl(0 60% 50%)",
+    definition: "You learn best by pausing to think. Journaling, summarizing, and asking 'what does this mean to me?' lock concepts in.",
+    tjAction: "TJ adds reflection prompts and journaling moments after key ideas, giving you space to process before moving on." },
+  { id: "D", label: "Analytical", icon: Zap, color: "hsl(275 60% 55%)",
+    definition: "You learn best by breaking things apart. Definitions, structure, logic, and step-by-step reasoning bring you clarity.",
+    tjAction: "TJ structures content into clean steps, comparisons, and logical sequences — no fluff, just clear breakdowns." },
+  { id: "I", label: "Informational", icon: Brain, color: "hsl(160 50% 40%)",
+    definition: "You learn best with detailed reading. Facts, context, and the 'why' behind every concept satisfy your brain.",
+    tjAction: "TJ gives you deeper context, background details, and the full 'why' so you understand the bigger picture." },
+  { id: "A", label: "Applied", icon: Target, color: "hsl(25 70% 50%)",
+    definition: "You learn best by doing. Practice problems, real-world scenarios, and hands-on examples make ideas real.",
+    tjAction: "TJ adds practice scenarios and 'try this now' moments so you apply each idea immediately after learning it." },
+];
+
+/* ── Interactive DNA Segments (clickable tabs) ── */
+const DNA_SEGMENTS_INFO = [
+  { id: "L", label: "Layer Strength", icon: Layers, color: "hsl(265 60% 50%)",
+    definition: "The first letter of your code. It shows which learning approach unlocks your brain fastest — Visual, Analytical, Metaphorical, Reflective, Informational, or Applied.",
+    tjAction: "TJ leads every lesson with this layer first, putting you in your comfort zone right away so concepts click faster." },
+  { id: "E", label: "Engagement", icon: Zap, color: "hsl(42 70% 50%)",
+    definition: "The number 0–9 in your code. It measures how much content you can take in at once. Lower = shorter blocks. Higher = deeper dives.",
+    tjAction: "TJ adjusts content length, interactive checkpoints, and pacing to match your engagement level — never too much, never too little." },
+  { id: "R", label: "Retention", icon: Target, color: "hsl(145 55% 40%)",
+    definition: "The uppercase letter A–Z. It tracks how well concepts stick. A–H = building, I–Q = developing, R–Z = strong recall.",
+    tjAction: "TJ adds extra memory cues, mnemonics, and spaced reviews when retention is building — and skips repetition when it's strong." },
+  { id: "C", label: "Confidence", icon: Shield, color: "hsl(215 70% 50%)",
+    definition: "The lowercase letter a–z. It tracks how sure you feel. Lower = more encouragement and smaller steps. Higher = harder challenges.",
+    tjAction: "TJ softens the tone and shrinks steps when confidence is low — and ramps up the difficulty when it's high." },
+];
+
 /* ── Ordered DNA Section list (for guided flow) ── */
 const DNA_SECTION_ORDER = [
   { id: "brain",       title: "How My Brain Learns" },
