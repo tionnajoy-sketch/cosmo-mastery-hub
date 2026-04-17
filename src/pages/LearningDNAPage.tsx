@@ -7,6 +7,7 @@ import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import ReadAlongText from "@/components/ReadAlongText";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
@@ -623,7 +624,11 @@ const LearningDNAPage = () => {
         {/* ── 1. How My Brain Learns ── */}
         <SectionCard icon={Brain} iconColor="hsl(265 60% 50%)" title="How My Brain Learns" delay={0.25} id="brain" {...sharedSectionProps}>
           <div className="p-4 rounded-xl bg-secondary mb-4">
-            <p className="text-sm leading-relaxed text-foreground">{howMyBrainLearns.process}</p>
+            <ReadAlongText
+              text={howMyBrainLearns.process}
+              textClassName="text-sm text-foreground"
+              usageType="lesson"
+            />
           </div>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Your natural learning sequence:</p>
           <div className="space-y-2">
@@ -633,9 +638,6 @@ const LearningDNAPage = () => {
                 <p className="text-sm text-foreground">{step}</p>
               </div>
             ))}
-          </div>
-          <div className="mt-3">
-            <SpeakButton text={`${howMyBrainLearns.process} ${howMyBrainLearns.steps.join(". ")}`} size="sm" label="Listen" />
           </div>
         </SectionCard>
 
