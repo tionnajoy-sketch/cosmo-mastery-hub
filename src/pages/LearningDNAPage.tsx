@@ -603,7 +603,7 @@ const LearningDNAPage = () => {
         </motion.div>
 
         {/* ── 1. How My Brain Learns ── */}
-        <SectionCard icon={Brain} iconColor="hsl(265 60% 50%)" title="How My Brain Learns" delay={0.25}>
+        <SectionCard icon={Brain} iconColor="hsl(265 60% 50%)" title="How My Brain Learns" delay={0.25} id="brain" {...sharedSectionProps}>
           <div className="p-4 rounded-xl bg-secondary mb-4">
             <p className="text-sm leading-relaxed text-foreground">{howMyBrainLearns.process}</p>
           </div>
@@ -622,7 +622,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── 2. What Stops Me From Learning ── */}
-        <SectionCard icon={AlertTriangle} iconColor="hsl(25 70% 50%)" title="What Stops Me From Learning" delay={0.3}>
+        <SectionCard icon={AlertTriangle} iconColor="hsl(25 70% 50%)" title="What Stops Me From Learning" delay={0.3} id="stops" {...sharedSectionProps}>
           <div className="space-y-3">
             {whatStopsMe.map((item, i) => (
               <Collapsible key={i}>
@@ -653,7 +653,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── 3. How To Combat It ── */}
-        <SectionCard icon={Shield} iconColor="hsl(145 55% 40%)" title="How To Combat It" delay={0.35}>
+        <SectionCard icon={Shield} iconColor="hsl(145 55% 40%)" title="How To Combat It" delay={0.35} id="combat" {...sharedSectionProps}>
           <div className="space-y-3">
             {combatStrategies.map((item, i) => (
               <div key={i} className="p-4 rounded-xl" style={{ background: "hsl(145 40% 96%)", border: "1px solid hsl(145 30% 88%)" }}>
@@ -665,7 +665,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── 4. My Learning Recovery Plan ── */}
-        <SectionCard icon={HeartPulse} iconColor="hsl(320 55% 48%)" title="My Learning Recovery Plan" delay={0.4}>
+        <SectionCard icon={HeartPulse} iconColor="hsl(320 55% 48%)" title="My Learning Recovery Plan" delay={0.4} id="recovery" {...sharedSectionProps}>
           <p className="text-xs text-muted-foreground mb-3">When you feel stuck, overwhelmed, or lost — follow these steps:</p>
           <div className="space-y-2">
             {recoveryPlan.map((item, i) => (
@@ -684,7 +684,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── 5. My Progression ── */}
-        <SectionCard icon={TrendingUp} iconColor="hsl(145 55% 40%)" title="My Progression" delay={0.45}>
+        <SectionCard icon={TrendingUp} iconColor="hsl(145 55% 40%)" title="My Progression" delay={0.45} id="progression" {...sharedSectionProps}>
           <div className="grid grid-cols-3 gap-3 mb-4">
             {[
               { label: "Retention", level: retentionLevel, growth: retentionGrowth, color: "hsl(145 55% 40%)" },
@@ -724,7 +724,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── 6. How TJ Uses My DNA ── */}
-        <SectionCard icon={Compass} iconColor="hsl(320 55% 48%)" title="How TJ Uses My DNA" delay={0.5}>
+        <SectionCard icon={Compass} iconColor="hsl(320 55% 48%)" title="How TJ Uses My DNA" delay={0.5} id="tj-uses" {...sharedSectionProps}>
           <div className="space-y-3">
             {howTJUsesDNA.map((item, i) => {
               const ItemIcon = item.icon;
@@ -744,7 +744,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── My DNA Type ── */}
-        <SectionCard icon={PrimaryIcon} iconColor={primaryStyle.color} title="My DNA Type" delay={0.55}>
+        <SectionCard icon={PrimaryIcon} iconColor={primaryStyle.color} title="My DNA Type" delay={0.55} id="type" {...sharedSectionProps}>
           <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: `${primaryStyle.color}10` }}>
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: primaryStyle.color }}>
               <PrimaryIcon className="h-6 w-6 text-white" />
@@ -757,7 +757,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── How I Learn Best ── */}
-        <SectionCard icon={Lightbulb} iconColor="hsl(42 70% 50%)" title="How I Learn Best" delay={0.6}>
+        <SectionCard icon={Lightbulb} iconColor="hsl(42 70% 50%)" title="How I Learn Best" delay={0.6} id="best" {...sharedSectionProps}>
           <div className="space-y-2">
             {howILearnBest.map((item, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary">
@@ -769,7 +769,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── What Throws Me Off ── */}
-        <SectionCard icon={AlertTriangle} iconColor="hsl(25 70% 50%)" title="What Throws Me Off" delay={0.65}>
+        <SectionCard icon={AlertTriangle} iconColor="hsl(25 70% 50%)" title="What Throws Me Off" delay={0.65} id="throws" {...sharedSectionProps}>
           <div className="space-y-2">
             {whatThrowsMeOff.map((item, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-lg" style={{ background: "hsl(25 60% 97%)" }}>
@@ -781,7 +781,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── TJ Recommends Next ── */}
-        <SectionCard icon={Target} iconColor="hsl(145 55% 40%)" title="TJ Recommends Next" delay={0.7}>
+        <SectionCard icon={Target} iconColor="hsl(145 55% 40%)" title="TJ Recommends Next" delay={0.7} id="next" {...sharedSectionProps}>
           <div className="space-y-2">
             {recommendations.map((rec, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-lg" style={{ background: "hsl(145 40% 96%)" }}>
@@ -793,7 +793,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── Best Study Order ── */}
-        <SectionCard icon={ListOrdered} iconColor="hsl(265 60% 50%)" title="Best Study Order for Me" delay={0.75}>
+        <SectionCard icon={ListOrdered} iconColor="hsl(265 60% 50%)" title="Best Study Order for Me" delay={0.75} id="order" {...sharedSectionProps}>
           <p className="text-xs text-muted-foreground mb-3">TJ reorders every lesson to match your DNA. Here's your personalized sequence:</p>
           <div className="space-y-1.5">
             {rules.stepOrder.map((stepKey, i) => {
@@ -810,7 +810,7 @@ const LearningDNAPage = () => {
         </SectionCard>
 
         {/* ── TJ Tone Selector ── */}
-        <SectionCard icon={Mic} iconColor={toneProfile.color} title="TJ's Teaching Style" delay={0.8}>
+        <SectionCard icon={Mic} iconColor={toneProfile.color} title="TJ's Teaching Style" delay={0.8} id="tone" {...sharedSectionProps}>
           <p className="text-xs text-muted-foreground mb-4">Choose how TJ speaks to you throughout the app</p>
           <div className="grid grid-cols-1 gap-2">
             {(Object.entries(TJ_TONES) as [TJToneMode, typeof TJ_TONES[TJToneMode]][]).map(([key, t]) => (
