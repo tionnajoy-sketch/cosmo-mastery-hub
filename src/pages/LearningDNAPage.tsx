@@ -595,36 +595,142 @@ const LearningDNAPage = () => {
                 usageType="lesson"
               />
 
-              {/* Explain each segment */}
+              {/* DNA Segments — interactive tabs */}
               <div className="space-y-2 pt-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">The 4 segments of every DNA code</p>
-                {LEGEND_ITEMS.map((item, i) => (
-                  <div key={item.segment} className="flex items-start gap-3 p-3 rounded-xl bg-secondary">
-                    <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ background: segmentColors[i] }}>{item.segment}</span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                      <p className="text-[11px] text-muted-foreground leading-snug">{item.example}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Explain the styles */}
-              <div className="pt-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Possible learning styles (Layer Strength)</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(STYLE_MAP).slice(0, 6).map(([key, s]) => {
-                    const SIcon = s.icon;
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  The 4 segments of every DNA code <span className="font-normal normal-case text-foreground/60">— tap any letter</span>
+                </p>
+                <Tabs defaultValue="L" className="w-full">
+                  <TabsList className="grid grid-cols-4 h-auto p-1 bg-secondary">
+                    {DNA_SEGMENTS_INFO.map((seg) => (
+                      <TabsTrigger
+                        key={seg.id}
+                        value={seg.id}
+                        className="flex flex-col items-center gap-1 py-2 px-1 data-[state=active]:shadow-sm"
+                      >
+                        <span
+                          className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold text-white"
+                          style={{ background: seg.color }}
+                        >
+                          {seg.id}
+                        </span>
+                        <span className="text-[10px] font-medium leading-tight text-center">
+                          {seg.label.split(" ")[0]}
+                        </span>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {DNA_SEGMENTS_INFO.map((seg) => {
+                    const SegIcon = seg.icon;
                     return (
-                      <div key={key} className="flex items-center gap-2 p-2.5 rounded-lg bg-secondary">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${s.color}18` }}>
-                          <SIcon className="h-3.5 w-3.5" style={{ color: s.color }} />
-                        </div>
-                        <span className="text-xs font-medium text-foreground truncate">{s.label}</span>
-                      </div>
+                      <TabsContent key={seg.id} value={seg.id} className="mt-3">
+                        <motion.div
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-4 rounded-xl space-y-3"
+                          style={{ background: `${seg.color}08`, border: `1.5px solid ${seg.color}25` }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <SegIcon className="h-4 w-4" style={{ color: seg.color }} />
+                            <p className="text-sm font-bold text-foreground">
+                              {seg.id} — {seg.label}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                              What it means
+                            </p>
+                            <ReadAlongText
+                              text={seg.definition}
+                              textClassName="text-xs text-foreground leading-relaxed"
+                              usageType="lesson"
+                              showButton={false}
+                            />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: seg.color }}>
+                              What TJ adjusts
+                            </p>
+                            <p className="text-xs text-foreground leading-relaxed">{seg.tjAction}</p>
+                          </div>
+                        </motion.div>
+                      </TabsContent>
                     );
                   })}
-                </div>
+                </Tabs>
+              </div>
+
+              {/* Learning Styles — interactive tabs */}
+              <div className="pt-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                  Possible learning styles <span className="font-normal normal-case text-foreground/60">— tap any style</span>
+                </p>
+                <Tabs defaultValue={LEARNING_STYLES_INFO.find(s => s.id === layerStrength)?.id || "V"} className="w-full">
+                  <TabsList className="flex w-full overflow-x-auto justify-start h-auto p-1 bg-secondary no-scrollbar">
+                    {LEARNING_STYLES_INFO.map((s) => {
+                      const SIcon = s.icon;
+                      const isYours = s.id === layerStrength;
+                      return (
+                        <TabsTrigger
+                          key={s.id}
+                          value={s.id}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs whitespace-nowrap data-[state=active]:shadow-sm flex-shrink-0"
+                        >
+                          <SIcon className="h-3.5 w-3.5" style={{ color: s.color }} />
+                          <span className="font-medium">{s.label}</span>
+                          {isYours && (
+                            <span className="text-[8px] font-bold uppercase px-1 py-0.5 rounded" style={{ background: s.color, color: "white" }}>
+                              You
+                            </span>
+                          )}
+                        </TabsTrigger>
+                      );
+                    })}
+                  </TabsList>
+                  {LEARNING_STYLES_INFO.map((s) => {
+                    const SIcon = s.icon;
+                    const isYours = s.id === layerStrength;
+                    return (
+                      <TabsContent key={s.id} value={s.id} className="mt-3">
+                        <motion.div
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-4 rounded-xl space-y-3"
+                          style={{ background: `${s.color}08`, border: `1.5px solid ${s.color}25` }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: s.color }}>
+                              <SIcon className="h-3.5 w-3.5 text-white" />
+                            </div>
+                            <p className="text-sm font-bold text-foreground">{s.label} Learner</p>
+                            {isYours && (
+                              <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full" style={{ background: s.color, color: "white" }}>
+                                Your style
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                              What this means
+                            </p>
+                            <ReadAlongText
+                              text={s.definition}
+                              textClassName="text-xs text-foreground leading-relaxed"
+                              usageType="lesson"
+                              showButton={false}
+                            />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: s.color }}>
+                              How TJ teaches you
+                            </p>
+                            <p className="text-xs text-foreground leading-relaxed">{s.tjAction}</p>
+                          </div>
+                        </motion.div>
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
               </div>
               <div className="flex items-center justify-center pt-1 text-muted-foreground">
                 <ArrowDown className="h-4 w-4 animate-bounce" />
