@@ -152,6 +152,24 @@ export async function fetchTTSWithFallback(
 function createBrowserAudioShim(text: string): HTMLAudioElement {
   const audio = new Audio();
 
+  // Pre-compute char-index → word-index map so we can dispatch wordboundary events
+  const wordStarts: number[] = [];
+  {
+    const re = /\S+/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) wordStarts.push(m.index);
+  }
+  const charToWordIdx = (charIndex: number) => {
+    // Binary search: find largest wordStart <= charIndex
+    let lo = 0, hi = wordStarts.length - 1, best = 0;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (wordStarts[mid] <= charIndex) { best = mid; lo = mid + 1; }
+      else hi = mid - 1;
+    }
+    return best;
+  };
+
   audio.play = () => {
     return new Promise<void>((resolve) => {
       window.speechSynthesis.cancel();
@@ -161,6 +179,14 @@ function createBrowserAudioShim(text: string): HTMLAudioElement {
         utterance.pitch = 1.0;
         const voice = pickVoice();
         if (voice) utterance.voice = voice;
+        utterance.onboundary = (ev: SpeechSynthesisEvent) => {
+          if (ev.name && ev.name !== "word") return;
+          const idx = charToWordIdx(ev.charIndex || 0);
+          audio.dispatchEvent(new CustomEvent("wordboundary", { detail: { index: idx } }));
+        };
+        utterance.onstart = () => {
+          audio.dispatchEvent(new Event("play"));
+        };
         utterance.onend = () => {
           audio.dispatchEvent(new Event("ended"));
         };
@@ -175,6 +201,7 @@ function createBrowserAudioShim(text: string): HTMLAudioElement {
 
   audio.pause = () => {
     window.speechSynthesis.cancel();
+    audio.dispatchEvent(new Event("pause"));
   };
 
   return audio;
