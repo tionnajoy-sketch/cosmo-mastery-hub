@@ -109,22 +109,99 @@ const LEGEND_ITEMS = [
   { segment: "C", label: "Confidence", format: "Lowercase a–z", example: "a–h = growing, i–q = developing, r–z = high" },
 ];
 
-/* ── Section Card wrapper ── */
-const SectionCard = ({ icon: Icon, iconColor, title, delay = 0, children }: {
+/* ── Ordered DNA Section list (for guided flow) ── */
+const DNA_SECTION_ORDER = [
+  { id: "brain",       title: "How My Brain Learns" },
+  { id: "stops",       title: "What Stops Me From Learning" },
+  { id: "combat",      title: "How To Combat It" },
+  { id: "recovery",    title: "My Learning Recovery Plan" },
+  { id: "progression", title: "My Progression" },
+  { id: "tj-uses",     title: "How TJ Uses My DNA" },
+  { id: "type",        title: "My DNA Type" },
+  { id: "best",        title: "How I Learn Best" },
+  { id: "throws",      title: "What Throws Me Off" },
+  { id: "next",        title: "TJ Recommends Next" },
+  { id: "order",       title: "Best Study Order for Me" },
+  { id: "tone",        title: "TJ's Teaching Style" },
+] as const;
+type DNASectionId = (typeof DNA_SECTION_ORDER)[number]["id"];
+
+const VIEWED_KEY = "tj-dna-viewed-sections";
+
+/* ── Collapsible Section Card with guided next-step ── */
+const SectionCard = ({
+  id, icon: Icon, iconColor, title, delay = 0, children,
+  openSection, setOpenSection, viewedSections, markViewed,
+}: {
+  id: DNASectionId;
   icon: any; iconColor: string; title: string; delay?: number; children: React.ReactNode;
-}) => (
-  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}>
-    <Card className="border-0 shadow-md bg-card">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-2 mb-3">
-          <Icon className="h-5 w-5" style={{ color: iconColor }} />
-          <h3 className="font-display text-base font-semibold text-foreground">{title}</h3>
-        </div>
-        {children}
-      </CardContent>
-    </Card>
-  </motion.div>
-);
+  openSection: string | undefined;
+  setOpenSection: (v: string | undefined) => void;
+  viewedSections: Set<string>;
+  markViewed: (id: string) => void;
+}) => {
+  const isOpen = openSection === id;
+  const isViewed = viewedSections.has(id);
+  const orderIdx = DNA_SECTION_ORDER.findIndex((s) => s.id === id);
+  const next = DNA_SECTION_ORDER[orderIdx + 1];
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }} id={`dna-section-${id}`}>
+      <Card className="border-0 shadow-md bg-card overflow-hidden">
+        <Accordion
+          type="single"
+          collapsible
+          value={isOpen ? id : ""}
+          onValueChange={(v) => {
+            const newVal = v || undefined;
+            setOpenSection(newVal);
+            if (newVal === id) markViewed(id);
+          }}
+        >
+          <AccordionItem value={id} className="border-b-0">
+            <AccordionTrigger className="px-6 py-4 hover:no-underline group">
+              <div className="flex items-center gap-3 flex-1 text-left">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${iconColor}15` }}>
+                  <Icon className="h-4.5 w-4.5" style={{ color: iconColor }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Section {orderIdx + 1} of {DNA_SECTION_ORDER.length}
+                  </p>
+                  <h3 className="font-display text-base font-semibold text-foreground truncate">{title}</h3>
+                </div>
+                {isViewed && <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="px-6 pb-6 pt-0 space-y-4">
+                {children}
+                {next && (
+                  <div className="pt-3 border-t flex items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">Up next: <span className="font-medium text-foreground">{next.title}</span></p>
+                    <button
+                      onClick={() => {
+                        markViewed(id);
+                        setOpenSection(next.id);
+                        setTimeout(() => {
+                          document.getElementById(`dna-section-${next.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 120);
+                      }}
+                      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors"
+                      style={{ background: iconColor, color: "white" }}
+                    >
+                      Continue <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </Card>
+    </motion.div>
+  );
+};
 
 const LearningDNAPage = () => {
   const { profile, user } = useAuth();
