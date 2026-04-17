@@ -481,6 +481,24 @@ const LearningDNAPage = () => {
           </Card>
         </motion.div>
 
+        {/* ── Guided Progress Bar ── */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <Card className="border-0 shadow-md bg-card">
+            <CardContent className="p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground">Your DNA Journey</p>
+                <p className="text-xs font-bold text-primary">{viewedCount} of {totalSections} sections</p>
+              </div>
+              <Progress value={guideProgress} className="h-2" />
+              <p className="text-[11px] text-muted-foreground">
+                {viewedCount < totalSections
+                  ? "Tap each section in order — don't skip. Every part of your DNA matters."
+                  : "You've explored every section of your DNA. Powerful work."}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
         {/* ── Tutorial Flow ── */}
         <AnimatePresence>
           {showTutorial && (
