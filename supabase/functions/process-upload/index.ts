@@ -18,16 +18,16 @@ function buildSystemPrompt(subject: string, documentType: string, contentType?: 
   if (contentType === "dictionary") {
     segmentationRules = `
 ═══════════════════════════════════════════════════════
-DICTIONARY / WORD LIST MODE
+VOCABULARY / GLOSSARY MODE
 ═══════════════════════════════════════════════════════
-The content has been pre-segmented into INDIVIDUAL word entries.
-• Each entry below is ONE word/term. Create exactly ONE TJ block per entry.
-• Do NOT merge entries. Do NOT skip entries. Do NOT combine related words.
-• The "title" field = the word/term. Use it as term_title EXACTLY.
-• The "body" field = the raw text (may include a definition). Expand upon it.
-• Generate all TJ layers for each single word independently.
-• The number of blocks you return MUST equal the number of units provided.
-• Even if two words are related (e.g. "artery" and "vein"), keep them as SEPARATE blocks.
+The content is a vocabulary list or glossary where each entry is a real defined TERM (not just any word).
+• Each entry below represents ONE meaningful vocabulary term with its definition or context.
+• Create exactly ONE TJ block per entry — but ONLY if the entry is a genuine term worth teaching.
+• SKIP entries that are common connector words (a, an, the, to, of, in, is, are, how, why, what, that, and, or, but, if) UNLESS they are part of a proper name or important phrase.
+• SKIP single-letter entries and meaningless fragments.
+• If two adjacent entries clearly belong together as one phrase (e.g. "white" + "paper" → "white paper"), MERGE them into one block titled with the full phrase.
+• The "title" field = the vocabulary term. Use it as term_title EXACTLY (or the merged phrase).
+• Expand the definition into a full TJ block with all layers.
 `;
   } else if (contentType === "math") {
     segmentationRules = `
