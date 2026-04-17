@@ -216,6 +216,27 @@ const LearningDNAPage = () => {
   const [tutorialStep, setTutorialStep] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Guided section navigation
+  const [openSection, setOpenSection] = useState<string | undefined>(DNA_SECTION_ORDER[0].id);
+  const [viewedSections, setViewedSections] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem(VIEWED_KEY);
+      return new Set(raw ? JSON.parse(raw) : [DNA_SECTION_ORDER[0].id]);
+    } catch { return new Set([DNA_SECTION_ORDER[0].id]); }
+  });
+  const markViewed = useCallback((id: string) => {
+    setViewedSections((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev); next.add(id);
+      try { localStorage.setItem(VIEWED_KEY, JSON.stringify([...next])); } catch { /* noop */ }
+      return next;
+    });
+  }, []);
+  const sharedSectionProps = { openSection, setOpenSection, viewedSections, markViewed };
+  const viewedCount = viewedSections.size;
+  const totalSections = DNA_SECTION_ORDER.length;
+  const guideProgress = Math.round((viewedCount / totalSections) * 100);
+
   // Metrics
   const [metrics, setMetrics] = useState<any[]>([]);
   const [earliestMetrics, setEarliestMetrics] = useState<{ retention: number; confidence: number } | null>(null);
