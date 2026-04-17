@@ -265,13 +265,13 @@ serve(async (req) => {
       const unitCount = segmentedUnits.length;
       userContent.push({
         type: "text",
-        text: `The following content from "${filename}" has been pre-segmented into ${unitCount} individual learning units. Create EXACTLY ONE TJ Block per unit. Do NOT merge units. Do NOT skip any unit.\n\nContent type: ${contentType || "general"}\n\n${formattedUnits}`,
+        text: `The following content from "${filename}" has been pre-segmented into ${unitCount} learning units.\n\nFor each unit, decide whether it represents a real teaching IDEA worth its own TJ Block:\n• If YES → create one full TJ Block for that idea.\n• If the unit is a stray connector word, page number, header artifact, or fragment → SKIP it.\n• If two adjacent units clearly form one phrase together (e.g. "white" + "paper" → "white paper") → MERGE them into one block.\n\nNever create a block per word. Always chunk by meaning.\n\nContent type: ${contentType || "general"}\n\n${formattedUnits}`,
       });
     } else {
       const contextNote = sectionTitle ? ` (${sectionTitle}, ${pageRange || ""})` : "";
       userContent.push({
         type: "text",
-        text: `Analyze the following study material from "${filename}"${contextNote}${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}. Create exactly ONE TJ Block per page/slide. Do NOT merge slides.\n\n${truncatedContent}`,
+        text: `Analyze the following study material from "${filename}"${contextNote}${totalChunks > 1 ? ` (section ${chunkIndex} of ${totalChunks})` : ""}.\n\nExtract the KEY IDEAS, definitions, steps, and examples — chunk by MEANING, not by word. Use headings/subheadings as section breaks. Each TJ Block = one full idea or one teaching point. Do NOT split phrases like "white paper" or "core structure" into separate word-blocks. Skip fillers, page numbers, and headers.\n\n${truncatedContent}`,
       });
     }
 
