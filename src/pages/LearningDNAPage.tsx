@@ -11,6 +11,7 @@ import ReadAlongText from "@/components/ReadAlongText";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Play, Pause, RotateCcw, Sparkles, TrendingUp,
@@ -108,6 +109,44 @@ const LEGEND_ITEMS = [
   { segment: "E", label: "Engagement", format: "Number 0–9", example: "7 = highly engaged" },
   { segment: "R", label: "Retention", format: "Uppercase A–Z", example: "A–H = building, I–Q = developing, R–Z = strong" },
   { segment: "C", label: "Confidence", format: "Lowercase a–z", example: "a–h = growing, i–q = developing, r–z = high" },
+];
+
+/* ── Interactive Learning Styles (clickable tabs) ── */
+const LEARNING_STYLES_INFO = [
+  { id: "V", label: "Visual", icon: Eye, color: "hsl(215 80% 50%)",
+    definition: "You learn best by seeing. Diagrams, colors, charts, and imagery anchor concepts in your memory faster than plain text.",
+    tjAction: "TJ leads every lesson with a visual — an image, diagram, or color-coded breakdown — before introducing the words." },
+  { id: "M", label: "Metaphorical", icon: Sparkles, color: "hsl(42 80% 50%)",
+    definition: "You learn best through stories and comparisons. When a new idea is tied to something familiar, it sticks.",
+    tjAction: "TJ opens lessons with a story or metaphor — connecting unfamiliar terms to everyday situations you already know." },
+  { id: "R", label: "Reflective", icon: PenLine, color: "hsl(0 60% 50%)",
+    definition: "You learn best by pausing to think. Journaling, summarizing, and asking 'what does this mean to me?' lock concepts in.",
+    tjAction: "TJ adds reflection prompts and journaling moments after key ideas, giving you space to process before moving on." },
+  { id: "D", label: "Analytical", icon: Zap, color: "hsl(275 60% 55%)",
+    definition: "You learn best by breaking things apart. Definitions, structure, logic, and step-by-step reasoning bring you clarity.",
+    tjAction: "TJ structures content into clean steps, comparisons, and logical sequences — no fluff, just clear breakdowns." },
+  { id: "I", label: "Informational", icon: Brain, color: "hsl(160 50% 40%)",
+    definition: "You learn best with detailed reading. Facts, context, and the 'why' behind every concept satisfy your brain.",
+    tjAction: "TJ gives you deeper context, background details, and the full 'why' so you understand the bigger picture." },
+  { id: "A", label: "Applied", icon: Target, color: "hsl(25 70% 50%)",
+    definition: "You learn best by doing. Practice problems, real-world scenarios, and hands-on examples make ideas real.",
+    tjAction: "TJ adds practice scenarios and 'try this now' moments so you apply each idea immediately after learning it." },
+];
+
+/* ── Interactive DNA Segments (clickable tabs) ── */
+const DNA_SEGMENTS_INFO = [
+  { id: "L", label: "Layer Strength", icon: Layers, color: "hsl(265 60% 50%)",
+    definition: "The first letter of your code. It shows which learning approach unlocks your brain fastest — Visual, Analytical, Metaphorical, Reflective, Informational, or Applied.",
+    tjAction: "TJ leads every lesson with this layer first, putting you in your comfort zone right away so concepts click faster." },
+  { id: "E", label: "Engagement", icon: Zap, color: "hsl(42 70% 50%)",
+    definition: "The number 0–9 in your code. It measures how much content you can take in at once. Lower = shorter blocks. Higher = deeper dives.",
+    tjAction: "TJ adjusts content length, interactive checkpoints, and pacing to match your engagement level — never too much, never too little." },
+  { id: "R", label: "Retention", icon: Target, color: "hsl(145 55% 40%)",
+    definition: "The uppercase letter A–Z. It tracks how well concepts stick. A–H = building, I–Q = developing, R–Z = strong recall.",
+    tjAction: "TJ adds extra memory cues, mnemonics, and spaced reviews when retention is building — and skips repetition when it's strong." },
+  { id: "C", label: "Confidence", icon: Shield, color: "hsl(215 70% 50%)",
+    definition: "The lowercase letter a–z. It tracks how sure you feel. Lower = more encouragement and smaller steps. Higher = harder challenges.",
+    tjAction: "TJ softens the tone and shrinks steps when confidence is low — and ramps up the difficulty when it's high." },
 ];
 
 /* ── Ordered DNA Section list (for guided flow) ── */
@@ -556,36 +595,142 @@ const LearningDNAPage = () => {
                 usageType="lesson"
               />
 
-              {/* Explain each segment */}
+              {/* DNA Segments — interactive tabs */}
               <div className="space-y-2 pt-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">The 4 segments of every DNA code</p>
-                {LEGEND_ITEMS.map((item, i) => (
-                  <div key={item.segment} className="flex items-start gap-3 p-3 rounded-xl bg-secondary">
-                    <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ background: segmentColors[i] }}>{item.segment}</span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                      <p className="text-[11px] text-muted-foreground leading-snug">{item.example}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Explain the styles */}
-              <div className="pt-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Possible learning styles (Layer Strength)</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(STYLE_MAP).slice(0, 6).map(([key, s]) => {
-                    const SIcon = s.icon;
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  The 4 segments of every DNA code <span className="font-normal normal-case text-foreground/60">— tap any letter</span>
+                </p>
+                <Tabs defaultValue="L" className="w-full">
+                  <TabsList className="grid grid-cols-4 h-auto p-1 bg-secondary">
+                    {DNA_SEGMENTS_INFO.map((seg) => (
+                      <TabsTrigger
+                        key={seg.id}
+                        value={seg.id}
+                        className="flex flex-col items-center gap-1 py-2 px-1 data-[state=active]:shadow-sm"
+                      >
+                        <span
+                          className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold text-white"
+                          style={{ background: seg.color }}
+                        >
+                          {seg.id}
+                        </span>
+                        <span className="text-[10px] font-medium leading-tight text-center">
+                          {seg.label.split(" ")[0]}
+                        </span>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {DNA_SEGMENTS_INFO.map((seg) => {
+                    const SegIcon = seg.icon;
                     return (
-                      <div key={key} className="flex items-center gap-2 p-2.5 rounded-lg bg-secondary">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${s.color}18` }}>
-                          <SIcon className="h-3.5 w-3.5" style={{ color: s.color }} />
-                        </div>
-                        <span className="text-xs font-medium text-foreground truncate">{s.label}</span>
-                      </div>
+                      <TabsContent key={seg.id} value={seg.id} className="mt-3">
+                        <motion.div
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-4 rounded-xl space-y-3"
+                          style={{ background: `${seg.color}08`, border: `1.5px solid ${seg.color}25` }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <SegIcon className="h-4 w-4" style={{ color: seg.color }} />
+                            <p className="text-sm font-bold text-foreground">
+                              {seg.id} — {seg.label}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                              What it means
+                            </p>
+                            <ReadAlongText
+                              text={seg.definition}
+                              textClassName="text-xs text-foreground leading-relaxed"
+                              usageType="lesson"
+                              showButton={false}
+                            />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: seg.color }}>
+                              What TJ adjusts
+                            </p>
+                            <p className="text-xs text-foreground leading-relaxed">{seg.tjAction}</p>
+                          </div>
+                        </motion.div>
+                      </TabsContent>
                     );
                   })}
-                </div>
+                </Tabs>
+              </div>
+
+              {/* Learning Styles — interactive tabs */}
+              <div className="pt-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                  Possible learning styles <span className="font-normal normal-case text-foreground/60">— tap any style</span>
+                </p>
+                <Tabs defaultValue={LEARNING_STYLES_INFO.find(s => s.id === layerStrength)?.id || "V"} className="w-full">
+                  <TabsList className="flex w-full overflow-x-auto justify-start h-auto p-1 bg-secondary no-scrollbar">
+                    {LEARNING_STYLES_INFO.map((s) => {
+                      const SIcon = s.icon;
+                      const isYours = s.id === layerStrength;
+                      return (
+                        <TabsTrigger
+                          key={s.id}
+                          value={s.id}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs whitespace-nowrap data-[state=active]:shadow-sm flex-shrink-0"
+                        >
+                          <SIcon className="h-3.5 w-3.5" style={{ color: s.color }} />
+                          <span className="font-medium">{s.label}</span>
+                          {isYours && (
+                            <span className="text-[8px] font-bold uppercase px-1 py-0.5 rounded" style={{ background: s.color, color: "white" }}>
+                              You
+                            </span>
+                          )}
+                        </TabsTrigger>
+                      );
+                    })}
+                  </TabsList>
+                  {LEARNING_STYLES_INFO.map((s) => {
+                    const SIcon = s.icon;
+                    const isYours = s.id === layerStrength;
+                    return (
+                      <TabsContent key={s.id} value={s.id} className="mt-3">
+                        <motion.div
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-4 rounded-xl space-y-3"
+                          style={{ background: `${s.color}08`, border: `1.5px solid ${s.color}25` }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: s.color }}>
+                              <SIcon className="h-3.5 w-3.5 text-white" />
+                            </div>
+                            <p className="text-sm font-bold text-foreground">{s.label} Learner</p>
+                            {isYours && (
+                              <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full" style={{ background: s.color, color: "white" }}>
+                                Your style
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                              What this means
+                            </p>
+                            <ReadAlongText
+                              text={s.definition}
+                              textClassName="text-xs text-foreground leading-relaxed"
+                              usageType="lesson"
+                              showButton={false}
+                            />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: s.color }}>
+                              How TJ teaches you
+                            </p>
+                            <p className="text-xs text-foreground leading-relaxed">{s.tjAction}</p>
+                          </div>
+                        </motion.div>
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
               </div>
               <div className="flex items-center justify-center pt-1 text-muted-foreground">
                 <ArrowDown className="h-4 w-4 animate-bounce" />
