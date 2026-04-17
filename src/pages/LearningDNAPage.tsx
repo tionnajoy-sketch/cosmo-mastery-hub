@@ -542,13 +542,101 @@ const LearningDNAPage = () => {
           )}
         </AnimatePresence>
 
-        {/* ── Interactive DNA Code Tiles ── */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+        {/* ── STEP 1: What Is Your Learning DNA? (Primer) ── */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <Card className="border-0 shadow-md bg-card overflow-hidden">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: "hsl(265 60% 50% / 0.12)", color: "hsl(265 60% 50%)" }}>Step 1</span>
+                <h2 className="font-display text-lg font-bold text-foreground">What is your Learning DNA?</h2>
+              </div>
+              <ReadAlongText
+                text="Your Learning DNA is a 4-character code that describes how your brain learns best. It's made up of four parts: your strongest layer, how engaged you stay, how well you remember, and how confident you feel. TJ reads this code before every lesson and adjusts the order, depth, tone, and difficulty to match you exactly."
+                textClassName="text-sm text-foreground leading-relaxed"
+                usageType="lesson"
+              />
+
+              {/* Explain each segment */}
+              <div className="space-y-2 pt-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">The 4 segments of every DNA code</p>
+                {LEGEND_ITEMS.map((item, i) => (
+                  <div key={item.segment} className="flex items-start gap-3 p-3 rounded-xl bg-secondary">
+                    <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ background: segmentColors[i] }}>{item.segment}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                      <p className="text-[11px] text-muted-foreground leading-snug">{item.example}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Explain the styles */}
+              <div className="pt-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Possible learning styles (Layer Strength)</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(STYLE_MAP).slice(0, 6).map(([key, s]) => {
+                    const SIcon = s.icon;
+                    return (
+                      <div key={key} className="flex items-center gap-2 p-2.5 rounded-lg bg-secondary">
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${s.color}18` }}>
+                          <SIcon className="h-3.5 w-3.5" style={{ color: s.color }} />
+                        </div>
+                        <span className="text-xs font-medium text-foreground truncate">{s.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="flex items-center justify-center pt-1 text-muted-foreground">
+                <ArrowDown className="h-4 w-4 animate-bounce" />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ── STEP 2: Your DNA Type (and WHY) ── */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Card className="border-0 shadow-xl overflow-hidden" style={{ background: `linear-gradient(135deg, ${primaryStyle.color}12, ${primaryStyle.color}04)`, border: `2px solid ${primaryStyle.color}30` }}>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: `${primaryStyle.color}20`, color: primaryStyle.color }}>Step 2</span>
+                <h2 className="font-display text-lg font-bold text-foreground">Your DNA Type</h2>
+              </div>
+              <div className="flex items-center gap-4 p-4 rounded-2xl bg-background/60 backdrop-blur">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: primaryStyle.color }}>
+                  <PrimaryIcon className="h-8 w-8 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">You are a</p>
+                  <p className="font-display text-2xl font-bold leading-tight" style={{ color: primaryStyle.color }}>{primaryStyle.label} Learner</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Why this is your type</p>
+                <ReadAlongText
+                  text={`Based on how you answered your onboarding quiz, your brain showed the strongest signal for ${primaryStyle.label.toLowerCase()} processing. ${howMyBrainLearns.process}`}
+                  textClassName="text-sm text-foreground leading-relaxed"
+                  usageType="lesson"
+                />
+              </div>
+              <div className="p-3 rounded-xl" style={{ background: `${primaryStyle.color}10` }}>
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: primaryStyle.color }}>✨ Identity</p>
+                <p className="text-sm text-foreground leading-relaxed italic">{identityAffirmation}</p>
+              </div>
+              <div className="flex items-center justify-center pt-1 text-muted-foreground">
+                <ArrowDown className="h-4 w-4 animate-bounce" />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ── STEP 3: Your DNA Code ── */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
           <Card className="border-0 shadow-md bg-card">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5" style={{ color: primaryStyle.color }} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: "hsl(42 70% 50% / 0.15)", color: "hsl(42 70% 40%)" }}>Step 3</span>
                   <h2 className="font-display text-lg font-bold text-foreground">Your DNA Code</h2>
                 </div>
                 <SpeakButton text={humanTranslation} size="sm" label="Listen" />
@@ -588,19 +676,116 @@ const LearningDNAPage = () => {
                 )}
               </AnimatePresence>
               <p className="text-xs text-muted-foreground text-center mb-4">Tap any code block to learn what it means</p>
-              <div className="p-4 rounded-xl bg-secondary mb-3">
+              <div className="p-4 rounded-xl bg-secondary">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">🧬 Human Translation</p>
                 <p className="text-sm text-foreground leading-relaxed font-medium">{humanTranslation}</p>
               </div>
-              <div className="p-4 rounded-xl" style={{ background: `${primaryStyle.color}08`, border: `1.5px solid ${primaryStyle.color}20` }}>
-                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: primaryStyle.color }}>✨ Your Learning Identity</p>
-                <p className="text-sm text-foreground leading-relaxed italic">{identityAffirmation}</p>
+              <div className="flex items-center justify-center pt-3 text-muted-foreground">
+                <ArrowDown className="h-4 w-4 animate-bounce" />
               </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ── STEP 4: How TJ + Layer Method™ Strengthen Your Weaknesses ── */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <Card className="border-0 shadow-xl overflow-hidden" style={{ background: "linear-gradient(135deg, hsl(145 55% 40% / 0.08), hsl(215 70% 50% / 0.05))", border: "2px solid hsl(145 55% 40% / 0.25)" }}>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: "hsl(145 55% 40% / 0.15)", color: "hsl(145 55% 30%)" }}>Step 4</span>
+                <h2 className="font-display text-lg font-bold text-foreground">How TJ Strengthens Your Weaknesses</h2>
+              </div>
+              <ReadAlongText
+                text="The TJ Anderson Layer Method™ and your DNA code talk to each other constantly. Every quiz, reflection, and lesson updates your code in real time. When a weakness improves, you'll see a green badge appear here."
+                textClassName="text-sm text-foreground leading-relaxed"
+                usageType="lesson"
+              />
+
+              {/* Weakness → Action mapping with improvement badges */}
+              <div className="space-y-2 pt-1">
+                {[
+                  {
+                    label: "Confidence", level: confidenceLevel, growth: confidenceGrowth, color: "hsl(215 70% 50%)",
+                    weakness: confidenceLevel === "building" ? "You sometimes doubt yourself before answering." : confidenceLevel === "developing" ? "You're growing more sure of yourself." : "You trust yourself in most situations.",
+                    action: confidenceLevel === "building"
+                      ? "TJ uses a softer voice, smaller steps, and starts every lesson with something you already know — building micro-wins."
+                      : confidenceLevel === "developing"
+                      ? "TJ balances support with stretch — gently pushing you into harder material when you're ready."
+                      : "TJ removes hand-holding and challenges you with harder questions and deeper material.",
+                  },
+                  {
+                    label: "Retention", level: retentionLevel, growth: retentionGrowth, color: "hsl(145 55% 40%)",
+                    weakness: retentionLevel === "building" ? "Concepts can fade within a day or two." : retentionLevel === "developing" ? "You hold most concepts but lose detail under pressure." : "Your memory locks information in well.",
+                    action: retentionLevel === "building"
+                      ? "TJ adds extra memory cues, mnemonics, and spaced reviews of yesterday's terms before today's lesson."
+                      : retentionLevel === "developing"
+                      ? "TJ weaves in periodic memory anchors and review prompts at smart intervals."
+                      : "TJ skips repetition and moves you efficiently through new material.",
+                  },
+                  {
+                    label: "Engagement", level: engagementLevel, growth: 0, color: "hsl(42 70% 50%)",
+                    weakness: engagementLevel === "building" ? "Long reading sections cause you to drift." : engagementLevel === "developing" ? "You stay focused with the right pacing." : "You can lock in for long, deep sessions.",
+                    action: engagementLevel === "building"
+                      ? "TJ shortens content blocks, adds interactive checkpoints, and uses voice narration to keep your attention."
+                      : engagementLevel === "developing"
+                      ? "TJ uses a balanced mix of reading, listening, and doing to maintain steady focus."
+                      : "TJ gives you longer, deeper content blocks with fewer interruptions.",
+                  },
+                ].map((m) => (
+                  <div key={m.label} className="p-4 rounded-xl bg-background/60 backdrop-blur space-y-2" style={{ border: `1px solid ${m.color}25` }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ background: m.color }} />
+                        <p className="text-sm font-bold text-foreground">{m.label}</p>
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full capitalize" style={{ background: `${m.color}15`, color: m.color }}>{m.level}</span>
+                      </div>
+                      {m.growth > 0 && (
+                        <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: m.color, color: "white" }}>
+                          <TrendingUp className="h-3 w-3" /> +{m.growth}% improved
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Weakness</p>
+                      <p className="text-xs text-foreground leading-snug">{m.weakness}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: m.color }}>How TJ + Layer Method™ help</p>
+                      <p className="text-xs text-foreground leading-snug">{m.action}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-3 rounded-xl flex items-start gap-3" style={{ background: "hsl(265 60% 50% / 0.08)", border: "1px solid hsl(265 60% 50% / 0.2)" }}>
+                <Wand2 className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: "hsl(265 60% 50%)" }} />
+                <p className="text-xs text-foreground leading-relaxed">
+                  <span className="font-bold">Live sync:</span> Your DNA code recalibrates after every quiz, reflection, and lesson. When a weakness improves, you'll see a green badge here — and TJ will adjust automatically.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ── Deep Dive Divider ── */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="pt-4">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-border" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Deep Dive</p>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+          <p className="text-xs text-center text-muted-foreground mt-2">Explore each part of your DNA in detail below</p>
+        </motion.div>
+
+        {/* ── Legend (collapsible) ── */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+          <Card className="border-0 shadow-sm bg-card">
+            <CardContent className="p-4">
               <Collapsible open={showLegend} onOpenChange={setShowLegend}>
                 <CollapsibleTrigger asChild>
-                  <button className="w-full flex items-center justify-center gap-1 mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <button className="w-full flex items-center justify-between text-xs text-foreground font-medium">
+                    <span>DNA Legend Reference</span>
                     <ChevronDown className={`h-3 w-3 transition-transform ${showLegend ? "rotate-180" : ""}`} />
-                    {showLegend ? "Hide" : "Show"} DNA Legend
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
