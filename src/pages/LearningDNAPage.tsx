@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Play, Pause, RotateCcw, Sparkles, TrendingUp,
-  Eye, Mic, PenLine, Zap, ChevronDown, ChevronRight,
+  Eye, Mic, PenLine, Zap, ChevronDown, ChevronRight, ArrowRight, CheckCircle2,
   BookOpen, Target, Lightbulb, ListOrdered, AlertTriangle,
   Shield, HeartPulse, RefreshCw, Compass, BarChart3, Layers,
 } from "lucide-react";
