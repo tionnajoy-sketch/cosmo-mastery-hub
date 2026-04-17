@@ -102,34 +102,28 @@ function looksLikeDictionary(lines: string[]): boolean {
     .filter((line) => line.length > 0)
     .filter((line) => !isPageMarkerLine(line));
 
-  if (nonEmpty.length < 3) return false;
+  if (nonEmpty.length < 5) return false;
 
-  let wordLineCt = 0;
-  let hasLongParagraph = false;
+  let entryLineCt = 0;
+  let proseLineCt = 0;
 
   for (const line of nonEmpty) {
-    if (looksLikeFlattenedWordRun(line)) {
-      wordLineCt++;
+    // Long lines or many words = prose, not a glossary entry
+    if (line.length > 200 || line.split(/\s+/).length > 18) {
+      proseLineCt++;
       continue;
     }
 
-    if (line.length > 300) {
-      hasLongParagraph = true;
-      continue;
-    }
+    const hasSeparator = /^[A-Za-z][\w\s'’-]{1,40}\s*[:\-—–=]\s+.{3,}/.test(line);
+    const isShortTerm = line.length < 60 && /^[A-Za-z][\w\s'’-]{1,40}$/.test(line);
 
-    const hasSeparator = /[:\-—–=]\s*.{3,}/.test(line);
-    const isShortEntry = line.length < 120 && /^[A-Za-z0-9]/.test(line);
-    const isNumberedItem = /^\d+[.)]\s+/.test(line);
-
-    if (hasSeparator || isShortEntry || isNumberedItem) {
-      wordLineCt++;
-    }
+    if (hasSeparator || isShortTerm) entryLineCt++;
+    else proseLineCt++;
   }
 
-  if (hasLongParagraph && wordLineCt < nonEmpty.length * 0.5) return false;
-
-  return nonEmpty.length >= 5 && wordLineCt / nonEmpty.length > 0.45;
+  // Require strong dominance of glossary-style lines AND minimal prose
+  if (proseLineCt > nonEmpty.length * 0.3) return false;
+  return entryLineCt / nonEmpty.length > 0.7;
 }
 
 function looksLikeMath(text: string): boolean {
