@@ -70,6 +70,18 @@ export const useLearningMetrics = () => {
 
   useEffect(() => { fetchMetrics(); }, [fetchMetrics]);
 
+  // Realtime: re-fetch on any metric/quiz/wrong-answer change for this user
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`learning-metrics-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_learning_metrics", filter: `user_id=eq.${user.id}` }, () => fetchMetrics())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "quiz_results", filter: `user_id=eq.${user.id}` }, () => fetchMetrics())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "wrong_answers", filter: `user_id=eq.${user.id}` }, () => fetchMetrics())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchMetrics]);
+
   const updateTermMetrics = useCallback(async (
     termId: string,
     layerKey: string,
