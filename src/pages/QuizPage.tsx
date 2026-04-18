@@ -10,6 +10,8 @@ import { ArrowLeft, CheckCircle2, XCircle, Brain, Heart, Target, Eye, BookOpen, 
 import { pageColors } from "@/lib/colors";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useCoins } from "@/hooks/useCoins";
+import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
+import { useLearningMetrics } from "@/hooks/useLearningMetrics";
 import SpeakButton from "@/components/SpeakButton";
 
 const c = pageColors.quiz;
@@ -51,6 +53,8 @@ const QuizPage = () => {
   const [calmMessage] = useState(() => calmingQuizMessages[Math.floor(Math.random() * calmingQuizMessages.length)]);
   const [previousBest, setPreviousBest] = useState<{ score: number; total: number } | null>(null);
   const { addCoins } = useCoins();
+  const { updateDNA } = useDNAAdaptation();
+  const { updateTermMetrics } = useLearningMetrics();
   const [totalAttempts, setTotalAttempts] = useState(0);
 
   useEffect(() => {
@@ -94,7 +98,8 @@ const QuizPage = () => {
     if (strategyMode && strategyStep !== "choose") return;
 
     setSelectedAnswer(option);
-    if (option === currentQuestion.correct_option) {
+    const correct = option === currentQuestion.correct_option;
+    if (correct) {
       setScore((s) => s + 1);
       addCoins(10, "correct");
     } else {
@@ -106,7 +111,11 @@ const QuizPage = () => {
         });
       }
     }
+    // Live DNA update — every quiz answer flows back to the DNA engine
+    updateDNA({ quizCorrect: correct, layerCompleted: "quiz" });
     if (currentQuestion.related_term_id) {
+      // Bump term metrics so the DNA Hub & Game Grid reflect this quiz
+      updateTermMetrics(currentQuestion.related_term_id, "quiz", correct ? 10 : 2);
       const { data } = await supabase.from("terms").select("term, metaphor").eq("id", currentQuestion.related_term_id).single();
       if (data) setRelatedTerm(data);
     }
