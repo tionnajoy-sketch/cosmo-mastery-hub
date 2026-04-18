@@ -179,6 +179,40 @@ const GameGridPage = () => {
     return () => clearTimeout(t);
   }, [focusSectionId, terms.length]);
 
+  // Lazy on-demand image generation: any term without an image quietly triggers
+  // generate-term-image so it appears next time. Throttled (max 3 in flight).
+  useEffect(() => {
+    if (terms.length === 0) return;
+    const missing = terms.filter(t => !termImages.has(t.id) && !requestedImageIds.current.has(t.id));
+    if (missing.length === 0) return;
+
+    let cancelled = false;
+    const queue = missing.slice(0, 3); // small batch per render cycle
+    queue.forEach(t => requestedImageIds.current.add(t.id));
+
+    (async () => {
+      for (const t of queue) {
+        if (cancelled) return;
+        try {
+          const { data, error } = await supabase.functions.invoke("generate-term-image", {
+            body: { termId: t.id, term: t.term, definition: t.definition, metaphor: t.metaphor },
+          });
+          if (!error && data?.image_url && !cancelled) {
+            setTermImages(prev => {
+              const next = new Map(prev);
+              next.set(t.id, data.image_url);
+              return next;
+            });
+          }
+        } catch { /* silent — visual is enhancement only */ }
+        // gentle pacing so we never hammer the gateway
+        await new Promise(r => setTimeout(r, 800));
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [terms, termImages]);
+
   const handleNotesChange = useCallback(() => {}, []);
   const toggleSection = useCallback((sectionId: string) => {
     setCollapsedSections(prev => {
