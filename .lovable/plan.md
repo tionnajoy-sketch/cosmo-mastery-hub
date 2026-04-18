@@ -1,65 +1,147 @@
 
 
-User wants the DNA primer (Step 1) to be interactive: instead of static text, each learning style and each DNA component should be a clickable tab/card that expands to show its full definition.
+## V2 DNA Upgrade — Final Plan (with refinements)
 
-Let me check the current LearningDNAPage Step 1 structure quickly.
-<lov-tool-use id="toolu_vrtx_01UfmsbiQGkRyvtGcd9WWFkG" name="code--view" integration-id="code" data="{\"file_path\": \"src/pages/LearningDNAPage.tsx\", \"lines\": \"1-120\"}">
-</lov-tool-use>
+### Architecture: Modular Service Layer
 
-<lov-tool-use id="toolu_vrtx_01JJ1JoGr1JVz3hNkizL4Etq" name="code--view" integration-id="code" data="{\"file_path\": \"src/pages/LearningDNAPage.tsx\", \"lines\": \"1-200\"}">
-</lov-tool-use>
-I have enough context. The user wants the learning styles (Visual, Metaphorical, Reflective, Analytical, Informational, Applied) and the DNA segments (Layer Strength, Engagement, Retention, Confidence) to be clickable tabs that reveal definitions when clicked.
+Create a single source of truth that abstracts storage, so JSONB today → dedicated tables later requires zero business-logic rewrites.
 
-<lov-plan>
+**New files:**
+- `src/lib/dna/types.ts` — `DNAProfileV2`, `LayerScores`, `BehaviorHistory`, `AdaptationContext`, `AdaptationDecisionLog`
+- `src/lib/dna/scoring.ts` — pure functions: `computeFinalDepthScore`, `mapRetentionToScore`, `mapConfidenceToScore`, `computeTrend`
+- `src/lib/dna/layerStrength.ts` — `evaluateDominantLayer` with stability rules
+- `src/lib/dna/recoveryMode.ts` — multi-signal `shouldEnterRecoveryMode`
+- `src/lib/dna/behaviorMemory.ts` — append/truncate helpers, trend extraction
+- `src/lib/dna/adaptationEngine.ts` — orchestrator: takes profile + history → returns `AdaptationContext` + decision log
+- `src/lib/dna/storage.ts` — read/write abstraction (today: profiles JSONB; swappable later)
+- `src/lib/dna/logger.ts` — internal `console.debug` decision trail keyed by reason
 
-## Plan: Interactive Tabs for Learning Styles & DNA Segments
+**Modified:**
+- `src/hooks/useDNAAdaptation.ts` — becomes thin wrapper that calls the engine; preserves V1 return shape, adds V2 fields
+- `src/components/LearningOrbDialog.tsx` — passes richer interaction payload to `updateDNA`
+- `src/components/LearningOrchestrator.tsx` — surfaces V2 context (recoveryMode, trends)
+- `src/pages/LearningDNAPage.tsx` — display trend arrows + recoveryMode indicator
+- `supabase/functions/_shared/dna.ts` — mirrors client engine (single source for prompt context)
+- `supabase/functions/tj-learning-studio/index.ts`, `dynamic-learning/index.ts` — accept richer payload
 
-The user wants the **6 learning styles** and the **4 DNA segments** in the primer/intro area of the Learning DNA page to be clickable — each one reveals a clear, plain-language explanation when tapped. Right now they're either static labels or single-glance text.
+### Phase 1 — Weighted Decision Model
 
-### What I'll change
+In `scoring.ts`:
+```text
+mapRetentionToScore(char A–Z) → 1–10
+mapConfidenceToScore(char a–z) → 1–10
+computeFinalDepthScore(E,R,C) = E*0.4 + R*0.35 + C*0.25
+contentDepth: >7 deep, 4–7 standard, <4 brief
+```
 
-**File: `src/pages/LearningDNAPage.tsx`** — only one file touched.
+V1 bucket strings (`low/developing/strong`) still computed for UI compatibility.
 
-#### 1. Learning Styles tab group (Step 1 of the intro)
+### Phase 2 — Dynamic Layer Strength (Stability Rules)
 
-Replace the static style chips with a `Tabs` component (using existing `@/components/ui/tabs`) containing 6 tabs:
+Schema: `profiles.layer_scores jsonb default '{}'`
 
-| Tab | Definition (shown on click) |
-|---|---|
-| **Visual** | You learn best by seeing — diagrams, colors, charts, and imagery anchor concepts in your memory. |
-| **Metaphorical** | You learn best through stories and comparisons — when a new idea is tied to something familiar, it sticks. |
-| **Reflective** | You learn best by pausing to think — journaling, summarizing, and asking "what does this mean to me?" |
-| **Analytical** | You learn best by breaking things apart — definitions, structure, logic, and step-by-step reasoning. |
-| **Informational** | You learn best with detailed reading — facts, context, and the "why" behind every concept. |
-| **Applied** | You learn best by doing — practice problems, real-world scenarios, and hands-on examples. |
+In `layerStrength.ts` — `evaluateDominantLayer(scores, currentL, evalHistory)`:
+1. **Minimum interactions gate**: total interactions across all layers ≥ 5, else return currentL
+2. **Margin gate**: candidate dominant layer must exceed currentL score by ≥ 20% (or absolute +3, whichever larger)
+3. **Consistency gate**: track last 3 evaluations in `evalHistory`; only update L if same candidate wins 3× consecutively
+4. Returns `{ newL, shouldUpdate, reason }`
 
-Each tab shows: icon + label header, plain definition, "How TJ teaches you this way" sentence, and a "ReadAlong" listen button. The user's matched style gets a small "Your style" badge on its tab trigger.
+`updateDNA` scoring:
+- `quizCorrect=true` → `+2` to layer
+- `timeSpentSeconds > 30` → `+1`
+- `quizCorrect=false` → `-1`
+- `timeSpentSeconds < 10` → `-1`
 
-#### 2. DNA Segments tab group (Step 1 of the intro, below styles)
+### Phase 3 — Pattern Memory + Smart Recovery Mode
 
-Replace the static `LEGEND_ITEMS` grid with a 4-tab group:
+Schema: `profiles.behavior_history jsonb default '{"recentQuizzes":[],"recentTimes":[],"recentReflections":[],"recentLayerEvals":[]}'`
 
-| Tab | Definition (shown on click) |
-|---|---|
-| **L — Layer Strength** | The first letter. Shows which learning approach unlocks your brain fastest (e.g., V = Visual). TJ leads every lesson with this layer. |
-| **E — Engagement** | The number 0–9. Measures how much content you can take in at once. Lower = shorter blocks. Higher = deeper dives. |
-| **R — Retention** | The uppercase letter A–Z. Tracks how well concepts stick. A–H = building, I–Q = developing, R–Z = strong recall. |
-| **C — Confidence** | The lowercase letter a–z. Tracks how sure you feel. Lower = more encouragement and smaller steps. Higher = harder challenges. |
+Each array truncated to last 10.
 
-Each tab shows: the segment letter visualized as a tile, the plain definition, "What TJ adjusts for you," and the user's current value highlighted (e.g., "Yours: 7/9").
+In `recoveryMode.ts` — multi-signal trigger (any 2+ true):
+- `failStreak >= 3` (last 3 quiz results)
+- `confidenceLevel === "low"` OR `confidenceTrend === "decreasing"`
+- `retentionLevel === "low"` OR `retentionTrend === "decreasing"`
+- `engagementTrend === "decreasing"`
 
-#### 3. Visual treatment
+Recovery mode forces: `difficulty="guided"`, `contentDepth="brief"`, `microSteps=true`, `toneModifier="supportive"`, `addMemoryCues=true`.
 
-- Tabs styled as **horizontally scrollable pill buttons** on mobile (595px viewport) since 6 tabs won't fit in a row otherwise.
-- Active tab: filled background with the style's color.
-- Inactive tabs: subtle outline.
-- Content area: animated fade-in (`AnimatePresence`) when switching tabs.
-- Default selected tab: the user's own style/value, so they see themselves first.
+### Phase 4 — Extended DNAProfile
 
-### Technical notes
+```text
+DNAProfileV2 extends DNAProfile {
+  engagementTrend, retentionTrend, confidenceTrend: "increasing"|"stable"|"decreasing"
+  recoveryMode: boolean
+  layerScores: Record<layerKey, number>
+  weakestLayer: string
+  finalDepthScore: number
+}
+```
 
-- Use existing `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` from `@/components/ui/tabs`.
-- Add two small data arrays (`LEARNING_STYLES_INFO` and `DNA_SEGMENTS_INFO`) at top of file alongside existing constants.
-- Wrap definitions in `ReadAlongText` so the audio-highlight feature applies here too.
-- No DB changes, no new files, no other pages affected.
+Trend = sign of mean delta across last 3 entries vs prior 3. Defaults to "stable" with insufficient data.
+
+### Phase 5 — Enhanced Edge Function Prompts
+
+Client passes:
+```text
+{ learnerType, dominantLayer, weakestLayer, engagementLevel,
+  retentionLevel, confidenceLevel, trendSignals, recoveryMode, finalDepthScore }
+```
+
+`_shared/dna.ts` server-side builder produces matching `AdaptationContext`. Prompt logic:
+- `recoveryMode=true` → overrides all to gentle/repetitive/micro
+- Layer-specific instruction mapping (Applied → real-world, Visual → spatial language, etc.)
+- Trend-aware nudges ("confidence rising — push slightly harder")
+
+### Phase 6 — V1 Fallback Guarantee
+
+In `adaptationEngine.ts`:
+```text
+if (!layerScores || !behaviorHistory || isEmpty) {
+  return buildV1AdaptationRules(dna)  // exact V1 logic preserved
+}
+```
+
+Edge functions: if V2 payload fields missing, fall back to current V1 prompt builder.
+
+Existing `buildAdaptationRules()` export retained as `buildV1AdaptationRules()` — never modified, never removed.
+
+### Phase 7 — Decision Logging (Explainability)
+
+`AdaptationDecisionLog` shape:
+```text
+{
+  timestamp, decisions: [
+    { field: "contentDepth", value: "deep", reason: "finalDepthScore=7.8 > 7" },
+    { field: "recoveryMode", value: true, reason: "failStreak=3 + confidenceTrend=decreasing" },
+    { field: "dominantLayer", value: "V", reason: "consistent lead 3 evals, +24% margin" },
+    { field: "fallback", value: "v1", reason: "behaviorHistory empty" }
+  ]
+}
+```
+
+Logged via `console.debug("[DNA]", log)` — never user-facing. Returned alongside rules for future devtools panel.
+
+### Phase 8 — Cleanup
+
+- Shared parser `_shared/dna.ts` — single source for client + server
+- Layer keys `B/N/S` now actively assignable via dynamic scoring
+- LERC code format unchanged, all UI surfaces unchanged
+
+### Database Migration
+
+```sql
+ALTER TABLE profiles
+  ADD COLUMN layer_scores jsonb NOT NULL DEFAULT '{}'::jsonb,
+  ADD COLUMN behavior_history jsonb NOT NULL DEFAULT
+    '{"recentQuizzes":[],"recentTimes":[],"recentReflections":[],"recentLayerEvals":[]}'::jsonb;
+```
+
+### Backward Compatibility Checklist
+- LERC code format preserved
+- `parseDNACode`, `buildAdaptationRules` exports retained as V1 functions
+- New V2 wrapper returns superset of V1 fields
+- Edge functions accept old + new payloads
+- Empty JSONB → automatic V1 fallback path
+- No UI changes required for V1-only users
 
