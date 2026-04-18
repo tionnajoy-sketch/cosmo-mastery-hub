@@ -881,45 +881,86 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                 <p className="text-sm" style={{ color: c.subtext }}>Generating question…</p>
               </div>
             )}
-            {quizQuestion && quizOptions.length > 0 && (
-              <div className="space-y-4">
-                <p className="text-base font-medium leading-relaxed" style={{ color: c.bodyText }}>{quizQuestion}</p>
-                <div className="space-y-2.5">
-                  {quizOptions.map((opt, i) => {
-                    const letter = String.fromCharCode(65 + i);
-                    const optText = String(opt).replace(/^[A-D]\)\s*/, "");
-                    const isSelected = quizSelected === letter;
-                    const isCorrect = String(opt) === quizAnswer || optText === quizAnswer;
-                    let bg = "hsl(var(--card))";
-                    let border = "hsl(var(--border))";
-                    if (quizRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 45%)"; }
-                    else if (quizRevealed && isSelected) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
-                    else if (quizRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 45%)"; }
-                    return (
-                      <motion.button key={i} onClick={() => { if (!quizRevealed) { setQuizSelected(letter); setQuizRevealed(true); const correct = isCorrect; if (correct) addCoins(10, "correct"); updateDNA({ quizCorrect: correct, layerCompleted: "quiz" }); } }}
-                        className="w-full text-left p-4 rounded-xl text-sm font-medium transition-all"
-                        style={{ background: bg, border: `2px solid ${border}`, color: c.bodyText }}
-                        disabled={quizRevealed}
-                        initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-                      >
-                        <span className="font-bold mr-2">{letter})</span> {optText}
-                        {quizRevealed && isCorrect && <CheckCircle2 className="inline h-4 w-4 ml-2" style={{ color: "hsl(145 45% 45%)" }} />}
-                        {quizRevealed && isSelected && !isCorrect && <XCircle className="inline h-4 w-4 ml-2" style={{ color: "hsl(0 60% 50%)" }} />}
-                      </motion.button>
-                    );
-                  })}
+            {quizQuestion && quizOptions.length > 0 && (() => {
+              // Build a stable seed so the shuffle order doesn't change on re-render.
+              const seed = `${block.id}-${quizQuestion.slice(0, 32)}`;
+              const rawA = String(quizOptions[0] || "").replace(/^[A-D]\)\s*/, "");
+              const rawB = String(quizOptions[1] || "").replace(/^[A-D]\)\s*/, "");
+              const rawC = String(quizOptions[2] || "").replace(/^[A-D]\)\s*/, "");
+              const rawD = String(quizOptions[3] || "").replace(/^[A-D]\)\s*/, "");
+              // Determine which letter the original answer corresponds to
+              const origCorrectLetter = ["A", "B", "C", "D"].find((L, i) => {
+                const txt = String(quizOptions[i] || "").replace(/^[A-D]\)\s*/, "");
+                return String(quizOptions[i]) === quizAnswer || txt === quizAnswer;
+              }) || "A";
+              const sh = shuffleOptions(
+                { A: rawA, B: rawB, C: rawC, D: rawD },
+                origCorrectLetter,
+                seed,
+              );
+              return (
+                <div className="space-y-4">
+                  <p className="text-base font-medium leading-relaxed" style={{ color: c.bodyText }}>{quizQuestion}</p>
+                  <div className="space-y-2.5">
+                    {sh.options.map((opt) => {
+                      const letter = opt.letter;
+                      const isSelected = quizSelected === letter;
+                      const isCorrect = letter === sh.correctLetter;
+                      let bg = "hsl(var(--card))";
+                      let border = "hsl(var(--border))";
+                      if (quizRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 45%)"; }
+                      else if (quizRevealed && isSelected) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
+                      else if (quizRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 45%)"; }
+                      return (
+                        <motion.button
+                          key={letter}
+                          onClick={async () => {
+                            if (quizRevealed) return;
+                            setQuizSelected(letter);
+                            setQuizRevealed(true);
+                            const correct = isCorrect;
+                            updateDNA({ quizCorrect: correct, layerCompleted: "quiz" });
+                            if (correct) {
+                              addCoins(10, "correct");
+                              await recordCorrect(block.id, false);
+                              setReinforcementResolved(true);
+                            } else {
+                              // GATE: lock the learning flow until reinforcement passes
+                              setReinforcementResolved(false);
+                              setMissedQuestionText(quizQuestion);
+                              await recordIncorrect(block.id);
+                              setTimeout(() => setReinforcementOpen(true), 1200);
+                            }
+                          }}
+                          className="w-full text-left p-4 rounded-xl text-sm font-medium transition-all"
+                          style={{ background: bg, border: `2px solid ${border}`, color: c.bodyText }}
+                          disabled={quizRevealed}
+                          initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}
+                        >
+                          <span className="font-bold mr-2">{letter})</span> {opt.text}
+                          {quizRevealed && isCorrect && <CheckCircle2 className="inline h-4 w-4 ml-2" style={{ color: "hsl(145 45% 45%)" }} />}
+                          {quizRevealed && isSelected && !isCorrect && <XCircle className="inline h-4 w-4 ml-2" style={{ color: "hsl(0 60% 50%)" }} />}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                  {quizRevealed && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 pt-1">
+                      <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>Try Again</Button>
+                      {!hasBuiltinQuiz && (
+                        <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuizQuestion(); }}
+                          style={{ borderColor: step.color, color: step.color }}>New Question</Button>
+                      )}
+                      {!reinforcementResolved && (
+                        <p className="w-full text-xs italic" style={{ color: "hsl(25 70% 40%)" }}>
+                          🔒 Locked — TJ is preparing a reinforcement lesson before you continue.
+                        </p>
+                      )}
+                    </motion.div>
+                  )}
                 </div>
-                {quizRevealed && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2 pt-1">
-                    <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>Try Again</Button>
-                    {!hasBuiltinQuiz && (
-                      <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuizQuestion(); }}
-                        style={{ borderColor: step.color, color: step.color }}>New Question</Button>
-                    )}
-                  </motion.div>
-                )}
-              </div>
-            )}
+              );
+            })()}
             {!hasBuiltinQuiz && !aiQuestion && !aiLoading && (
               <div className="text-center py-6">
                 <Button onClick={generateQuizQuestion} className="gap-2" style={{ background: step.gradient, color: "white" }}>🎓 Generate Question</Button>
