@@ -57,7 +57,10 @@ const QuizPage = () => {
   const { addCoins } = useCoins();
   const { updateDNA } = useDNAAdaptation();
   const { updateTermMetrics } = useLearningMetrics();
+  const { recordIncorrect, recordCorrect } = useReinforcement();
   const [totalAttempts, setTotalAttempts] = useState(0);
+  const [reinforcementOpen, setReinforcementOpen] = useState(false);
+  const [reinforcementResolved, setReinforcementResolved] = useState(true);
 
   useEffect(() => {
     if (!id || !block) return;
