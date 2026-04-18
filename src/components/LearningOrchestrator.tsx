@@ -104,7 +104,7 @@ const LearningOrchestrator = ({
   open, onOpenChange, block, onNotesChange, mode = "uploaded", blockIndex = 0, onComplete,
 }: LearningOrchestratorProps) => {
   const { user, profile } = useAuth();
-  const { rules, dna } = useDNAAdaptation();
+  const { rules, dna, context } = useDNAAdaptation();
 
   const [phase, setPhase] = useState<"strategy" | "learning">("strategy");
   const [blockStrength, setBlockStrength] = useState<"weak" | "neutral" | "strong">("neutral");
