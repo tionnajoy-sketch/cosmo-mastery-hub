@@ -31,22 +31,27 @@ serve(async (req) => {
       });
     }
 
-    // Generate image using Lovable AI — realistic, clean, educational (ABSOLUTELY NO text)
-    const prompt = `Create a realistic, detailed educational anatomy diagram for a cosmetology student. Illustrate the concept of "${term}" (${definition}).
+    // Generate a REAL-LIFE PHOTOGRAPH (not an illustration) — strictly no text
+    const prompt = `Create a single high-resolution, photorealistic, real-life photograph that visually represents the cosmetology concept "${term}".
 
-CRITICAL RULES — YOU MUST FOLLOW ALL OF THESE:
-1. ABSOLUTELY NO TEXT of any kind in the image. No letters, no words, no labels, no captions, no numbers, no annotations, no watermarks. ZERO text.
-2. DO NOT write the term name anywhere in the image.
-3. DO NOT add any labels or captions to arrows or lines.
-4. The image must be 100% visual — shapes, colors, structures only.
-5. Realistic anatomical or scientific illustration style (textbook quality).
-6. Clean, professional medical illustration with color-coded cross-section layers.
-7. Use arrows or lines pointing to key structures but with NO text labels attached.
-8. Light, clean background.
-9. Show the concept clearly through visual elements only.
-10. Make it easy to understand what the concept is just by looking at the illustration.
+Concept context (for your understanding only — DO NOT render this text in the image):
+"${definition}"
+${metaphor ? `Helpful metaphor: "${metaphor}"` : ""}
 
-Remember: ABSOLUTELY NO TEXT, LETTERS, OR WORDS ANYWHERE IN THE IMAGE.`;
+VISUAL STYLE — MUST FOLLOW:
+1. PHOTOREALISTIC REAL-LIFE PHOTOGRAPHY ONLY. No illustrations, no cartoons, no diagrams, no drawings, no 3D renders that look stylized. It must look like a professional photograph taken with a high-end camera.
+2. For anatomy or skin/hair structures (e.g., epidermis, dermis, papillary layer, reticular layer, keratin, hair follicle, melanin): use real macro/microscopy-style photography, dermatology clinical photos, or professional close-up skin & hair photography. Real human skin, real hair under magnification, etc.
+3. For tools, products, equipment (combs, shears, brushes, chemicals, mannequins): use clean, professional product photography with natural lighting on a neutral surface.
+4. For procedures or services (haircut, color application, sanitation): show real hands and real cosmetology environments — salon scenes, real practitioners, realistic lighting.
+5. Subject should be clearly recognizable and centered. Shallow depth of field is fine. Natural soft lighting.
+6. Diverse, inclusive representation when humans appear (especially women of color in cosmetology contexts).
+
+CRITICAL — ABSOLUTELY NO TEXT:
+- NO letters, words, labels, captions, numbers, watermarks, logos, brand names, signs, packaging text, arrows with labels, or annotations of any kind.
+- DO NOT write "${term}" or any related word anywhere in the image.
+- The image must be 100% visual content only — no typography whatsoever.
+
+If text would normally appear (e.g., on a product bottle), render the surface as blank/unbranded. Repeat: ZERO text anywhere in the final image.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
