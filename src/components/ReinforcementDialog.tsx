@@ -70,7 +70,7 @@ const ReinforcementDialog = ({
     setPhase("feedback");
 
     if (correct) {
-      const status = await recordCorrect(termId, true);
+      await recordCorrect(termId, true);
       // Reinforcement success boosts retention + confidence MORE than standard correct
       updateDNA({ quizCorrect: true, layerCompleted: "quiz", reflectionLength: 60 });
       // Brief celebration delay then resolve
