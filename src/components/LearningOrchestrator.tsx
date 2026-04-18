@@ -272,6 +272,18 @@ const LearningOrchestrator = ({
                     </div>
                   </div>
 
+                  {/* V2: Recovery mode indicator (additive — only shows when active) */}
+                  {context?.recoveryMode && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl"
+                      style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
+                      <Shield className="h-4 w-4 flex-shrink-0" style={{ color: "hsl(265 60% 55%)" }} />
+                      <p className="text-xs" style={{ color: c.bodyText }}>
+                        Recovery mode is on — we'll go gentler and slower until you feel steady again.
+                      </p>
+                    </motion.div>
+                  )}
+
                   {/* Weak block warning */}
                   {blockStrength === "weak" && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
