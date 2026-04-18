@@ -85,11 +85,29 @@ const QuizPage = () => {
   }, [id, block, user]);
 
   const currentQuestion = questions[currentIndex];
-  const isCorrect = selectedAnswer === currentQuestion?.correct_option;
+
+  // Shuffle answer options per-question (deterministic by question id) so the
+  // correct letter is not always the same and learners can't memorize position.
+  const shuffled = useMemo(() => {
+    if (!currentQuestion) return null;
+    return shuffleOptions(
+      {
+        A: currentQuestion.option_a,
+        B: currentQuestion.option_b,
+        C: currentQuestion.option_c,
+        D: currentQuestion.option_d,
+      },
+      currentQuestion.correct_option,
+      currentQuestion.id,
+    );
+  }, [currentQuestion]);
+
+  // After shuffle, the user's selected letter (A/B/C/D) refers to the new layout
+  const isCorrect = shuffled ? selectedAnswer === shuffled.correctLetter : false;
   const isLastQuestion = currentIndex === questions.length - 1;
 
   const handleAnswer = async (option: string) => {
-    if (selectedAnswer) return;
+    if (selectedAnswer || !shuffled) return;
     if (strategyMode && strategyStep === "eliminate") {
       if (eliminated.has(option)) {
         setEliminated(prev => { const n = new Set(prev); n.delete(option); return n; });
@@ -104,7 +122,7 @@ const QuizPage = () => {
     if (strategyMode && strategyStep !== "choose") return;
 
     setSelectedAnswer(option);
-    const correct = option === currentQuestion.correct_option;
+    const correct = option === shuffled.correctLetter;
     if (correct) {
       setScore((s) => s + 1);
       addCoins(10, "correct");
@@ -318,16 +336,13 @@ const QuizPage = () => {
     );
   }
 
-  if (!currentQuestion) {
+  if (!currentQuestion || !shuffled) {
     return <div className="flex min-h-screen items-center justify-center"><p className="text-muted-foreground">Loading quiz...</p></div>;
   }
 
-  const options = [
-    { key: "A", text: currentQuestion.option_a },
-    { key: "B", text: currentQuestion.option_b },
-    { key: "C", text: currentQuestion.option_c },
-    { key: "D", text: currentQuestion.option_d },
-  ];
+  // Shuffled options — letters are reassigned A/B/C/D after random reorder so
+  // the correct answer is in a different spot than the source DB.
+  const options = shuffled.options.map(o => ({ key: o.letter, text: o.text }));
 
   const getWrongFeedback = () => mode === "confidence"
     ? "That was not the best answer, but you are learning and that is what matters. Let us look at why together."
