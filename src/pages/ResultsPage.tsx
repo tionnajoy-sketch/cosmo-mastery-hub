@@ -148,11 +148,11 @@ const ResultsPage = () => {
             )}
 
             <div className="space-y-3">
-              <Button className="w-full py-5 text-base gap-2" style={{ background: c.reviewButton, color: "white" }} onClick={() => navigate(`/section/${id}/study/${block}`)}>
+              <Button className="w-full py-5 text-base gap-2" style={{ background: c.reviewButton, color: "white" }} onClick={() => navigate(`/learn?section=${id}`)}>
                 <BookOpen className="h-4 w-4" /> Review This Block
               </Button>
-              <Button variant="outline" className="w-full py-5 text-base gap-2" onClick={() => navigate(`/section/${id}`)}>
-                <ArrowLeft className="h-4 w-4" /> Back to Section
+              <Button variant="outline" className="w-full py-5 text-base gap-2" onClick={() => navigate(`/learn?section=${id}`)}>
+                <ArrowLeft className="h-4 w-4" /> Back to Learn
               </Button>
             </div>
           </CardContent>
