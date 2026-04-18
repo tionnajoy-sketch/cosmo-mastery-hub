@@ -107,26 +107,41 @@ const QuizPage = () => {
     if (correct) {
       setScore((s) => s + 1);
       addCoins(10, "correct");
+      if (currentQuestion.related_term_id) {
+        await recordCorrect(currentQuestion.related_term_id, false);
+      }
+      setReinforcementResolved(true);
     } else {
       setWrongCount((cnt) => cnt + 1);
+      setReinforcementResolved(false); // GATE: must pass reinforcement before Next
       if (user && id) {
         await supabase.from("wrong_answers").insert({
           user_id: user.id, question_id: currentQuestion.id, section_id: id,
           block_number: Number(block), selected_option: option,
         });
       }
+      if (currentQuestion.related_term_id) {
+        await recordIncorrect(currentQuestion.related_term_id);
+        setTimeout(() => setReinforcementOpen(true), 1200);
+      } else {
+        setReinforcementResolved(true);
+      }
     }
-    // Live DNA update — every quiz answer flows back to the DNA engine
     updateDNA({ quizCorrect: correct, layerCompleted: "quiz" });
     if (currentQuestion.related_term_id) {
-      // Bump term metrics so the DNA Hub & Game Grid reflect this quiz
       updateTermMetrics(currentQuestion.related_term_id, "quiz", correct ? 10 : 2);
-      const { data } = await supabase.from("terms").select("term, metaphor").eq("id", currentQuestion.related_term_id).single();
+      const { data } = await supabase.from("terms").select("term, metaphor, definition").eq("id", currentQuestion.related_term_id).single();
       if (data) setRelatedTerm(data);
     }
   };
 
+  const handleReinforcementResolved = (_result: { passed: boolean; cyclesUsed: number }) => {
+    setReinforcementOpen(false);
+    setReinforcementResolved(true);
+  };
+
   const handleNext = () => {
+    if (!reinforcementResolved) return; // safeguard
     if (isLastQuestion) {
       navigate(`/section/${id}/results/${block}`, { state: { score, total: questions.length, mode, wrongCount } });
     } else {
@@ -135,6 +150,7 @@ const QuizPage = () => {
       setRelatedTerm(null);
       setStrategyStep("answers");
       setEliminated(new Set());
+      setReinforcementResolved(true);
     }
   };
 
