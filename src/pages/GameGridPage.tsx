@@ -6,7 +6,8 @@ import { useCoins } from "@/hooks/useCoins";
 import { useStudyTracker } from "@/hooks/useStudyTracker";
 import { useLearningMetrics } from "@/hooks/useLearningMetrics";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Sparkles, Flame, Trophy, Brain, Target, TrendingUp, Zap, ChevronRight, BookOpen, GraduationCap, Gamepad2, AlertTriangle, CheckCircle2, Circle } from "lucide-react";
+import { Lock, Sparkles, Flame, Trophy, Brain, Target, TrendingUp, Zap, ChevronRight, BookOpen, GraduationCap, Gamepad2, AlertTriangle, CheckCircle2, Circle, Dna, Radio } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import AppHeader from "@/components/AppHeader";
@@ -264,6 +265,9 @@ const GameGridPage = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* ─── Live DNA Snapshot — mirrors what's on the DNA Hub ─── */}
+        <LiveDNASnapshot />
       </div>
 
       {/* ─── Game Grid grouped by section ─── */}
