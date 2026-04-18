@@ -650,6 +650,8 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
             )}
           </motion.div>
         );
+      case "visualize":
+      case "visual":
         return (
           <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center space-y-5 py-4">
             <TJVisualEngine
