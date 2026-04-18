@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, RefreshCw, Volume2, TrendingUp, Database, Zap } from "lucide-react";
+import { ArrowLeft, RefreshCw, Volume2, TrendingUp, Database, Zap, ImagePlus, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 
