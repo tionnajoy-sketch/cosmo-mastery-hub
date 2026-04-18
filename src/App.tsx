@@ -46,6 +46,7 @@ import AskTJFullScreen from "./components/AskTJFullScreen";
 import GameGridPage from "./pages/GameGridPage";
 import LearningDNAPage from "./pages/LearningDNAPage";
 import PracticeLabPage from "./pages/PracticeLabPage";
+import CommunityBoardPage from "./pages/CommunityBoardPage";
 import TJCafe from "./components/TJCafe";
 import { useStudyBreak } from "./hooks/useStudyBreak";
 import VoiceCacheDashboard from "./pages/VoiceCacheDashboard";
@@ -91,7 +92,9 @@ const AppContent = () => {
         <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
         <Route path="/learn" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
         <Route path="/study-modules" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
-        <Route path="/practice-lab" element={<ProtectedRoute><PracticeLabPage /></ProtectedRoute>} />
+        {/* Practice Lab merged into /learn — keep route alive but render merged Learn page */}
+        <Route path="/practice-lab" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
+        <Route path="/community" element={<ProtectedRoute><CommunityBoardPage /></ProtectedRoute>} />
         <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
         <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
         <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />

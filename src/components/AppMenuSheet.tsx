@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   BookOpen, Menu, LogOut, BarChart3, Upload,
-  Gamepad2, GraduationCap, MessageCircle, Library, Grid3X3,
-  Coffee, NotebookPen, Brain,
+  GraduationCap, MessageCircle, Library, Grid3X3,
+  Coffee, NotebookPen, Brain, Trophy, Users,
+  Volume2, VolumeX,
 } from "lucide-react";
+import { isVoiceGloballyPaused, setVoiceGloballyPaused } from "@/hooks/useAutoNarrate";
 
 interface MenuItem {
   label: string;
@@ -28,12 +30,11 @@ const AppMenuSheet = () => {
   const go = (path: string) => () => { close(); navigate(path); };
 
   const core: MenuItem[] = [
-    { label: "Dashboard",     icon: BookOpen,       onClick: go("/"),                  color: "265 60% 50%" },
-    { label: "Learn",         icon: Grid3X3,        onClick: go("/learn"),             color: "215 70% 50%" },
-    { label: "Practice Lab",  icon: Gamepad2,       onClick: go("/practice-lab"),      color: "145 55% 40%" },
-    { label: "Progress",      icon: BarChart3,      onClick: go("/progress"),          color: "42 70% 50%" },
-    { label: "Final Exam",    icon: GraduationCap,  onClick: go("/comprehensive-exam"),color: "320 55% 48%" },
-    { label: "Foreword",      icon: Library,        onClick: go("/welcome"),           color: "25 70% 50%" },
+    { label: "Dashboard",        icon: BookOpen,       onClick: go("/"),                  color: "265 60% 50%" },
+    { label: "Learn & Practice", icon: Grid3X3,        onClick: go("/learn"),             color: "215 70% 50%" },
+    { label: "Progress",         icon: BarChart3,      onClick: go("/progress"),          color: "42 70% 50%" },
+    { label: "Final Exam",       icon: GraduationCap,  onClick: go("/comprehensive-exam"),color: "320 55% 48%" },
+    { label: "Foreword",         icon: Library,        onClick: go("/welcome"),           color: "25 70% 50%" },
   ];
 
   const resources: MenuItem[] = [
@@ -41,6 +42,8 @@ const AppMenuSheet = () => {
     { label: "TJ Café",        icon: Coffee,        onClick: () => { close(); openTJCafe(); },     color: "25 65% 45%" },
     { label: "My Journal",     icon: NotebookPen,   onClick: go("/insights"),                       color: "200 60% 45%" },
     { label: "Learning DNA",   icon: Brain,         onClick: go("/learning-dna"),                   color: "265 60% 50%" },
+    { label: "Leaderboard",    icon: Trophy,        onClick: go("/leaderboard"),                    color: "42 80% 50%" },
+    { label: "Community",      icon: Users,         onClick: go("/community"),                      color: "200 65% 50%" },
   ];
 
   const premium: MenuItem[] = [
@@ -96,7 +99,23 @@ const AppMenuSheet = () => {
           <SectionGrid title="Resources" items={resources} />
           <SectionGrid title="Premium Tools" items={premium} />
 
-          <div className="pt-2 border-t">
+          <div className="pt-2 border-t space-y-2">
+            <Button
+              variant="outline"
+              className="w-full justify-center gap-2"
+              onClick={() => {
+                const nowPaused = !isVoiceGloballyPaused();
+                setVoiceGloballyPaused(nowPaused);
+                // Force re-render of the sheet by closing & reopening would be heavy; just close
+                close();
+              }}
+            >
+              {isVoiceGloballyPaused() ? (
+                <><VolumeX className="h-4 w-4" /> TJ Voice: Paused (tap to enable)</>
+              ) : (
+                <><Volume2 className="h-4 w-4" /> TJ Voice: On (tap to pause)</>
+              )}
+            </Button>
             <Button
               variant="outline"
               className="w-full justify-center gap-2"

@@ -109,18 +109,25 @@ const GameGridPage = () => {
   const [identityMsg, setIdentityMsg] = useState(IDENTITY_MESSAGES[0]);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const [weakTerms, setWeakTerms] = useState<Set<string>>(new Set());
+  const [termImages, setTermImages] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [termsRes, sectionsRes] = await Promise.all([
+      const [termsRes, sectionsRes, imagesRes] = await Promise.all([
         supabase.from("terms").select("*").order("section_id").order("block_number").order("order"),
         supabase.from("sections").select("id, name").order("order"),
+        supabase.from("term_images").select("term_id, image_url"),
       ]);
       if (termsRes.data) setTerms(termsRes.data);
       if (sectionsRes.data) {
         const map = new Map<string, string>();
         sectionsRes.data.forEach((s: any) => map.set(s.id, s.name));
         setSections(map);
+      }
+      if (imagesRes.data) {
+        const imgMap = new Map<string, string>();
+        imagesRes.data.forEach((row: any) => { if (row.image_url) imgMap.set(row.term_id, row.image_url); });
+        setTermImages(imgMap);
       }
     };
     fetchAll();
@@ -299,7 +306,23 @@ const GameGridPage = () => {
                                 minHeight: "120px",
                               }}
                             >
-                              <div className="absolute top-2.5 right-2.5">
+                              {/* Term image (visualization) */}
+                              {termImages.has(term.id) && status !== "locked" && (
+                                <div
+                                  className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none"
+                                  aria-hidden="true"
+                                >
+                                  <img
+                                    src={termImages.get(term.id)}
+                                    alt=""
+                                    className="w-full h-full object-cover opacity-25 group-hover:opacity-40 transition-opacity"
+                                    loading="lazy"
+                                  />
+                                  <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 0%, hsl(240 15% 8% / 0.55) 100%)" }} />
+                                </div>
+                              )}
+
+                              <div className="absolute top-2.5 right-2.5 z-10">
                                 {status === "locked" && <Lock className="h-4 w-4 text-white/30" />}
                                 {status === "mastery" && (
                                   <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 3 }}>
@@ -310,11 +333,11 @@ const GameGridPage = () => {
                                 {status === "needs_review" && <AlertTriangle className="h-4 w-4 text-white/90" />}
                               </div>
 
-                              <h3 className="font-display font-bold text-sm sm:text-base text-white leading-tight pr-6">
+                              <h3 className="font-display font-bold text-sm sm:text-base text-white leading-tight pr-6 relative z-10">
                                 {term.term}
                               </h3>
 
-                              <div className="mt-2">
+                              <div className="mt-2 relative z-10">
                                 <StatusBadge status={status} progress={progress} />
                               </div>
 
