@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import AppHeader from "@/components/AppHeader";
 import LearningOrchestrator from "@/components/LearningOrchestrator";
+import LiveDNASnapshot from "@/components/LiveDNASnapshot";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 
 interface Term {
@@ -264,6 +265,9 @@ const GameGridPage = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* ─── Live DNA Snapshot — mirrors what's on the DNA Hub ─── */}
+        <LiveDNASnapshot />
       </div>
 
       {/* ─── Game Grid grouped by section ─── */}

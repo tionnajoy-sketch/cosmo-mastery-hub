@@ -85,6 +85,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
 
+  // Realtime: live-update profile whenever DNA fields change
+  useEffect(() => {
+    const userId = session?.user?.id;
+    if (!userId) return;
+    const channel = supabase
+      .channel(`profile-${userId}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${userId}` }, (payload) => {
+        if (payload.new) setProfile(payload.new as unknown as Profile);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [session?.user?.id]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
