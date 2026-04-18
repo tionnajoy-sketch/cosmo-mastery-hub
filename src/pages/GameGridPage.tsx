@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins } from "@/hooks/useCoins";
@@ -98,6 +98,8 @@ const StatusBadge = ({ status, progress }: { status: string; progress: number })
 
 const GameGridPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const focusSectionId = searchParams.get("section");
   const { user, profile } = useAuth();
   const { stats: coinStats } = useCoins();
   const studyTracker = useStudyTracker();
@@ -110,6 +112,7 @@ const GameGridPage = () => {
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const [weakTerms, setWeakTerms] = useState<Set<string>>(new Set());
   const [termImages, setTermImages] = useState<Map<string, string>>(new Map());
+  const sectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
 
   useEffect(() => {
     const fetchAll = async () => {
