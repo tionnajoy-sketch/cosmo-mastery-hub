@@ -180,19 +180,22 @@ const GameGridPage = () => {
     return () => clearTimeout(t);
   }, [focusSectionId, terms.length]);
 
-  // Lazy on-demand image generation: any term without an image quietly triggers
-  // generate-term-image so it appears next time. Throttled (max 3 in flight).
+  // Aggressive on-demand image generation: every term should have a picture.
+  // Process ALL missing terms in batches of 5, in parallel, with retry tracking.
+  // Re-runs whenever the term/image map changes until everything has an image.
   useEffect(() => {
     if (terms.length === 0) return;
     const missing = terms.filter(t => !termImages.has(t.id) && !requestedImageIds.current.has(t.id));
     if (missing.length === 0) return;
 
     let cancelled = false;
-    const queue = missing.slice(0, 3); // small batch per render cycle
+    const BATCH = 5;
+    const queue = missing.slice(0, BATCH);
     queue.forEach(t => requestedImageIds.current.add(t.id));
 
     (async () => {
-      for (const t of queue) {
+      // Fire all in parallel — generate-term-image handles its own queueing server-side
+      await Promise.all(queue.map(async (t) => {
         if (cancelled) return;
         try {
           const { data, error } = await supabase.functions.invoke("generate-term-image", {
@@ -204,14 +207,29 @@ const GameGridPage = () => {
               next.set(t.id, data.image_url);
               return next;
             });
+          } else if (error) {
+            // allow retry on next render cycle
+            requestedImageIds.current.delete(t.id);
           }
-        } catch { /* silent — visual is enhancement only */ }
-        // gentle pacing so we never hammer the gateway
-        await new Promise(r => setTimeout(r, 800));
-      }
+        } catch {
+          requestedImageIds.current.delete(t.id);
+        }
+      }));
     })();
 
     return () => { cancelled = true; };
+  }, [terms, termImages]);
+
+  // One-shot session-scoped backfill kick: when this dashboard first loads, ask
+  // the backfill function to top-up anything still missing in the background.
+  useEffect(() => {
+    if (terms.length === 0) return;
+    const SESSION_KEY = "tj_backfill_kicked_v1";
+    if (sessionStorage.getItem(SESSION_KEY)) return;
+    const missing = terms.filter(t => !termImages.has(t.id));
+    if (missing.length === 0) return;
+    sessionStorage.setItem(SESSION_KEY, "1");
+    supabase.functions.invoke("backfill-term-images", { body: { limit: 50 } }).catch(() => {});
   }, [terms, termImages]);
 
   const handleNotesChange = useCallback(() => {}, []);

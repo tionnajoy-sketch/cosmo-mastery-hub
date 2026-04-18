@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,7 @@ import { useLearningMetrics } from "@/hooks/useLearningMetrics";
 import { useReinforcement } from "@/hooks/useReinforcement";
 import ReinforcementDialog from "@/components/ReinforcementDialog";
 import SpeakButton from "@/components/SpeakButton";
+import { shuffleOptions } from "@/lib/shuffleOptions";
 
 const c = pageColors.quiz;
 
