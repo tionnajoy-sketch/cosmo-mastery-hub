@@ -422,7 +422,7 @@ const QuizPage = () => {
             <div className="space-y-3 mb-4">
               {options.map((opt) => {
                 const isSelected = selectedAnswer === opt.key;
-                const isRight = opt.key === currentQuestion.correct_option;
+                const isRight = opt.key === shuffled.correctLetter;
                 const isEliminated = eliminated.has(opt.key);
                 let bg = c.optionBg;
                 let border = c.optionBorder;
