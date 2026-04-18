@@ -25,6 +25,9 @@ import TJLearningStudio from "@/components/TJLearningStudio";
 import TJVisualEngine from "@/components/TJVisualEngine";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 import tjBackground from "@/assets/tj-background.jpg";
+import ReinforcementDialog from "@/components/ReinforcementDialog";
+import { useReinforcement } from "@/hooks/useReinforcement";
+import { shuffleOptions } from "@/lib/shuffleOptions";
 
 const c = pageColors.study;
 
@@ -219,6 +222,14 @@ const LearningOrbDialog = ({
   // Recognize
   const [recognizeSelected, setRecognizeSelected] = useState<number | null>(null);
   const [recognizeRevealed, setRecognizeRevealed] = useState(false);
+
+  // Reinforcement gating — when learner answers the in-flow quiz wrong,
+  // we LOCK the dialog and force them through ReinforcementDialog before
+  // they can advance or close.
+  const { recordIncorrect, recordCorrect } = useReinforcement();
+  const [reinforcementOpen, setReinforcementOpen] = useState(false);
+  const [reinforcementResolved, setReinforcementResolved] = useState(true);
+  const [missedQuestionText, setMissedQuestionText] = useState("");
 
   // Etymology
   const [etymology, setEtymology] = useState<{ parts: { part: string; meaning: string; origin: string }[]; pronunciation: string; summary: string } | null>(null);
