@@ -1,52 +1,65 @@
 
 
-User wants every term across every section to have a real-life image. Currently term_images are sparse — only some have generated images. The existing `generate-term-image` edge function creates illustrated diagrams (textbook style). User specifically wants **real-life photos**, not illustrations.
+User wants the Learning DNA page and the Learn & Practice (GameGridPage) to be connected with live, real-time data flow. Currently:
+- `LearningDNAPage` reads `user_learning_metrics` once on mount via `useLearningMetrics()`
+- `GameGridPage` updates metrics as the student completes layers/quizzes/activities, but DNA page doesn't refresh automatically
+- DNA fields on `profiles` (`dna_engagement`, `dna_retention`, `dna_confidence`, `layer_scores`, `behavior_history`) are recalibrated by `useDNAAdaptation.updateDNA()` but the DNA page doesn't subscribe to those changes either
 
-Let me check counts and what's missing.
-
-I have:
-- `terms` table with all terms across sections
-- `term_images` table linking term_id → image_url (in `term-images` public bucket)
-- `generate-term-image` edge function using `google/gemini-3-pro-image-preview` with prompt for "realistic anatomical or scientific illustration"
-
-Two things to fix:
-1. Backfill images for every term that doesn't have one
-2. Update prompt to produce **real-life photographs** not illustrations
+Goal: make the DNA Hub a live mirror of the student's behavior in Learn & Practice — when they answer a quiz, finish a layer, or complete an activity, the DNA bars, layer strengths, and recommendations update without a manual refresh.
 
 ## Plan
 
-### 1. Update `generate-term-image` prompt
-Rewrite the prompt to request **photorealistic, real-life photography** instead of textbook illustrations:
-- "Photorealistic, real-life photograph"
-- For anatomy terms (skin layers, muscles): use medical/microscopy photography style or real cosmetology-classroom photos
-- For tools/products (combs, shears, chemicals): real product photography
-- Keep the strict "no text, no labels, no words" rules
-- Keep the existing model `google/gemini-3-pro-image-preview` (highest quality for realism)
+### 1. Real-time subscriptions on the Learning DNA page
+Add Supabase Realtime listeners in `LearningDNAPage.tsx` (and inside `useLearningMetrics`) for the current user:
+- `user_learning_metrics` rows (INSERT/UPDATE) → re-run `fetchMetrics()`
+- `profiles` row (UPDATE) → re-run `refreshProfile()` from `useAuth` so DNA code, layer strength, engagement, retention, confidence values refresh live
+- `quiz_results` and `wrong_answers` (INSERT) → trigger a metrics refresh so any quiz taken anywhere shows immediately
 
-### 2. Add a batch backfill edge function
-New function `backfill-term-images` that:
-- Queries all `terms` left-joined with `term_images`
-- For each term missing an image, calls the same generation logic (sequential with small delay to respect rate limits)
-- Logs progress and returns a summary
-- Idempotent — skips terms that already have an image
+Enable realtime on these tables in a migration:
+```
+ALTER PUBLICATION supabase_realtime ADD TABLE user_learning_metrics, profiles, quiz_results, wrong_answers;
+ALTER TABLE user_learning_metrics REPLICA IDENTITY FULL;
+ALTER TABLE profiles REPLICA IDENTITY FULL;
+```
 
-### 3. Add an admin trigger button
-In `VoiceCacheDashboard` (existing admin-style page) or a tiny new section, add a "Backfill Missing Term Images" button that calls the new function and shows progress. Single click → server runs through all missing terms in the background.
+### 2. Make GameGridPage write everywhere DNA reads
+Audit the spots where Learn & Practice activity happens and ensure each one updates BOTH:
+- `user_learning_metrics` (already wired via `updateTermMetrics` in some flows) — add to any place still missing it
+- `profiles.dna_*` + `behavior_history` + `layer_scores` via `useDNAAdaptation.updateDNA(interaction)`
 
-Alternative simpler path: run backfill once via a one-shot script and don't ship a UI button. **Recommended:** ship the button so the user can re-run it any time new terms are added.
+Specifically wire `updateDNA()` calls into:
+- `QuizPage` answer-submit (pass `quizCorrect`)
+- `ActivityPage` completion (pass `timeSpentSeconds`, optional reflection length)
+- `LearningOrchestrator` / `LearningOrbDialog` step completion (pass `quizCorrect` / `reflectionLength` / `timeSpentSeconds`)
 
-### 4. Improve `GameGridPage` image handling
-Currently term tiles only show images that already exist. After backfill that's fine — but also add a tiny lazy on-demand fetch: if a tile renders without an image, fire `generate-term-image` quietly so it appears next visit. (This guarantees no term ever stays imageless.)
+This guarantees every win/loss in Learn & Practice flows back to the DNA engine.
 
-### Files to change
-- `supabase/functions/generate-term-image/index.ts` — rewrite prompt for real-life photography
-- `supabase/functions/backfill-term-images/index.ts` — **new** batch function
-- `src/pages/VoiceCacheDashboard.tsx` — add "Backfill Term Images" admin button + progress display
-- `src/pages/GameGridPage.tsx` — quiet on-demand fallback generation for any tile rendered without an image
+### 3. Live DNA snapshot card on GameGridPage
+Add a compact "Your Learning DNA — live" strip at the top of `GameGridPage` showing:
+- Current 4-character DNA code with color
+- Three thin bars: Engagement, Retention, Confidence
+- Tiny "updates as you learn" label, plus a link to the full DNA Hub
+
+This card subscribes to the same realtime channels so the student literally sees the bars move after a quiz.
+
+### 4. DNA Hub live indicators
+On `LearningDNAPage`, add subtle UI cues that confirm liveness:
+- A pulsing green dot + "Live — updates in real time" badge near the DNA code
+- When a realtime event fires, briefly highlight the changed metric (e.g., engagement bar flashes) so the student feels the connection
+- Add a "Recent activity" mini-feed (last 3 events: "Quiz passed in Anatomy Block 2 → Confidence +", "Activity completed → Engagement +") sourced from the latest `user_learning_metrics` and `quiz_results` rows
+
+### 5. Files to change
+- `supabase/migrations/<new>.sql` — enable realtime on the four tables, set REPLICA IDENTITY FULL
+- `src/hooks/useLearningMetrics.ts` — add realtime subscription that re-runs `fetchMetrics`
+- `src/hooks/useAuth.tsx` — add realtime subscription on the user's profile row → call `refreshProfile()`
+- `src/pages/LearningDNAPage.tsx` — live badge, change-flash animation, recent-activity mini-feed
+- `src/pages/GameGridPage.tsx` — live DNA snapshot strip at top
+- `src/pages/QuizPage.tsx` — call `updateDNA({ quizCorrect })` on every answer
+- `src/pages/ActivityPage.tsx` — call `updateDNA({ timeSpentSeconds })` on completion
+- `src/components/LearningOrbDialog.tsx` (or `LearningOrchestrator`) — call `updateDNA()` per step
 
 ### Notes
-- No DB schema changes needed — `term_images` table already exists with the right shape
-- Bucket `term-images` is already public
-- Per-term generation cost: one Gemini Pro Image call. If there are ~200 terms total, the backfill takes ~5–10 minutes server-side — fine as a one-time job.
-- All existing functionality (quizzes, activities, learning flow, DNA) untouched.
+- No schema changes beyond the realtime publication migration
+- Existing RLS policies already restrict each user to their own rows, so realtime payloads are private by default
+- Zero impact on V1 fallback path — all updates are additive
 
