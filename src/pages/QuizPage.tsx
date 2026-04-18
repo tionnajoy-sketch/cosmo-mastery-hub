@@ -137,8 +137,8 @@ const QuizPage = () => {
     return (
       <div className="min-h-screen px-4 py-6" style={{ background: c.gradient }}>
         <div className="max-w-md mx-auto">
-          <Button variant="ghost" onClick={() => navigate(`/section/${id}`)} className="mb-4 gap-2" style={{ color: c.backButton }}>
-            <ArrowLeft className="h-4 w-4" /> Back to Section
+          <Button variant="ghost" onClick={() => navigate(`/learn?section=${id}`)} className="mb-4 gap-2" style={{ color: c.backButton }}>
+            <ArrowLeft className="h-4 w-4" /> Back to Learn
           </Button>
 
           {/* ───── HEADER ───── */}
@@ -314,8 +314,8 @@ const QuizPage = () => {
   return (
     <div className="min-h-screen" style={{ background: c.gradient }}>
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <Button variant="ghost" onClick={() => navigate(`/section/${id}`)} className="mb-4 gap-2" style={{ color: c.backButton }}>
-          <ArrowLeft className="h-4 w-4" /> Back to Section
+        <Button variant="ghost" onClick={() => navigate(`/learn?section=${id}`)} className="mb-4 gap-2" style={{ color: c.backButton }}>
+          <ArrowLeft className="h-4 w-4" /> Back to Learn
         </Button>
 
         <div className="mb-6">

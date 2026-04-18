@@ -14,8 +14,7 @@ import Signup from "./pages/Signup";
 import OnboardingPage from "./pages/OnboardingPage";
 import Home from "./pages/Home";
 import WelcomePage from "./pages/WelcomePage";
-import SectionPage from "./pages/SectionPage";
-import StudyPage from "./pages/StudyPage";
+import SectionRedirect from "./pages/SectionRedirect";
 import ActivityPage from "./pages/ActivityPage";
 import QuizPage from "./pages/QuizPage";
 import ResultsPage from "./pages/ResultsPage";
@@ -66,8 +65,9 @@ const AppContent = () => {
         <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/welcome" element={<ProtectedRoute><WelcomePage /></ProtectedRoute>} />
-        <Route path="/section/:id" element={<ProtectedRoute><SectionPage /></ProtectedRoute>} />
-        <Route path="/section/:id/study/:block" element={<ProtectedRoute><StudyPage /></ProtectedRoute>} />
+        {/* Section + Study routes consolidated into the Game Grid (/learn) */}
+        <Route path="/section/:id" element={<ProtectedRoute><SectionRedirect /></ProtectedRoute>} />
+        <Route path="/section/:id/study/:block" element={<ProtectedRoute><SectionRedirect /></ProtectedRoute>} />
         <Route path="/section/:id/activity/:block" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
         <Route path="/section/:id/quiz/:block" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
         <Route path="/section/:id/results/:block" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />

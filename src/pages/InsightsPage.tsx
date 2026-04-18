@@ -182,7 +182,7 @@ const InsightCardItem = ({ insight, index, navigate }: { insight: InsightCard; i
   <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.02 }}>
     <Card
       className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-      onClick={() => navigate(`/section/${insight.sectionId}/study/${insight.blockNumber}`)}
+      onClick={() => navigate(`/learn?section=${insight.sectionId}`)}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">

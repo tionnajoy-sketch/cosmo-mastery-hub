@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoins } from "@/hooks/useCoins";
@@ -98,6 +98,8 @@ const StatusBadge = ({ status, progress }: { status: string; progress: number })
 
 const GameGridPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const focusSectionId = searchParams.get("section");
   const { user, profile } = useAuth();
   const { stats: coinStats } = useCoins();
   const studyTracker = useStudyTracker();
@@ -110,6 +112,7 @@ const GameGridPage = () => {
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const [weakTerms, setWeakTerms] = useState<Set<string>>(new Set());
   const [termImages, setTermImages] = useState<Map<string, string>>(new Map());
+  const sectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -158,6 +161,22 @@ const GameGridPage = () => {
     }, 8000);
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-expand and scroll to the section when arriving via ?section=<id>
+  useEffect(() => {
+    if (!focusSectionId || terms.length === 0) return;
+    setCollapsedSections(prev => {
+      const next = new Set(prev);
+      next.delete(focusSectionId);
+      return next;
+    });
+    // Defer scroll until after expand animation paints
+    const t = setTimeout(() => {
+      const el = sectionRefs.current.get(focusSectionId);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [focusSectionId, terms.length]);
 
   const handleNotesChange = useCallback(() => {}, []);
   const toggleSection = useCallback((sectionId: string) => {
@@ -228,8 +247,16 @@ const GameGridPage = () => {
             }).length;
             const sectionPercent = sectionTerms.length > 0 ? Math.round((sectionCompleted / sectionTerms.length) * 100) : 0;
 
+            // Group terms within section by block_number for clearer block awareness
+            const blockGroups = new Map<number, Term[]>();
+            sectionTerms.forEach(t => {
+              if (!blockGroups.has(t.block_number)) blockGroups.set(t.block_number, []);
+              blockGroups.get(t.block_number)!.push(t);
+            });
+            const orderedBlockNums = Array.from(blockGroups.keys()).sort((a, b) => a - b);
+
             return (
-              <div key={sectionId}>
+              <div key={sectionId} ref={(el) => { sectionRefs.current.set(sectionId, el); }} style={{ scrollMarginTop: 80 }}>
                 {/* Section divider */}
                 <button onClick={() => toggleSection(sectionId)} className="flex items-center gap-3 mb-4 w-full group cursor-pointer">
                   <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)" }} />
@@ -259,8 +286,20 @@ const GameGridPage = () => {
                   {!collapsedSections.has(sectionId) && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3, ease: "easeInOut" }} className="overflow-hidden">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                        {sectionTerms.map((term) => {
+                      {orderedBlockNums.map((bn) => {
+                        const blockTerms = blockGroups.get(bn) || [];
+                        return (
+                          <div key={bn} className="mb-5">
+                            <div className="flex items-center gap-2 mb-2 px-1">
+                              <span className="text-[10px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded-full"
+                                style={{ background: "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 75%)", border: "1px solid hsl(45 80% 50% / 0.25)" }}>
+                                Block {bn}
+                              </span>
+                              <span className="text-[10px] text-white/40">{blockTerms.length} terms</span>
+                              <div className="h-px flex-1 ml-1" style={{ background: "hsl(0 0% 100% / 0.06)" }} />
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                              {blockTerms.map((term) => {
                           const i = globalIndex++;
                           const status = getEnhancedStatus(term.id);
                           const termMetrics = metrics.get(term.id);
@@ -357,55 +396,43 @@ const GameGridPage = () => {
                               )}
                             </motion.button>
                           );
-                        })}
-                      </div>
-
-                      {/* Per-block Activities + Quiz access */}
-                      {(() => {
-                        const blockNums = Array.from(new Set(sectionTerms.map(t => t.block_number))).sort((a, b) => a - b);
-                        if (blockNums.length === 0) return null;
-                        return (
-                          <div className="mt-5 rounded-2xl p-4" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
-                            <div className="flex items-center gap-2 mb-3">
-                              <Gamepad2 className="h-4 w-4" style={{ color: "hsl(45 80% 70%)" }} />
-                              <h3 className="text-xs font-bold uppercase tracking-widest text-white/80">
-                                Practice & Quiz by Block
-                              </h3>
+                              })}
                             </div>
-                            <div className="space-y-2">
-                              {blockNums.map(bn => (
-                                <div key={bn} className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-[11px] font-semibold text-white/60 min-w-[64px]">Block {bn}</span>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 text-xs gap-1.5 flex-1 min-w-[120px] bg-white/5 border-white/15 text-white hover:bg-white/10 hover:text-white"
-                                    onClick={() => navigate(`/section/${sectionId}/activity/${bn}`)}
-                                  >
-                                    <Gamepad2 className="h-3 w-3" /> Activities
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 text-xs gap-1.5 flex-1 min-w-[120px] bg-white/5 border-white/15 text-white hover:bg-white/10 hover:text-white"
-                                    onClick={() => navigate(`/section/${sectionId}/quiz/${bn}`)}
-                                  >
-                                    <Brain className="h-3 w-3" /> Quiz
-                                  </Button>
-                                </div>
-                              ))}
+
+                            {/* Inline per-block Activities + Quiz access */}
+                            <div className="mt-3 flex items-center gap-2 flex-wrap px-1">
                               <Button
                                 size="sm"
-                                className="w-full mt-2 h-8 gap-1.5 text-xs"
-                                style={{ background: "linear-gradient(135deg, hsl(45 85% 48%), hsl(38 90% 42%))", color: "hsl(240 15% 8%)" }}
-                                onClick={() => navigate(`/section/${sectionId}/final-exam`)}
+                                variant="outline"
+                                className="h-8 text-xs gap-1.5 flex-1 min-w-[140px] bg-white/5 border-white/15 text-white hover:bg-white/10 hover:text-white"
+                                onClick={() => navigate(`/section/${sectionId}/activity/${bn}`)}
                               >
-                                <GraduationCap className="h-3.5 w-3.5" /> Section Final Exam
+                                <Gamepad2 className="h-3 w-3" /> Block {bn} Activities
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 text-xs gap-1.5 flex-1 min-w-[140px] bg-white/5 border-white/15 text-white hover:bg-white/10 hover:text-white"
+                                onClick={() => navigate(`/section/${sectionId}/quiz/${bn}`)}
+                              >
+                                <Brain className="h-3 w-3" /> Block {bn} Quiz
                               </Button>
                             </div>
                           </div>
                         );
-                      })()}
+                      })}
+
+                      {/* Section Final Exam */}
+                      <div className="mt-4">
+                        <Button
+                          size="sm"
+                          className="w-full h-9 gap-1.5 text-xs"
+                          style={{ background: "linear-gradient(135deg, hsl(45 85% 48%), hsl(38 90% 42%))", color: "hsl(240 15% 8%)" }}
+                          onClick={() => navigate(`/section/${sectionId}/final-exam`)}
+                        >
+                          <GraduationCap className="h-3.5 w-3.5" /> Section Final Exam
+                        </Button>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
