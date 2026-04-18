@@ -299,7 +299,6 @@ const GameGridPage = () => {
                                 minHeight: "120px",
                               }}
                             >
-                              {/* Status icon */}
                               <div className="absolute top-2.5 right-2.5">
                                 {status === "locked" && <Lock className="h-4 w-4 text-white/30" />}
                                 {status === "mastery" && (
@@ -315,12 +314,10 @@ const GameGridPage = () => {
                                 {term.term}
                               </h3>
 
-                              {/* Status badge */}
                               <div className="mt-2">
                                 <StatusBadge status={status} progress={progress} />
                               </div>
 
-                              {/* Progress bar for in-progress or needs_review */}
                               {(status === "in_progress" || status === "needs_review") && (
                                 <div className="mt-2">
                                   <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.15)" }}>
@@ -340,7 +337,52 @@ const GameGridPage = () => {
                         })}
                       </div>
 
-                      {/* Activities moved to Practice Lab */}
+                      {/* Per-block Activities + Quiz access */}
+                      {(() => {
+                        const blockNums = Array.from(new Set(sectionTerms.map(t => t.block_number))).sort((a, b) => a - b);
+                        if (blockNums.length === 0) return null;
+                        return (
+                          <div className="mt-5 rounded-2xl p-4" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                            <div className="flex items-center gap-2 mb-3">
+                              <Gamepad2 className="h-4 w-4" style={{ color: "hsl(45 80% 70%)" }} />
+                              <h3 className="text-xs font-bold uppercase tracking-widest text-white/80">
+                                Practice & Quiz by Block
+                              </h3>
+                            </div>
+                            <div className="space-y-2">
+                              {blockNums.map(bn => (
+                                <div key={bn} className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-[11px] font-semibold text-white/60 min-w-[64px]">Block {bn}</span>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 text-xs gap-1.5 flex-1 min-w-[120px] bg-white/5 border-white/15 text-white hover:bg-white/10 hover:text-white"
+                                    onClick={() => navigate(`/section/${sectionId}/activity/${bn}`)}
+                                  >
+                                    <Gamepad2 className="h-3 w-3" /> Activities
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 text-xs gap-1.5 flex-1 min-w-[120px] bg-white/5 border-white/15 text-white hover:bg-white/10 hover:text-white"
+                                    onClick={() => navigate(`/section/${sectionId}/quiz/${bn}`)}
+                                  >
+                                    <Brain className="h-3 w-3" /> Quiz
+                                  </Button>
+                                </div>
+                              ))}
+                              <Button
+                                size="sm"
+                                className="w-full mt-2 h-8 gap-1.5 text-xs"
+                                style={{ background: "linear-gradient(135deg, hsl(45 85% 48%), hsl(38 90% 42%))", color: "hsl(240 15% 8%)" }}
+                                onClick={() => navigate(`/section/${sectionId}/final-exam`)}
+                              >
+                                <GraduationCap className="h-3.5 w-3.5" /> Section Final Exam
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </motion.div>
                   )}
                 </AnimatePresence>
