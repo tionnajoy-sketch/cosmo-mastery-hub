@@ -742,6 +742,18 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
               </p>
             </div>
 
+            {/* Hero visual for the slideshow — keeps the picture present alongside the deep teaching */}
+            {imageUrl && (
+              <div className="rounded-xl overflow-hidden border" style={{ borderColor: `${step.color}30` }}>
+                <img
+                  src={imageUrl}
+                  alt={`Visual reference for ${block.term_title}`}
+                  className="w-full max-h-[260px] object-cover"
+                  loading="lazy"
+                />
+              </div>
+            )}
+
             {/* Auto-loading deep teaching content */}
             {infoLoading && (
               <div className="flex items-center justify-center gap-3 py-8">
