@@ -9,34 +9,27 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { type, content, termName, definition, metaphor, dnaCode, program } = await req.json();
+    const body = await req.json();
+    const {
+      type, content, termName, definition, metaphor, dnaCode, program,
+      // V2 (optional)
+      learnerType, dominantLayer, weakestLayer, engagementLevel,
+      retentionLevel, confidenceLevel, trendSignals, recoveryMode, finalDepthScore,
+    } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // Parse DNA for adaptation
-    let depthInstruction = "Use a standard explanation depth.";
-    let toneInstruction = "Use a warm, supportive, confident tone.";
+    const { buildAdaptationInstructions } = await import("../_shared/dna.ts");
+    const instr = buildAdaptationInstructions({
+      dnaCode, learnerType, dominantLayer, weakestLayer,
+      engagementLevel, retentionLevel, confidenceLevel,
+      trendSignals, recoveryMode, finalDepthScore,
+    });
+    const depthInstruction = instr.depthInstruction;
+    const toneInstruction = [instr.toneInstruction, instr.layerInstruction, instr.trendInstruction, instr.recoveryInstruction]
+      .filter(Boolean).join("\n");
     let formatInstruction = "";
-
-    if (dnaCode && dnaCode.length >= 4) {
-      const engagement = parseInt(dnaCode[1]) || 5;
-      const retCode = dnaCode[2]?.toUpperCase().charCodeAt(0) || 77;
-      const confCode = dnaCode[3]?.toLowerCase().charCodeAt(0) || 109;
-
-      // Depth based on retention + engagement
-      if (retCode <= 72 || engagement <= 3) {
-        depthInstruction = "Keep explanations SHORT and SIMPLE. Use bullet points. Repeat key ideas. Add memory cues like mnemonics.";
-      } else if (retCode >= 82 && engagement >= 7) {
-        depthInstruction = "Provide DEEP, detailed explanations. Include connections to related concepts. Go beyond surface level.";
-      }
-
-      // Tone based on confidence
-      if (confCode <= 104) {
-        toneInstruction = "Be EXTRA supportive and encouraging. Use phrases like 'You've got this' and 'One step at a time'. Break complex ideas into tiny pieces.";
-      } else if (confCode >= 114) {
-        toneInstruction = "Be direct and challenging. Push the student to think deeper. Skip hand-holding.";
-      }
-    }
+    console.debug("[tj-learning-studio] adaptation fallback:", instr.fallback);
 
     const programContext = program || "cosmetology";
     let systemPrompt = "";
