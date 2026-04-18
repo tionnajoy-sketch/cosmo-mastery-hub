@@ -779,10 +779,19 @@ const LearningDNAPage = () => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
           <Card className="border-0 shadow-md bg-card">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: "hsl(42 70% 50% / 0.15)", color: "hsl(42 70% 40%)" }}>Step 3</span>
                   <h2 className="font-display text-lg font-bold text-foreground">Your DNA Code</h2>
+                  <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: "hsl(145 60% 45% / 0.15)", color: "hsl(145 60% 35%)" }}>
+                    <motion.span
+                      animate={{ opacity: [1, 0.3, 1] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ background: "hsl(145 60% 45%)" }}
+                    />
+                    Live · updates as you learn
+                  </span>
                 </div>
                 <SpeakButton text={humanTranslation} size="sm" label="Listen" />
               </div>
