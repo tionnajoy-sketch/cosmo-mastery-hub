@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Brain, Sparkles, CheckCircle2, XCircle, Lock, Heart } from "lucide-reac
 import { motion, AnimatePresence } from "framer-motion";
 import { useReinforcement, type ReinforcementQuestion } from "@/hooks/useReinforcement";
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
+import { shuffleOptions } from "@/lib/shuffleOptions";
 
 interface Props {
   open: boolean;
@@ -63,10 +64,21 @@ const ReinforcementDialog = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, cycle]);
 
+  // Defensive shuffle: even if the AI biases the correct answer to "A",
+  // we re-randomize positions per-question so learners can't pattern-match.
+  const shuffled = useMemo(() => {
+    if (!content) return null;
+    return shuffleOptions(
+      content.options,
+      content.correctOption,
+      `${termId}-cycle-${cycle}`,
+    );
+  }, [content, termId, cycle]);
+
   const handleAnswer = async (key: string) => {
-    if (selected || !content) return;
+    if (selected || !content || !shuffled) return;
     setSelected(key);
-    const correct = key === content.correctOption;
+    const correct = key === shuffled.correctLetter;
     setPhase("feedback");
 
     if (correct) {
@@ -89,7 +101,7 @@ const ReinforcementDialog = ({
     setCycle((c) => c + 1);
   };
 
-  const isCorrect = content && selected === content.correctOption;
+  const isCorrect = !!(content && shuffled && selected === shuffled.correctLetter);
   const exhausted = cycle >= MAX_CYCLES && phase === "feedback" && !isCorrect;
 
   return (
@@ -158,14 +170,14 @@ const ReinforcementDialog = ({
                 </p>
                 <p className="text-sm font-medium leading-relaxed">{content.question}</p>
                 <div className="space-y-2 pt-2">
-                  {(["A", "B", "C", "D"] as const).map((k) => (
+                  {(shuffled?.options ?? []).map((opt) => (
                     <button
-                      key={k}
-                      onClick={() => handleAnswer(k)}
+                      key={opt.letter}
+                      onClick={() => handleAnswer(opt.letter)}
                       className="w-full rounded-lg border border-border bg-card p-3 text-left text-sm transition-colors hover:bg-accent"
                     >
-                      <span className="mr-2 font-semibold text-primary">{k}.</span>
-                      {content.options[k]}
+                      <span className="mr-2 font-semibold text-primary">{opt.letter}.</span>
+                      {opt.text}
                     </button>
                   ))}
                 </div>
