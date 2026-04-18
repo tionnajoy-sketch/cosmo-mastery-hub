@@ -247,8 +247,16 @@ const GameGridPage = () => {
             }).length;
             const sectionPercent = sectionTerms.length > 0 ? Math.round((sectionCompleted / sectionTerms.length) * 100) : 0;
 
+            // Group terms within section by block_number for clearer block awareness
+            const blockGroups = new Map<number, Term[]>();
+            sectionTerms.forEach(t => {
+              if (!blockGroups.has(t.block_number)) blockGroups.set(t.block_number, []);
+              blockGroups.get(t.block_number)!.push(t);
+            });
+            const orderedBlockNums = Array.from(blockGroups.keys()).sort((a, b) => a - b);
+
             return (
-              <div key={sectionId}>
+              <div key={sectionId} ref={(el) => { sectionRefs.current.set(sectionId, el); }} style={{ scrollMarginTop: 80 }}>
                 {/* Section divider */}
                 <button onClick={() => toggleSection(sectionId)} className="flex items-center gap-3 mb-4 w-full group cursor-pointer">
                   <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)" }} />
