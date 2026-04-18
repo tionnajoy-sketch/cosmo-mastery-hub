@@ -44,6 +44,15 @@ A student just missed a quiz question. Your job:
 2) Generate ONE NEW quiz question on the same concept at "${difficultyLabel}" difficulty.
 3) The new question must NOT reuse the wording or distractors of the original. Make distractors realistic and conceptually close so the student can't memorize the pattern.
 4) Keep the micro-lesson short (3–5 sentences), warm, and focused.
+
+CRITICAL ANSWER RULES (do NOT violate):
+- Randomly place the correct answer across A, B, C, or D — do NOT bias toward A. Pick a position using true randomness.
+- ALL FOUR options must be plausible and conceptually adjacent to the correct answer.
+- Distractors must be SIMILAR IN LENGTH and tone to the correct answer (no obviously short/throwaway options).
+- Never use filler like "None of the above", "All of the above", or jokes — every option must be a real candidate.
+- Do NOT echo phrasing from the original missed question or its distractors.
+- The correct answer should require genuine understanding to identify, not pattern-matching.
+
 Return STRICT JSON only, no markdown:
 {
   "microLesson": "string",

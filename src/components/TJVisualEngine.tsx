@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -59,6 +59,17 @@ const TJVisualEngine = ({
       setLoading(false);
     }
   }, [termId, termName, definition, metaphor, onImageGenerated]);
+
+  // AUTO-GENERATE on mount if no image yet — picture should appear
+  // immediately when entering the Visualize step, no manual click required.
+  const autoTriedRef = useRef(false);
+  useEffect(() => {
+    if (autoTriedRef.current) return;
+    if (!termId) return;
+    if (imageUrl) return;
+    autoTriedRef.current = true;
+    generateImage();
+  }, [termId, imageUrl, generateImage]);
 
   // Auto-generated labels based on definition keywords
   const autoLabels: DiagramLabel[] = labels.length > 0 ? labels : [];
