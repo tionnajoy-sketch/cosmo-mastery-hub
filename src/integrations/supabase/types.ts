@@ -349,6 +349,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          behavior_history: Json
           birth_month: number | null
           birth_year: number | null
           created_at: string
@@ -361,6 +362,7 @@ export type Database = {
           has_completed_pretest: boolean
           id: string
           language: string
+          layer_scores: Json
           leaderboard_preference: string | null
           learning_style: string
           name: string
@@ -372,6 +374,7 @@ export type Database = {
           tone_preference: string | null
         }
         Insert: {
+          behavior_history?: Json
           birth_month?: number | null
           birth_year?: number | null
           created_at?: string
@@ -384,6 +387,7 @@ export type Database = {
           has_completed_pretest?: boolean
           id: string
           language?: string
+          layer_scores?: Json
           leaderboard_preference?: string | null
           learning_style?: string
           name?: string
@@ -395,6 +399,7 @@ export type Database = {
           tone_preference?: string | null
         }
         Update: {
+          behavior_history?: Json
           birth_month?: number | null
           birth_year?: number | null
           created_at?: string
@@ -407,6 +412,7 @@ export type Database = {
           has_completed_pretest?: boolean
           id?: string
           language?: string
+          layer_scores?: Json
           leaderboard_preference?: string | null
           learning_style?: string
           name?: string

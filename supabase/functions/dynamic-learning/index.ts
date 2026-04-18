@@ -9,9 +9,23 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { type, topic, termName, dnaCode, previousResponses, program } = await req.json();
+    const body = await req.json();
+    const {
+      type, topic, termName, dnaCode, previousResponses, program,
+      learnerType, dominantLayer, weakestLayer, engagementLevel,
+      retentionLevel, confidenceLevel, trendSignals, recoveryMode, finalDepthScore,
+    } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+    const { buildAdaptationInstructions, composeSystemDirectives } = await import("../_shared/dna.ts");
+    const instr = buildAdaptationInstructions({
+      dnaCode, learnerType, dominantLayer, weakestLayer,
+      engagementLevel, retentionLevel, confidenceLevel,
+      trendSignals, recoveryMode, finalDepthScore,
+    });
+    const adaptationDirectives = composeSystemDirectives(instr);
+    console.debug("[dynamic-learning] adaptation fallback:", instr.fallback);
 
     let systemPrompt = "";
     let userPrompt = "";
@@ -19,6 +33,9 @@ serve(async (req) => {
     if (type === "reflection") {
       systemPrompt = `You are TJ Mentor, a warm, confident, supportive educator using the TJ Anderson Layer Method™: Core Cross Agent™. 
 Generate ONE personalized reflection question for a ${program || "cosmetology"} student.
+
+ADAPTATION DIRECTIVES:
+${adaptationDirectives}
 
 RULES:
 - Must be personal and introspective
@@ -41,6 +58,9 @@ Generate a new, unique reflection question.`;
     } else if (type === "apply") {
       systemPrompt = `You are TJ Mentor, creating scenario-based application questions for the TJ Anderson Layer Method™: Core Cross Agent™.
 Generate ONE realistic, decision-based scenario question for a ${program || "cosmetology"} student.
+
+ADAPTATION DIRECTIVES:
+${adaptationDirectives}
 
 RULES:
 - Must be realistic and require critical thinking
