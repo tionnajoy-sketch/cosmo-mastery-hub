@@ -126,6 +126,51 @@ const VoiceCacheDashboard = () => {
           </Button>
         </div>
 
+        {/* Term image backfill admin card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ImagePlus className="w-5 h-5" />
+              Term Visualization Coverage
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {imageStats ? (
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="rounded-lg p-3 bg-muted">
+                  <p className="text-2xl font-bold">{imageStats.total}</p>
+                  <p className="text-xs text-muted-foreground">Total Terms</p>
+                </div>
+                <div className="rounded-lg p-3 bg-muted">
+                  <p className="text-2xl font-bold text-emerald-500">{imageStats.withImage}</p>
+                  <p className="text-xs text-muted-foreground">Have Image</p>
+                </div>
+                <div className="rounded-lg p-3 bg-muted">
+                  <p className="text-2xl font-bold text-amber-500">{imageStats.missing}</p>
+                  <p className="text-xs text-muted-foreground">Missing</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Loading coverage…</p>
+            )}
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
+              <Button onClick={runBackfill} disabled={backfilling || (imageStats?.missing ?? 0) === 0} className="gap-2">
+                {backfilling ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+                {backfilling ? "Generating real-life photos…" : "Generate Missing Photos (50 at a time)"}
+              </Button>
+              {lastBackfill && (
+                <p className="text-xs text-muted-foreground">
+                  Last run: ✅ {lastBackfill.success} created · ❌ {lastBackfill.failed} failed · {lastBackfill.remaining} still missing
+                </p>
+              )}
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Generates photorealistic, real-life images for any term that doesn't yet have one. Run repeatedly until "Missing" is 0.
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
