@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, RefreshCw, Volume2, TrendingUp, Database, Zap } from "lucide-react";
+import { ArrowLeft, RefreshCw, Volume2, TrendingUp, Database, Zap, ImagePlus, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 
@@ -27,6 +28,9 @@ const VoiceCacheDashboard = () => {
   const [entries, setEntries] = useState<CacheEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalEntries: 0, totalHits: 0, totalMisses: 0, estimatedSaved: 0 });
+  const [imageStats, setImageStats] = useState<{ total: number; withImage: number; missing: number } | null>(null);
+  const [backfilling, setBackfilling] = useState(false);
+  const [lastBackfill, setLastBackfill] = useState<{ success: number; failed: number; remaining: number } | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -42,11 +46,50 @@ const VoiceCacheDashboard = () => {
       setStats({
         totalEntries: data.length,
         totalHits,
-        totalMisses: data.length, // each entry = 1 miss (first generation)
+        totalMisses: data.length,
         estimatedSaved: totalHits * CREDITS_PER_REQUEST,
       });
     }
+
+    // Term image coverage
+    const [{ count: termsCount }, { count: imagesCount }] = await Promise.all([
+      supabase.from("terms").select("*", { count: "exact", head: true }),
+      supabase.from("term_images").select("*", { count: "exact", head: true }),
+    ]);
+    if (typeof termsCount === "number" && typeof imagesCount === "number") {
+      setImageStats({ total: termsCount, withImage: imagesCount, missing: Math.max(0, termsCount - imagesCount) });
+    }
+
     setLoading(false);
+  };
+
+  const runBackfill = async () => {
+    setBackfilling(true);
+    setLastBackfill(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("backfill-term-images", {
+        body: { limit: 50 },
+      });
+      if (error) throw error;
+      toast({
+        title: "Backfill complete",
+        description: `${data?.success ?? 0} created · ${data?.failed ?? 0} failed · ${data?.remaining ?? 0} still missing.`,
+      });
+      setLastBackfill({
+        success: data?.success ?? 0,
+        failed: data?.failed ?? 0,
+        remaining: data?.remaining ?? 0,
+      });
+      await fetchData();
+    } catch (e) {
+      toast({
+        title: "Backfill failed",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setBackfilling(false);
+    }
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -82,6 +125,51 @@ const VoiceCacheDashboard = () => {
             Refresh
           </Button>
         </div>
+
+        {/* Term image backfill admin card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ImagePlus className="w-5 h-5" />
+              Term Visualization Coverage
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {imageStats ? (
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="rounded-lg p-3 bg-muted">
+                  <p className="text-2xl font-bold">{imageStats.total}</p>
+                  <p className="text-xs text-muted-foreground">Total Terms</p>
+                </div>
+                <div className="rounded-lg p-3 bg-muted">
+                  <p className="text-2xl font-bold text-emerald-500">{imageStats.withImage}</p>
+                  <p className="text-xs text-muted-foreground">Have Image</p>
+                </div>
+                <div className="rounded-lg p-3 bg-muted">
+                  <p className="text-2xl font-bold text-amber-500">{imageStats.missing}</p>
+                  <p className="text-xs text-muted-foreground">Missing</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Loading coverage…</p>
+            )}
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
+              <Button onClick={runBackfill} disabled={backfilling || (imageStats?.missing ?? 0) === 0} className="gap-2">
+                {backfilling ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+                {backfilling ? "Generating real-life photos…" : "Generate Missing Photos (50 at a time)"}
+              </Button>
+              {lastBackfill && (
+                <p className="text-xs text-muted-foreground">
+                  Last run: ✅ {lastBackfill.success} created · ❌ {lastBackfill.failed} failed · {lastBackfill.remaining} still missing
+                </p>
+              )}
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Generates photorealistic, real-life images for any term that doesn't yet have one. Run repeatedly until "Missing" is 0.
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

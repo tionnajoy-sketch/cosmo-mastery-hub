@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.generate-term-image]
 verify_jwt = false
 
+[functions.backfill-term-images]
+verify_jwt = false
+
 [functions.process-upload]
 verify_jwt = false
 
