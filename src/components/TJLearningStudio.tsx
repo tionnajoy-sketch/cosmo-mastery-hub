@@ -122,7 +122,7 @@ const TJLearningStudio = ({
     } finally {
       setLoading(false);
     }
-  }, [termName, definition, metaphor, additionalContent, profile, onAudioScript]);
+  }, [termName, definition, metaphor, additionalContent, profile, onAudioScript, onContentGenerated, dna, context]);
 
   const actions: { key: StudioMode; label: string; icon: React.ReactNode; desc: string }[] = [
     { key: "summary", label: "Quick Summary", icon: <Sparkles className="w-4 h-4" />, desc: "Key takeaways" },
