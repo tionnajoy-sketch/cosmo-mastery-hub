@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target, GraduationCap, Circle, Map } from "lucide-react";
+import { ArrowLeft, BookOpen, Brain, CheckCircle2, Target, GraduationCap, Circle, Map, Gamepad2, ChevronRight, Sparkles } from "lucide-react";
 import { pageColors, blockAccentColors } from "@/lib/colors";
 // AskTJ is now global
 import AppHeader from "@/components/AppHeader";
@@ -354,16 +354,63 @@ const SectionPage = () => {
                         </div>
                       )}
 
-                      <div className="flex gap-3">
-                        <Button className="flex-1 gap-2 py-5 text-sm" style={{ background: accent.stripe, color: "white" }} onClick={() => navigate(`/section/${id}/study/${block.block_number}`)}>
-                          <BookOpen className="h-4 w-4" /> Learn
-                        </Button>
-                        <Button variant="outline" className="flex-1 gap-2 py-5 text-sm" style={{ borderColor: accent.stripe, color: accent.stripe }} onClick={() => navigate(`/section/${id}/activity/${block.block_number}`)}>
-                          <Target className="h-4 w-4" /> Practice
-                        </Button>
-                        <Button variant="outline" className="flex-1 gap-2 py-5 text-sm" style={{ borderColor: accent.stripe, color: accent.stripe }} onClick={() => navigate(`/section/${id}/quiz/${block.block_number}`)}>
-                          <Brain className="h-4 w-4" /> Quiz
-                        </Button>
+                      {/* ───── UNIFIED LEARN → ACTIVITIES → QUIZ FLOW ───── */}
+                      <div className="rounded-xl overflow-hidden border" style={{ borderColor: accent.stripe + "30", background: "hsl(0 0% 99%)" }}>
+                        <div className="px-3 py-2 flex items-center gap-1.5" style={{ background: accent.stripe + "10" }}>
+                          <Sparkles className="h-3 w-3" style={{ color: accent.stripe }} />
+                          <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: accent.stripe }}>
+                            Your Block Flow
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 divide-x" style={{ borderColor: accent.stripe + "20" }}>
+                          {/* LEARN */}
+                          <button
+                            onClick={() => navigate(`/section/${id}/study/${block.block_number}`)}
+                            className="flex flex-col items-center justify-center gap-1.5 p-3 hover:bg-muted/40 transition-colors group"
+                          >
+                            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: accent.stripe, color: "white" }}>
+                              <BookOpen className="h-4 w-4" />
+                            </div>
+                            <span className="text-xs font-semibold" style={{ color: c.cardHeading }}>1. Learn</span>
+                            <span className="text-[10px] text-muted-foreground">Adaptive flow</span>
+                          </button>
+
+                          {/* ACTIVITIES */}
+                          <button
+                            onClick={() => navigate(`/section/${id}/activity/${block.block_number}`)}
+                            className="flex flex-col items-center justify-center gap-1.5 p-3 hover:bg-muted/40 transition-colors relative"
+                          >
+                            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: accent.stripe + "20", color: accent.stripe }}>
+                              <Gamepad2 className="h-4 w-4" />
+                            </div>
+                            <span className="text-xs font-semibold" style={{ color: c.cardHeading }}>2. Activities</span>
+                            <span className="text-[10px] text-muted-foreground">Reinforce</span>
+                          </button>
+
+                          {/* QUIZ */}
+                          <button
+                            onClick={() => navigate(`/section/${id}/quiz/${block.block_number}`)}
+                            className="flex flex-col items-center justify-center gap-1.5 p-3 hover:bg-muted/40 transition-colors relative"
+                          >
+                            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: accent.stripe + "20", color: accent.stripe }}>
+                              <Brain className="h-4 w-4" />
+                            </div>
+                            <span className="text-xs font-semibold" style={{ color: c.cardHeading }}>3. Quiz</span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {block.completed && block.bestScore !== null && block.bestTotal !== null
+                                ? `Best ${block.bestScore}/${block.bestTotal}`
+                                : "Test yourself"}
+                            </span>
+                          </button>
+                        </div>
+                        {/* Subtle progression hint */}
+                        <div className="px-3 py-1.5 flex items-center justify-center gap-1 text-[10px]" style={{ background: accent.stripe + "08", color: c.subtext }}>
+                          <span>Learn</span>
+                          <ChevronRight className="h-2.5 w-2.5" />
+                          <span>Activities</span>
+                          <ChevronRight className="h-2.5 w-2.5" />
+                          <span>Quiz</span>
+                        </div>
                       </div>
                     </CardContent>
                   </div>
