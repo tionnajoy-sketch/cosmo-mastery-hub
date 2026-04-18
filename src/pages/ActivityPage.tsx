@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +17,7 @@ import PictureMatch from "@/components/activities/PictureMatch";
 import MnemonicBuilder from "@/components/activities/MnemonicBuilder";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import SpeakButton from "@/components/SpeakButton";
+import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 
 const c = pageColors.activity;
 
@@ -62,6 +63,25 @@ const ActivityPage = () => {
   const [activity, setActivity] = useState<ActivityType | null>(null);
   const [completedActivities, setCompletedActivities] = useState(0);
   const [calmMessage] = useState(() => calmingMessages[Math.floor(Math.random() * calmingMessages.length)]);
+  const { updateDNA } = useDNAAdaptation();
+  const activityStartRef = useRef<number | null>(null);
+
+  // Track time spent inside an activity → engagement signal for DNA
+  useEffect(() => {
+    if (activity) {
+      activityStartRef.current = Date.now();
+      // Immediate engagement bump on opening an activity
+      updateDNA({ layerCompleted: activity });
+    } else if (activityStartRef.current) {
+      const seconds = Math.round((Date.now() - activityStartRef.current) / 1000);
+      activityStartRef.current = null;
+      if (seconds > 3) {
+        updateDNA({ timeSpentSeconds: seconds });
+        setCompletedActivities((n) => n + 1);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activity]);
 
   useEffect(() => {
     if (!id || !block) return;
