@@ -12,6 +12,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useCoins } from "@/hooks/useCoins";
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import { useLearningMetrics } from "@/hooks/useLearningMetrics";
+import { useReinforcement } from "@/hooks/useReinforcement";
+import ReinforcementDialog from "@/components/ReinforcementDialog";
 import SpeakButton from "@/components/SpeakButton";
 
 const c = pageColors.quiz;
