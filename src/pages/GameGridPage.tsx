@@ -113,6 +113,7 @@ const GameGridPage = () => {
   const [weakTerms, setWeakTerms] = useState<Set<string>>(new Set());
   const [termImages, setTermImages] = useState<Map<string, string>>(new Map());
   const sectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  const requestedImageIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchAll = async () => {
