@@ -52,7 +52,7 @@ const TJLearningStudio = ({
   termName, definition, metaphor, additionalContent, mode = "inline", onAudioScript, onContentGenerated,
 }: TJLearningStudioProps) => {
   const { profile } = useAuth();
-  const { dna } = useDNAAdaptation();
+  const { dna, context } = useDNAAdaptation();
 
   const [activeMode, setActiveMode] = useState<StudioMode | null>(null);
   const [content, setContent] = useState("");
@@ -81,6 +81,15 @@ const TJLearningStudio = ({
           content: additionalContent || "",
           dnaCode: profile?.tj_dna_code || "",
           program: profile?.selected_program || "cosmetology",
+          // V2 enrichment (optional — server falls back gracefully)
+          dominantLayer: context?.dominantLayer,
+          weakestLayer: context?.weakestLayer,
+          engagementLevel: dna?.engagement,
+          retentionLevel: dna?.retention,
+          confidenceLevel: dna?.confidence,
+          trendSignals: context?.trendSignals,
+          recoveryMode: context?.recoveryMode,
+          finalDepthScore: context?.finalDepthScore,
         },
       });
 
