@@ -483,13 +483,36 @@ const QuizPage = () => {
                   </CardContent>
                 </Card>
 
-                <Button className="w-full py-5 text-base" style={{ background: c.nextButton, color: "white" }} onClick={handleNext}>
-                  {isLastQuestion ? "See Results" : "Next Question"}
+                <Button
+                  className="w-full py-5 text-base disabled:opacity-50"
+                  style={{ background: c.nextButton, color: "white" }}
+                  onClick={handleNext}
+                  disabled={!reinforcementResolved}
+                >
+                  {!reinforcementResolved
+                    ? "🔒 Complete reinforcement to continue"
+                    : isLastQuestion
+                      ? "See Results"
+                      : "Next Question"}
                 </Button>
               </motion.div>
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* Locked reinforcement loop — gates progression after wrong answers */}
+        {currentQuestion?.related_term_id && relatedTerm && (
+          <ReinforcementDialog
+            open={reinforcementOpen}
+            onResolved={handleReinforcementResolved}
+            termId={currentQuestion.related_term_id}
+            term={relatedTerm.term}
+            definition={relatedTerm.definition}
+            metaphor={relatedTerm.metaphor}
+            missedQuestion={currentQuestion.question_text}
+            missedAnswerExplanation={currentQuestion.explanation}
+          />
+        )}
       </div>
     </div>
   );
