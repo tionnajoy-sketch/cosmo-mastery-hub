@@ -162,6 +162,22 @@ const GameGridPage = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Auto-expand and scroll to the section when arriving via ?section=<id>
+  useEffect(() => {
+    if (!focusSectionId || terms.length === 0) return;
+    setCollapsedSections(prev => {
+      const next = new Set(prev);
+      next.delete(focusSectionId);
+      return next;
+    });
+    // Defer scroll until after expand animation paints
+    const t = setTimeout(() => {
+      const el = sectionRefs.current.get(focusSectionId);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [focusSectionId, terms.length]);
+
   const handleNotesChange = useCallback(() => {}, []);
   const toggleSection = useCallback((sectionId: string) => {
     setCollapsedSections(prev => {
