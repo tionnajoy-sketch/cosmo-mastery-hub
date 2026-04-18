@@ -42,7 +42,7 @@ const LiveDNASnapshot = () => {
 
   return (
     <Link
-      to="/dna"
+      to="/learning-dna"
       className="block rounded-2xl p-4 mb-5 transition-all hover:scale-[1.005]"
       style={{
         background: "linear-gradient(135deg, hsl(265 30% 12% / 0.6), hsl(215 30% 12% / 0.6))",
