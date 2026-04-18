@@ -12,12 +12,14 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useCoins } from "@/hooks/useCoins";
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import { useLearningMetrics } from "@/hooks/useLearningMetrics";
+import { useReinforcement } from "@/hooks/useReinforcement";
+import ReinforcementDialog from "@/components/ReinforcementDialog";
 import SpeakButton from "@/components/SpeakButton";
 
 const c = pageColors.quiz;
 
 interface Question { id: string; question_text: string; option_a: string; option_b: string; option_c: string; option_d: string; correct_option: string; explanation: string; related_term_id: string | null; }
-interface RelatedTerm { term: string; metaphor: string; }
+interface RelatedTerm { term: string; metaphor: string; definition?: string; }
 type QuizMode = "practice" | "confidence";
 
 const preQuizMessages = [
@@ -55,7 +57,10 @@ const QuizPage = () => {
   const { addCoins } = useCoins();
   const { updateDNA } = useDNAAdaptation();
   const { updateTermMetrics } = useLearningMetrics();
+  const { recordIncorrect, recordCorrect } = useReinforcement();
   const [totalAttempts, setTotalAttempts] = useState(0);
+  const [reinforcementOpen, setReinforcementOpen] = useState(false);
+  const [reinforcementResolved, setReinforcementResolved] = useState(true);
 
   useEffect(() => {
     if (!id || !block) return;
@@ -102,26 +107,41 @@ const QuizPage = () => {
     if (correct) {
       setScore((s) => s + 1);
       addCoins(10, "correct");
+      if (currentQuestion.related_term_id) {
+        await recordCorrect(currentQuestion.related_term_id, false);
+      }
+      setReinforcementResolved(true);
     } else {
       setWrongCount((cnt) => cnt + 1);
+      setReinforcementResolved(false); // GATE: must pass reinforcement before Next
       if (user && id) {
         await supabase.from("wrong_answers").insert({
           user_id: user.id, question_id: currentQuestion.id, section_id: id,
           block_number: Number(block), selected_option: option,
         });
       }
+      if (currentQuestion.related_term_id) {
+        await recordIncorrect(currentQuestion.related_term_id);
+        setTimeout(() => setReinforcementOpen(true), 1200);
+      } else {
+        setReinforcementResolved(true);
+      }
     }
-    // Live DNA update — every quiz answer flows back to the DNA engine
     updateDNA({ quizCorrect: correct, layerCompleted: "quiz" });
     if (currentQuestion.related_term_id) {
-      // Bump term metrics so the DNA Hub & Game Grid reflect this quiz
       updateTermMetrics(currentQuestion.related_term_id, "quiz", correct ? 10 : 2);
-      const { data } = await supabase.from("terms").select("term, metaphor").eq("id", currentQuestion.related_term_id).single();
+      const { data } = await supabase.from("terms").select("term, metaphor, definition").eq("id", currentQuestion.related_term_id).single();
       if (data) setRelatedTerm(data);
     }
   };
 
+  const handleReinforcementResolved = (_result: { passed: boolean; cyclesUsed: number }) => {
+    setReinforcementOpen(false);
+    setReinforcementResolved(true);
+  };
+
   const handleNext = () => {
+    if (!reinforcementResolved) return; // safeguard
     if (isLastQuestion) {
       navigate(`/section/${id}/results/${block}`, { state: { score, total: questions.length, mode, wrongCount } });
     } else {
@@ -130,6 +150,7 @@ const QuizPage = () => {
       setRelatedTerm(null);
       setStrategyStep("answers");
       setEliminated(new Set());
+      setReinforcementResolved(true);
     }
   };
 
@@ -462,13 +483,36 @@ const QuizPage = () => {
                   </CardContent>
                 </Card>
 
-                <Button className="w-full py-5 text-base" style={{ background: c.nextButton, color: "white" }} onClick={handleNext}>
-                  {isLastQuestion ? "See Results" : "Next Question"}
+                <Button
+                  className="w-full py-5 text-base disabled:opacity-50"
+                  style={{ background: c.nextButton, color: "white" }}
+                  onClick={handleNext}
+                  disabled={!reinforcementResolved}
+                >
+                  {!reinforcementResolved
+                    ? "🔒 Complete reinforcement to continue"
+                    : isLastQuestion
+                      ? "See Results"
+                      : "Next Question"}
                 </Button>
               </motion.div>
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* Locked reinforcement loop — gates progression after wrong answers */}
+        {currentQuestion?.related_term_id && relatedTerm && (
+          <ReinforcementDialog
+            open={reinforcementOpen}
+            onResolved={handleReinforcementResolved}
+            termId={currentQuestion.related_term_id}
+            term={relatedTerm.term}
+            definition={relatedTerm.definition}
+            metaphor={relatedTerm.metaphor}
+            missedQuestion={currentQuestion.question_text}
+            missedAnswerExplanation={currentQuestion.explanation}
+          />
+        )}
       </div>
     </div>
   );

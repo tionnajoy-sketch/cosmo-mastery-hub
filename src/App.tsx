@@ -49,6 +49,7 @@ import CommunityBoardPage from "./pages/CommunityBoardPage";
 import TJCafe from "./components/TJCafe";
 import { useStudyBreak } from "./hooks/useStudyBreak";
 import VoiceCacheDashboard from "./pages/VoiceCacheDashboard";
+import StruggleTermsPage from "./pages/StruggleTermsPage";
 import NotFound from "./pages/NotFound";
 import GlobalMenuFab from "@/components/GlobalMenuFab";
 
@@ -102,6 +103,7 @@ const AppContent = () => {
         <Route path="/learning-dna" element={<ProtectedRoute><LearningDNAPage /></ProtectedRoute>} />
         <Route path="/game-grid" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
         <Route path="/voice-cache" element={<ProtectedRoute><VoiceCacheDashboard /></ProtectedRoute>} />
+        <Route path="/my-notes" element={<ProtectedRoute><StruggleTermsPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />
