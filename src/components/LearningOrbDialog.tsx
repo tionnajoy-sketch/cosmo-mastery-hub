@@ -297,10 +297,15 @@ const LearningOrbDialog = ({
     supabase.from("journal_notes").select("note").eq("user_id", user.id).eq("term_id", block.id).single().then(({ data }) => {
       if (data) setJournalNote(data.note);
     });
-    supabase.from("term_images").select("image_url").eq("term_id", block.id).single().then(({ data }) => {
-      if (data) setImageUrl(data.image_url);
-    });
   }, [mode, user, block?.id]);
+
+  // Always preload any existing AI-generated picture for this term (works for both builtin & uploaded)
+  useEffect(() => {
+    if (!block?.id) return;
+    supabase.from("term_images").select("image_url").eq("term_id", block.id).maybeSingle().then(({ data }) => {
+      if (data?.image_url) setImageUrl(data.image_url);
+    });
+  }, [block?.id]);
 
   // Auto-save journal
   useEffect(() => {
@@ -645,6 +650,8 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
             )}
           </motion.div>
         );
+      case "visualize":
+      case "visual":
         return (
           <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center space-y-5 py-4">
             <TJVisualEngine
@@ -734,6 +741,18 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                 {block.affirmation || `Let's explore ${block.term_title} more deeply.`}
               </p>
             </div>
+
+            {/* Hero visual for the slideshow — keeps the picture present alongside the deep teaching */}
+            {imageUrl && (
+              <div className="rounded-xl overflow-hidden border" style={{ borderColor: `${step.color}30` }}>
+                <img
+                  src={imageUrl}
+                  alt={`Visual reference for ${block.term_title}`}
+                  className="w-full max-h-[260px] object-cover"
+                  loading="lazy"
+                />
+              </div>
+            )}
 
             {/* Auto-loading deep teaching content */}
             {infoLoading && (
