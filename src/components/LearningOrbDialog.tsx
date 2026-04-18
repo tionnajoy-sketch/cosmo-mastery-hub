@@ -407,6 +407,11 @@ const LearningOrbDialog = ({
       // Don't allow completing without answering the quiz
       return;
     }
+    // GATE: if learner answered the quiz wrong, lock progression until
+    // ReinforcementDialog is resolved (correct answer or 3 cycles exhausted).
+    if (step.key === "quiz" && !reinforcementResolved) {
+      return;
+    }
 
     if (currentStep < adaptedSteps.length - 1) {
       if (soundsEnabled) playChime();
@@ -1048,8 +1053,32 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
 
   /* ─── Main Layout ─── */
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) stopSpeaking(); onOpenChange(o); }}>
-      <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }}>
+    <Dialog open={open} onOpenChange={(o) => {
+      // LOCK the dialog while a reinforcement loop is active.
+      if (!o && !reinforcementResolved) return;
+      if (!o) stopSpeaking();
+      onOpenChange(o);
+    }}>
+      <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }} onPointerDownOutside={(e) => { if (!reinforcementResolved) e.preventDefault(); }} onEscapeKeyDown={(e) => { if (!reinforcementResolved) e.preventDefault(); }}>
+        {/* Locked reinforcement loop — gates progression after wrong in-flow quiz */}
+        <ReinforcementDialog
+          open={reinforcementOpen}
+          onResolved={({ passed }) => {
+            setReinforcementOpen(false);
+            setReinforcementResolved(true);
+            if (passed) {
+              // Mark the quiz as correctly resolved so they can advance
+              setQuizSelected(null);
+              setQuizRevealed(true);
+            }
+          }}
+          termId={block.id}
+          term={block.term_title}
+          definition={block.definition}
+          metaphor={block.metaphor}
+          missedQuestion={missedQuestionText || quizQuestion || `Question about ${block.term_title}`}
+          missedAnswerExplanation={block.definition}
+        />
         {/* Subtle BG */}
         <div className="absolute inset-0 bg-cover bg-center pointer-events-none" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.06, filter: "brightness(1.2)" }} />
         <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.94) 0%, hsl(0 0% 98% / 0.96) 100%)" }} />
