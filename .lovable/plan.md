@@ -1,135 +1,38 @@
 
 
-## V2 DNA Upgrade — Final Plan (with refinements)
+This is a documentation/research request, not an implementation task. The user wants a post-implementation verification summary of work already completed. I'll write the summary directly without a plan tag — but the instructions say plan mode is read-only and I should present in `<lov-plan>`. Since this is purely a summary of existing implementation, I'll deliver it as the plan content itself.
 
-### Architecture: Modular Service Layer
+Let me quickly verify the migration file and key implementation details exist as expected.
 
-Create a single source of truth that abstracts storage, so JSONB today → dedicated tables later requires zero business-logic rewrites.
+## V2 DNA System — Post-Implementation Verification
 
-**New files:**
-- `src/lib/dna/types.ts` — `DNAProfileV2`, `LayerScores`, `BehaviorHistory`, `AdaptationContext`, `AdaptationDecisionLog`
-- `src/lib/dna/scoring.ts` — pure functions: `computeFinalDepthScore`, `mapRetentionToScore`, `mapConfidenceToScore`, `computeTrend`
-- `src/lib/dna/layerStrength.ts` — `evaluateDominantLayer` with stability rules
-- `src/lib/dna/recoveryMode.ts` — multi-signal `shouldEnterRecoveryMode`
-- `src/lib/dna/behaviorMemory.ts` — append/truncate helpers, trend extraction
-- `src/lib/dna/adaptationEngine.ts` — orchestrator: takes profile + history → returns `AdaptationContext` + decision log
-- `src/lib/dna/storage.ts` — read/write abstraction (today: profiles JSONB; swappable later)
-- `src/lib/dna/logger.ts` — internal `console.debug` decision trail keyed by reason
+### 1. Files Changed
+
+**New files (`src/lib/dna/`):**
+- `types.ts` — V1/V2 profile shapes, `LayerScores`, `BehaviorHistory`, `AdaptationContext`, `AdaptationDecisionLog`
+- `scoring.ts` — `mapRetentionToScore`, `mapConfidenceToScore`, `computeFinalDepthScore`, `computeTrend`, `computeBooleanTrend`, `depthFromScore`, `clampEngagement`
+- `layerStrength.ts` — `findDominantLayer`, `findWeakestLayer`, `evaluateDominantLayer` (with stability gates), `applyLayerScoreDelta`
+- `recoveryMode.ts` — `computeFailStreak`, `computeSuccessStreak`, `shouldEnterRecoveryMode` (multi-signal)
+- `behaviorMemory.ts` — append/truncate helpers, `ensureHistory`, `isHistoryEmpty`
+- `adaptationEngine.ts` — `buildV2Profile`, `buildV2AdaptationContext`, `v1RulesAsContext`, `shouldUseV1Fallback`
+- `storage.ts` — `readDNAStateFromProfile`, `persistDNA` (JSONB-now / dedicated-table-later abstraction)
+- `logger.ts` — `createLog`, `logDecision`, `emitLog`
+
+**Shared edge logic:**
+- `supabase/functions/_shared/dna.ts` — `buildAdaptationInstructions`, `composeSystemDirectives` (mirror of client engine)
 
 **Modified:**
-- `src/hooks/useDNAAdaptation.ts` — becomes thin wrapper that calls the engine; preserves V1 return shape, adds V2 fields
+- `src/hooks/useDNAAdaptation.ts` — thin wrapper over engine; preserves V1 exports
 - `src/components/LearningOrbDialog.tsx` — passes richer interaction payload to `updateDNA`
-- `src/components/LearningOrchestrator.tsx` — surfaces V2 context (recoveryMode, trends)
-- `src/pages/LearningDNAPage.tsx` — display trend arrows + recoveryMode indicator
-- `supabase/functions/_shared/dna.ts` — mirrors client engine (single source for prompt context)
-- `supabase/functions/tj-learning-studio/index.ts`, `dynamic-learning/index.ts` — accept richer payload
+- `src/components/LearningOrchestrator.tsx` — surfaces V2 context (recovery, trends)
+- `src/components/TJLearningStudio.tsx` — sends V2 payload to edge functions
+- `supabase/functions/tj-learning-studio/index.ts` — accepts V2 payload, falls back to V1
+- `supabase/functions/dynamic-learning/index.ts` — accepts V2 payload, falls back to V1
+- `src/integrations/supabase/types.ts` — auto-regenerated for new JSONB columns
 
-### Phase 1 — Weighted Decision Model
+### 2. Migration Run
 
-In `scoring.ts`:
-```text
-mapRetentionToScore(char A–Z) → 1–10
-mapConfidenceToScore(char a–z) → 1–10
-computeFinalDepthScore(E,R,C) = E*0.4 + R*0.35 + C*0.25
-contentDepth: >7 deep, 4–7 standard, <4 brief
-```
-
-V1 bucket strings (`low/developing/strong`) still computed for UI compatibility.
-
-### Phase 2 — Dynamic Layer Strength (Stability Rules)
-
-Schema: `profiles.layer_scores jsonb default '{}'`
-
-In `layerStrength.ts` — `evaluateDominantLayer(scores, currentL, evalHistory)`:
-1. **Minimum interactions gate**: total interactions across all layers ≥ 5, else return currentL
-2. **Margin gate**: candidate dominant layer must exceed currentL score by ≥ 20% (or absolute +3, whichever larger)
-3. **Consistency gate**: track last 3 evaluations in `evalHistory`; only update L if same candidate wins 3× consecutively
-4. Returns `{ newL, shouldUpdate, reason }`
-
-`updateDNA` scoring:
-- `quizCorrect=true` → `+2` to layer
-- `timeSpentSeconds > 30` → `+1`
-- `quizCorrect=false` → `-1`
-- `timeSpentSeconds < 10` → `-1`
-
-### Phase 3 — Pattern Memory + Smart Recovery Mode
-
-Schema: `profiles.behavior_history jsonb default '{"recentQuizzes":[],"recentTimes":[],"recentReflections":[],"recentLayerEvals":[]}'`
-
-Each array truncated to last 10.
-
-In `recoveryMode.ts` — multi-signal trigger (any 2+ true):
-- `failStreak >= 3` (last 3 quiz results)
-- `confidenceLevel === "low"` OR `confidenceTrend === "decreasing"`
-- `retentionLevel === "low"` OR `retentionTrend === "decreasing"`
-- `engagementTrend === "decreasing"`
-
-Recovery mode forces: `difficulty="guided"`, `contentDepth="brief"`, `microSteps=true`, `toneModifier="supportive"`, `addMemoryCues=true`.
-
-### Phase 4 — Extended DNAProfile
-
-```text
-DNAProfileV2 extends DNAProfile {
-  engagementTrend, retentionTrend, confidenceTrend: "increasing"|"stable"|"decreasing"
-  recoveryMode: boolean
-  layerScores: Record<layerKey, number>
-  weakestLayer: string
-  finalDepthScore: number
-}
-```
-
-Trend = sign of mean delta across last 3 entries vs prior 3. Defaults to "stable" with insufficient data.
-
-### Phase 5 — Enhanced Edge Function Prompts
-
-Client passes:
-```text
-{ learnerType, dominantLayer, weakestLayer, engagementLevel,
-  retentionLevel, confidenceLevel, trendSignals, recoveryMode, finalDepthScore }
-```
-
-`_shared/dna.ts` server-side builder produces matching `AdaptationContext`. Prompt logic:
-- `recoveryMode=true` → overrides all to gentle/repetitive/micro
-- Layer-specific instruction mapping (Applied → real-world, Visual → spatial language, etc.)
-- Trend-aware nudges ("confidence rising — push slightly harder")
-
-### Phase 6 — V1 Fallback Guarantee
-
-In `adaptationEngine.ts`:
-```text
-if (!layerScores || !behaviorHistory || isEmpty) {
-  return buildV1AdaptationRules(dna)  // exact V1 logic preserved
-}
-```
-
-Edge functions: if V2 payload fields missing, fall back to current V1 prompt builder.
-
-Existing `buildAdaptationRules()` export retained as `buildV1AdaptationRules()` — never modified, never removed.
-
-### Phase 7 — Decision Logging (Explainability)
-
-`AdaptationDecisionLog` shape:
-```text
-{
-  timestamp, decisions: [
-    { field: "contentDepth", value: "deep", reason: "finalDepthScore=7.8 > 7" },
-    { field: "recoveryMode", value: true, reason: "failStreak=3 + confidenceTrend=decreasing" },
-    { field: "dominantLayer", value: "V", reason: "consistent lead 3 evals, +24% margin" },
-    { field: "fallback", value: "v1", reason: "behaviorHistory empty" }
-  ]
-}
-```
-
-Logged via `console.debug("[DNA]", log)` — never user-facing. Returned alongside rules for future devtools panel.
-
-### Phase 8 — Cleanup
-
-- Shared parser `_shared/dna.ts` — single source for client + server
-- Layer keys `B/N/S` now actively assignable via dynamic scoring
-- LERC code format unchanged, all UI surfaces unchanged
-
-### Database Migration
-
+`supabase/migrations/20260418074851_…sql`:
 ```sql
 ALTER TABLE profiles
   ADD COLUMN layer_scores jsonb NOT NULL DEFAULT '{}'::jsonb,
@@ -137,11 +40,72 @@ ALTER TABLE profiles
     '{"recentQuizzes":[],"recentTimes":[],"recentReflections":[],"recentLayerEvals":[]}'::jsonb;
 ```
 
-### Backward Compatibility Checklist
-- LERC code format preserved
-- `parseDNACode`, `buildAdaptationRules` exports retained as V1 functions
-- New V2 wrapper returns superset of V1 fields
-- Edge functions accept old + new payloads
-- Empty JSONB → automatic V1 fallback path
-- No UI changes required for V1-only users
+Confirmed live on the `profiles` table — both columns present, NOT NULL with defaults so all existing rows are V2-ready (empty defaults trigger V1 fallback).
+
+### 3. How Adaptation Decisions Are Now Made (plain language)
+
+Every time a learner finishes a step, quiz, or reflection:
+
+1. **Read state** — pull `tj_dna_code` (LERC), `layer_scores`, and `behavior_history` from the profile.
+2. **Fallback check** — if both JSONB columns are empty, run the original V1 rules engine unchanged. Nothing else fires.
+3. **Score the learner** — convert L/E/R/C into 1–10 numeric scores and compute a weighted `finalDepthScore = E×0.4 + R×0.35 + C×0.25`.
+4. **Read trends** — look at the last 10 quizzes, times, and reflections; compare the most recent 3 against the prior 3 to label each trend `increasing | stable | decreasing`.
+5. **Check recovery** — count negative signals (fail-streak ≥3, low/decreasing confidence, low/decreasing retention, dropping engagement). If 2+ are true, recovery mode activates and overrides everything to gentle/brief/micro/supportive.
+6. **Pick content depth** — from `finalDepthScore`: >7 deep, 4–7 standard, <4 brief.
+7. **Pick tone & difficulty** — from confidence level + confidence trend.
+8. **Re-order steps** — lead with the user's current dominant layer.
+9. **Maybe update the dominant layer** — only if (a) ≥5 total interactions logged, (b) candidate beats current by ≥20% or +3 absolute, and (c) same candidate has won the last 3 evaluations. Otherwise L stays put.
+10. **Log every decision** with the reason, then return the context to the UI and to edge functions.
+
+### 4. Example Scenarios
+
+**Scenario A — V1 fallback (brand-new learner, "Maya")**
+- Just finished onboarding. `tj_dna_code = "V5Mn"`. `layer_scores = {}`, `behavior_history.recentQuizzes = []`.
+- Engine sees both JSONB stores empty → returns `v1RulesAsContext(buildV1AdaptationRules(dna))`.
+- Behavior is identical to pre-V2: stepOrder leads with Visual, standard depth, neutral tone. No trends, no recovery.
+
+**Scenario B — Recovery mode (struggling mid-week, "Janelle")**
+- DNA: `D3Hf`. History: `recentQuizzes = [false, true, false, false, false]`, `recentReflections = [40, 28, 18]`, retention level "low".
+- Signals fired: `failStreak=3`, `confidence=low`, `retention=low`, `confidenceTrend=decreasing` → 4 negatives, ≥2 threshold met.
+- Engine forces `difficulty="guided"`, `contentDepth="brief"`, `microSteps=true`, `addMemoryCues=true`, `toneModifier="supportive"` and pushes encouragement strings. Edge functions receive `recoveryMode:true` and override LLM tone to gentle/repetitive.
+
+**Scenario C — Dominant layer shift ("Marcus" trending Applied)**
+- Started as Visual (`V6Rr`). Over 3 weeks: `layer_scores = {visual:9, application:18, definition:7, …}`, `recentLayerEvals = ["A","A","A"]`.
+- Stability gates: total interactions = 47 (≥5 ✓), application 18 vs visual 9 → margin +9 (≥3 and ≥20% ✓), 3 consecutive "A" wins (✓).
+- L flips to `A`. New `tj_dna_code = "A6Rr"`. Step order now leads with Application; edge prompts get `dominantLayer:"A"` → "prioritize real-world cosmetology scenarios."
+
+### 5. Sample Decision Log Output
+
+```text
+[DNA] {
+  timestamp: 1729268400000,
+  decisions: [
+    { field: "stepOrder",      value: "breakdown→application→visual→…",
+      reason: "lead with layer A" },
+    { field: "contentDepth",   value: "deep",
+      reason: "finalDepthScore=7.62 (E*0.4 + R*0.35 + C*0.25)" },
+    { field: "difficulty",     value: "challenge",
+      reason: "confidenceTrend=increasing" },
+    { field: "microSteps",     value: true,
+      reason: "engagementTrend=decreasing" },
+    { field: "recoveryMode",   value: false,
+      reason: "only 1 negative signal (engagementTrend)" },
+    { field: "dominantLayer",  value: "A",
+      reason: "consistent lead 3 evals, +24% margin" }
+  ]
+}
+```
+
+Emitted via `console.debug("[DNA]", log)` — never user-facing.
+
+### 6. Regression Check
+
+- **Existing quizzes** (`QuizPage`, `ModuleQuizPage`, `ModuleQuizBankPage`): untouched routing, unchanged scoring, `quiz_results`/`uploaded_quiz_results` writes intact. `updateDNA({quizCorrect})` still fires from `LearningOrbDialog` and now also feeds layer scores.
+- **Activities** (`ActivityPage`, `ModuleActivityPage`, components in `src/components/activities/*`): no edits, no behavior change.
+- **Learning flow** (9-step `LearningOrbDialog` + `LearningOrchestrator`): step rendering, journal autosave, TTS, image generation, completion screen all preserved. Step-order reorder uses the same `adaptedSteps` memo as before — V2 just supplies a richer ordered array.
+- **Edge functions** accept old payloads: if `dnaCode` arrives without V2 fields, `_shared/dna.ts` parses LERC and returns the V1-equivalent directives. Verified by the `fallback: "v1" | "v2"` field on `AdaptationInstructions`.
+- **DB schema**: only additive. No column drops, no type changes, no RLS modifications. Existing rows auto-default to empty JSONB → V1 fallback path.
+- **UI surfaces** (`LearningDNAPage`, dashboard DNA chip, Game Grid): read the same `tj_dna_code` and bucket strings as before. New trend/recovery fields are additive and only render when present.
+
+No regressions expected. Any learner with empty `layer_scores`/`behavior_history` runs on the original V1 engine until enough V2 data accumulates.
 
