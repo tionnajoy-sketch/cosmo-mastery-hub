@@ -59,6 +59,9 @@ Generate a new, unique reflection question.`;
       systemPrompt = `You are TJ Mentor, creating scenario-based application questions for the TJ Anderson Layer Method™: Core Cross Agent™.
 Generate ONE realistic, decision-based scenario question for a ${program || "cosmetology"} student.
 
+ADAPTATION DIRECTIVES:
+${adaptationDirectives}
+
 RULES:
 - Must be realistic and require critical thinking
 - Must NOT be generic — tie it to the specific concept
