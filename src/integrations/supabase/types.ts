@@ -160,6 +160,42 @@ export type Database = {
         }
         Relationships: []
       }
+      journal_entries: {
+        Row: {
+          correctness: boolean | null
+          created_at: string
+          id: string
+          prompt_question: string
+          reflection_type: string
+          term_id: string | null
+          topic: string
+          user_id: string
+          user_response: string
+        }
+        Insert: {
+          correctness?: boolean | null
+          created_at?: string
+          id?: string
+          prompt_question?: string
+          reflection_type?: string
+          term_id?: string | null
+          topic?: string
+          user_id: string
+          user_response?: string
+        }
+        Update: {
+          correctness?: boolean | null
+          created_at?: string
+          id?: string
+          prompt_question?: string
+          reflection_type?: string
+          term_id?: string | null
+          topic?: string
+          user_id?: string
+          user_response?: string
+        }
+        Relationships: []
+      }
       journal_notes: {
         Row: {
           id: string
@@ -780,6 +816,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      term_struggle: {
+        Row: {
+          correct_attempts: number
+          created_at: string
+          id: string
+          incorrect_attempts: number
+          last_attempted: string
+          mastery_status: string
+          reinforcement_cycles: number
+          term_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          correct_attempts?: number
+          created_at?: string
+          id?: string
+          incorrect_attempts?: number
+          last_attempted?: string
+          mastery_status?: string
+          reinforcement_cycles?: number
+          term_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          correct_attempts?: number
+          created_at?: string
+          id?: string
+          incorrect_attempts?: number
+          last_attempted?: string
+          mastery_status?: string
+          reinforcement_cycles?: number
+          term_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       terms: {
         Row: {
