@@ -286,8 +286,20 @@ const GameGridPage = () => {
                   {!collapsedSections.has(sectionId) && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3, ease: "easeInOut" }} className="overflow-hidden">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                        {sectionTerms.map((term) => {
+                      {orderedBlockNums.map((bn) => {
+                        const blockTerms = blockGroups.get(bn) || [];
+                        return (
+                          <div key={bn} className="mb-5">
+                            <div className="flex items-center gap-2 mb-2 px-1">
+                              <span className="text-[10px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded-full"
+                                style={{ background: "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 75%)", border: "1px solid hsl(45 80% 50% / 0.25)" }}>
+                                Block {bn}
+                              </span>
+                              <span className="text-[10px] text-white/40">{blockTerms.length} terms</span>
+                              <div className="h-px flex-1 ml-1" style={{ background: "hsl(0 0% 100% / 0.06)" }} />
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                              {blockTerms.map((term) => {
                           const i = globalIndex++;
                           const status = getEnhancedStatus(term.id);
                           const termMetrics = metrics.get(term.id);
