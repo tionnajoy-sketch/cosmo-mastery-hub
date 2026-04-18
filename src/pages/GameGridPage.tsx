@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import AppHeader from "@/components/AppHeader";
 import LearningOrchestrator from "@/components/LearningOrchestrator";
+import LiveDNASnapshot from "@/components/LiveDNASnapshot";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 
 interface Term {
