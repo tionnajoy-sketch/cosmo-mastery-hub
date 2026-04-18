@@ -19,7 +19,7 @@ import SpeakButton from "@/components/SpeakButton";
 const c = pageColors.quiz;
 
 interface Question { id: string; question_text: string; option_a: string; option_b: string; option_c: string; option_d: string; correct_option: string; explanation: string; related_term_id: string | null; }
-interface RelatedTerm { term: string; metaphor: string; }
+interface RelatedTerm { term: string; metaphor: string; definition?: string; }
 type QuizMode = "practice" | "confidence";
 
 const preQuizMessages = [
