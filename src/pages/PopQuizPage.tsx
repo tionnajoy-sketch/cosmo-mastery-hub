@@ -97,12 +97,18 @@ const PopQuizPage = () => {
     );
   }
 
-  const options = [
-    { key: "A", text: currentQuestion.option_a },
-    { key: "B", text: currentQuestion.option_b },
-    { key: "C", text: currentQuestion.option_c },
-    { key: "D", text: currentQuestion.option_d },
-  ];
+  const sh = shuffleOptions(
+    {
+      A: currentQuestion.option_a,
+      B: currentQuestion.option_b,
+      C: currentQuestion.option_c,
+      D: currentQuestion.option_d,
+    },
+    currentQuestion.correct_option,
+    currentQuestion.id,
+  );
+  // Override isCorrect using shuffled-letter mapping
+  const isCorrectShuffled = selectedAnswer === sh.correctLetter;
 
   return (
     <div className="min-h-screen" style={{ background: c.gradient }}>
@@ -125,9 +131,9 @@ const PopQuizPage = () => {
             </Card>
 
             <div className="space-y-3 mb-4">
-              {options.map((opt) => {
-                const isSelected = selectedAnswer === opt.key;
-                const isRight = opt.key === currentQuestion.correct_option;
+              {sh.options.map((opt) => {
+                const isSelected = selectedAnswer === opt.letter;
+                const isRight = opt.letter === sh.correctLetter;
                 let bg = c.optionBg;
                 let border = c.optionBorder;
                 if (selectedAnswer) {
@@ -135,8 +141,8 @@ const PopQuizPage = () => {
                   else if (isSelected && !isRight) { bg = c.wrongBg; border = c.wrongBorder; }
                 }
                 return (
-                  <button key={opt.key} onClick={() => handleAnswer(opt.key)} disabled={!!selectedAnswer} className="w-full text-left rounded-xl p-4 transition-all border-2" style={{ background: bg, borderColor: border }}>
-                    <span className="font-semibold mr-2" style={{ color: c.optionLabel }}>{opt.key}.</span>
+                  <button key={opt.letter} onClick={() => handleAnswer(opt.letter)} disabled={!!selectedAnswer} className="w-full text-left rounded-xl p-4 transition-all border-2" style={{ background: bg, borderColor: border }}>
+                    <span className="font-semibold mr-2" style={{ color: c.optionLabel }}>{opt.letter}.</span>
                     <span className="text-sm" style={{ color: c.optionText }}>{opt.text}</span>
                   </button>
                 );
