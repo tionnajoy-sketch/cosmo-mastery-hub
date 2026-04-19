@@ -269,6 +269,10 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
 
 const StepContent = (props: StepContentProps) => {
   const { stepKey, block, stepColor } = props;
+  const { context: dnaContext } = useDNAAdaptation();
+  const ksKeyP = getBlockOpenState(dnaContext, "key-concept");
+  const ksApplyP = getBlockOpenState(dnaContext, "apply");
+  const ksDeeperP = getBlockOpenState(dnaContext, "deeper");
 
   switch (stepKey) {
     case "visualize":
@@ -515,6 +519,7 @@ const StepContent = (props: StepContentProps) => {
     case "practice":
       return (
         <div className="space-y-3">
+          {/* Key Concept — the scenario itself, always visible */}
           <motion.p
             className="text-base leading-relaxed"
             style={{ color: c.bodyText }}
@@ -524,21 +529,41 @@ const StepContent = (props: StepContentProps) => {
           >
             {block.practice_scenario}
           </motion.p>
-          <div className="relative mt-2">
-            <Textarea
-              placeholder="Write your notes here…"
-              value={props.journalNote}
-              onChange={(e) => props.setJournalNote(e.target.value)}
-              className="min-h-[80px] text-sm resize-none pr-10"
-              style={{ color: c.bodyText }}
-            />
-            <div className="absolute right-1 bottom-1">
-              <SpeechToTextButton onTranscript={(text) => props.setJournalNote(props.journalNote ? `${props.journalNote} ${text}` : text)} />
+
+          {/* Apply It — write notes (auto-open, emphasized for applied learners) */}
+          <LayerBlockSection
+            title="Apply It"
+            icon="🛠️"
+            accentColor={stepColor}
+            defaultOpen={ksApplyP.defaultOpen || true}
+            emphasized={ksApplyP.emphasized}
+          >
+            <div className="relative mt-1">
+              <Textarea
+                placeholder="Write your notes here…"
+                value={props.journalNote}
+                onChange={(e) => props.setJournalNote(e.target.value)}
+                className="min-h-[80px] text-sm resize-none pr-10"
+                style={{ color: c.bodyText }}
+              />
+              <div className="absolute right-1 bottom-1">
+                <SpeechToTextButton onTranscript={(text) => props.setJournalNote(props.journalNote ? `${props.journalNote} ${text}` : text)} />
+              </div>
             </div>
-          </div>
-          {props.journalSaving && <p className="text-xs" style={{ color: c.subtext }}>Saving…</p>}
-          {!props.journalSaving && props.journalNote && <p className="text-xs" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
-          <BrainNote text="Applying concepts to real scenarios builds neural connections for the salon and state board exam." />
+            {props.journalSaving && <p className="text-xs mt-1" style={{ color: c.subtext }}>Saving…</p>}
+            {!props.journalSaving && props.journalNote && <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
+          </LayerBlockSection>
+
+          {/* Go Deeper — brain note */}
+          <LayerBlockSection
+            title="Go Deeper"
+            icon="🧠"
+            accentColor={stepColor}
+            defaultOpen={ksDeeperP.defaultOpen}
+            emphasized={ksDeeperP.emphasized}
+          >
+            <BrainNote text="Applying concepts to real scenarios builds neural connections for the salon and state board exam." />
+          </LayerBlockSection>
         </div>
       );
 
