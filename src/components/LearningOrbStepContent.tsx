@@ -270,7 +270,6 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
 const StepContent = (props: StepContentProps) => {
   const { stepKey, block, stepColor } = props;
   const { context: dnaContext } = useDNAAdaptation();
-  const ksKeyP = getBlockOpenState(dnaContext, "key-concept");
   const ksApplyP = getBlockOpenState(dnaContext, "apply");
   const ksDeeperP = getBlockOpenState(dnaContext, "deeper");
 
@@ -395,7 +394,7 @@ const StepContent = (props: StepContentProps) => {
       );
 
     case "breakdown":
-      return <EtymologyBreakdown block={block} />;
+      return <EtymologyBreakdown block={block} stepColor={stepColor} />;
 
     case "recognize":
       return (
