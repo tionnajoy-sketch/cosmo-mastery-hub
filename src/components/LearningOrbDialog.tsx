@@ -29,6 +29,7 @@ import tjBackground from "@/assets/tj-background.jpg";
 import ReinforcementDialog from "@/components/ReinforcementDialog";
 import { useReinforcement } from "@/hooks/useReinforcement";
 import { shuffleOptions } from "@/lib/shuffleOptions";
+import LayerBlockNavigator from "@/components/LayerBlockNavigator";
 
 const c = pageColors.study;
 
@@ -202,6 +203,7 @@ const LearningOrbDialog = ({
   }, [dna, availableSteps]);
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [completed, setCompleted] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -267,6 +269,7 @@ const LearningOrbDialog = ({
   useEffect(() => {
     if (block) {
       setCurrentStep(0);
+      setCompletedSteps(new Set());
       setCompleted(false);
       setImageUrl(block.image_url || "");
       setJournalNote(block.user_notes || "");
@@ -395,6 +398,14 @@ const LearningOrbDialog = ({
   // DNA-adapted encouragement message
   const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
+  const markStepDone = () => {
+    setCompletedSteps((prev) => {
+      const n = new Set(prev);
+      n.add(currentStep);
+      return n;
+    });
+  };
+
   const goNext = () => {
     stopSpeaking();
     // Track DNA updates based on current step
@@ -406,23 +417,16 @@ const LearningOrbDialog = ({
       updateDNA({ layerCompleted: step.key, timeSpentSeconds: 30 });
     }
 
-    // Prevent skipping quiz — quiz must be answered before completing
-    if (currentStep === adaptedSteps.length - 2) {
-      // About to move to quiz step — allow it
-    }
-    if (step.key === "quiz" && !quizRevealed) {
-      // Don't allow completing without answering the quiz
-      return;
-    }
-    // GATE: if learner answered the quiz wrong, lock progression until
-    // ReinforcementDialog is resolved (correct answer or 3 cycles exhausted).
-    if (step.key === "quiz" && !reinforcementResolved) {
-      return;
-    }
+    // Quiz step requires an answer before completing
+    if (step.key === "quiz" && !quizRevealed) return;
+    // GATE: lock progression while reinforcement is unresolved
+    if (step.key === "quiz" && !reinforcementResolved) return;
+
+    markStepDone();
 
     if (currentStep < adaptedSteps.length - 1) {
       if (soundsEnabled) playChime();
-      setCurrentStep(s => s + 1);
+      setCurrentStep((s) => s + 1);
     } else {
       if (!completedRef.current) {
         completedRef.current = true;
@@ -433,6 +437,14 @@ const LearningOrbDialog = ({
       }
       setCompleted(true);
     }
+  };
+
+  const jumpToStep = (i: number) => {
+    if (i === currentStep) return;
+    // Block jumping while reinforcement is locked
+    if (!reinforcementResolved) return;
+    stopSpeaking();
+    setCurrentStep(i);
   };
 
   const goBack = () => {
@@ -1106,16 +1118,25 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
               return (
                 <div className="space-y-4">
                   <p className="text-base font-medium leading-relaxed" style={{ color: c.bodyText }}>{quizQuestion}</p>
-                  <div className="space-y-2.5">
-                    {sh.options.map((opt) => {
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {sh.options.map((opt, i) => {
                       const letter = opt.letter;
                       const isSelected = quizSelected === letter;
                       const isCorrect = letter === sh.correctLetter;
-                      let bg = "hsl(var(--card))";
-                      let border = "hsl(var(--border))";
-                      if (quizRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 45%)"; }
-                      else if (quizRevealed && isSelected) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
-                      else if (quizRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 45%)"; }
+                      const optionIcons = ["✨", "🌿", "⭐", "💖"];
+                      const optionGradients = [
+                        "linear-gradient(135deg, hsl(265 72% 52%), hsl(285 75% 58%))",
+                        "linear-gradient(135deg, hsl(155 60% 42%), hsl(175 65% 48%))",
+                        "linear-gradient(135deg, hsl(38 90% 52%), hsl(28 95% 58%))",
+                        "linear-gradient(135deg, hsl(340 75% 55%), hsl(355 80% 60%))",
+                      ];
+                      let bg = optionGradients[i % 4];
+                      let border = "transparent";
+                      let textColor = "white";
+                      if (quizRevealed && isSelected && isCorrect) { bg = "linear-gradient(135deg, hsl(145 55% 42%), hsl(155 60% 48%))"; border = "hsl(145 55% 35%)"; }
+                      else if (quizRevealed && isSelected) { bg = "linear-gradient(135deg, hsl(0 65% 52%), hsl(10 70% 58%))"; border = "hsl(0 65% 42%)"; }
+                      else if (quizRevealed && isCorrect) { bg = "linear-gradient(135deg, hsl(145 55% 42%), hsl(155 60% 48%))"; border = "hsl(145 55% 35%)"; }
+                      else if (quizRevealed) { bg = "hsl(var(--muted))"; textColor = "hsl(var(--muted-foreground))"; }
                       return (
                         <motion.button
                           key={letter}
@@ -1130,21 +1151,40 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                               await recordCorrect(block.id, false);
                               setReinforcementResolved(true);
                             } else {
-                              // GATE: lock the learning flow until reinforcement passes
                               setReinforcementResolved(false);
                               setMissedQuestionText(quizQuestion);
                               await recordIncorrect(block.id);
                               setTimeout(() => setReinforcementOpen(true), 1200);
                             }
                           }}
-                          className="w-full text-left p-4 rounded-xl text-sm font-medium transition-all"
-                          style={{ background: bg, border: `2px solid ${border}`, color: c.bodyText }}
+                          whileHover={!quizRevealed ? { scale: 1.03, y: -2 } : {}}
+                          whileTap={!quizRevealed ? { scale: 0.97 } : {}}
+                          className="relative text-left p-4 rounded-2xl text-sm font-semibold transition-all overflow-hidden shadow-md"
+                          style={{
+                            background: bg,
+                            border: border !== "transparent" ? `2px solid ${border}` : undefined,
+                            color: textColor,
+                            minHeight: 88,
+                            textShadow: textColor === "white" ? "0 1px 2px hsl(0 0% 0% / 0.2)" : "none",
+                          }}
                           disabled={quizRevealed}
-                          initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.05 + i * 0.06 }}
                         >
-                          <span className="font-bold mr-2">{letter})</span> {opt.text}
-                          {quizRevealed && isCorrect && <CheckCircle2 className="inline h-4 w-4 ml-2" style={{ color: "hsl(145 45% 45%)" }} />}
-                          {quizRevealed && isSelected && !isCorrect && <XCircle className="inline h-4 w-4 ml-2" style={{ color: "hsl(0 60% 50%)" }} />}
+                          <div className="flex items-start gap-2">
+                            <span className="text-lg flex-shrink-0">{optionIcons[i]}</span>
+                            <div className="flex-1">
+                              <span className="font-display font-bold text-xs opacity-80 mr-1">{letter}.</span>
+                              <span className="leading-snug">{opt.text}</span>
+                            </div>
+                          </div>
+                          {quizRevealed && isCorrect && (
+                            <CheckCircle2 className="absolute top-2 right-2 h-4 w-4" style={{ color: "white" }} />
+                          )}
+                          {quizRevealed && isSelected && !isCorrect && (
+                            <XCircle className="absolute top-2 right-2 h-4 w-4" style={{ color: "white" }} />
+                          )}
                         </motion.button>
                       );
                     })}
@@ -1321,12 +1361,15 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
             {/* Progress bar */}
             <div className="mt-2"><Progress value={progressPercent} className="h-1.5" /></div>
 
-            {/* Step indicator pills */}
-            <div className="flex items-center justify-center gap-1 mt-2.5">
-              {adaptedSteps.map((s, i) => (
-                <div key={s.key} className="h-1.5 rounded-full transition-all duration-300"
-                  style={{ width: i === currentStep ? 20 : 6, background: i <= currentStep ? s.color : "hsl(var(--border))", opacity: i <= currentStep ? 1 : 0.4 }} />
-              ))}
+            {/* DNA-ordered tile navigator (replaces linear step pills) */}
+            <div className="mt-3">
+              <LayerBlockNavigator
+                steps={adaptedSteps}
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+                onSelect={jumpToStep}
+                locked={!reinforcementResolved}
+              />
             </div>
 
             {/* Why This Step Matters */}
@@ -1342,23 +1385,20 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
             </AnimatePresence>
           </div>
 
-          {/* ═══════ NAVIGATION BAR (Top of content area) ═══════ */}
+          {/* ═══════ ACTION BAR (tile-driven nav, no Back/Next) ═══════ */}
           <div className="flex-shrink-0 px-4 sm:px-6 py-2 border-b" style={{ background: "hsl(var(--background) / 0.96)" }}>
             <div className="max-w-lg mx-auto flex items-center justify-between gap-2">
-              <Button variant="ghost" size="sm" onClick={currentStep === 0 ? () => { stopSpeaking(); onOpenChange(false); } : goBack} className="gap-1 text-sm" style={{ color: c.subtext }}>
-                <ArrowLeft className="h-4 w-4" /> {currentStep === 0 ? "Back" : "Previous"}
-              </Button>
               <Button variant="ghost" size="sm" className="gap-1 text-xs" style={{ color: c.subtext }}
                 onClick={() => { speakText(`Let me explain ${block.term_title} another way…`); }}>
                 <RefreshCw className="h-3.5 w-3.5" /> Let TJ Explain Again
               </Button>
-              <Button size="sm" className="gap-1 text-sm px-5 shadow-md" 
-                style={{ background: step.gradient, color: "white", opacity: (step.key === "quiz" && (!quizRevealed || !reinforcementResolved)) ? 0.5 : 1 }} 
+              <Button size="sm" className="gap-1 text-sm px-5 shadow-md"
+                style={{ background: step.gradient, color: "white", opacity: (step.key === "quiz" && (!quizRevealed || !reinforcementResolved)) ? 0.5 : 1 }}
                 onClick={goNext}
                 disabled={step.key === "quiz" && (!quizRevealed || !reinforcementResolved)}>
                 {step.key === "quiz" && !reinforcementResolved
                   ? "🔒 Reinforcement"
-                  : currentStep === adaptedSteps.length - 1 ? "Complete" : "Next"}
+                  : currentStep === adaptedSteps.length - 1 ? "Complete" : "Mark Step Complete"}
                 {currentStep < adaptedSteps.length - 1 && reinforcementResolved && <ArrowRight className="h-4 w-4" />}
               </Button>
             </div>

@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brain, X, CheckCircle2, XCircle } from "lucide-react";
+import { shuffleOptions } from "@/lib/shuffleOptions";
 
 interface PopupQuestion {
   id: string;
@@ -84,14 +85,12 @@ const RandomQuizPopup = () => {
 
   if (!visible || !question) return null;
 
-  const options = [
-    { key: "A", text: question.option_a },
-    { key: "B", text: question.option_b },
-    { key: "C", text: question.option_c },
-    { key: "D", text: question.option_d },
-  ];
-
-  const isCorrect = selected === question.correct_option;
+  const sh = shuffleOptions(
+    { A: question.option_a, B: question.option_b, C: question.option_c, D: question.option_d },
+    question.correct_option,
+    question.id,
+  );
+  const isCorrect = selected === sh.correctLetter;
 
   return (
     <AnimatePresence>
@@ -118,9 +117,9 @@ const RandomQuizPopup = () => {
             </p>
 
             <div className="space-y-2 mb-3">
-              {options.map(opt => {
-                const isThis = selected === opt.key;
-                const isRight = opt.key === question.correct_option;
+              {sh.options.map(opt => {
+                const isThis = selected === opt.letter;
+                const isRight = opt.letter === sh.correctLetter;
                 let bg = "hsl(220 30% 97%)";
                 let border = "hsl(220 20% 90%)";
                 if (submitted && isRight) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 65%)"; }
@@ -128,13 +127,13 @@ const RandomQuizPopup = () => {
 
                 return (
                   <button
-                    key={opt.key}
-                    onClick={() => handleAnswer(opt.key)}
+                    key={opt.letter}
+                    onClick={() => handleAnswer(opt.letter)}
                     disabled={submitted}
                     className="w-full text-left px-3 py-2 rounded-lg text-sm border transition-all"
                     style={{ background: bg, borderColor: border }}
                   >
-                    <span className="font-medium mr-2">{opt.key}.</span>
+                    <span className="font-medium mr-2">{opt.letter}.</span>
                     {opt.text}
                   </button>
                 );

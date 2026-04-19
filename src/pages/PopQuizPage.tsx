@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { pageColors } from "@/lib/colors";
+import { shuffleOptions } from "@/lib/shuffleOptions";
 
 const c = pageColors.popQuiz;
 
@@ -37,14 +38,15 @@ const PopQuizPage = () => {
   }, [user, id]);
 
   const currentQuestion = questions[currentIndex];
-  const isCorrect = selectedAnswer === currentQuestion?.correct_option;
   const isLastQuestion = currentIndex === questions.length - 1;
   const isDone = currentIndex >= questions.length;
 
-  const handleAnswer = async (option: string) => {
+  // Computed inside the render block once we know which letter is correct
+  // after shuffling — handleAnswer takes the shuffled correct letter directly.
+  const handleAnswer = async (option: string, correctShuffledLetter: string) => {
     if (selectedAnswer) return;
     setSelectedAnswer(option);
-    if (option === currentQuestion.correct_option) {
+    if (option === correctShuffledLetter) {
       setScore((s) => s + 1);
       if (user) await supabase.from("wrong_answers").delete().eq("user_id", user.id).eq("question_id", currentQuestion.id);
     }
@@ -96,12 +98,17 @@ const PopQuizPage = () => {
     );
   }
 
-  const options = [
-    { key: "A", text: currentQuestion.option_a },
-    { key: "B", text: currentQuestion.option_b },
-    { key: "C", text: currentQuestion.option_c },
-    { key: "D", text: currentQuestion.option_d },
-  ];
+  const sh = shuffleOptions(
+    {
+      A: currentQuestion.option_a,
+      B: currentQuestion.option_b,
+      C: currentQuestion.option_c,
+      D: currentQuestion.option_d,
+    },
+    currentQuestion.correct_option,
+    currentQuestion.id,
+  );
+  const isCorrect = selectedAnswer === sh.correctLetter;
 
   return (
     <div className="min-h-screen" style={{ background: c.gradient }}>
@@ -124,9 +131,9 @@ const PopQuizPage = () => {
             </Card>
 
             <div className="space-y-3 mb-4">
-              {options.map((opt) => {
-                const isSelected = selectedAnswer === opt.key;
-                const isRight = opt.key === currentQuestion.correct_option;
+              {sh.options.map((opt) => {
+                const isSelected = selectedAnswer === opt.letter;
+                const isRight = opt.letter === sh.correctLetter;
                 let bg = c.optionBg;
                 let border = c.optionBorder;
                 if (selectedAnswer) {
@@ -134,8 +141,8 @@ const PopQuizPage = () => {
                   else if (isSelected && !isRight) { bg = c.wrongBg; border = c.wrongBorder; }
                 }
                 return (
-                  <button key={opt.key} onClick={() => handleAnswer(opt.key)} disabled={!!selectedAnswer} className="w-full text-left rounded-xl p-4 transition-all border-2" style={{ background: bg, borderColor: border }}>
-                    <span className="font-semibold mr-2" style={{ color: c.optionLabel }}>{opt.key}.</span>
+                  <button key={opt.letter} onClick={() => handleAnswer(opt.letter, sh.correctLetter)} disabled={!!selectedAnswer} className="w-full text-left rounded-xl p-4 transition-all border-2" style={{ background: bg, borderColor: border }}>
+                    <span className="font-semibold mr-2" style={{ color: c.optionLabel }}>{opt.letter}.</span>
                     <span className="text-sm" style={{ color: c.optionText }}>{opt.text}</span>
                   </button>
                 );

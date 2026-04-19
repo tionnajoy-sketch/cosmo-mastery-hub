@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Brain, CheckCircle2, XCircle } from "lucide-react";
+import { shuffleOptions } from "@/lib/shuffleOptions";
 
 interface Question {
   id: string;
@@ -97,13 +98,12 @@ const DailyPopQuestion = () => {
 
   if (!question) return null;
 
-  const isCorrect = selected === question.correct_option;
-  const options = [
-    { key: "A", text: question.option_a },
-    { key: "B", text: question.option_b },
-    { key: "C", text: question.option_c },
-    { key: "D", text: question.option_d },
-  ];
+  const sh = shuffleOptions(
+    { A: question.option_a, B: question.option_b, C: question.option_c, D: question.option_d },
+    question.correct_option,
+    question.id,
+  );
+  const isCorrect = selected === sh.correctLetter;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -119,28 +119,28 @@ const DailyPopQuestion = () => {
         </p>
         <p className="text-sm text-foreground leading-relaxed mb-4">{question.question_text}</p>
         <div className="space-y-2">
-          {options.map((opt) => {
+          {sh.options.map((opt) => {
             let bg = "hsl(30 25% 97%)";
             let border = "hsl(30 20% 88%)";
             if (answered) {
-              if (opt.key === question.correct_option) {
+              if (opt.letter === sh.correctLetter) {
                 bg = "hsl(145 40% 92%)";
                 border = "hsl(145 50% 60%)";
-              } else if (opt.key === selected && !isCorrect) {
+              } else if (opt.letter === selected && !isCorrect) {
                 bg = "hsl(0 40% 95%)";
                 border = "hsl(0 50% 65%)";
               }
             }
             return (
               <motion.button
-                key={opt.key}
+                key={opt.letter}
                 whileTap={!answered ? { scale: 0.98 } : {}}
-                onClick={() => handleAnswer(opt.key)}
+                onClick={() => handleAnswer(opt.letter)}
                 disabled={answered}
                 className="w-full text-left p-3 rounded-lg border text-sm transition-colors"
                 style={{ background: bg, borderColor: border }}
               >
-                <span className="font-semibold mr-2">{opt.key}.</span>
+                <span className="font-semibold mr-2">{opt.letter}.</span>
                 {opt.text}
               </motion.button>
             );

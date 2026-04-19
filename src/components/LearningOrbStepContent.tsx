@@ -624,8 +624,21 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
   });
 
   const question = hasBuiltinQuiz ? block.quiz_question : aiQuestion?.question;
-  const options = hasBuiltinQuiz ? block.quiz_options.map(String) : (aiQuestion?.options || []);
+  const rawOptions = hasBuiltinQuiz ? block.quiz_options.map(String) : (aiQuestion?.options || []);
   const answer = hasBuiltinQuiz ? block.quiz_answer : (aiQuestion?.answer || "");
+
+  // Apply seeded shuffle so the correct answer rotates positions
+  const sh = (question && rawOptions.length >= 4) ? (() => {
+    const A = String(rawOptions[0] || "").replace(/^[A-D]\)\s*/, "");
+    const B = String(rawOptions[1] || "").replace(/^[A-D]\)\s*/, "");
+    const C = String(rawOptions[2] || "").replace(/^[A-D]\)\s*/, "");
+    const D = String(rawOptions[3] || "").replace(/^[A-D]\)\s*/, "");
+    const origCorrect = ["A","B","C","D"].find((L, i) => {
+      const t = String(rawOptions[i] || "").replace(/^[A-D]\)\s*/, "");
+      return String(rawOptions[i]) === answer || t === answer;
+    }) || "A";
+    return shuffleOptions({ A, B, C, D }, origCorrect, `${block.id}-${question.slice(0, 32)}`);
+  })() : null;
 
   return (
     <div className="space-y-4">
@@ -661,7 +674,7 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
         </div>
       )}
 
-      {question && options.length > 0 && (
+      {sh && (
         <div className="space-y-3">
           <motion.p
             className="text-sm font-medium leading-relaxed"
@@ -672,11 +685,10 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
             {question}
           </motion.p>
           <div className="space-y-2">
-            {options.map((opt, i) => {
-              const letter = String.fromCharCode(65 + i);
-              const optText = String(opt).replace(/^[A-D]\)\s*/, "");
+            {sh.options.map((opt, i) => {
+              const letter = opt.letter;
               const isSelected = quizSelected === letter;
-              const isCorrect = String(opt) === answer || optText === answer;
+              const isCorrect = letter === sh.correctLetter;
               let bg = "hsl(var(--card))";
               let border = "hsl(var(--border))";
               if (quizRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
@@ -684,7 +696,7 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
               else if (quizRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
               return (
                 <motion.button
-                  key={i}
+                  key={letter}
                   onClick={() => { if (!quizRevealed) { setQuizSelected(letter); setQuizRevealed(true); } }}
                   className="w-full text-left p-3 rounded-lg text-sm transition-all"
                   style={{ background: bg, border: `2px solid ${border}`, color: c.bodyText }}
@@ -693,7 +705,7 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 + i * 0.05 }}
                 >
-                  <span className="font-semibold mr-2">{letter})</span> {optText}
+                  <span className="font-semibold mr-2">{letter})</span> {opt.text}
                   {quizRevealed && isCorrect && <CheckCircle2 className="inline h-4 w-4 ml-2" style={{ color: "hsl(145 40% 45%)" }} />}
                   {quizRevealed && isSelected && !isCorrect && <XCircle className="inline h-4 w-4 ml-2" style={{ color: "hsl(0 60% 50%)" }} />}
                 </motion.button>
