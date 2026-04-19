@@ -11,6 +11,7 @@ import { pageColors } from "@/lib/colors";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useCoins } from "@/hooks/useCoins";
 import SpeakButton from "@/components/SpeakButton";
+import { shuffleOptions } from "@/lib/shuffleOptions";
 
 const c = pageColors.quiz;
 

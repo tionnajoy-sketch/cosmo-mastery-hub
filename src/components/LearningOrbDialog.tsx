@@ -1118,16 +1118,25 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
               return (
                 <div className="space-y-4">
                   <p className="text-base font-medium leading-relaxed" style={{ color: c.bodyText }}>{quizQuestion}</p>
-                  <div className="space-y-2.5">
-                    {sh.options.map((opt) => {
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {sh.options.map((opt, i) => {
                       const letter = opt.letter;
                       const isSelected = quizSelected === letter;
                       const isCorrect = letter === sh.correctLetter;
-                      let bg = "hsl(var(--card))";
-                      let border = "hsl(var(--border))";
-                      if (quizRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 45%)"; }
-                      else if (quizRevealed && isSelected) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
-                      else if (quizRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 45% 45%)"; }
+                      const optionIcons = ["✨", "🌿", "⭐", "💖"];
+                      const optionGradients = [
+                        "linear-gradient(135deg, hsl(265 72% 52%), hsl(285 75% 58%))",
+                        "linear-gradient(135deg, hsl(155 60% 42%), hsl(175 65% 48%))",
+                        "linear-gradient(135deg, hsl(38 90% 52%), hsl(28 95% 58%))",
+                        "linear-gradient(135deg, hsl(340 75% 55%), hsl(355 80% 60%))",
+                      ];
+                      let bg = optionGradients[i % 4];
+                      let border = "transparent";
+                      let textColor = "white";
+                      if (quizRevealed && isSelected && isCorrect) { bg = "linear-gradient(135deg, hsl(145 55% 42%), hsl(155 60% 48%))"; border = "hsl(145 55% 35%)"; }
+                      else if (quizRevealed && isSelected) { bg = "linear-gradient(135deg, hsl(0 65% 52%), hsl(10 70% 58%))"; border = "hsl(0 65% 42%)"; }
+                      else if (quizRevealed && isCorrect) { bg = "linear-gradient(135deg, hsl(145 55% 42%), hsl(155 60% 48%))"; border = "hsl(145 55% 35%)"; }
+                      else if (quizRevealed) { bg = "hsl(var(--muted))"; textColor = "hsl(var(--muted-foreground))"; }
                       return (
                         <motion.button
                           key={letter}
@@ -1142,21 +1151,40 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                               await recordCorrect(block.id, false);
                               setReinforcementResolved(true);
                             } else {
-                              // GATE: lock the learning flow until reinforcement passes
                               setReinforcementResolved(false);
                               setMissedQuestionText(quizQuestion);
                               await recordIncorrect(block.id);
                               setTimeout(() => setReinforcementOpen(true), 1200);
                             }
                           }}
-                          className="w-full text-left p-4 rounded-xl text-sm font-medium transition-all"
-                          style={{ background: bg, border: `2px solid ${border}`, color: c.bodyText }}
+                          whileHover={!quizRevealed ? { scale: 1.03, y: -2 } : {}}
+                          whileTap={!quizRevealed ? { scale: 0.97 } : {}}
+                          className="relative text-left p-4 rounded-2xl text-sm font-semibold transition-all overflow-hidden shadow-md"
+                          style={{
+                            background: bg,
+                            border: border !== "transparent" ? `2px solid ${border}` : undefined,
+                            color: textColor,
+                            minHeight: 88,
+                            textShadow: textColor === "white" ? "0 1px 2px hsl(0 0% 0% / 0.2)" : "none",
+                          }}
                           disabled={quizRevealed}
-                          initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.05 + i * 0.06 }}
                         >
-                          <span className="font-bold mr-2">{letter})</span> {opt.text}
-                          {quizRevealed && isCorrect && <CheckCircle2 className="inline h-4 w-4 ml-2" style={{ color: "hsl(145 45% 45%)" }} />}
-                          {quizRevealed && isSelected && !isCorrect && <XCircle className="inline h-4 w-4 ml-2" style={{ color: "hsl(0 60% 50%)" }} />}
+                          <div className="flex items-start gap-2">
+                            <span className="text-lg flex-shrink-0">{optionIcons[i]}</span>
+                            <div className="flex-1">
+                              <span className="font-display font-bold text-xs opacity-80 mr-1">{letter}.</span>
+                              <span className="leading-snug">{opt.text}</span>
+                            </div>
+                          </div>
+                          {quizRevealed && isCorrect && (
+                            <CheckCircle2 className="absolute top-2 right-2 h-4 w-4" style={{ color: "white" }} />
+                          )}
+                          {quizRevealed && isSelected && !isCorrect && (
+                            <XCircle className="absolute top-2 right-2 h-4 w-4" style={{ color: "white" }} />
+                          )}
                         </motion.button>
                       );
                     })}
