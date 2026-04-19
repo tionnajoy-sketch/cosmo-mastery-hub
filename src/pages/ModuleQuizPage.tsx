@@ -16,6 +16,7 @@ import { shuffleOptions } from "@/lib/shuffleOptions";
 const c = pageColors.quiz;
 
 interface Question {
+  id?: string;
   question_text: string;
   option_a: string;
   option_b: string;
@@ -130,7 +131,12 @@ const ModuleQuizPage = () => {
   }, [id, block, user]);
 
   const currentQuestion = questions[currentIndex];
-  const isCorrect = selectedAnswer === currentQuestion?.correct_option;
+  const sh = currentQuestion ? shuffleOptions(
+    { A: currentQuestion.option_a, B: currentQuestion.option_b, C: currentQuestion.option_c, D: currentQuestion.option_d },
+    currentQuestion.correct_option,
+    `${currentQuestion.id || currentQuestion.question_text}-${currentIndex}`,
+  ) : null;
+  const isCorrect = sh ? selectedAnswer === sh.correctLetter : false;
   const isLastQuestion = currentIndex === questions.length - 1;
 
   const handleAnswer = (option: string) => {
@@ -149,9 +155,8 @@ const ModuleQuizPage = () => {
     if (strategyMode && strategyStep !== "choose") return;
 
     setSelectedAnswer(option);
-    if (option === currentQuestion.correct_option) {
+    if (sh && option === sh.correctLetter) {
       setScore((s) => s + 1);
-      // First attempt = no prior wrong on this question in this session
       addCoins(10, "correct");
     } else {
       setWrongCount((cnt) => cnt + 1);
@@ -293,12 +298,7 @@ const ModuleQuizPage = () => {
     return <div className="flex min-h-screen items-center justify-center"><p className="text-muted-foreground">Loading quiz...</p></div>;
   }
 
-  const options = [
-    { key: "A", text: currentQuestion.option_a },
-    { key: "B", text: currentQuestion.option_b },
-    { key: "C", text: currentQuestion.option_c },
-    { key: "D", text: currentQuestion.option_d },
-  ];
+  const options = sh ? sh.options.map(o => ({ key: o.letter, text: o.text, isRight: o.letter === sh.correctLetter })) : [];
 
   const getWrongFeedback = () => mode === "confidence"
     ? "That was not the best answer, but you are learning and that is what matters. Let us look at why together."
