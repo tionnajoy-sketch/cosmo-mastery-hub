@@ -398,6 +398,14 @@ const LearningOrbDialog = ({
   // DNA-adapted encouragement message
   const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
+  const markStepDone = () => {
+    setCompletedSteps((prev) => {
+      const n = new Set(prev);
+      n.add(currentStep);
+      return n;
+    });
+  };
+
   const goNext = () => {
     stopSpeaking();
     // Track DNA updates based on current step
@@ -409,23 +417,16 @@ const LearningOrbDialog = ({
       updateDNA({ layerCompleted: step.key, timeSpentSeconds: 30 });
     }
 
-    // Prevent skipping quiz — quiz must be answered before completing
-    if (currentStep === adaptedSteps.length - 2) {
-      // About to move to quiz step — allow it
-    }
-    if (step.key === "quiz" && !quizRevealed) {
-      // Don't allow completing without answering the quiz
-      return;
-    }
-    // GATE: if learner answered the quiz wrong, lock progression until
-    // ReinforcementDialog is resolved (correct answer or 3 cycles exhausted).
-    if (step.key === "quiz" && !reinforcementResolved) {
-      return;
-    }
+    // Quiz step requires an answer before completing
+    if (step.key === "quiz" && !quizRevealed) return;
+    // GATE: lock progression while reinforcement is unresolved
+    if (step.key === "quiz" && !reinforcementResolved) return;
+
+    markStepDone();
 
     if (currentStep < adaptedSteps.length - 1) {
       if (soundsEnabled) playChime();
-      setCurrentStep(s => s + 1);
+      setCurrentStep((s) => s + 1);
     } else {
       if (!completedRef.current) {
         completedRef.current = true;
@@ -436,6 +437,14 @@ const LearningOrbDialog = ({
       }
       setCompleted(true);
     }
+  };
+
+  const jumpToStep = (i: number) => {
+    if (i === currentStep) return;
+    // Block jumping while reinforcement is locked
+    if (!reinforcementResolved) return;
+    stopSpeaking();
+    setCurrentStep(i);
   };
 
   const goBack = () => {
