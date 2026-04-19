@@ -1333,12 +1333,15 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
             {/* Progress bar */}
             <div className="mt-2"><Progress value={progressPercent} className="h-1.5" /></div>
 
-            {/* Step indicator pills */}
-            <div className="flex items-center justify-center gap-1 mt-2.5">
-              {adaptedSteps.map((s, i) => (
-                <div key={s.key} className="h-1.5 rounded-full transition-all duration-300"
-                  style={{ width: i === currentStep ? 20 : 6, background: i <= currentStep ? s.color : "hsl(var(--border))", opacity: i <= currentStep ? 1 : 0.4 }} />
-              ))}
+            {/* DNA-ordered tile navigator (replaces linear step pills) */}
+            <div className="mt-3">
+              <LayerBlockNavigator
+                steps={adaptedSteps}
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+                onSelect={jumpToStep}
+                locked={!reinforcementResolved}
+              />
             </div>
 
             {/* Why This Step Matters */}
@@ -1354,23 +1357,20 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
             </AnimatePresence>
           </div>
 
-          {/* ═══════ NAVIGATION BAR (Top of content area) ═══════ */}
+          {/* ═══════ ACTION BAR (tile-driven nav, no Back/Next) ═══════ */}
           <div className="flex-shrink-0 px-4 sm:px-6 py-2 border-b" style={{ background: "hsl(var(--background) / 0.96)" }}>
             <div className="max-w-lg mx-auto flex items-center justify-between gap-2">
-              <Button variant="ghost" size="sm" onClick={currentStep === 0 ? () => { stopSpeaking(); onOpenChange(false); } : goBack} className="gap-1 text-sm" style={{ color: c.subtext }}>
-                <ArrowLeft className="h-4 w-4" /> {currentStep === 0 ? "Back" : "Previous"}
-              </Button>
               <Button variant="ghost" size="sm" className="gap-1 text-xs" style={{ color: c.subtext }}
                 onClick={() => { speakText(`Let me explain ${block.term_title} another way…`); }}>
                 <RefreshCw className="h-3.5 w-3.5" /> Let TJ Explain Again
               </Button>
-              <Button size="sm" className="gap-1 text-sm px-5 shadow-md" 
-                style={{ background: step.gradient, color: "white", opacity: (step.key === "quiz" && (!quizRevealed || !reinforcementResolved)) ? 0.5 : 1 }} 
+              <Button size="sm" className="gap-1 text-sm px-5 shadow-md"
+                style={{ background: step.gradient, color: "white", opacity: (step.key === "quiz" && (!quizRevealed || !reinforcementResolved)) ? 0.5 : 1 }}
                 onClick={goNext}
                 disabled={step.key === "quiz" && (!quizRevealed || !reinforcementResolved)}>
                 {step.key === "quiz" && !reinforcementResolved
                   ? "🔒 Reinforcement"
-                  : currentStep === adaptedSteps.length - 1 ? "Complete" : "Next"}
+                  : currentStep === adaptedSteps.length - 1 ? "Complete" : "Mark Step Complete"}
                 {currentStep < adaptedSteps.length - 1 && reinforcementResolved && <ArrowRight className="h-4 w-4" />}
               </Button>
             </div>
