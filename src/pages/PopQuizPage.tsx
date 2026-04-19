@@ -38,14 +38,15 @@ const PopQuizPage = () => {
   }, [user, id]);
 
   const currentQuestion = questions[currentIndex];
-  const isCorrect = selectedAnswer === currentQuestion?.correct_option;
   const isLastQuestion = currentIndex === questions.length - 1;
   const isDone = currentIndex >= questions.length;
 
-  const handleAnswer = async (option: string) => {
+  // Computed inside the render block once we know which letter is correct
+  // after shuffling — handleAnswer takes the shuffled correct letter directly.
+  const handleAnswer = async (option: string, correctShuffledLetter: string) => {
     if (selectedAnswer) return;
     setSelectedAnswer(option);
-    if (option === currentQuestion.correct_option) {
+    if (option === correctShuffledLetter) {
       setScore((s) => s + 1);
       if (user) await supabase.from("wrong_answers").delete().eq("user_id", user.id).eq("question_id", currentQuestion.id);
     }
