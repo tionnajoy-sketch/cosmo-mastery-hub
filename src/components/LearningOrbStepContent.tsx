@@ -11,6 +11,8 @@ import SpeakButton from "@/components/SpeakButton";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
 import BrainNote from "@/components/BrainNote";
 import VideoPlayer from "@/components/VideoPlayer";
+import { LayerBlockSection, getBlockOpenState } from "@/components/LayerBlockSection";
+import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 
 const c = pageColors.study;
@@ -59,10 +61,13 @@ interface StepContentProps {
   stepColor: string;
 }
 
-const EtymologyBreakdown = ({ block }: { block: UploadedBlock }) => {
+const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepColor: string }) => {
   const [etymology, setEtymology] = useState<EtymologyPart[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { context: dnaContext } = useDNAAdaptation();
+  const ksRoot = getBlockOpenState(dnaContext, "root-word");
+  const ksDeeper = getBlockOpenState(dnaContext, "deeper");
 
   const decode = async () => {
     setLoading(true);
@@ -92,137 +97,181 @@ const EtymologyBreakdown = ({ block }: { block: UploadedBlock }) => {
     setLoading(false);
   };
 
+  // Short Key Concept summary built from the term + definition (1 line)
+  const keyConcept = block.definition
+    ? block.definition.split(/[.!?]/)[0].trim() + "."
+    : `${block.term_title} — let's break this word into pieces to understand it.`;
+
   return (
     <div className="space-y-3">
-      {block.pronunciation && (
-        <motion.div
-          className="flex items-center gap-3"
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+      {/* Key Concept — always visible */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-xl overflow-hidden"
+        style={{
+          background: "hsl(var(--card))",
+          border: "1.5px solid hsl(var(--border))",
+        }}
+      >
+        <div
+          className="px-4 py-3 flex items-center gap-2"
+          style={{ background: `${stepColor}08`, borderBottom: "1px solid hsl(var(--border))" }}
         >
-          <SpeakButton text={block.term_title} size="sm" label="Hear pronunciation" />
-          <span className="text-base font-medium italic" style={{ color: c.subtext }}>
-            /{block.pronunciation}/
-          </span>
-        </motion.div>
-      )}
-
-      {!etymology && !loading && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-          <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
-            Understanding where a word comes from helps you remember what it means.
-          </p>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={decode}
-            className="gap-2"
-            style={{ borderColor: "hsl(30 85% 45%)", color: "hsl(30 85% 45%)" }}
-          >
-            🔍 Decode This Word
-          </Button>
-        </motion.div>
-      )}
-
-      {loading && (
-        <div className="flex items-center gap-3 py-4">
-          <Loader2 className="h-5 w-5 animate-spin" style={{ color: "hsl(30 85% 45%)" }} />
-          <p className="text-sm" style={{ color: c.subtext }}>Tracing word origins…</p>
+          <span className="text-base">💡</span>
+          <h4 className="font-display text-sm font-bold m-0" style={{ color: stepColor }}>
+            Key Concept
+          </h4>
         </div>
-      )}
-
-      {error && <p className="text-sm" style={{ color: "hsl(0 60% 50%)" }}>{error}</p>}
-
-      {etymology && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-3"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "hsl(30 85% 45%)" }}>
-            Word Origins
+        <div className="px-4 py-3">
+          <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+            <strong style={{ color: stepColor }}>{block.term_title}</strong> — {keyConcept}
           </p>
-          <p className="text-sm italic" style={{ color: c.subtext }}>
-            This word comes from…
-          </p>
-          <div className="space-y-2">
-            {etymology.map((part, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 + i * 0.12 }}
-                className="flex items-center gap-3 p-3 rounded-xl"
+        </div>
+      </motion.div>
+
+      {/* Root Word — collapsible (default open if low retention) */}
+      <LayerBlockSection
+        title="Root Word"
+        icon="🔤"
+        accentColor={stepColor}
+        defaultOpen={ksRoot.defaultOpen || !!etymology}
+        emphasized={ksRoot.emphasized}
+      >
+        <div className="space-y-3">
+          {block.pronunciation && (
+            <div className="flex items-center gap-3">
+              <SpeakButton text={block.term_title} size="sm" label="Hear pronunciation" />
+              <span className="text-base font-medium italic" style={{ color: c.subtext }}>
+                /{block.pronunciation}/
+              </span>
+            </div>
+          )}
+
+          {!etymology && !loading && (
+            <div className="space-y-3">
+              <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+                Understanding where a word comes from helps you remember what it means.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={decode}
+                className="gap-2"
+                style={{ borderColor: "hsl(30 85% 45%)", color: "hsl(30 85% 45%)" }}
+              >
+                🔍 Decode This Word
+              </Button>
+            </div>
+          )}
+
+          {loading && (
+            <div className="flex items-center gap-3 py-4">
+              <Loader2 className="h-5 w-5 animate-spin" style={{ color: "hsl(30 85% 45%)" }} />
+              <p className="text-sm" style={{ color: c.subtext }}>Tracing word origins…</p>
+            </div>
+          )}
+
+          {error && <p className="text-sm" style={{ color: "hsl(0 60% 50%)" }}>{error}</p>}
+
+          {etymology && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "hsl(30 85% 45%)" }}>
+                Word Origins
+              </p>
+              <div className="space-y-2">
+                {etymology.map((part, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + i * 0.12 }}
+                    className="flex items-center gap-3 p-3 rounded-xl"
+                    style={{
+                      background: "linear-gradient(135deg, hsl(30 50% 97%), hsl(30 40% 94%))",
+                      border: "1px solid hsl(30 40% 85%)",
+                    }}
+                  >
+                    <SpeakButton
+                      text={`${part.part}, meaning ${part.meaning}, from ${part.origin}`}
+                      size="sm"
+                      label={`Hear "${part.part}"`}
+                    />
+                    <span
+                      className="font-display text-xl font-bold flex-shrink-0"
+                      style={{ color: "hsl(30 85% 40%)" }}
+                    >
+                      {part.part}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <span
+                        className="text-[10px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded"
+                        style={{ background: "hsl(30 40% 88%)", color: "hsl(30 60% 35%)" }}
+                      >
+                        {part.origin}
+                      </span>
+                      <p className="text-sm mt-1" style={{ color: c.bodyText }}>
+                        {part.meaning}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+              <div
+                className="p-3 rounded-xl text-sm"
                 style={{
-                  background: "linear-gradient(135deg, hsl(30 50% 97%), hsl(30 40% 94%))",
-                  border: "1px solid hsl(30 40% 85%)",
+                  background: "hsl(30 45% 95%)",
+                  border: "1px solid hsl(30 35% 85%)",
+                  color: c.bodyText,
                 }}
               >
-                <SpeakButton
-                  text={`${part.part}, meaning ${part.meaning}, from ${part.origin}`}
-                  size="sm"
-                  label={`Hear "${part.part}"`}
-                />
-                <span
-                  className="font-display text-xl font-bold flex-shrink-0"
-                  style={{ color: "hsl(30 85% 40%)" }}
-                >
-                  {part.part}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <span
-                    className="text-[10px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded"
-                    style={{ background: "hsl(30 40% 88%)", color: "hsl(30 60% 35%)" }}
-                  >
-                    {part.origin}
-                  </span>
-                  <p className="text-sm mt-1" style={{ color: c.bodyText }}>
-                    {part.meaning}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          <div
-            className="p-3 rounded-xl text-sm"
-            style={{
-              background: "hsl(30 45% 95%)",
-              border: "1px solid hsl(30 35% 85%)",
-              color: c.bodyText,
-            }}
-          >
-            <strong style={{ color: "hsl(30 85% 40%)" }}>{block.term_title}</strong> ={" "}
-            {etymology.map((p) => `"${p.meaning}"`).join(" + ")}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Speech-to-text for verbal practice */}
-      <div className="mt-3">
-        <p className="text-xs font-medium mb-2" style={{ color: c.subtext }}>
-          🎤 Practice saying the breakdown out loud:
-        </p>
-        <div className="flex items-center gap-2">
-          <SpeechToTextButton
-            onTranscript={(text) => {
-              // Just visual feedback — user practices pronunciation
-            }}
-            className="flex-shrink-0"
-          />
-          <span className="text-xs italic" style={{ color: c.subtext }}>
-            Tap the mic and say each word part aloud
-          </span>
+                <strong style={{ color: "hsl(30 85% 40%)" }}>{block.term_title}</strong> ={" "}
+                {etymology.map((p) => `"${p.meaning}"`).join(" + ")}
+              </div>
+            </motion.div>
+          )}
         </div>
-      </div>
+      </LayerBlockSection>
 
-      <BrainNote text="Breaking words into roots activates analytical processing, making complex terms easier to decode and remember." />
+      {/* Go Deeper — pronunciation practice + brain note */}
+      <LayerBlockSection
+        title="Go Deeper"
+        icon="🎤"
+        accentColor={stepColor}
+        defaultOpen={ksDeeper.defaultOpen}
+        emphasized={ksDeeper.emphasized}
+      >
+        <div className="space-y-3">
+          <p className="text-xs font-medium" style={{ color: c.subtext }}>
+            🎤 Practice saying the breakdown out loud:
+          </p>
+          <div className="flex items-center gap-2">
+            <SpeechToTextButton
+              onTranscript={(text) => {
+                // Just visual feedback — user practices pronunciation
+              }}
+              className="flex-shrink-0"
+            />
+            <span className="text-xs italic" style={{ color: c.subtext }}>
+              Tap the mic and say each word part aloud
+            </span>
+          </div>
+          <BrainNote text="Breaking words into roots activates analytical processing, making complex terms easier to decode and remember." />
+        </div>
+      </LayerBlockSection>
     </div>
   );
 };
 
 const StepContent = (props: StepContentProps) => {
   const { stepKey, block, stepColor } = props;
+  const { context: dnaContext } = useDNAAdaptation();
+  const ksApplyP = getBlockOpenState(dnaContext, "apply");
+  const ksDeeperP = getBlockOpenState(dnaContext, "deeper");
 
   switch (stepKey) {
     case "visualize":
@@ -345,7 +394,7 @@ const StepContent = (props: StepContentProps) => {
       );
 
     case "breakdown":
-      return <EtymologyBreakdown block={block} />;
+      return <EtymologyBreakdown block={block} stepColor={stepColor} />;
 
     case "recognize":
       return (
@@ -469,6 +518,7 @@ const StepContent = (props: StepContentProps) => {
     case "practice":
       return (
         <div className="space-y-3">
+          {/* Key Concept — the scenario itself, always visible */}
           <motion.p
             className="text-base leading-relaxed"
             style={{ color: c.bodyText }}
@@ -478,21 +528,41 @@ const StepContent = (props: StepContentProps) => {
           >
             {block.practice_scenario}
           </motion.p>
-          <div className="relative mt-2">
-            <Textarea
-              placeholder="Write your notes here…"
-              value={props.journalNote}
-              onChange={(e) => props.setJournalNote(e.target.value)}
-              className="min-h-[80px] text-sm resize-none pr-10"
-              style={{ color: c.bodyText }}
-            />
-            <div className="absolute right-1 bottom-1">
-              <SpeechToTextButton onTranscript={(text) => props.setJournalNote(props.journalNote ? `${props.journalNote} ${text}` : text)} />
+
+          {/* Apply It — write notes (auto-open, emphasized for applied learners) */}
+          <LayerBlockSection
+            title="Apply It"
+            icon="🛠️"
+            accentColor={stepColor}
+            defaultOpen={ksApplyP.defaultOpen || true}
+            emphasized={ksApplyP.emphasized}
+          >
+            <div className="relative mt-1">
+              <Textarea
+                placeholder="Write your notes here…"
+                value={props.journalNote}
+                onChange={(e) => props.setJournalNote(e.target.value)}
+                className="min-h-[80px] text-sm resize-none pr-10"
+                style={{ color: c.bodyText }}
+              />
+              <div className="absolute right-1 bottom-1">
+                <SpeechToTextButton onTranscript={(text) => props.setJournalNote(props.journalNote ? `${props.journalNote} ${text}` : text)} />
+              </div>
             </div>
-          </div>
-          {props.journalSaving && <p className="text-xs" style={{ color: c.subtext }}>Saving…</p>}
-          {!props.journalSaving && props.journalNote && <p className="text-xs" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
-          <BrainNote text="Applying concepts to real scenarios builds neural connections for the salon and state board exam." />
+            {props.journalSaving && <p className="text-xs mt-1" style={{ color: c.subtext }}>Saving…</p>}
+            {!props.journalSaving && props.journalNote && <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
+          </LayerBlockSection>
+
+          {/* Go Deeper — brain note */}
+          <LayerBlockSection
+            title="Go Deeper"
+            icon="🧠"
+            accentColor={stepColor}
+            defaultOpen={ksDeeperP.defaultOpen}
+            emphasized={ksDeeperP.emphasized}
+          >
+            <BrainNote text="Applying concepts to real scenarios builds neural connections for the salon and state board exam." />
+          </LayerBlockSection>
         </div>
       );
 
