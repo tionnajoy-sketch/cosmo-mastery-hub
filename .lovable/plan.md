@@ -1,97 +1,80 @@
 
 
-## Plan: Collapsible Block Sections inside Learning Layers
+User asks for two things:
+1. **Replace "next-button-through-9-steps" with a vibrant, block-style layout inside each term** — DNA-ordered tiles instead of linear pagination.
+2. **Stimulating quizzes with shuffled answers** — confirm/extend shuffling everywhere.
 
-Goal: Reduce cognitive overload by wrapping the long-form content inside each layer in a consistent, DNA-aware collapsible block component. Nothing is removed — only reorganized.
+Looking at current state:
+- `LearningOrbDialog.tsx` uses linear Back/Next nav through `adaptedSteps[]` (9 steps).
+- `shuffleOptions.ts` already exists and is used in `ReinforcementDialog` + `QuizPage`. Need to verify `LearningOrbDialog`'s built-in quiz step + `ModuleQuizPage` + `StateboardQuiz` use it too.
+- DNA already produces `adaptedSteps` order — we just need to expose it visually.
 
-### 1. New component: `LayerBlockSection`
+## Plan: Block-Style Layer Navigator + Universal Answer Shuffling
 
-Create `src/components/LayerBlockSection.tsx` — a reusable collapsible block built on existing `Collapsible` (`@/components/ui/collapsible`), styled to match the current step card look.
+### 1. New: Block-Style Step Navigator (replaces linear Next button)
 
-Props:
-- `title` (string) — e.g. "Root Word", "Apply It"
-- `icon` (emoji or lucide icon)
-- `accentColor` (string — the current step color)
-- `defaultOpen` (boolean — driven by DNA)
-- `emphasized` (boolean — adds glow border for prioritized blocks)
-- `children` — the content
+Create **`src/components/LayerBlockNavigator.tsx`** — a colorful tile grid shown at the top of `LearningOrbDialog`, replacing the small step dots.
 
-Behavior: Tap header → expand/collapse with smooth chevron rotation and motion fade. Mirrors the visual language already used in the "information" step section cards.
+- Renders one vibrant tile per step in the **DNA-adapted order** (already computed as `adaptedSteps`)
+- Each tile shows: step number badge, icon, short label, and a status ring (locked / available / current / complete)
+- Tiles use the existing per-step accent colors (already in `STEPS[].color`) with gradient fills + soft glow for vibrancy
+- Tap a tile → jumps to that step (only if unlocked: current + completed steps tappable; next step always tappable; future ones locked until prerequisites done)
+- Current step pulses; completed tiles show a check; locked tiles dim with a small lock icon
+- Mobile: 2-column grid; desktop: horizontal scroll row of 9
 
-### 2. New helper: `getBlockOpenState(dna, blockType)`
+DNA wiring (already in place — just surface it):
+- `adaptedSteps` order already reflects dominantLayer / engagement
+- Add a small caption above the grid: "Your TJ-recommended path" with the first 2-3 step names highlighted
 
-Add to `src/components/LayerBlockSection.tsx` (or `src/lib/layerBlockState.ts`).
+### 2. Layout shift in `LearningOrbDialog`
 
-Reads the existing DNA adaptation context (already available via `useDNAAdaptation()`) and returns `{ defaultOpen, emphasized }` for each block type:
+- Keep top header (avatar, voice toggle, title) unchanged
+- **Replace** the existing step-dots row + bottom Back/Next bar with:
+  - Top: `LayerBlockNavigator` (collapsible "Show all steps" on mobile)
+  - Bottom: only **"Mark step complete"** button (advances state + unlocks next tile) and **"Let TJ Explain Again"**
+- Linear Back/Next removed; navigation is tile-driven
+- Reinforcement gate logic preserved — locked tiles stay locked while reinforcement is active
 
-| Block | Low engagement | High engagement | Low retention | Applied learner |
-|---|---|---|---|---|
-| Key Concept | always open | always open | open + emphasized | open |
-| Root Word | closed | open | open + emphasized | closed |
-| Apply It | closed | open | closed | open + emphasized |
-| Think About It | closed | open | closed | closed |
-| Go Deeper | closed | open | closed | closed |
+### 3. More stimulating quiz visuals (built-in quiz step inside the orb)
 
-Always-visible: Key Concept (rendered without a Collapsible wrapper).
+In the `quiz` case of `renderContent`:
+- Wrap each option in a vibrant gradient card (using `blockAccentColors` from `src/lib/colors.ts`) with hover lift + tap scale
+- Add a subtle icon per option (A=spark, B=leaf, C=star, D=heart) so learners stop pattern-matching letters
+- Larger touch targets, bolder typography, soft shadow on selected
 
-### 3. Refactor target areas (no content deleted)
+### 4. Universal answer shuffling
 
-Apply `LayerBlockSection` wrapping in `src/components/LearningOrbDialog.tsx` and `src/components/LearningOrbStepContent.tsx` where the long-form content lives:
+Audit & ensure `shuffleOptions(...)` (already in `src/lib/shuffleOptions.ts`) is applied in **every** quiz surface:
 
-**`information` step (slideshow / Guided Engagement — biggest win)**
-Currently renders 5 auto-generated `##` sections inline. Restructure into:
-- **Key Concept** (always visible) → first 1–2 sentences of "Simple Explanation"
-- **Root Word** (collapsible) → reuses `EtymologyBreakdown` content trimmed to roots only
-- **Apply It** (collapsible) → "Why It Matters" + "How This Fits You" sections
-- **Think About It** (collapsible) → 1-line reflection prompt derived from the metaphor
-- **Go Deeper** (collapsible) → "The Lesson" + "History & Origin" + remaining `expandedInfo`
-- TJ Learning Studio stays at the bottom unchanged
+| File | Status | Action |
+|---|---|---|
+| `ReinforcementDialog.tsx` | ✅ done | none |
+| `QuizPage.tsx` | ✅ done | none |
+| `ModuleQuizPage.tsx` | ❓ verify | add if missing |
+| `LearningOrbDialog.tsx` (quiz step) | ❓ verify | add if missing |
+| `LearningOrbStepContent.tsx` (`StateboardQuiz`) | ❓ verify | add if missing |
+| `DailyPopQuestion.tsx` | ❌ likely raw | add shuffle |
+| `RandomQuizPopup.tsx` | ❌ likely raw | add shuffle |
+| `PopQuizPage.tsx` | ❓ verify | add if missing |
 
-**`breakdown` step**
-Wrap `EtymologyBreakdown` output:
-- Key Concept: "What this word means" 1-liner
-- Root Word: existing decoded parts (collapsible, default open if low retention)
-- Go Deeper: pronunciation practice + brain note
+Seed shuffle by `question.id` so order is stable within a session but randomized across question loads.
 
-**`reflection` & `application` steps**
-Light-touch wrap:
-- Key Concept: the prompt itself (visible)
-- Think About It: textarea + speech-to-text (collapsible, auto-open)
-- Go Deeper: metaphor recall card (collapsible)
-
-**`definition` & `metaphor` steps**
-Already short — leave as-is. (Per your "do not overwhelm with structure" spirit; collapsibles only where text is heavy.)
-
-### 4. DNA wiring
-
-In `LearningOrbDialog.tsx`, read once at top of `renderContent`:
-```ts
-const { context } = useDNAAdaptation(); // already imported
-const blockState = (type) => getBlockOpenState(context, type);
-```
-Pass `defaultOpen` and `emphasized` from `blockState("apply")` etc. into each `LayerBlockSection`.
-
-Equivalent wiring in `LearningOrbStepContent.tsx` (it doesn't currently use the hook — add the import).
-
-### 5. Visuals
-
-- Collapsed header: subtle tinted background (`${stepColor}08`), small icon, title, chevron right
-- Expanded: chevron rotates down, content fades in (motion), 1px divider
-- Emphasized variant: 2px border in `stepColor`, soft shadow `0 2px 8px ${stepColor}20`
-- All preserve the existing step color theme — no new palette
-
-### Files
+### 5. Files
 
 **New**
-- `src/components/LayerBlockSection.tsx`
+- `src/components/LayerBlockNavigator.tsx`
 
 **Modified**
-- `src/components/LearningOrbDialog.tsx` — wrap `information`, `reflection`, `application` step content
-- `src/components/LearningOrbStepContent.tsx` — wrap `breakdown`, `practice` step content; import `useDNAAdaptation`
+- `src/components/LearningOrbDialog.tsx` — swap step dots + Back/Next for tile navigator; restyle quiz options
+- `src/components/LearningOrbStepContent.tsx` — apply shuffle in `StateboardQuiz`
+- `src/pages/ModuleQuizPage.tsx` — apply shuffle
+- `src/pages/PopQuizPage.tsx` — apply shuffle
+- `src/components/DailyPopQuestion.tsx` — apply shuffle
+- `src/components/RandomQuizPopup.tsx` — apply shuffle
 
 ### Notes
-- Zero changes to step ordering, DNA logic, or edge functions
-- All current copy, audio, brain notes, speech-to-text, and Learning Studio remain
-- Mobile-friendly: collapsed sections drastically shorten initial scroll height
-- Accessibility: Radix Collapsible already handles ARIA + keyboard
+- DNA logic, step content, audio, and reinforcement gate all preserved
+- All existing collapsible blocks (just shipped) stay inside each step
+- Colors come from existing `pageColors` / `blockAccentColors` — no new palette
+- Locked tiles enforce DNA-recommended order while still letting confident learners revisit completed steps
 
