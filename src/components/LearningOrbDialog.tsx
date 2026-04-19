@@ -23,6 +23,7 @@ import SpeechToTextButton from "@/components/SpeechToTextButton";
 import VideoPlayer from "@/components/VideoPlayer";
 import TJLearningStudio from "@/components/TJLearningStudio";
 import TJVisualEngine from "@/components/TJVisualEngine";
+import { LayerBlockSection, getBlockOpenState } from "@/components/LayerBlockSection";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 import tjBackground from "@/assets/tj-background.jpg";
 import ReinforcementDialog from "@/components/ReinforcementDialog";
@@ -177,7 +178,8 @@ const LearningOrbDialog = ({
   const { user, profile } = useAuth();
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
-  const { dna, rules, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
+  const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
+  const blockState = (type: Parameters<typeof getBlockOpenState>[1]) => getBlockOpenState(dnaContext, type);
   const { adaptCaption, toneProfile } = useTJTone();
   // Filter out scripture step if block has no source text/page reference
   const hasScripture = !!(block?.source_text || block?.page_reference);
