@@ -984,59 +984,95 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
         );
       }
 
-      case "reflection":
+      case "reflection": {
+        const ksThinkR = blockState("think");
+        const ksDeeperR = blockState("deeper");
         return (
-          <motion.div key="reflection" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-4">
-            {/* Connect reflection to metaphor for emotional + cognitive learning */}
-            {block.metaphor && (
-              <div className="px-4 py-3 rounded-xl" style={{ background: "hsl(265 40% 96%)", border: "1.5px solid hsl(265 40% 85%)" }}>
-                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(265 50% 50%)" }}>💭 Recall the Metaphor</p>
-                <p className="text-sm italic leading-relaxed" style={{ color: "hsl(265 30% 35%)" }}>"{block.metaphor}"</p>
-              </div>
-            )}
+          <motion.div key="reflection" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4 py-4">
+            {/* Key Concept — the prompt itself, always visible */}
             <p className="text-lg font-display font-semibold text-center" style={{ color: step.color }}>
               How does {block.term_title} connect to your experience?
             </p>
             <p className="text-base leading-relaxed text-center" style={{ color: c.bodyText }}>
               {block.reflection_prompt || `Think about the metaphor above. In your own words, explain what ${block.term_title} means and why it matters in your career.`}
             </p>
-            <div className="relative">
-              <textarea
-                placeholder="Write or speak your reflection…"
-                value={journalNote}
-                onChange={(e) => setJournalNote(e.target.value)}
-                className="w-full min-h-[120px] p-4 rounded-xl border-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-offset-1"
-                style={{ borderColor: "hsl(var(--border))", color: c.bodyText, background: "hsl(var(--card))" }}
-              />
-              <div className="absolute right-2 bottom-2">
-                <SpeechToTextButton onTranscript={(text) => setJournalNote(prev => prev ? `${prev} ${text}` : text)} />
+
+            {/* Think About It — write/speak (auto-open) */}
+            <LayerBlockSection
+              title="Think About It"
+              icon="✍️"
+              accentColor={step.color}
+              defaultOpen={ksThinkR.defaultOpen || true}
+              emphasized={ksThinkR.emphasized}
+            >
+              <div className="relative">
+                <textarea
+                  placeholder="Write or speak your reflection…"
+                  value={journalNote}
+                  onChange={(e) => setJournalNote(e.target.value)}
+                  className="w-full min-h-[120px] p-4 rounded-xl border-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-offset-1"
+                  style={{ borderColor: "hsl(var(--border))", color: c.bodyText, background: "hsl(var(--card))" }}
+                />
+                <div className="absolute right-2 bottom-2">
+                  <SpeechToTextButton onTranscript={(text) => setJournalNote(prev => prev ? `${prev} ${text}` : text)} />
+                </div>
               </div>
-            </div>
-            {journalSaving && <p className="text-xs" style={{ color: c.subtext }}>Saving…</p>}
-            {!journalSaving && journalNote && <p className="text-xs" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
+              {journalSaving && <p className="text-xs mt-1" style={{ color: c.subtext }}>Saving…</p>}
+              {!journalSaving && journalNote && <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
+            </LayerBlockSection>
+
+            {/* Go Deeper — Metaphor Recall */}
+            {block.metaphor && (
+              <LayerBlockSection
+                title="Recall the Metaphor"
+                icon="💭"
+                accentColor={step.color}
+                defaultOpen={ksDeeperR.defaultOpen}
+                emphasized={ksDeeperR.emphasized}
+              >
+                <p className="text-sm italic leading-relaxed" style={{ color: c.bodyText }}>"{block.metaphor}"</p>
+              </LayerBlockSection>
+            )}
           </motion.div>
         );
+      }
 
-      case "application":
+      case "application": {
+        const ksThinkA = blockState("think");
+        const ksApplyA = blockState("apply");
         return (
-          <motion.div key="application" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-4">
+          <motion.div key="application" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4 py-4">
+            {/* Key Concept — the scenario itself, always visible */}
             <p className="text-base sm:text-lg leading-relaxed" style={{ color: c.bodyText }}>
               {block.practice_scenario || `Imagine you're in the salon and a client asks about ${block.term_title}. How would you explain it in your own words?`}
             </p>
-            <div className="relative">
-              <textarea
-                placeholder="Write your response here…"
-                value={journalNote}
-                onChange={(e) => setJournalNote(e.target.value)}
-                className="w-full min-h-[120px] p-4 rounded-xl border-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-offset-1"
-                style={{ borderColor: "hsl(var(--border))", color: c.bodyText, background: "hsl(var(--card))" }}
-              />
-              <div className="absolute right-2 bottom-2">
-                <SpeechToTextButton onTranscript={(text) => setJournalNote(prev => prev ? `${prev} ${text}` : text)} />
+
+            {/* Think About It — write/speak (auto-open, emphasized for applied learners) */}
+            <LayerBlockSection
+              title="Apply It"
+              icon="🛠️"
+              accentColor={step.color}
+              defaultOpen={ksApplyA.defaultOpen || ksThinkA.defaultOpen || true}
+              emphasized={ksApplyA.emphasized}
+            >
+              <div className="relative">
+                <textarea
+                  placeholder="Write your response here…"
+                  value={journalNote}
+                  onChange={(e) => setJournalNote(e.target.value)}
+                  className="w-full min-h-[120px] p-4 rounded-xl border-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-offset-1"
+                  style={{ borderColor: "hsl(var(--border))", color: c.bodyText, background: "hsl(var(--card))" }}
+                />
+                <div className="absolute right-2 bottom-2">
+                  <SpeechToTextButton onTranscript={(text) => setJournalNote(prev => prev ? `${prev} ${text}` : text)} />
+                </div>
               </div>
-            </div>
+              {journalSaving && <p className="text-xs mt-1" style={{ color: c.subtext }}>Saving…</p>}
+              {!journalSaving && journalNote && <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
+            </LayerBlockSection>
           </motion.div>
         );
+      }
 
       case "quiz":
         return (
