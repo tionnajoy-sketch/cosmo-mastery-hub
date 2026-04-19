@@ -29,6 +29,7 @@ import tjBackground from "@/assets/tj-background.jpg";
 import ReinforcementDialog from "@/components/ReinforcementDialog";
 import { useReinforcement } from "@/hooks/useReinforcement";
 import { shuffleOptions } from "@/lib/shuffleOptions";
+import LayerBlockNavigator from "@/components/LayerBlockNavigator";
 
 const c = pageColors.study;
 
@@ -202,6 +203,7 @@ const LearningOrbDialog = ({
   }, [dna, availableSteps]);
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [completed, setCompleted] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -267,6 +269,7 @@ const LearningOrbDialog = ({
   useEffect(() => {
     if (block) {
       setCurrentStep(0);
+      setCompletedSteps(new Set());
       setCompleted(false);
       setImageUrl(block.image_url || "");
       setJournalNote(block.user_notes || "");
