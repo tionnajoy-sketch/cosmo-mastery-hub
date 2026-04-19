@@ -773,13 +773,8 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                     const body = lines.slice(1).join("\n").trim();
                     return { title, body };
                   });
-                  const sectionIcons: Record<string, string> = {
-                    "Simple Explanation": "💡",
-                    "The Lesson": "📖",
-                    "History & Origin": "🏛️",
-                    "Why It Matters": "⭐",
-                    "How This Fits You": "🧬",
-                  };
+
+                  // No structured sections — fall back to raw markdown
                   if (sections.length === 0) {
                     return (
                       <div className="prose prose-sm max-w-none" style={{ color: c.bodyText }}>
@@ -787,29 +782,177 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                       </div>
                     );
                   }
-                  return sections.map((sec, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-                      className="rounded-xl overflow-hidden"
-                      style={{ background: "hsl(var(--card))", border: "1.5px solid hsl(var(--border))" }}
-                    >
-                      <div className="px-4 py-3 flex items-center gap-2" style={{ background: `${step.color}08`, borderBottom: "1px solid hsl(var(--border))" }}>
-                        <span className="text-base">{sectionIcons[sec.title] || "📝"}</span>
-                        <h4 className="font-display text-sm font-bold m-0" style={{ color: step.color }}>{sec.title}</h4>
-                      </div>
-                      <div className="px-4 py-3">
-                        <div className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
-                          <ReactMarkdown
-                            components={{
-                              p: ({ children }: any) => <p className="mb-2 last:mb-0">{children}</p>,
-                            }}
-                          >{sec.body || "Content is being prepared…"}</ReactMarkdown>
+
+                  // Map AI-generated section titles to our 5 block types
+                  const findSection = (name: string) =>
+                    sections.find(s => s.title.toLowerCase().includes(name.toLowerCase()));
+
+                  const simple = findSection("Simple Explanation");
+                  const lesson = findSection("The Lesson");
+                  const history = findSection("History");
+                  const why = findSection("Why It Matters");
+                  const fits = findSection("How This Fits");
+
+                  // Key Concept = first 1–2 sentences of Simple Explanation (always visible)
+                  const simpleBody = simple?.body || "";
+                  const sentenceMatches = simpleBody.match(/[^.!?]+[.!?]+/g) || [simpleBody];
+                  const keyConcept = sentenceMatches.slice(0, 2).join(" ").trim() || simpleBody;
+                  const simpleRest = simpleBody.slice(keyConcept.length).trim();
+
+                  // Apply It content (Why It Matters + How This Fits You)
+                  const applyParts = [why, fits].filter(Boolean) as { title: string; body: string }[];
+                  // Go Deeper content (The Lesson + History & Origin + remainder of Simple)
+                  const deeperParts = [
+                    lesson,
+                    history,
+                    simpleRest ? { title: "More on the Concept", body: simpleRest } : null,
+                  ].filter(Boolean) as { title: string; body: string }[];
+                  // Anything else not yet routed
+                  const used = new Set(
+                    [simple, lesson, history, why, fits].filter(Boolean).map((s) => (s as { title: string }).title),
+                  );
+                  const extras = sections.filter((s) => !used.has(s.title));
+
+                  // Think About It — derive a 1-line prompt from the metaphor
+                  const thinkPrompt = block.metaphor
+                    ? `Pause for a moment. How does the metaphor — "${block.metaphor}" — change the way you see ${block.term_title}?`
+                    : `Pause for a moment. In one sentence, how would you explain ${block.term_title} to a friend?`;
+
+                  const ksKey = blockState("key-concept");
+                  const ksRoot = blockState("root-word");
+                  const ksApply = blockState("apply");
+                  const ksThink = blockState("think");
+                  const ksDeeper = blockState("deeper");
+
+                  const renderBody = (body: string) => (
+                    <div className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }: any) => <p className="mb-2 last:mb-0">{children}</p>,
+                        }}
+                      >{body || "Content is being prepared…"}</ReactMarkdown>
+                    </div>
+                  );
+
+                  return (
+                    <>
+                      {/* Key Concept — always visible */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-xl overflow-hidden"
+                        style={{
+                          background: "hsl(var(--card))",
+                          border: ksKey.emphasized
+                            ? `2px solid ${step.color}`
+                            : "1.5px solid hsl(var(--border))",
+                          boxShadow: ksKey.emphasized ? `0 2px 8px ${step.color}20` : undefined,
+                        }}
+                      >
+                        <div
+                          className="px-4 py-3 flex items-center gap-2"
+                          style={{ background: `${step.color}08`, borderBottom: "1px solid hsl(var(--border))" }}
+                        >
+                          <span className="text-base">💡</span>
+                          <h4 className="font-display text-sm font-bold m-0" style={{ color: step.color }}>
+                            Key Concept
+                          </h4>
                         </div>
-                        <div className="mt-2">
-                          <SpeakButton text={`${sec.title}. ${sec.body}`.slice(0, 500)} size="icon" />
+                        <div className="px-4 py-3 space-y-2">
+                          <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+                            {keyConcept}
+                          </p>
+                          <SpeakButton text={keyConcept.slice(0, 500)} size="icon" />
                         </div>
-                      </div>
-                    </motion.div>
-                  ));
+                      </motion.div>
+
+                      {/* Root Word — collapsible */}
+                      {etymology && (
+                        <LayerBlockSection
+                          title="Root Word"
+                          icon="🔤"
+                          accentColor={step.color}
+                          defaultOpen={ksRoot.defaultOpen}
+                          emphasized={ksRoot.emphasized}
+                        >
+                          <div className="space-y-2">
+                            {etymology.parts.map((part, i) => (
+                              <div key={i} className="flex items-baseline gap-2 text-sm" style={{ color: c.bodyText }}>
+                                <span className="font-bold" style={{ color: step.color }}>{part.part}</span>
+                                <span>= {part.meaning}</span>
+                                <span className="text-xs italic" style={{ color: c.subtext }}>({part.origin})</span>
+                              </div>
+                            ))}
+                          </div>
+                        </LayerBlockSection>
+                      )}
+
+                      {/* Apply It — collapsible */}
+                      {applyParts.length > 0 && (
+                        <LayerBlockSection
+                          title="Apply It"
+                          icon="⭐"
+                          accentColor={step.color}
+                          defaultOpen={ksApply.defaultOpen}
+                          emphasized={ksApply.emphasized}
+                        >
+                          <div className="space-y-3">
+                            {applyParts.map((sec, i) => (
+                              <div key={i} className="space-y-1.5">
+                                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: step.color }}>
+                                  {sec.title}
+                                </p>
+                                {renderBody(sec.body)}
+                              </div>
+                            ))}
+                            <SpeakButton
+                              text={applyParts.map((s) => `${s.title}. ${s.body}`).join(" ").slice(0, 600)}
+                              size="icon"
+                            />
+                          </div>
+                        </LayerBlockSection>
+                      )}
+
+                      {/* Think About It — collapsible */}
+                      <LayerBlockSection
+                        title="Think About It"
+                        icon="🤔"
+                        accentColor={step.color}
+                        defaultOpen={ksThink.defaultOpen}
+                        emphasized={ksThink.emphasized}
+                      >
+                        <p className="text-sm leading-relaxed italic" style={{ color: c.bodyText }}>
+                          {thinkPrompt}
+                        </p>
+                      </LayerBlockSection>
+
+                      {/* Go Deeper — collapsible */}
+                      {(deeperParts.length > 0 || extras.length > 0) && (
+                        <LayerBlockSection
+                          title="Go Deeper"
+                          icon="📖"
+                          accentColor={step.color}
+                          defaultOpen={ksDeeper.defaultOpen}
+                          emphasized={ksDeeper.emphasized}
+                        >
+                          <div className="space-y-3">
+                            {[...deeperParts, ...extras].map((sec, i) => (
+                              <div key={i} className="space-y-1.5">
+                                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: step.color }}>
+                                  {sec.title}
+                                </p>
+                                {renderBody(sec.body)}
+                              </div>
+                            ))}
+                            <SpeakButton
+                              text={[...deeperParts, ...extras].map((s) => `${s.title}. ${s.body}`).join(" ").slice(0, 800)}
+                              size="icon"
+                            />
+                          </div>
+                        </LayerBlockSection>
+                      )}
+                    </>
+                  );
                 })()}
                 <div className="pt-2">
                   <SpeakButton text={expandedInfo.slice(0, 2000)} size="sm" label="Listen to full lesson" />
