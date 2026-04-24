@@ -149,18 +149,18 @@ const LearningOrchestrator = ({
             const avg = (metricsRes.data.confidence + metricsRes.data.retention + metricsRes.data.understanding) / 3;
             setBlockStrength(avg >= 70 ? "strong" : avg <= 30 ? "weak" : "neutral");
           }
-
-          // Set DNA-based levels for display
-          if (dna) {
-            setConfidenceLevel(dna.confidence);
-            setRetentionLevel(dna.retention);
-          }
         } catch {}
         setTimeout(() => setAnalyzing(false), 800);
       };
       analyze();
     }
-  }, [block?.id, open, user, dna]);
+  }, [block?.id, open, user]);
+
+  useEffect(() => {
+    if (!dna) return;
+    setConfidenceLevel(dna.confidence);
+    setRetentionLevel(dna.retention);
+  }, [dna]);
 
   const strategyLines = useMemo(
     () => buildStrategyExplanation(rules, blockStrength, visitCount),
