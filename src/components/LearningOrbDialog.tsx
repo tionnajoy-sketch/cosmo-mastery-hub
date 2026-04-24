@@ -528,9 +528,9 @@ const LearningOrbDialog = ({
                 </div>
               </div>
             ) : (
-              <Button onClick={fetchEtymology} className="mx-auto flex gap-2" style={{ background: step.gradient, color: "white" }}>
-                <Sparkles className="h-4 w-4" /> Break Down This Word
-              </Button>
+              <p className="text-center text-sm italic" style={{ color: c.subtext }}>
+                Word breakdown coming soon for this term.
+              </p>
             )}
           </motion.div>
         );
