@@ -153,7 +153,7 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
             </div>
           )}
 
-          {!etymology && !loading && (
+          {!etymology && !loading && !staticBreakdown && (
             <div className="space-y-3">
               <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
                 Understanding where a word comes from helps you remember what it means.
@@ -167,6 +167,19 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
               >
                 🔍 Decode This Word
               </Button>
+            </div>
+          )}
+
+          {staticBreakdown && (
+            <div
+              className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap"
+              style={{
+                background: "linear-gradient(135deg, hsl(30 50% 97%), hsl(30 40% 94%))",
+                border: "1px solid hsl(30 40% 85%)",
+                color: c.bodyText,
+              }}
+            >
+              {staticBreakdown}
             </div>
           )}
 
