@@ -1135,22 +1135,64 @@ const LearningOrbDialog = ({
                         );
                       })}
                     </div>
-                    {quizRevealed && (
-                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 pt-1">
-                        {block.static_assess_explanation && (
-                          <article className="editorial-card w-full">
-                            <div className="editorial-card-header"><span className="num">!</span><span className="label">Why this answer</span></div>
-                            <div className="editorial-card-body">{block.static_assess_explanation}</div>
-                          </article>
-                        )}
-                        <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>Try Again</Button>
-                        {!reinforcementResolved && (
-                          <p className="w-full text-xs italic" style={{ color: "hsl(25 70% 40%)" }}>
-                            🔒 Locked — TJ is preparing a reinforcement lesson before you continue.
-                          </p>
-                        )}
-                      </motion.div>
-                    )}
+                    {quizRevealed && (() => {
+                      const wasCorrect = quizSelected === sh.correctLetter;
+                      return (
+                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 pt-1">
+                          {/* Verdict banner */}
+                          <div
+                            className="rounded-xl px-4 py-3 flex items-center gap-3"
+                            style={{
+                              background: wasCorrect ? "hsl(145 45% 94%)" : "hsl(0 60% 96%)",
+                              border: `1.5px solid ${wasCorrect ? "hsl(145 45% 70%)" : "hsl(0 60% 75%)"}`,
+                            }}
+                          >
+                            {wasCorrect ? (
+                              <CheckCircle2 className="h-5 w-5 flex-shrink-0" style={{ color: "hsl(145 55% 35%)" }} />
+                            ) : (
+                              <XCircle className="h-5 w-5 flex-shrink-0" style={{ color: "hsl(0 65% 45%)" }} />
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-display text-base font-bold leading-tight" style={{ color: wasCorrect ? "hsl(145 45% 25%)" : "hsl(0 50% 30%)" }}>
+                                {wasCorrect ? "Correct — beautifully done." : "Not quite. Take a breath."}
+                              </p>
+                              <p className="text-xs leading-snug mt-0.5" style={{ color: wasCorrect ? "hsl(145 35% 30%)" : "hsl(0 35% 35%)" }}>
+                                {wasCorrect
+                                  ? "Read why this answer holds, then exit or continue when you are ready."
+                                  : `The correct answer was “${sh.options.find(o => o.letter === sh.correctLetter)?.text || ""}.” Read the reason below.`}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Explanation */}
+                          {block.static_assess_explanation && (
+                            <article className="editorial-card">
+                              <div className="editorial-card-header"><span className="num">!</span><span className="label">Why this answer</span></div>
+                              <div className="editorial-card-body">{block.static_assess_explanation}</div>
+                            </article>
+                          )}
+
+                          {/* Action row — learner stays in control */}
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>
+                              Try Again
+                            </Button>
+                            {!wasCorrect && (
+                              <Button size="sm" variant="outline" onClick={() => { setReinforcementResolved(false); setReinforcementOpen(true); }}>
+                                Practice this with TJ
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => { stopSpeaking(); onOpenChange(false); }}
+                              style={{ background: step.gradient, color: "white" }}
+                            >
+                              Exit Lesson
+                            </Button>
+                          </div>
+                        </motion.div>
+                      );
+                    })()}
                   </div>
                 );
               })()}
