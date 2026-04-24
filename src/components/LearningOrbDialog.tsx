@@ -29,6 +29,9 @@ import { useReinforcement } from "@/hooks/useReinforcement";
 import { shuffleOptions } from "@/lib/shuffleOptions";
 import LayerBlockNavigator from "@/components/LayerBlockNavigator";
 import { setLessonContext, clearLessonContext } from "@/lib/dna/currentLessonContext";
+import RecallReconstruction from "@/components/orb-steps/RecallReconstruction";
+import StrengthenLayerDialog from "@/components/StrengthenLayerDialog";
+import { useBrainStrengths } from "@/hooks/useBrainStrengths";
 
 const c = pageColors.study;
 
