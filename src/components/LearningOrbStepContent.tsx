@@ -73,34 +73,9 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
   // STATIC-FIRST: if admin saved a Break-It-Down for this term, show it and skip AI.
   const staticBreakdown = block.static_break_it_down?.trim() || "";
 
-  const decode = async () => {
-    if (staticBreakdown) return; // never call AI when static content exists
-    setLoading(true);
-    setError("");
-    try {
-      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
-        body: {
-          messages: [
-            {
-              role: "user",
-              content: `Break down the word "${block.term_title}" into its etymological parts (prefix, root, suffix). For each part give: the part itself, its language of origin (Latin, Greek, etc.), and its meaning. Definition for context: "${block.definition}". Respond ONLY with a JSON array like: [{"part":"Epi","origin":"Greek","meaning":"upon, above"},{"part":"dermis","origin":"Greek","meaning":"skin"}]. No markdown, no explanation, just the JSON array.`,
-            },
-          ],
-          sectionName: "Etymology",
-        },
-      });
-      const text = data?.response || data?.choices?.[0]?.message?.content || "";
-      const match = text.match(/\[[\s\S]*\]/);
-      if (match) {
-        setEtymology(JSON.parse(match[0]));
-      } else {
-        setError("Could not parse etymology. Try again.");
-      }
-    } catch {
-      setError("Failed to load etymology.");
-    }
-    setLoading(false);
-  };
+  // STATIC-ONLY: never call AI from lesson steps. Render static content
+  // when present; otherwise show a gentle "coming soon" message.
+  const decode = async () => { /* no-op */ };
 
   // Short Key Concept summary built from the term + definition (1 line)
   const keyConcept = block.definition
