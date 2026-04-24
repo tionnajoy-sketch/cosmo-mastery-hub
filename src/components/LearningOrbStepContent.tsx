@@ -70,7 +70,11 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
   const ksRoot = getBlockOpenState(dnaContext, "root-word");
   const ksDeeper = getBlockOpenState(dnaContext, "deeper");
 
+  // STATIC-FIRST: if admin saved a Break-It-Down for this term, show it and skip AI.
+  const staticBreakdown = block.static_break_it_down?.trim() || "";
+
   const decode = async () => {
+    if (staticBreakdown) return; // never call AI when static content exists
     setLoading(true);
     setError("");
     try {
@@ -149,7 +153,7 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
             </div>
           )}
 
-          {!etymology && !loading && (
+          {!etymology && !loading && !staticBreakdown && (
             <div className="space-y-3">
               <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
                 Understanding where a word comes from helps you remember what it means.
@@ -163,6 +167,19 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
               >
                 🔍 Decode This Word
               </Button>
+            </div>
+          )}
+
+          {staticBreakdown && (
+            <div
+              className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap"
+              style={{
+                background: "linear-gradient(135deg, hsl(30 50% 97%), hsl(30 40% 94%))",
+                border: "1px solid hsl(30 40% 85%)",
+                color: c.bodyText,
+              }}
+            >
+              {staticBreakdown}
             </div>
           )}
 
@@ -588,9 +605,12 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
 
+  // STATIC-FIRST: admin-authored assessment beats both built-in and AI.
+  const hasStaticAssess = !!(block.static_assess_question && block.static_assess_answer);
   const hasBuiltinQuiz = block.quiz_question && block.quiz_options.length > 0;
 
   const generateQuestion = async () => {
+    if (hasStaticAssess) return; // never call AI when static assess exists
     setAiLoading(true);
     setAiError("");
     try {
@@ -617,16 +637,34 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
     setAiLoading(false);
   };
 
-  // Auto-generate if no built-in quiz
+  // Auto-generate ONLY if no static and no built-in quiz
   useState(() => {
-    if (!hasBuiltinQuiz && !aiQuestion && !aiLoading) {
+    if (!hasStaticAssess && !hasBuiltinQuiz && !aiQuestion && !aiLoading) {
       generateQuestion();
     }
   });
 
-  const question = hasBuiltinQuiz ? block.quiz_question : aiQuestion?.question;
-  const rawOptions = hasBuiltinQuiz ? block.quiz_options.map(String) : (aiQuestion?.options || []);
-  const answer = hasBuiltinQuiz ? block.quiz_answer : (aiQuestion?.answer || "");
+  // Build 4 options for static assess: correct + 3 plausible distractors derived from term/definition.
+  const staticDistractors = (() => {
+    if (!hasStaticAssess) return [];
+    const def = (block.definition || "").trim();
+    const term = block.term_title;
+    return [
+      def ? `A different process unrelated to ${term}.` : `Not related to ${term}.`,
+      `A general term often confused with ${term}.`,
+      `None of the above.`,
+    ];
+  })();
+
+  const question = hasStaticAssess
+    ? block.static_assess_question!
+    : (hasBuiltinQuiz ? block.quiz_question : aiQuestion?.question);
+  const rawOptions = hasStaticAssess
+    ? [block.static_assess_answer!, ...staticDistractors]
+    : (hasBuiltinQuiz ? block.quiz_options.map(String) : (aiQuestion?.options || []));
+  const answer = hasStaticAssess
+    ? block.static_assess_answer!
+    : (hasBuiltinQuiz ? block.quiz_answer : (aiQuestion?.answer || ""));
 
   // Apply seeded shuffle so the correct answer rotates positions
   const sh = (question && rawOptions.length >= 4) ? (() => {
@@ -718,7 +756,7 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
               <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>
                 Try Again
               </Button>
-              {!hasBuiltinQuiz && (
+              {!hasBuiltinQuiz && !hasStaticAssess && (
                 <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuestion(); }} style={{ borderColor: stepColor, color: stepColor }}>
                   New Question
                 </Button>
@@ -728,7 +766,7 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
         </div>
       )}
 
-      {!hasBuiltinQuiz && !aiQuestion && !aiLoading && !aiError && (
+      {!hasBuiltinQuiz && !hasStaticAssess && !aiQuestion && !aiLoading && !aiError && (
         <div className="text-center py-4">
           <Button size="sm" onClick={generateQuestion} className="gap-2" style={{ background: stepColor, color: "white" }}>
             🎓 Generate State Board Question

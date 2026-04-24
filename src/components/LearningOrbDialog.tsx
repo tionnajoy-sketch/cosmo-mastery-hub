@@ -187,9 +187,17 @@ const LearningOrbDialog = ({
     if (b.static_visualize) b.visualization_desc = b.static_visualize;
     if (b.static_reflect) b.reflection_prompt = b.static_reflect;
     if (b.static_apply) b.practice_scenario = b.static_apply;
-    if (b.static_assess_question) {
+    if (b.static_assess_question && b.static_assess_answer) {
       b.quiz_question = b.static_assess_question;
-      b.quiz_answer = b.static_assess_answer || b.quiz_answer;
+      b.quiz_answer = b.static_assess_answer;
+      // Synthesize 4-option pool (correct + 3 plausible distractors) so the
+      // dialog's built-in quiz renderer activates and we never call AI.
+      b.quiz_options = [
+        b.static_assess_answer,
+        `A different concept unrelated to ${b.term_title}.`,
+        `A general term often confused with ${b.term_title}.`,
+        `None of the above.`,
+      ];
     }
     return b;
   }, [rawBlock]);
@@ -356,18 +364,19 @@ const LearningOrbDialog = ({
     return () => clearTimeout(timeout);
   }, [journalNote, block?.id, user, mode]);
 
-  // Auto-fetch etymology on breakdown step
+  // Auto-fetch content on step change.
+  // STATIC-FIRST: if admin has saved pre-written content for this term,
+  // we NEVER call AI — every learner sees the same structured experience.
   useEffect(() => {
     if (!block) return;
     const s = adaptedSteps[currentStep];
-    if (s?.key === "breakdown" && !etymology && !etymLoading) {
+    if (s?.key === "breakdown" && !etymology && !etymLoading && !block.static_break_it_down) {
       fetchEtymology();
     }
-    if (s?.key === "quiz" && !block.quiz_question && !aiQuestion && !aiLoading) {
+    if (s?.key === "quiz" && !block.quiz_question && !aiQuestion && !aiLoading && !block.static_assess_question) {
       generateQuizQuestion();
     }
-    // Auto-fetch deep teaching when landing on the Information step
-    if (s?.key === "information" && !expandedInfo && !infoLoading) {
+    if (s?.key === "information" && !expandedInfo && !infoLoading && !block.static_information) {
       fetchExpandedInfo();
     }
   }, [currentStep, block?.id]);
