@@ -187,9 +187,17 @@ const LearningOrbDialog = ({
     if (b.static_visualize) b.visualization_desc = b.static_visualize;
     if (b.static_reflect) b.reflection_prompt = b.static_reflect;
     if (b.static_apply) b.practice_scenario = b.static_apply;
-    if (b.static_assess_question) {
+    if (b.static_assess_question && b.static_assess_answer) {
       b.quiz_question = b.static_assess_question;
-      b.quiz_answer = b.static_assess_answer || b.quiz_answer;
+      b.quiz_answer = b.static_assess_answer;
+      // Synthesize 4-option pool (correct + 3 plausible distractors) so the
+      // dialog's built-in quiz renderer activates and we never call AI.
+      b.quiz_options = [
+        b.static_assess_answer,
+        `A different concept unrelated to ${b.term_title}.`,
+        `A general term often confused with ${b.term_title}.`,
+        `None of the above.`,
+      ];
     }
     return b;
   }, [rawBlock]);
