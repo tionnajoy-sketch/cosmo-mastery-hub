@@ -46,6 +46,18 @@ export interface UploadedBlock {
   page_reference?: string;
   source_text?: string;
   section_title?: string;
+  // Static, pre-written TJ Layer Method content (built-in terms only)
+  static_visualize?: string;
+  static_define?: string;
+  static_break_it_down?: string;
+  static_recognize?: string;
+  static_metaphor?: string;
+  static_information?: string;
+  static_reflect?: string;
+  static_apply?: string;
+  static_assess_question?: string;
+  static_assess_answer?: string;
+  static_assess_explanation?: string;
 }
 
 type TabType = "definition" | "scripture" | "identity" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
