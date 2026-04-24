@@ -28,6 +28,7 @@ import ReinforcementDialog from "@/components/ReinforcementDialog";
 import { useReinforcement } from "@/hooks/useReinforcement";
 import { shuffleOptions } from "@/lib/shuffleOptions";
 import LayerBlockNavigator from "@/components/LayerBlockNavigator";
+import { setLessonContext, clearLessonContext } from "@/lib/dna/currentLessonContext";
 
 const c = pageColors.study;
 
