@@ -21,8 +21,6 @@ import { fireBlockCompleteConfetti } from "@/lib/confetti";
 import SpeakButton from "@/components/SpeakButton";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
 import VideoPlayer from "@/components/VideoPlayer";
-import TJLearningStudio from "@/components/TJLearningStudio";
-import TJVisualEngine from "@/components/TJVisualEngine";
 import { LayerBlockSection, getBlockOpenState } from "@/components/LayerBlockSection";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 import tjBackground from "@/assets/tj-background.jpg";
