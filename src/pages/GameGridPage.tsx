@@ -306,7 +306,11 @@ const GameGridPage = () => {
           const { sectionOrder, grouped } = groupTermsBySection(terms);
           let globalIndex = 0;
 
-          return sectionOrder.map((sectionId) => {
+          // Filter out Skin Structure and Growth section until built out
+          const HIDDEN_SECTIONS = ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"];
+          const visibleSectionOrder = sectionOrder.filter(id => !HIDDEN_SECTIONS.includes(id));
+
+          return visibleSectionOrder.map((sectionId) => {
             const sectionTerms = grouped.get(sectionId) || [];
             const sectionName = sections.get(sectionId) || "Uncategorized";
             // Section progress
