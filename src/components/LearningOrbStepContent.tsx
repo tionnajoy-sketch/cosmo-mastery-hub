@@ -756,7 +756,7 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
               <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>
                 Try Again
               </Button>
-              {!hasBuiltinQuiz && (
+              {!hasBuiltinQuiz && !hasStaticAssess && (
                 <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuestion(); }} style={{ borderColor: stepColor, color: stepColor }}>
                   New Question
                 </Button>
@@ -766,7 +766,7 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
         </div>
       )}
 
-      {!hasBuiltinQuiz && !aiQuestion && !aiLoading && !aiError && (
+      {!hasBuiltinQuiz && !hasStaticAssess && !aiQuestion && !aiLoading && !aiError && (
         <div className="text-center py-4">
           <Button size="sm" onClick={generateQuestion} className="gap-2" style={{ background: stepColor, color: "white" }}>
             🎓 Generate State Board Question
