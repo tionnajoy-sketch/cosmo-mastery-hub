@@ -1592,6 +1592,22 @@ const LearningOrbDialog = ({
           missedQuestion={missedQuestionText || quizQuestion || `Question about ${block.term_title}`}
           missedAnswerExplanation={block.definition}
         />
+        {/* NEW: "Strengthen This Layer" reinforcement loop (recall < 60%) */}
+        <StrengthenLayerDialog
+          open={strengthenOpen}
+          onOpenChange={setStrengthenOpen}
+          termId={block.id}
+          termTitle={block.term_title}
+          definition={block.definition || ""}
+          metaphor={block.metaphor || (block as any).static_metaphor}
+          visualDesc={block.visualization_desc || (block as any).static_visualize}
+          microBreakdown={(block as any).static_break_it_down}
+          imageUrl={imageUrl}
+          onResolved={({ passed }) => {
+            markStepDone();
+            if (passed && currentStep < adaptedSteps.length - 1) setCurrentStep((s) => s + 1);
+          }}
+        />
         {/* Subtle BG */}
         <div className="absolute inset-0 bg-cover bg-center pointer-events-none" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.06, filter: "brightness(1.2)" }} />
         <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.94) 0%, hsl(0 0% 98% / 0.96) 100%)" }} />
