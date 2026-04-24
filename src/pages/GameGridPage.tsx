@@ -306,8 +306,11 @@ const GameGridPage = () => {
           const { sectionOrder, grouped } = groupTermsBySection(terms);
           let globalIndex = 0;
 
-          // Filter out Skin Structure and Growth section until built out
-          const HIDDEN_SECTIONS = ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"];
+          // Hide Anatomy & Physiology and Infection Control until built out
+          const HIDDEN_SECTIONS = [
+            "b2c3d4e5-f6a7-8901-bcde-fa2345678901", // General Anatomy and Physiology
+            "c3d4e5f6-a7b8-9012-cdef-ab3456789012", // Infection Control
+          ];
           const visibleSectionOrder = sectionOrder.filter(id => !HIDDEN_SECTIONS.includes(id));
 
           return visibleSectionOrder.map((sectionId) => {
