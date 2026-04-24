@@ -1113,10 +1113,6 @@ const LearningOrbDialog = ({
                         </div>
                       )}
                       <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>Try Again</Button>
-                      {!hasBuiltinQuiz && (
-                        <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuizQuestion(); }}
-                          style={{ borderColor: step.color, color: step.color }}>New Question</Button>
-                      )}
                       {!reinforcementResolved && (
                         <p className="w-full text-xs italic" style={{ color: "hsl(25 70% 40%)" }}>
                           🔒 Locked — TJ is preparing a reinforcement lesson before you continue.
