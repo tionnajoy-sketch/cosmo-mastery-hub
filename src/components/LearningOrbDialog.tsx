@@ -1097,10 +1097,13 @@ const LearningOrbDialog = ({
                                 await recordCorrect(block.id, false);
                                 setReinforcementResolved(true);
                               } else {
-                                setReinforcementResolved(false);
+                                // Stay on screen so the learner can read the
+                                // explanation and choose what to do next.
+                                // Reinforcement is offered as a button below,
+                                // not auto-launched.
                                 setMissedQuestionText(quizQuestion);
                                 await recordIncorrect(block.id);
-                                setTimeout(() => setReinforcementOpen(true), 1200);
+                                setReinforcementResolved(true);
                               }
                             }}
                             whileHover={!quizRevealed ? { scale: 1.03, y: -2 } : {}}
