@@ -1,71 +1,125 @@
 ## Goal
 
-Replace the current low-saturation "white card on cream" look with a consistent **editorial magazine** treatment that runs across every tab in the lesson dialog (Visualize → Define → Break It Down → Recognize → Metaphor → Information → Reflect → Apply → Assess) — colorful, branded per step, but visually consistent in rhythm.
+Transform the floating DNA bubble from a small "recent changes" peek into a full, student-friendly progress center. Every change is saved permanently, organized by lesson, filterable, celebrated with milestones, and downloadable as a report.
 
-## Visual direction
+---
 
-Think *Vogue* / *The Gentlewoman* / *Kinfolk*:
+## What the student will see
 
-- **Issue header on every step** — small uppercase eyebrow ("Layer 06 — Information") + oversized Playfair display headline in the step's signature color
-- **Colored "spread" background** — instead of plain cream, each step gets a soft tinted backdrop derived from its signature color (e.g. Visualize=blue wash, Information=pink wash, Apply=green wash). Same intensity across steps for consistency.
-- **Color-blocked section cards** — replace gray-bordered white cards with full-color gradient header bars + cream body, matching the step's gradient. Numbered ("01 / 06") like magazine articles.
-- **Drop cap on body paragraphs** — first letter of each section body in oversized Playfair, colored in step accent. Strong magazine signature.
-- **Pull quotes** — Memory Cue, Mentor Check-In, Affirmation, Metaphor become large italic Playfair pull quotes with colored vertical rules, not boxed cards.
-- **Consistent type rhythm** — eyebrows always 10px uppercase tracked, headings always Playfair, body always DM Sans — no exceptions.
-- **Subtle paper texture** — very light grain overlay on the dialog background to feel printed, not digital.
+When the student taps the floating DNA bubble, a full panel opens with five clear tabs:
 
-## What changes
+1. **Overview** — current DNA code, plain-English meaning of each letter, live Engagement / Retention / Confidence bars, and "What changed today."
+2. **Timeline** — every DNA update ever recorded, grouped by day, with the lesson name attached so they can see *which* lesson moved the needle.
+3. **Lessons** — a per-lesson breakdown: which lesson, what step, before → after for each metric, and a short auto-written note ("Confidence rose after you nailed the final check on Hair Anatomy").
+4. **Milestones** — achievement cards (First DNA Update, 5 Lessons Complete, Confidence Climber +20, Code Evolved, 7-Day Streak, etc.) with locked/unlocked states.
+5. **Export** — one button to download a clean PDF "DNA Progress Report" they can share with an instructor or keep for themselves.
+
+A **filter bar** at the top of Timeline and Lessons lets them narrow by:
+- Time range (Today / This Week / This Month / All Time)
+- Metric (Code, Engagement, Retention, Confidence, Layer)
+- Direction (Improved / Declined / Any)
+
+The bubble itself keeps its pulse + "DNA+" badge so they always know when something new happened.
+
+---
+
+## What gets built
+
+### 1. Database — persistent history
+New table `dna_progress_events` so changes survive refresh and device switches:
 
 ```text
-Before                              After
-────────────────────────────────    ────────────────────────────────
-[ white card ]                      LAYER 06 · INFORMATION
-[ small color icon + heading  ]      ─────────────────────────────
-[ gray body text              ]     The Breakdown
-[ ──── ]                            of the System
-[ small icon + heading        ]
-[ gray body text              ]     ┃ T he epidermis is not just
-                                    ┃   skin. It is a structured
-                                    ┃   system designed for
-                                    ┃   continuous renewal…
-
-                                    ╱╱  Protect. Present. Renew.
-                                    ╱╱  — pull quote in step color
+dna_progress_events
+  id, user_id, created_at
+  field          (code | engagement | retention | confidence | layer)
+  from_value     (text)
+  to_value       (text)
+  delta          (integer, nullable — for numeric fields)
+  lesson_context (jsonb: { module_id, term_id, term_title, step_key, step_label })
+  note           (text — short auto-generated explanation)
 ```
 
-## Scope (files touched)
+Plus `dna_milestones` to track unlocked achievements:
 
-1. **`src/components/LearningOrbDialog.tsx`** — wrap all `renderContent()` cases in a shared `<EditorialSpread>` shell that supplies: tinted background wash, eyebrow ("Layer N · Step Name"), and oversized Playfair title. Replace the existing white card boxes inside Information, Recognize, Visualize, Scripture, Definition, Metaphor, Reflect, Apply, Assess with the new editorial card treatment.
+```text
+dna_milestones
+  id, user_id, milestone_key, unlocked_at, metadata (jsonb)
+  unique (user_id, milestone_key)
+```
 
-2. **`src/components/LearningOrbStepContent.tsx`** — same editorial treatment applied to the Information step's lesson_narrative renderer (Key Point, Sections, Memory Cue, Mentor Check-In, Purpose) so the new Epidermis narrative gets the magazine look. Pull quotes for Memory Cue and Mentor Check-In, drop caps on Section bodies, numbered section labels.
+RLS: users can SELECT/INSERT their own rows only. No UPDATE/DELETE.
 
-3. **`src/index.css`** — add a small set of editorial utility classes:
-   - `.editorial-eyebrow` (10px uppercase, tracked, semi-bold)
-   - `.editorial-headline` (Playfair, 32-40px, tight leading)
-   - `.editorial-body` (DM Sans, generous leading)
-   - `.editorial-dropcap` (first-letter pseudo, Playfair, ~52px, colored)
-   - `.editorial-pullquote` (Playfair italic, large, with left vertical rule)
-   - `.editorial-paper` (very subtle grain overlay)
-   - One CSS variable per step (`--editorial-wash`) so the wash color can be set inline per step without re-declaring gradients everywhere.
+### 2. Lesson context tracking
+A tiny global store (`src/lib/dna/currentLessonContext.ts`) the LearningOrbDialog updates whenever a step opens. The bubble reads it when a DNA change fires so each event is tagged with the lesson + step that caused it.
 
-4. **Step config (top of `LearningOrbDialog.tsx`)** — extend each `STEPS` entry with one new field: `wash` (the soft tinted background for that step). Existing `color` and `gradient` stay; this only adds the soft wash so all 10 steps get a different signature backdrop while sharing the same layout.
+### 3. Bubble → full panel rewrite (`src/components/DNAProgressBubble.tsx`)
+- Keep the floating bubble trigger (unchanged look).
+- Replace the small popover with a larger sheet/dialog (mobile: full-screen drawer; desktop: 420px right-side sheet) with the 5 tabs above.
+- On mount: load events + milestones from Supabase. On every detected DNA change: insert a new event, regenerate notes, evaluate milestones, refresh UI.
+- Each event row shows: icon (up/down/neutral), metric name, "before → after (+delta)", lesson name + step badge, time-ago, and the auto note.
 
-## Things explicitly kept the same
+### 4. Auto-note generator (`src/lib/dna/progressNotes.ts`)
+Pure function that takes `{ field, delta, lessonContext }` and returns a friendly sentence. Examples:
+- "Confidence climbed +8 after the Final Check on Hair Anatomy."
+- "Your DNA code evolved from VDRG → VDSG — your retention layer leveled up."
+- "Engagement dipped slightly during Reflection on Sanitation. Try a shorter session next time."
 
-- 9-step flow, step order, and DNA-driven reordering
-- Tab navigator (`LayerBlockNavigator`), progress bar, TJ avatar caption, "Why This Step Matters" toggle
-- Voice/speak buttons, quiz logic, reinforcement gating, coin awards, confetti
-- All data sources — still 100% static (no AI calls re-introduced)
-- Step signature colors (Visualize blue, Information pink, etc.) — only the surrounding treatment changes
+### 5. Milestone engine (`src/lib/dna/milestones.ts`)
+Pure rules evaluated after every event insert:
+- `first_change` — first ever DNA update.
+- `confidence_climber` — +20 cumulative confidence.
+- `retention_master` — retention reaches "strong".
+- `code_evolved` — DNA code character changes for the first time.
+- `lesson_streak_5` / `lesson_streak_10` — 5 / 10 lessons completed.
+- `recovery_hero` — bounced back after a dip.
+Unlocks animate a toast + a card in the Milestones tab.
 
-## Out of scope
+### 6. PDF export (`src/lib/dna/exportReport.ts`)
+Client-side using `jspdf` + `jspdf-autotable` (lightweight, no server call). The report includes:
+- Header with student name + current DNA code + date.
+- Plain-English summary of each DNA letter.
+- Trend chart (engagement / retention / confidence over last 30 days, drawn as simple SVG → image).
+- Table of every event in the selected filter range.
+- Milestones unlocked.
+- Footer: "TJ Anderson Layer Method™: Core Cross Agent™ — Copyright © 2026 Tionna Anderson."
 
-- The Game Grid, dashboard, and other pages — this is strictly the in-lesson reading experience the user is on right now.
-- The `UploadedTermCard` (legacy tabbed view) — it isn't the path the user navigates through; we can apply the same look later if requested.
-- Adding new content fields. We're styling existing content only.
+Download button in the Export tab triggers `report.pdf` save.
 
-## Risks / notes
+### 7. Quick-filter controls
+Reusable `<DNAFilters />` component used by Timeline and Lessons tabs. Filters live in component state and are also reflected in the Export so the downloaded report matches what the student is viewing.
 
-- The Information step has two renderers (the rich `expandedInfo` block in `LearningOrbDialog.tsx` and the new `lesson_narrative` block in `LearningOrbStepContent.tsx`). Both will get the same editorial treatment so Epidermis (which uses the new path) and other terms (which still use the legacy path) feel identical.
-- Drop caps are CSS pseudo-elements — they don't affect content or screen readers.
-- No changes to fonts (Playfair Display + DM Sans are already loaded), so no perf hit.
+---
+
+## Files
+
+**New**
+- `src/lib/dna/currentLessonContext.ts` — tiny pub/sub for active lesson
+- `src/lib/dna/progressNotes.ts` — friendly note generator
+- `src/lib/dna/milestones.ts` — milestone rules + evaluator
+- `src/lib/dna/exportReport.ts` — PDF builder
+- `src/components/dna/DNAFullPanel.tsx` — the 5-tab dashboard
+- `src/components/dna/DNAFilters.tsx` — filter controls
+- `src/components/dna/DNAEventRow.tsx` — single event card
+- `src/components/dna/DNAMilestoneCard.tsx` — achievement card
+
+**Edited**
+- `src/components/DNAProgressBubble.tsx` — load/persist events, open new full panel
+- `src/components/LearningOrbDialog.tsx` — push current term + step into lesson-context store on every step change
+- `package.json` — add `jspdf`, `jspdf-autotable`
+
+**Migration**
+- Create `dna_progress_events` and `dna_milestones` tables with RLS
+
+---
+
+## Privacy & safety
+- All data is per-user, RLS enforced.
+- Export is generated client-side — no third-party share.
+- No new secrets needed.
+
+---
+
+## What stays the same
+- The bubble's position, pulse animation, and "DNA+" badge.
+- The "Open My Learning DNA Hub" deep link (moves into the Overview tab footer).
+- The lesson flow itself — no changes to the 9-step orchestration.
