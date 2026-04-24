@@ -14,6 +14,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import { LayerBlockSection, getBlockOpenState } from "@/components/LayerBlockSection";
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
+import { shuffleOptions } from "@/lib/shuffleOptions";
 
 const c = pageColors.study;
 
