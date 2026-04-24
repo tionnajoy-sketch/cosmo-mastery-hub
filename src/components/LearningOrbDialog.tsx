@@ -717,6 +717,11 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
         const shuffled = [...identityItems].sort(() => Math.random() - 0.5);
         return (
           <motion.div key="recognize" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-6">
+            {block.static_recognize && (
+              <div className="p-4 rounded-xl max-w-md mx-auto" style={{ background: `${step.color}10`, border: `1.5px solid ${step.color}30` }}>
+                <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.static_recognize}</p>
+              </div>
+            )}
             <p className="text-base font-medium text-center" style={{ color: c.termHeading }}>
               Which of these best describes <strong style={{ color: step.color }}>{block.term_title}</strong>?
             </p>
