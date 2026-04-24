@@ -364,22 +364,9 @@ const LearningOrbDialog = ({
     return () => clearTimeout(timeout);
   }, [journalNote, block?.id, user, mode]);
 
-  // Auto-fetch content on step change.
-  // STATIC-FIRST: if admin has saved pre-written content for this term,
-  // we NEVER call AI — every learner sees the same structured experience.
-  useEffect(() => {
-    if (!block) return;
-    const s = adaptedSteps[currentStep];
-    if (s?.key === "breakdown" && !etymology && !etymLoading && !block.static_break_it_down) {
-      fetchEtymology();
-    }
-    if (s?.key === "quiz" && !block.quiz_question && !aiQuestion && !aiLoading && !block.static_assess_question) {
-      generateQuizQuestion();
-    }
-    if (s?.key === "information" && !expandedInfo && !infoLoading && !block.static_information) {
-      fetchExpandedInfo();
-    }
-  }, [currentStep, block?.id]);
+  // STATIC-ONLY: lesson steps never call AI. Content comes from
+  // pre-written database fields only. If a static field is empty for a
+  // term, the step simply renders no extra content (admin should fill it).
 
   // Auto-speak on step change
   useEffect(() => {
