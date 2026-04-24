@@ -1125,7 +1125,9 @@ const LearningOrbDialog = ({
             })()}
             {!hasBuiltinQuiz && !aiQuestion && !aiLoading && (
               <div className="text-center py-6">
-                <Button onClick={generateQuizQuestion} className="gap-2" style={{ background: step.gradient, color: "white" }}>🎓 Generate Question</Button>
+                <p className="text-sm italic" style={{ color: c.subtext }}>
+                  No assessment question has been added for this term yet.
+                </p>
               </div>
             )}
           </motion.div>
