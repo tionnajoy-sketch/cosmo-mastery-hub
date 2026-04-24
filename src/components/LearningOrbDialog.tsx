@@ -507,6 +507,12 @@ const LearningOrbDialog = ({
     if (step.key === "quiz" && quizFeedbackLocked) return;
     // GATE: lock progression while reinforcement is unresolved
     if (step.key === "quiz" && !reinforcementResolved) return;
+    // Final Check is terminal but should never auto-finish or swap out the lesson.
+    // The learner stays inside the module until they explicitly choose Exit Lesson.
+    if (step.key === "quiz") {
+      markStepDone();
+      return;
+    }
 
     markStepDone();
 
@@ -1609,13 +1615,15 @@ const LearningOrbDialog = ({
                 <RefreshCw className="h-3.5 w-3.5" /> Let TJ Explain Again
               </Button>
               <Button size="sm" className="gap-1 text-sm px-5 shadow-md"
-                style={{ background: step.gradient, color: "white", opacity: (step.key === "quiz" && (!quizRevealed || !reinforcementResolved || quizFeedbackLocked)) ? 0.5 : 1 }}
+                style={{ background: step.gradient, color: "white", opacity: step.key === "quiz" ? 0.5 : 1 }}
                 onClick={goNext}
-                disabled={step.key === "quiz" && (!quizRevealed || !reinforcementResolved || quizFeedbackLocked)}>
+                disabled={step.key === "quiz"}>
                 {step.key === "quiz" && !reinforcementResolved
                   ? "🔒 Reinforcement"
                   : step.key === "quiz" && quizFeedbackLocked
                   ? "Choose Next Action"
+                  : step.key === "quiz"
+                  ? "Stay in Lesson"
                   : currentStep === adaptedSteps.length - 1 ? "Complete" : "Mark Step Complete"}
                 {currentStep < adaptedSteps.length - 1 && reinforcementResolved && <ArrowRight className="h-4 w-4" />}
               </Button>
