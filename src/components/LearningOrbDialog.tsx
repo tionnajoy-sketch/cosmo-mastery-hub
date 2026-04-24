@@ -37,6 +37,9 @@ interface StepDef {
   label: string;
   color: string;
   gradient: string;
+  wash: string;        // soft tinted backdrop for the editorial spread
+  issue: string;       // editorial title for this step (display headline)
+  kicker: string;      // small italic subhead under the headline
   caption: string;
   neuroNote: string;
 }
@@ -47,14 +50,20 @@ const STEPS: StepDef[] = [
     label: "Visualize",
     color: "hsl(215 80% 42%)",
     gradient: "linear-gradient(135deg, hsl(215 80% 42%), hsl(200 85% 48%))",
+    wash: "hsl(210 70% 92%)",
+    issue: "First Look",
+    kicker: "Before words, the image lands.",
     caption: "Let's see it… your visual cortex remembers images 60,000x faster.",
     neuroNote: "Visual encoding creates dual pathways — verbal + visual — doubling retention.",
   },
   {
     key: "definition",
     label: "Define",
-    color: "hsl(45 90% 40%)",
-    gradient: "linear-gradient(135deg, hsl(45 90% 40%), hsl(38 95% 48%))",
+    color: "hsl(35 75% 38%)",
+    gradient: "linear-gradient(135deg, hsl(35 75% 38%), hsl(28 85% 48%))",
+    wash: "hsl(38 65% 90%)",
+    issue: "In Plain Language",
+    kicker: "What it actually means, said simply.",
     caption: "Now let's understand what it means…",
     neuroNote: "Cognitive labeling anchors meaning in your semantic memory network.",
   },
@@ -63,62 +72,86 @@ const STEPS: StepDef[] = [
     label: "Scripture",
     color: "hsl(30 60% 42%)",
     gradient: "linear-gradient(135deg, hsl(30 60% 42%), hsl(25 65% 50%))",
+    wash: "hsl(30 55% 90%)",
+    issue: "The Source",
+    kicker: "Read it the way it was first written.",
     caption: "Let's read the original passage together…",
     neuroNote: "Reading source material in context strengthens comprehension and retention through contextual encoding.",
   },
   {
     key: "breakdown",
     label: "Break It Down",
-    color: "hsl(185 55% 42%)",
-    gradient: "linear-gradient(135deg, hsl(185 55% 42%), hsl(195 60% 48%))",
+    color: "hsl(185 60% 36%)",
+    gradient: "linear-gradient(135deg, hsl(185 60% 36%), hsl(195 65% 46%))",
+    wash: "hsl(185 50% 90%)",
+    issue: "Anatomy of a Word",
+    kicker: "Every part of the term, decoded.",
     caption: "Let's learn how to say this word first…",
     neuroNote: "Phonetic decoding activates language processing centers, building neural pathways for recall.",
   },
   {
     key: "recognize",
     label: "Recognize",
-    color: "hsl(275 70% 50%)",
-    gradient: "linear-gradient(135deg, hsl(275 70% 50%), hsl(285 75% 56%))",
+    color: "hsl(275 65% 48%)",
+    gradient: "linear-gradient(135deg, hsl(275 65% 48%), hsl(285 72% 56%))",
+    wash: "hsl(280 50% 92%)",
+    issue: "Spot It in the Wild",
+    kicker: "Train your eye to know it on sight.",
     caption: "Can you identify it now? Let's test your recognition…",
     neuroNote: "Spatial memory and recall systems strengthen through active identification.",
   },
   {
     key: "metaphor",
     label: "Metaphor",
-    color: "hsl(265 72% 48%)",
-    gradient: "linear-gradient(135deg, hsl(265 72% 48%), hsl(255 78% 54%))",
+    color: "hsl(265 70% 48%)",
+    gradient: "linear-gradient(135deg, hsl(265 70% 48%), hsl(255 75% 56%))",
+    wash: "hsl(265 50% 92%)",
+    issue: "The Image That Sticks",
+    kicker: "A picture that makes it click.",
     caption: "Stay with me… this is where it clicks.",
     neuroNote: "Metaphors activate the limbic system, linking knowledge to emotion for lasting memory.",
   },
   {
     key: "information",
     label: "Information",
-    color: "hsl(320 55% 48%)",
-    gradient: "linear-gradient(135deg, hsl(320 55% 48%), hsl(330 60% 54%))",
+    color: "hsl(335 60% 46%)",
+    gradient: "linear-gradient(135deg, hsl(335 60% 46%), hsl(345 65% 54%))",
+    wash: "hsl(340 55% 93%)",
+    issue: "The Full Story",
+    kicker: "Everything underneath the surface.",
     caption: "Let me share more about this with you…",
     neuroNote: "Elaborative encoding strengthens comprehension through expanded context and reasoning.",
   },
   {
     key: "reflection",
     label: "Reflect",
-    color: "hsl(25 65% 50%)",
-    gradient: "linear-gradient(135deg, hsl(25 65% 50%), hsl(30 70% 55%))",
+    color: "hsl(20 70% 46%)",
+    gradient: "linear-gradient(135deg, hsl(20 70% 46%), hsl(28 78% 54%))",
+    wash: "hsl(22 65% 92%)",
+    issue: "In Your Own Words",
+    kicker: "Make it yours, on the page.",
     caption: "Connect this to the metaphor and your life…",
     neuroNote: "Metacognition and self-referencing activate the prefrontal cortex for deep internalization.",
   },
   {
     key: "application",
     label: "Apply",
-    color: "hsl(145 65% 32%)",
-    gradient: "linear-gradient(135deg, hsl(145 65% 32%), hsl(155 70% 38%))",
+    color: "hsl(150 55% 32%)",
+    gradient: "linear-gradient(135deg, hsl(150 55% 32%), hsl(160 60% 40%))",
+    wash: "hsl(150 45% 91%)",
+    issue: "Into Practice",
+    kicker: "Put the idea to work.",
     caption: "Now put your knowledge to work…",
     neuroNote: "Active recall and problem-solving transfer knowledge from short-term to long-term memory.",
   },
   {
     key: "quiz",
     label: "Assess",
-    color: "hsl(0 75% 45%)",
-    gradient: "linear-gradient(135deg, hsl(0 75% 45%), hsl(10 80% 50%))",
+    color: "hsl(355 70% 44%)",
+    gradient: "linear-gradient(135deg, hsl(355 70% 44%), hsl(8 78% 52%))",
+    wash: "hsl(358 60% 92%)",
+    issue: "The Final Check",
+    kicker: "Show what you know.",
     caption: "Let's see if you're exam-ready…",
     neuroNote: "Testing effect: retrieval practice strengthens memory more than re-studying.",
   },
@@ -484,124 +517,204 @@ const LearningOrbDialog = ({
   const quizOptions = hasBuiltinQuiz ? block.quiz_options.map(String) : (aiQuestion?.options || []);
   const quizAnswer = hasBuiltinQuiz ? block.quiz_answer : (aiQuestion?.answer || "");
 
+  /* ─── Editorial spread shell — wraps every step's content ─── */
+  const stepIndex = currentStep;
+  const issueNumber = String(stepIndex + 1).padStart(2, "0");
+  const totalNumber = String(adaptedSteps.length).padStart(2, "0");
+
+  const EditorialShell = ({ children, hideHeader = false }: { children: React.ReactNode; hideHeader?: boolean }) => (
+    <div
+      className="editorial-spread"
+      style={
+        {
+          "--step-color": step.color,
+          "--step-wash": step.wash,
+          "--step-gradient": step.gradient,
+        } as React.CSSProperties
+      }
+    >
+      {!hideHeader && (
+        <header className="mb-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="editorial-eyebrow">
+              Layer {issueNumber} · {step.label}
+            </span>
+            <span className="editorial-tag">{block.term_title}</span>
+          </div>
+          <h2 className="editorial-headline">
+            {step.issue}
+          </h2>
+          <p className="editorial-subhead">{step.kicker}</p>
+          <hr className="editorial-rule" />
+        </header>
+      )}
+      {children}
+    </div>
+  );
+
+  const StepCard = ({
+    num,
+    label,
+    title,
+    children,
+  }: {
+    num?: string;
+    label: string;
+    title?: string;
+    children: React.ReactNode;
+  }) => (
+    <article className="editorial-card">
+      <div className="editorial-card-header">
+        {num && <span className="num">{num}</span>}
+        <span className="label">{label}</span>
+        {title && <span className="title">{title}</span>}
+      </div>
+      <div className="editorial-card-body">{children}</div>
+    </article>
+  );
+
   /* ─── Render Center Content ─── */
   const renderContent = () => {
     switch (step.key) {
       case "breakdown":
         return (
-          <motion.div key="breakdown" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-6 py-6">
-            <h2 className="font-display text-3xl sm:text-4xl font-bold text-center" style={{ color: step.color }}>{block.term_title}</h2>
-            {etymLoading ? (
-              <div className="flex items-center justify-center gap-3 py-8">
-                <Loader2 className="h-6 w-6 animate-spin" style={{ color: step.color }} />
-                <p className="text-sm" style={{ color: c.subtext }}>Breaking down the word…</p>
-              </div>
-            ) : etymology ? (
-              <div className="space-y-4">
-                {etymology.pronunciation && (
-                  <div className="text-center">
-                    <p className="text-lg italic" style={{ color: c.subtext }}>{etymology.pronunciation}</p>
-                    <SpeakButton text={block.term_title} size="sm" label="Hear it" />
-                  </div>
-                )}
+          <motion.div key="breakdown" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+            <EditorialShell>
+              {etymLoading ? (
+                <div className="flex items-center justify-center gap-3 py-8">
+                  <Loader2 className="h-6 w-6 animate-spin" style={{ color: step.color }} />
+                  <p className="text-sm" style={{ color: c.subtext }}>Breaking down the word…</p>
+                </div>
+              ) : etymology ? (
                 <div className="space-y-3">
-                  {etymology.parts.map((part, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
-                      className="flex items-center gap-3 p-4 rounded-xl"
-                      style={{ background: "hsl(var(--card))", border: "1.5px solid hsl(var(--border))" }}
-                    >
-                      <div className="flex-1">
-                        <span className="font-bold text-lg" style={{ color: step.color }}>{part.part}</span>
-                        <span className="text-sm ml-2" style={{ color: c.bodyText }}>= {part.meaning}</span>
-                        <p className="text-xs mt-0.5" style={{ color: c.subtext }}>({part.origin})</p>
-                      </div>
-                      <SpeakButton text={`${part.part} means ${part.meaning}`} size="icon" />
-                    </motion.div>
-                  ))}
+                  {etymology.pronunciation && (
+                    <p className="editorial-pullquote">
+                      <span className="pq-eyebrow">Pronunciation</span>
+                      {etymology.pronunciation}
+                      <span className="ml-2 align-middle inline-block"><SpeakButton text={block.term_title} size="icon" /></span>
+                    </p>
+                  )}
+                  <div className="space-y-2">
+                    {etymology.parts.map((part, i) => (
+                      <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }} className="editorial-card">
+                        <div className="editorial-card-header">
+                          <span className="num">{String(i + 1).padStart(2, "0")}</span>
+                          <span className="label">{part.origin}</span>
+                          <span className="title">{part.part}</span>
+                        </div>
+                        <div className="editorial-card-body flex items-center justify-between gap-3">
+                          <p className="m-0">= {part.meaning}</p>
+                          <SpeakButton text={`${part.part} means ${part.meaning}`} size="icon" />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                  <p className="editorial-card-body editorial-dropcap rounded-xl" style={{ background: "hsl(40 35% 99%)", border: "1px solid hsl(0 0% 0% / 0.08)" }}>
+                    {etymology.summary}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <SpeakButton text={etymology.summary} size="sm" label="Listen" />
+                  </div>
                 </div>
-                <p className="text-center text-sm leading-relaxed" style={{ color: c.bodyText }}>{etymology.summary}</p>
-                <div className="flex items-center justify-center gap-2">
-                  <SpeakButton text={etymology.summary} size="sm" label="Listen" />
-                  <SpeechToTextButton onTranscript={() => {}} className="opacity-60" />
-                </div>
-              </div>
-            ) : (
-              <p className="text-center text-sm italic" style={{ color: c.subtext }}>
-                Word breakdown coming soon for this term.
-              </p>
-            )}
+              ) : (
+                <p className="editorial-card-body italic" style={{ background: "hsl(40 35% 99%)", borderRadius: 12, border: "1px solid hsl(0 0% 0% / 0.08)" }}>
+                  Word breakdown coming soon for this term.
+                </p>
+              )}
+            </EditorialShell>
           </motion.div>
         );
 
       case "definition":
         return (
-          <motion.div key="definition" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center text-center space-y-6 py-6">
-            <h2 className="font-display text-3xl sm:text-4xl font-bold leading-tight" style={{ color: step.color }}>{block.term_title}</h2>
-            <div className="w-16 h-0.5 rounded-full" style={{ background: step.gradient }} />
-            <p className="text-lg sm:text-xl leading-relaxed max-w-lg" style={{ color: c.bodyText }}>{block.definition}</p>
-            <SpeakButton text={`${block.term_title}. ${block.definition}`} size="sm" label="Listen" />
+          <motion.div key="definition" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+            <EditorialShell>
+              <div className="editorial-card">
+                <div className="editorial-card-header">
+                  <span className="num">01</span>
+                  <span className="label">Definition</span>
+                  <span className="title">{block.term_title}</span>
+                </div>
+                <div className="editorial-card-body editorial-dropcap">
+                  {block.definition}
+                </div>
+              </div>
+              <div className="mt-3">
+                <SpeakButton text={`${block.term_title}. ${block.definition}`} size="sm" label="Listen" />
+              </div>
+            </EditorialShell>
           </motion.div>
         );
 
       case "scripture":
         return (
-          <motion.div key="scripture" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center space-y-6 py-6">
-            {block.page_reference && (
-              <p className="text-lg font-semibold" style={{ color: step.color }}>{block.page_reference}</p>
-            )}
-            {block.source_text ? (
-              <blockquote className="p-5 rounded-xl border-l-4 text-base sm:text-lg leading-loose text-left max-w-lg" style={{ borderColor: step.color, background: "hsl(var(--card))", color: c.bodyText }}>
-                "{block.source_text}"
-              </blockquote>
-            ) : (
-              <div className="p-5 rounded-xl text-center max-w-lg" style={{ background: "hsl(var(--card))", border: "1.5px solid hsl(var(--border))" }}>
-                <p className="text-base leading-relaxed" style={{ color: c.bodyText }}>
+          <motion.div key="scripture" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+            <EditorialShell>
+              {block.page_reference && (
+                <p className="editorial-eyebrow mb-2">{block.page_reference}</p>
+              )}
+              {block.source_text ? (
+                <blockquote className="editorial-pullquote" style={{ fontSize: "1.35rem" }}>
+                  <span className="pq-eyebrow">From the source</span>
+                  "{block.source_text}"
+                </blockquote>
+              ) : (
+                <p className="editorial-card-body" style={{ background: "hsl(40 35% 99%)", borderRadius: 12, border: "1px solid hsl(0 0% 0% / 0.08)" }}>
                   This passage is referenced at {block.page_reference || "this point in the text"}.
                 </p>
-              </div>
-            )}
-            <SpeakButton text={`${block.page_reference || ""}. ${block.source_text || block.definition}`} size="sm" label="Listen to passage" />
-            
-            {/* Embedded lesson for scripture blocks */}
-            {block.definition && (
-              <div className="w-full max-w-lg space-y-3">
-                <div className="p-4 rounded-xl" style={{ background: `${step.color}08`, border: `1.5px solid ${step.color}20` }}>
-                  <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: step.color }}>📖 Plain Meaning</p>
-                  <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.definition}</p>
+              )}
+              <div className="my-3"><SpeakButton text={`${block.page_reference || ""}. ${block.source_text || block.definition}`} size="sm" label="Listen to passage" /></div>
+
+              {block.definition && (
+                <div className="space-y-3 mt-2">
+                  <div className="editorial-card">
+                    <div className="editorial-card-header"><span className="num">01</span><span className="label">Plain meaning</span></div>
+                    <div className="editorial-card-body">{block.definition}</div>
+                  </div>
+                  {(block as any).explanation && (
+                    <div className="editorial-card">
+                      <div className="editorial-card-header"><span className="num">02</span><span className="label">Deeper explanation</span></div>
+                      <div className="editorial-card-body">{(block as any).explanation}</div>
+                    </div>
+                  )}
+                  {block.metaphor && (
+                    <blockquote className="editorial-pullquote">
+                      <span className="pq-eyebrow">What this means for you</span>
+                      "{block.metaphor}"
+                    </blockquote>
+                  )}
                 </div>
-                {(block as any).explanation && (
-                  <div className="p-4 rounded-xl" style={{ background: "hsl(var(--secondary))" }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">💡 Deeper Explanation</p>
-                    <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{(block as any).explanation}</p>
-                  </div>
-                )}
-                {block.metaphor && (
-                  <div className="p-4 rounded-xl" style={{ background: "hsl(var(--secondary))" }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">🌿 What This Means For You</p>
-                    <p className="text-sm leading-relaxed italic" style={{ color: c.bodyText }}>{block.metaphor}</p>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </EditorialShell>
           </motion.div>
         );
+
       case "visualize":
       case "visual":
         return (
-          <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center space-y-5 py-4">
-            <h2 className="font-display text-3xl sm:text-4xl font-bold text-center" style={{ color: step.color }}>{block.term_title}</h2>
-            {imageUrl ? (
-              <img src={imageUrl} alt={block.term_title} className="rounded-2xl max-w-md w-full shadow-md" />
-            ) : null}
-            {block.static_visualize && (
-              <div className="p-4 rounded-xl max-w-md text-center" style={{ background: `${step.color}10`, border: `1.5px solid ${step.color}30`, color: c.bodyText }}>
-                <p className="text-base leading-relaxed whitespace-pre-wrap">{block.static_visualize}</p>
-              </div>
-            )}
-            {!imageUrl && !block.static_visualize && block.visualization_desc && (
-              <p className="text-sm max-w-md text-center" style={{ color: c.subtext }}>{block.visualization_desc}</p>
-            )}
-            {block.video_url && <VideoPlayer url={block.video_url} />}
+          <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+            <EditorialShell>
+              {imageUrl ? (
+                <figure className="editorial-figure">
+                  <img src={imageUrl} alt={block.term_title} />
+                  <figcaption>
+                    <span>Plate {issueNumber} · {block.term_title}</span>
+                    <span style={{ color: step.color }}>{step.label}</span>
+                  </figcaption>
+                </figure>
+              ) : null}
+              {block.static_visualize && (
+                <p className="editorial-card-body editorial-dropcap mt-3 rounded-xl" style={{ background: "hsl(40 35% 99%)", border: "1px solid hsl(0 0% 0% / 0.08)", whiteSpace: "pre-wrap" }}>
+                  {block.static_visualize}
+                </p>
+              )}
+              {!imageUrl && !block.static_visualize && block.visualization_desc && (
+                <p className="editorial-card-body italic mt-3 rounded-xl" style={{ background: "hsl(40 35% 99%)", border: "1px solid hsl(0 0% 0% / 0.08)" }}>
+                  {block.visualization_desc}
+                </p>
+              )}
+              {block.video_url && <div className="mt-3"><VideoPlayer url={block.video_url} /></div>}
+            </EditorialShell>
           </motion.div>
         );
 
@@ -609,525 +722,441 @@ const LearningOrbDialog = ({
         const conceptIdentity = Array.isArray(block.concept_identity) ? block.concept_identity.map(String) : [];
         const identityItems = conceptIdentity.length >= 4 ? conceptIdentity.slice(0, 4) :
           [block.definition, block.metaphor || "A related concept in another field", "An unrelated term from a different subject", "A common misconception about this topic"].slice(0, 4);
-        // Shuffle but keep track of correct index (index 0 is always correct before shuffle)
-        const shuffled = [...identityItems].sort(() => Math.random() - 0.5);
         return (
-          <motion.div key="recognize" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-6">
-            {block.static_recognize && (
-              <div className="p-4 rounded-xl max-w-md mx-auto" style={{ background: `${step.color}10`, border: `1.5px solid ${step.color}30` }}>
-                <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.static_recognize}</p>
-              </div>
-            )}
-            <p className="text-base font-medium text-center" style={{ color: c.termHeading }}>
-              Which of these best describes <strong style={{ color: step.color }}>{block.term_title}</strong>?
-            </p>
-            <div className="grid grid-cols-1 gap-3 max-w-md mx-auto">
-              {identityItems.map((item, i) => {
-                const isCorrect = i === 0;
-                const isSelected = recognizeSelected === i;
-                let bg = "hsl(var(--card))";
-                let border = "hsl(var(--border))";
-                if (recognizeRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
-                else if (recognizeRevealed && isSelected) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
-                else if (recognizeRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
-                return (
-                  <motion.button
-                    key={i}
-                    onClick={() => { if (!recognizeRevealed) { setRecognizeSelected(i); setRecognizeRevealed(true); } }}
-                    className="p-4 rounded-xl text-sm font-medium text-left transition-all"
-                    style={{ background: bg, border: `2px solid ${border}`, color: c.termHeading }}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + i * 0.05 }}
-                  >
-                    {item}
-                  </motion.button>
-                );
-              })}
-            </div>
-            {recognizeRevealed && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-                <p className="text-sm font-medium" style={{ color: recognizeSelected === 0 ? "hsl(145 50% 35%)" : "hsl(0 60% 45%)" }}>
-                  {recognizeSelected === 0 ? "✓ That's right!" : "✗ Not quite — the correct answer is highlighted above."}
+          <motion.div key="recognize" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+            <EditorialShell>
+              {block.static_recognize && (
+                <p className="editorial-card-body editorial-dropcap rounded-xl mb-3" style={{ background: "hsl(40 35% 99%)", border: "1px solid hsl(0 0% 0% / 0.08)" }}>
+                  {block.static_recognize}
                 </p>
-              </motion.div>
-            )}
+              )}
+              <p className="editorial-eyebrow mb-2">The Question</p>
+              <p className="font-display text-lg leading-snug mb-4" style={{ color: c.termHeading }}>
+                Which of these best describes <em style={{ color: step.color }}>{block.term_title}</em>?
+              </p>
+              <div className="grid grid-cols-1 gap-3">
+                {identityItems.map((item, i) => {
+                  const isCorrect = i === 0;
+                  const isSelected = recognizeSelected === i;
+                  let bg = "hsl(40 35% 99%)";
+                  let border = "hsl(0 0% 0% / 0.1)";
+                  let textColor = c.termHeading;
+                  if (recognizeRevealed && isSelected && isCorrect) { bg = "linear-gradient(135deg, hsl(145 50% 92%), hsl(145 45% 86%))"; border = "hsl(145 45% 45%)"; }
+                  else if (recognizeRevealed && isSelected) { bg = "linear-gradient(135deg, hsl(0 60% 95%), hsl(0 55% 90%))"; border = "hsl(0 60% 50%)"; }
+                  else if (recognizeRevealed && isCorrect) { bg = "linear-gradient(135deg, hsl(145 50% 92%), hsl(145 45% 86%))"; border = "hsl(145 45% 45%)"; }
+                  return (
+                    <motion.button
+                      key={i}
+                      onClick={() => { if (!recognizeRevealed) { setRecognizeSelected(i); setRecognizeRevealed(true); } }}
+                      className="text-left transition-all overflow-hidden"
+                      style={{ background: bg, border: `2px solid ${border}`, color: textColor, borderRadius: "0.85rem" }}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + i * 0.05 }}
+                    >
+                      <div className="flex items-center gap-3 px-4 py-3.5">
+                        <span className="font-display text-2xl font-bold flex-shrink-0" style={{ color: step.color, opacity: 0.6 }}>
+                          {String.fromCharCode(65 + i)}
+                        </span>
+                        <span className="text-sm leading-snug font-medium">{item}</span>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+              {recognizeRevealed && (
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-display italic mt-4 text-center" style={{ color: recognizeSelected === 0 ? "hsl(145 50% 35%)" : "hsl(0 60% 45%)" }}>
+                  {recognizeSelected === 0 ? "✓ That's right." : "✗ Not quite — the correct answer is highlighted above."}
+                </motion.p>
+              )}
+            </EditorialShell>
           </motion.div>
         );
       }
 
       case "metaphor":
         return (
-          <motion.div key="metaphor" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center text-center space-y-6 py-8">
-            <div className="text-5xl sm:text-6xl mb-2" style={{ color: step.color }}>"</div>
-            <p className="text-xl sm:text-2xl leading-relaxed italic max-w-lg font-display" style={{ color: c.bodyText }}>
-              {block.metaphor || "Think of this concept as a bridge connecting what you know to what you're learning."}
-            </p>
-            <SpeakButton text={block.metaphor || block.definition} size="sm" label="Listen" />
-            {block.affirmation && (
-              <p className="text-sm font-medium mt-4 px-6 py-3 rounded-xl" style={{ background: "hsl(var(--card))", color: step.color, border: `1.5px solid ${step.color}40` }}>
-                💜 {block.affirmation}
-              </p>
-            )}
+          <motion.div key="metaphor" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+            <EditorialShell>
+              <blockquote className="editorial-pullquote" style={{ fontSize: "1.6rem", lineHeight: 1.3 }}>
+                <span className="pq-eyebrow">The image that sticks</span>
+                {block.metaphor || "Think of this concept as a bridge connecting what you know to what you're learning."}
+              </blockquote>
+              <div className="mt-2"><SpeakButton text={block.metaphor || block.definition} size="sm" label="Listen" /></div>
+              {block.affirmation && (
+                <p className="editorial-pullquote mt-4" style={{ borderLeftColor: "hsl(280 50% 55%)", color: "hsl(280 40% 25%)" }}>
+                  <span className="pq-eyebrow" style={{ color: "hsl(280 45% 40%)" }}>Affirmation</span>
+                  {block.affirmation}
+                </p>
+              )}
+            </EditorialShell>
           </motion.div>
         );
 
       case "information": {
+        // Prefer the structured static narrative when available (e.g. Epidermis).
+        const narrative: any = (block as any).lesson_narrative;
+        const hasNarrative = !!(narrative && (narrative.sections?.length || narrative.key_point || narrative.purpose));
+
+        if (hasNarrative) {
+          return (
+            <motion.div key="information" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+              <EditorialShell>
+                {imageUrl && (
+                  <figure className="editorial-figure mb-4">
+                    <img src={imageUrl} alt={block.term_title} />
+                    <figcaption>
+                      <span>Plate · {block.term_title}</span>
+                      <span style={{ color: step.color }}>The Full Story</span>
+                    </figcaption>
+                  </figure>
+                )}
+
+                {narrative.key_point && (
+                  <p className="editorial-pullquote">
+                    <span className="pq-eyebrow">Key Point</span>
+                    {narrative.key_point}
+                  </p>
+                )}
+
+                <div className="space-y-3 mt-3">
+                  {(narrative.sections || []).map((sec: any, i: number) => (
+                    <motion.article
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.04 * i }}
+                      className="editorial-card"
+                    >
+                      <div className="editorial-card-header">
+                        <span className="num">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="label">Section</span>
+                        <span className="title">{sec.heading}</span>
+                      </div>
+                      <div className="editorial-card-body editorial-dropcap" style={{ whiteSpace: "pre-line" }}>
+                        {sec.body}
+                      </div>
+                    </motion.article>
+                  ))}
+                </div>
+
+                {narrative.memory_cue && (
+                  <p className="editorial-pullquote mt-4" style={{ fontSize: "1.4rem", borderLeftColor: "hsl(280 55% 55%)" }}>
+                    <span className="pq-eyebrow" style={{ color: "hsl(280 45% 40%)" }}>Remember</span>
+                    {narrative.memory_cue}
+                  </p>
+                )}
+
+                {narrative.mentor_check_in && narrative.mentor_check_in.length > 0 && (
+                  <article className="editorial-card mt-3">
+                    <div className="editorial-card-header">
+                      <span className="num">★</span>
+                      <span className="label">TJ Mentor Check-In</span>
+                    </div>
+                    <div className="editorial-card-body">
+                      <ol className="space-y-2 list-decimal list-inside m-0">
+                        {narrative.mentor_check_in.map((q: string, i: number) => (
+                          <li key={i} className="leading-relaxed">{q}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  </article>
+                )}
+
+                {narrative.purpose && (
+                  <p className="editorial-pullquote mt-4">
+                    <span className="pq-eyebrow">Purpose</span>
+                    {narrative.purpose}
+                  </p>
+                )}
+
+                <div className="mt-4">
+                  <SpeakButton
+                    text={`${narrative.key_point || ""}. ${(narrative.sections || []).map((s: any) => `${s.heading}. ${s.body}`).join(" ")}. ${narrative.memory_cue || ""}.`}
+                    size="sm"
+                    label="Listen to lesson"
+                  />
+                </div>
+              </EditorialShell>
+            </motion.div>
+          );
+        }
+
+        // Fallback: legacy AI-generated expandedInfo, restyled editorially.
         return (
-          <motion.div key="information" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-4">
-            <div className="text-center space-y-2">
-              <h3 className="font-display text-xl font-bold" style={{ color: step.color }}>{block.term_title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+          <motion.div key="information" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+            <EditorialShell>
+              <p className="editorial-subhead mb-3">
                 {block.affirmation || `Let's explore ${block.term_title} more deeply.`}
               </p>
-            </div>
 
-            {/* Hero visual for the slideshow — keeps the picture present alongside the deep teaching */}
-            {imageUrl && (
-              <div className="rounded-xl overflow-hidden border" style={{ borderColor: `${step.color}30` }}>
-                <img
-                  src={imageUrl}
-                  alt={`Visual reference for ${block.term_title}`}
-                  className="w-full max-h-[260px] object-cover"
-                  loading="lazy"
-                />
-              </div>
-            )}
+              {imageUrl && (
+                <figure className="editorial-figure mb-4">
+                  <img src={imageUrl} alt={`Visual reference for ${block.term_title}`} loading="lazy" />
+                  <figcaption>
+                    <span>Plate · {block.term_title}</span>
+                    <span style={{ color: step.color }}>The Full Story</span>
+                  </figcaption>
+                </figure>
+              )}
 
-            {/* Auto-loading deep teaching content */}
-            {infoLoading && (
-              <div className="flex items-center justify-center gap-3 py-8">
-                <Loader2 className="h-6 w-6 animate-spin" style={{ color: step.color }} />
-                <p className="text-sm" style={{ color: c.subtext }}>TJ is preparing your lesson…</p>
-              </div>
-            )}
-
-            {expandedInfo && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                {(() => {
-                  const sections = expandedInfo.split(/^## /m).filter(Boolean).map(s => {
-                    const lines = s.trim().split("\n");
-                    const title = lines[0]?.trim() || "";
-                    const body = lines.slice(1).join("\n").trim();
-                    return { title, body };
-                  });
-
-                  // No structured sections — fall back to raw markdown
-                  if (sections.length === 0) {
-                    return (
-                      <div className="prose prose-sm max-w-none" style={{ color: c.bodyText }}>
-                        <ReactMarkdown>{expandedInfo}</ReactMarkdown>
-                      </div>
-                    );
-                  }
-
-                  // Map AI-generated section titles to our 5 block types
-                  const findSection = (name: string) =>
-                    sections.find(s => s.title.toLowerCase().includes(name.toLowerCase()));
-
-                  const simple = findSection("Simple Explanation");
-                  const lesson = findSection("The Lesson");
-                  const history = findSection("History");
-                  const why = findSection("Why It Matters");
-                  const fits = findSection("How This Fits");
-
-                  // Key Concept = first 1–2 sentences of Simple Explanation (always visible)
-                  const simpleBody = simple?.body || "";
-                  const sentenceMatches = simpleBody.match(/[^.!?]+[.!?]+/g) || [simpleBody];
-                  const keyConcept = sentenceMatches.slice(0, 2).join(" ").trim() || simpleBody;
-                  const simpleRest = simpleBody.slice(keyConcept.length).trim();
-
-                  // Apply It content (Why It Matters + How This Fits You)
-                  const applyParts = [why, fits].filter(Boolean) as { title: string; body: string }[];
-                  // Go Deeper content (The Lesson + History & Origin + remainder of Simple)
-                  const deeperParts = [
-                    lesson,
-                    history,
-                    simpleRest ? { title: "More on the Concept", body: simpleRest } : null,
-                  ].filter(Boolean) as { title: string; body: string }[];
-                  // Anything else not yet routed
-                  const used = new Set(
-                    [simple, lesson, history, why, fits].filter(Boolean).map((s) => (s as { title: string }).title),
-                  );
-                  const extras = sections.filter((s) => !used.has(s.title));
-
-                  // Think About It — derive a 1-line prompt from the metaphor
-                  const thinkPrompt = block.metaphor
-                    ? `Pause for a moment. How does the metaphor — "${block.metaphor}" — change the way you see ${block.term_title}?`
-                    : `Pause for a moment. In one sentence, how would you explain ${block.term_title} to a friend?`;
-
-                  const ksKey = blockState("key-concept");
-                  const ksRoot = blockState("root-word");
-                  const ksApply = blockState("apply");
-                  const ksThink = blockState("think");
-                  const ksDeeper = blockState("deeper");
-
-                  const renderBody = (body: string) => (
-                    <div className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
-                      <ReactMarkdown
-                        components={{
-                          p: ({ children }: any) => <p className="mb-2 last:mb-0">{children}</p>,
-                        }}
-                      >{body || "Content is being prepared…"}</ReactMarkdown>
-                    </div>
-                  );
-
-                  return (
-                    <>
-                      {/* Key Concept — always visible */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="rounded-xl overflow-hidden"
-                        style={{
-                          background: "hsl(var(--card))",
-                          border: ksKey.emphasized
-                            ? `2px solid ${step.color}`
-                            : "1.5px solid hsl(var(--border))",
-                          boxShadow: ksKey.emphasized ? `0 2px 8px ${step.color}20` : undefined,
-                        }}
-                      >
-                        <div
-                          className="px-4 py-3 flex items-center gap-2"
-                          style={{ background: `${step.color}08`, borderBottom: "1px solid hsl(var(--border))" }}
-                        >
-                          <span className="text-base">💡</span>
-                          <h4 className="font-display text-sm font-bold m-0" style={{ color: step.color }}>
-                            Key Concept
-                          </h4>
-                        </div>
-                        <div className="px-4 py-3 space-y-2">
-                          <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
-                            {keyConcept}
-                          </p>
-                          <SpeakButton text={keyConcept.slice(0, 500)} size="icon" />
-                        </div>
-                      </motion.div>
-
-                      {/* Root Word — collapsible */}
-                      {etymology && (
-                        <LayerBlockSection
-                          title="Root Word"
-                          icon="🔤"
-                          accentColor={step.color}
-                          defaultOpen={ksRoot.defaultOpen}
-                          emphasized={ksRoot.emphasized}
-                        >
-                          <div className="space-y-2">
-                            {etymology.parts.map((part, i) => (
-                              <div key={i} className="flex items-baseline gap-2 text-sm" style={{ color: c.bodyText }}>
-                                <span className="font-bold" style={{ color: step.color }}>{part.part}</span>
-                                <span>= {part.meaning}</span>
-                                <span className="text-xs italic" style={{ color: c.subtext }}>({part.origin})</span>
-                              </div>
-                            ))}
-                          </div>
-                        </LayerBlockSection>
-                      )}
-
-                      {/* Apply It — collapsible */}
-                      {applyParts.length > 0 && (
-                        <LayerBlockSection
-                          title="Apply It"
-                          icon="⭐"
-                          accentColor={step.color}
-                          defaultOpen={ksApply.defaultOpen}
-                          emphasized={ksApply.emphasized}
-                        >
-                          <div className="space-y-3">
-                            {applyParts.map((sec, i) => (
-                              <div key={i} className="space-y-1.5">
-                                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: step.color }}>
-                                  {sec.title}
-                                </p>
-                                {renderBody(sec.body)}
-                              </div>
-                            ))}
-                            <SpeakButton
-                              text={applyParts.map((s) => `${s.title}. ${s.body}`).join(" ").slice(0, 600)}
-                              size="icon"
-                            />
-                          </div>
-                        </LayerBlockSection>
-                      )}
-
-                      {/* Think About It — collapsible */}
-                      <LayerBlockSection
-                        title="Think About It"
-                        icon="🤔"
-                        accentColor={step.color}
-                        defaultOpen={ksThink.defaultOpen}
-                        emphasized={ksThink.emphasized}
-                      >
-                        <p className="text-sm leading-relaxed italic" style={{ color: c.bodyText }}>
-                          {thinkPrompt}
-                        </p>
-                      </LayerBlockSection>
-
-                      {/* Go Deeper — collapsible */}
-                      {(deeperParts.length > 0 || extras.length > 0) && (
-                        <LayerBlockSection
-                          title="Go Deeper"
-                          icon="📖"
-                          accentColor={step.color}
-                          defaultOpen={ksDeeper.defaultOpen}
-                          emphasized={ksDeeper.emphasized}
-                        >
-                          <div className="space-y-3">
-                            {[...deeperParts, ...extras].map((sec, i) => (
-                              <div key={i} className="space-y-1.5">
-                                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: step.color }}>
-                                  {sec.title}
-                                </p>
-                                {renderBody(sec.body)}
-                              </div>
-                            ))}
-                            <SpeakButton
-                              text={[...deeperParts, ...extras].map((s) => `${s.title}. ${s.body}`).join(" ").slice(0, 800)}
-                              size="icon"
-                            />
-                          </div>
-                        </LayerBlockSection>
-                      )}
-                    </>
-                  );
-                })()}
-                <div className="pt-2">
-                  <SpeakButton text={expandedInfo.slice(0, 2000)} size="sm" label="Listen to full lesson" />
+              {infoLoading && (
+                <div className="flex items-center justify-center gap-3 py-8">
+                  <Loader2 className="h-6 w-6 animate-spin" style={{ color: step.color }} />
+                  <p className="text-sm" style={{ color: c.subtext }}>TJ is preparing your lesson…</p>
                 </div>
-              </motion.div>
-            )}
+              )}
 
-            {!expandedInfo && !infoLoading && (
-              <div className="text-center py-4">
-                <p className="text-sm italic" style={{ color: c.subtext }}>
+              {expandedInfo && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+                  {(() => {
+                    const sections = expandedInfo.split(/^## /m).filter(Boolean).map(s => {
+                      const lines = s.trim().split("\n");
+                      const title = lines[0]?.trim() || "";
+                      const body = lines.slice(1).join("\n").trim();
+                      return { title, body };
+                    });
+
+                    if (sections.length === 0) {
+                      return (
+                        <article className="editorial-card">
+                          <div className="editorial-card-header"><span className="num">01</span><span className="label">Lesson</span></div>
+                          <div className="editorial-card-body editorial-dropcap">
+                            <ReactMarkdown>{expandedInfo}</ReactMarkdown>
+                          </div>
+                        </article>
+                      );
+                    }
+
+                    return sections.map((sec, i) => (
+                      <article key={i} className="editorial-card">
+                        <div className="editorial-card-header">
+                          <span className="num">{String(i + 1).padStart(2, "0")}</span>
+                          <span className="label">Section</span>
+                          <span className="title">{sec.title}</span>
+                        </div>
+                        <div className="editorial-card-body editorial-dropcap">
+                          <ReactMarkdown
+                            components={{
+                              p: ({ children }: any) => <p className="mb-2 last:mb-0">{children}</p>,
+                            }}
+                          >{sec.body || "Content is being prepared…"}</ReactMarkdown>
+                        </div>
+                      </article>
+                    ));
+                  })()}
+                  <div className="pt-1">
+                    <SpeakButton text={expandedInfo.slice(0, 2000)} size="sm" label="Listen to full lesson" />
+                  </div>
+                </motion.div>
+              )}
+
+              {!expandedInfo && !infoLoading && (
+                <p className="editorial-card-body italic rounded-xl" style={{ background: "hsl(40 35% 99%)", border: "1px solid hsl(0 0% 0% / 0.08)" }}>
                   Lesson content for this term hasn't been added yet.
                 </p>
-              </div>
-            )}
+              )}
+            </EditorialShell>
           </motion.div>
         );
       }
 
       case "reflection": {
-        const ksThinkR = blockState("think");
-        const ksDeeperR = blockState("deeper");
         return (
-          <motion.div key="reflection" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4 py-4">
-            {/* Key Concept — the prompt itself, always visible */}
-            <p className="text-lg font-display font-semibold text-center" style={{ color: step.color }}>
-              How does {block.term_title} connect to your experience?
-            </p>
-            <p className="text-base leading-relaxed text-center" style={{ color: c.bodyText }}>
-              {block.reflection_prompt || `Think about the metaphor above. In your own words, explain what ${block.term_title} means and why it matters in your career.`}
-            </p>
+          <motion.div key="reflection" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+            <EditorialShell>
+              <p className="editorial-eyebrow mb-2">The Prompt</p>
+              <p className="font-display text-2xl leading-snug mb-2" style={{ color: step.color, letterSpacing: "-0.01em" }}>
+                How does <em>{block.term_title}</em> connect to your experience?
+              </p>
+              <p className="editorial-subhead mb-4">
+                {block.reflection_prompt || `Think about the metaphor above. In your own words, explain what ${block.term_title} means and why it matters in your career.`}
+              </p>
 
-            {/* Think About It — write/speak (auto-open) */}
-            <LayerBlockSection
-              title="Think About It"
-              icon="✍️"
-              accentColor={step.color}
-              defaultOpen={ksThinkR.defaultOpen || true}
-              emphasized={ksThinkR.emphasized}
-            >
-              <div className="relative">
-                <textarea
-                  placeholder="Write or speak your reflection…"
-                  value={journalNote}
-                  onChange={(e) => setJournalNote(e.target.value)}
-                  className="w-full min-h-[120px] p-4 rounded-xl border-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-offset-1"
-                  style={{ borderColor: "hsl(var(--border))", color: c.bodyText, background: "hsl(var(--card))" }}
-                />
-                <div className="absolute right-2 bottom-2">
-                  <SpeechToTextButton onTranscript={(text) => setJournalNote(prev => prev ? `${prev} ${text}` : text)} />
+              <article className="editorial-card">
+                <div className="editorial-card-header"><span className="num">✎</span><span className="label">Your Words</span></div>
+                <div className="editorial-card-body">
+                  <div className="relative">
+                    <textarea
+                      placeholder="Write or speak your reflection…"
+                      value={journalNote}
+                      onChange={(e) => setJournalNote(e.target.value)}
+                      className="w-full min-h-[140px] p-3 rounded-lg text-sm resize-none focus:outline-none focus:ring-2"
+                      style={{ border: "1px solid hsl(0 0% 0% / 0.12)", color: c.bodyText, background: "hsl(40 30% 99%)", fontFamily: "var(--font-body)" }}
+                    />
+                    <div className="absolute right-2 bottom-2">
+                      <SpeechToTextButton onTranscript={(text) => setJournalNote(prev => prev ? `${prev} ${text}` : text)} />
+                    </div>
+                  </div>
+                  {journalSaving && <p className="text-xs mt-1" style={{ color: c.subtext }}>Saving…</p>}
+                  {!journalSaving && journalNote && <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
                 </div>
-              </div>
-              {journalSaving && <p className="text-xs mt-1" style={{ color: c.subtext }}>Saving…</p>}
-              {!journalSaving && journalNote && <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
-            </LayerBlockSection>
+              </article>
 
-            {/* Go Deeper — Metaphor Recall */}
-            {block.metaphor && (
-              <LayerBlockSection
-                title="Recall the Metaphor"
-                icon="💭"
-                accentColor={step.color}
-                defaultOpen={ksDeeperR.defaultOpen}
-                emphasized={ksDeeperR.emphasized}
-              >
-                <p className="text-sm italic leading-relaxed" style={{ color: c.bodyText }}>"{block.metaphor}"</p>
-              </LayerBlockSection>
-            )}
+              {block.metaphor && (
+                <blockquote className="editorial-pullquote mt-4">
+                  <span className="pq-eyebrow">Recall the Metaphor</span>
+                  "{block.metaphor}"
+                </blockquote>
+              )}
+            </EditorialShell>
           </motion.div>
         );
       }
 
       case "application": {
-        const ksThinkA = blockState("think");
-        const ksApplyA = blockState("apply");
         return (
-          <motion.div key="application" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4 py-4">
-            {/* Key Concept — the scenario itself, always visible */}
-            <p className="text-base sm:text-lg leading-relaxed" style={{ color: c.bodyText }}>
-              {block.practice_scenario || `Imagine you're in the salon and a client asks about ${block.term_title}. How would you explain it in your own words?`}
-            </p>
+          <motion.div key="application" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+            <EditorialShell>
+              <p className="editorial-card-body editorial-dropcap rounded-xl mb-4" style={{ background: "hsl(40 35% 99%)", border: "1px solid hsl(0 0% 0% / 0.08)" }}>
+                {block.practice_scenario || `Imagine you're in the salon and a client asks about ${block.term_title}. How would you explain it in your own words?`}
+              </p>
 
-            {/* Think About It — write/speak (auto-open, emphasized for applied learners) */}
-            <LayerBlockSection
-              title="Apply It"
-              icon="🛠️"
-              accentColor={step.color}
-              defaultOpen={ksApplyA.defaultOpen || ksThinkA.defaultOpen || true}
-              emphasized={ksApplyA.emphasized}
-            >
-              <div className="relative">
-                <textarea
-                  placeholder="Write your response here…"
-                  value={journalNote}
-                  onChange={(e) => setJournalNote(e.target.value)}
-                  className="w-full min-h-[120px] p-4 rounded-xl border-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-offset-1"
-                  style={{ borderColor: "hsl(var(--border))", color: c.bodyText, background: "hsl(var(--card))" }}
-                />
-                <div className="absolute right-2 bottom-2">
-                  <SpeechToTextButton onTranscript={(text) => setJournalNote(prev => prev ? `${prev} ${text}` : text)} />
+              <article className="editorial-card">
+                <div className="editorial-card-header"><span className="num">⚒</span><span className="label">Apply It</span></div>
+                <div className="editorial-card-body">
+                  <div className="relative">
+                    <textarea
+                      placeholder="Write your response here…"
+                      value={journalNote}
+                      onChange={(e) => setJournalNote(e.target.value)}
+                      className="w-full min-h-[140px] p-3 rounded-lg text-sm resize-none focus:outline-none focus:ring-2"
+                      style={{ border: "1px solid hsl(0 0% 0% / 0.12)", color: c.bodyText, background: "hsl(40 30% 99%)", fontFamily: "var(--font-body)" }}
+                    />
+                    <div className="absolute right-2 bottom-2">
+                      <SpeechToTextButton onTranscript={(text) => setJournalNote(prev => prev ? `${prev} ${text}` : text)} />
+                    </div>
+                  </div>
+                  {journalSaving && <p className="text-xs mt-1" style={{ color: c.subtext }}>Saving…</p>}
+                  {!journalSaving && journalNote && <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
                 </div>
-              </div>
-              {journalSaving && <p className="text-xs mt-1" style={{ color: c.subtext }}>Saving…</p>}
-              {!journalSaving && journalNote && <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
-            </LayerBlockSection>
+              </article>
+            </EditorialShell>
           </motion.div>
         );
       }
 
       case "quiz":
         return (
-          <motion.div key="quiz" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-4">
-            <div className="px-4 py-3 rounded-xl text-center" style={{ background: "linear-gradient(135deg, hsl(0 50% 97%), hsl(0 40% 94%))", border: "1.5px solid hsl(0 40% 85%)" }}>
-              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: step.color }}>🎓 State Board Practice Question</p>
-            </div>
-            {aiLoading && (
-              <div className="flex items-center justify-center gap-3 py-10">
-                <Loader2 className="h-6 w-6 animate-spin" style={{ color: step.color }} />
-                <p className="text-sm" style={{ color: c.subtext }}>Generating question…</p>
-              </div>
-            )}
-            {quizQuestion && quizOptions.length > 0 && (() => {
-              // Build a stable seed so the shuffle order doesn't change on re-render.
-              const seed = `${block.id}-${quizQuestion.slice(0, 32)}`;
-              const rawA = String(quizOptions[0] || "").replace(/^[A-D]\)\s*/, "");
-              const rawB = String(quizOptions[1] || "").replace(/^[A-D]\)\s*/, "");
-              const rawC = String(quizOptions[2] || "").replace(/^[A-D]\)\s*/, "");
-              const rawD = String(quizOptions[3] || "").replace(/^[A-D]\)\s*/, "");
-              // Determine which letter the original answer corresponds to
-              const origCorrectLetter = ["A", "B", "C", "D"].find((L, i) => {
-                const txt = String(quizOptions[i] || "").replace(/^[A-D]\)\s*/, "");
-                return String(quizOptions[i]) === quizAnswer || txt === quizAnswer;
-              }) || "A";
-              const sh = shuffleOptions(
-                { A: rawA, B: rawB, C: rawC, D: rawD },
-                origCorrectLetter,
-                seed,
-              );
-              return (
-                <div className="space-y-4">
-                  <p className="text-base font-medium leading-relaxed" style={{ color: c.bodyText }}>{quizQuestion}</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {sh.options.map((opt, i) => {
-                      const letter = opt.letter;
-                      const isSelected = quizSelected === letter;
-                      const isCorrect = letter === sh.correctLetter;
-                      const optionIcons = ["✨", "🌿", "⭐", "💖"];
-                      const optionGradients = [
-                        "linear-gradient(135deg, hsl(265 72% 52%), hsl(285 75% 58%))",
-                        "linear-gradient(135deg, hsl(155 60% 42%), hsl(175 65% 48%))",
-                        "linear-gradient(135deg, hsl(38 90% 52%), hsl(28 95% 58%))",
-                        "linear-gradient(135deg, hsl(340 75% 55%), hsl(355 80% 60%))",
-                      ];
-                      let bg = optionGradients[i % 4];
-                      let border = "transparent";
-                      let textColor = "white";
-                      if (quizRevealed && isSelected && isCorrect) { bg = "linear-gradient(135deg, hsl(145 55% 42%), hsl(155 60% 48%))"; border = "hsl(145 55% 35%)"; }
-                      else if (quizRevealed && isSelected) { bg = "linear-gradient(135deg, hsl(0 65% 52%), hsl(10 70% 58%))"; border = "hsl(0 65% 42%)"; }
-                      else if (quizRevealed && isCorrect) { bg = "linear-gradient(135deg, hsl(145 55% 42%), hsl(155 60% 48%))"; border = "hsl(145 55% 35%)"; }
-                      else if (quizRevealed) { bg = "hsl(var(--muted))"; textColor = "hsl(var(--muted-foreground))"; }
-                      return (
-                        <motion.button
-                          key={letter}
-                          onClick={async () => {
-                            if (quizRevealed) return;
-                            setQuizSelected(letter);
-                            setQuizRevealed(true);
-                            const correct = isCorrect;
-                            updateDNA({ quizCorrect: correct, layerCompleted: "quiz" });
-                            if (correct) {
-                              addCoins(10, "correct");
-                              await recordCorrect(block.id, false);
-                              setReinforcementResolved(true);
-                            } else {
-                              setReinforcementResolved(false);
-                              setMissedQuestionText(quizQuestion);
-                              await recordIncorrect(block.id);
-                              setTimeout(() => setReinforcementOpen(true), 1200);
-                            }
-                          }}
-                          whileHover={!quizRevealed ? { scale: 1.03, y: -2 } : {}}
-                          whileTap={!quizRevealed ? { scale: 0.97 } : {}}
-                          className="relative text-left p-4 rounded-2xl text-sm font-semibold transition-all overflow-hidden shadow-md"
-                          style={{
-                            background: bg,
-                            border: border !== "transparent" ? `2px solid ${border}` : undefined,
-                            color: textColor,
-                            minHeight: 88,
-                            textShadow: textColor === "white" ? "0 1px 2px hsl(0 0% 0% / 0.2)" : "none",
-                          }}
-                          disabled={quizRevealed}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.05 + i * 0.06 }}
-                        >
-                          <div className="flex items-start gap-2">
-                            <span className="text-lg flex-shrink-0">{optionIcons[i]}</span>
-                            <div className="flex-1">
-                              <span className="font-display font-bold text-xs opacity-80 mr-1">{letter}.</span>
-                              <span className="leading-snug">{opt.text}</span>
-                            </div>
-                          </div>
-                          {quizRevealed && isCorrect && (
-                            <CheckCircle2 className="absolute top-2 right-2 h-4 w-4" style={{ color: "white" }} />
-                          )}
-                          {quizRevealed && isSelected && !isCorrect && (
-                            <XCircle className="absolute top-2 right-2 h-4 w-4" style={{ color: "white" }} />
-                          )}
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                  {quizRevealed && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 pt-1">
-                      {block.static_assess_explanation && (
-                        <div className="w-full p-3 rounded-lg" style={{ background: `${step.color}10`, border: `1.5px solid ${step.color}30` }}>
-                          <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: step.color }}>Why</p>
-                          <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.static_assess_explanation}</p>
-                        </div>
-                      )}
-                      <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>Try Again</Button>
-                      {!reinforcementResolved && (
-                        <p className="w-full text-xs italic" style={{ color: "hsl(25 70% 40%)" }}>
-                          🔒 Locked — TJ is preparing a reinforcement lesson before you continue.
-                        </p>
-                      )}
-                    </motion.div>
-                  )}
+          <motion.div key="quiz" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+            <EditorialShell>
+              <p className="editorial-eyebrow mb-2">🎓 State Board Practice</p>
+              {aiLoading && (
+                <div className="flex items-center justify-center gap-3 py-10">
+                  <Loader2 className="h-6 w-6 animate-spin" style={{ color: step.color }} />
+                  <p className="text-sm" style={{ color: c.subtext }}>Generating question…</p>
                 </div>
-              );
-            })()}
-            {!hasBuiltinQuiz && !aiQuestion && !aiLoading && (
-              <div className="text-center py-6">
-                <p className="text-sm italic" style={{ color: c.subtext }}>
+              )}
+              {quizQuestion && quizOptions.length > 0 && (() => {
+                const seed = `${block.id}-${quizQuestion.slice(0, 32)}`;
+                const rawA = String(quizOptions[0] || "").replace(/^[A-D]\)\s*/, "");
+                const rawB = String(quizOptions[1] || "").replace(/^[A-D]\)\s*/, "");
+                const rawC = String(quizOptions[2] || "").replace(/^[A-D]\)\s*/, "");
+                const rawD = String(quizOptions[3] || "").replace(/^[A-D]\)\s*/, "");
+                const origCorrectLetter = ["A", "B", "C", "D"].find((L, i) => {
+                  const txt = String(quizOptions[i] || "").replace(/^[A-D]\)\s*/, "");
+                  return String(quizOptions[i]) === quizAnswer || txt === quizAnswer;
+                }) || "A";
+                const sh = shuffleOptions(
+                  { A: rawA, B: rawB, C: rawC, D: rawD },
+                  origCorrectLetter,
+                  seed,
+                );
+                return (
+                  <div className="space-y-4">
+                    <p className="font-display text-lg leading-snug" style={{ color: c.termHeading }}>{quizQuestion}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {sh.options.map((opt, i) => {
+                        const letter = opt.letter;
+                        const isSelected = quizSelected === letter;
+                        const isCorrect = letter === sh.correctLetter;
+                        const optionGradients = [
+                          "linear-gradient(135deg, hsl(265 72% 52%), hsl(285 75% 58%))",
+                          "linear-gradient(135deg, hsl(155 60% 42%), hsl(175 65% 48%))",
+                          "linear-gradient(135deg, hsl(38 90% 52%), hsl(28 95% 58%))",
+                          "linear-gradient(135deg, hsl(340 75% 55%), hsl(355 80% 60%))",
+                        ];
+                        let bg = optionGradients[i % 4];
+                        let border = "transparent";
+                        let textColor = "white";
+                        if (quizRevealed && isSelected && isCorrect) { bg = "linear-gradient(135deg, hsl(145 55% 42%), hsl(155 60% 48%))"; border = "hsl(145 55% 35%)"; }
+                        else if (quizRevealed && isSelected) { bg = "linear-gradient(135deg, hsl(0 65% 52%), hsl(10 70% 58%))"; border = "hsl(0 65% 42%)"; }
+                        else if (quizRevealed && isCorrect) { bg = "linear-gradient(135deg, hsl(145 55% 42%), hsl(155 60% 48%))"; border = "hsl(145 55% 35%)"; }
+                        else if (quizRevealed) { bg = "hsl(var(--muted))"; textColor = "hsl(var(--muted-foreground))"; }
+                        return (
+                          <motion.button
+                            key={letter}
+                            onClick={async () => {
+                              if (quizRevealed) return;
+                              setQuizSelected(letter);
+                              setQuizRevealed(true);
+                              const correct = isCorrect;
+                              updateDNA({ quizCorrect: correct, layerCompleted: "quiz" });
+                              if (correct) {
+                                addCoins(10, "correct");
+                                await recordCorrect(block.id, false);
+                                setReinforcementResolved(true);
+                              } else {
+                                setReinforcementResolved(false);
+                                setMissedQuestionText(quizQuestion);
+                                await recordIncorrect(block.id);
+                                setTimeout(() => setReinforcementOpen(true), 1200);
+                              }
+                            }}
+                            whileHover={!quizRevealed ? { scale: 1.03, y: -2 } : {}}
+                            whileTap={!quizRevealed ? { scale: 0.97 } : {}}
+                            className="relative text-left p-4 rounded-2xl text-sm font-semibold transition-all overflow-hidden shadow-md"
+                            style={{
+                              background: bg,
+                              border: border !== "transparent" ? `2px solid ${border}` : undefined,
+                              color: textColor,
+                              minHeight: 88,
+                              textShadow: textColor === "white" ? "0 1px 2px hsl(0 0% 0% / 0.2)" : "none",
+                            }}
+                            disabled={quizRevealed}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.05 + i * 0.06 }}
+                          >
+                            <div className="flex items-start gap-2">
+                              <span className="font-display text-2xl font-bold opacity-90 leading-none">{letter}</span>
+                              <span className="leading-snug pt-1">{opt.text}</span>
+                            </div>
+                            {quizRevealed && isCorrect && (
+                              <CheckCircle2 className="absolute top-2 right-2 h-4 w-4" style={{ color: "white" }} />
+                            )}
+                            {quizRevealed && isSelected && !isCorrect && (
+                              <XCircle className="absolute top-2 right-2 h-4 w-4" style={{ color: "white" }} />
+                            )}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                    {quizRevealed && (
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 pt-1">
+                        {block.static_assess_explanation && (
+                          <article className="editorial-card w-full">
+                            <div className="editorial-card-header"><span className="num">!</span><span className="label">Why this answer</span></div>
+                            <div className="editorial-card-body">{block.static_assess_explanation}</div>
+                          </article>
+                        )}
+                        <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>Try Again</Button>
+                        {!reinforcementResolved && (
+                          <p className="w-full text-xs italic" style={{ color: "hsl(25 70% 40%)" }}>
+                            🔒 Locked — TJ is preparing a reinforcement lesson before you continue.
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
+                );
+              })()}
+              {!hasBuiltinQuiz && !aiQuestion && !aiLoading && (
+                <p className="editorial-card-body italic rounded-xl" style={{ background: "hsl(40 35% 99%)", border: "1px solid hsl(0 0% 0% / 0.08)" }}>
                   No assessment question has been added for this term yet.
                 </p>
-              </div>
-            )}
+              )}
+            </EditorialShell>
           </motion.div>
         );
 

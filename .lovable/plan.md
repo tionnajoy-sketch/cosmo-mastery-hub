@@ -1,80 +1,71 @@
+## Goal
 
+Replace the current low-saturation "white card on cream" look with a consistent **editorial magazine** treatment that runs across every tab in the lesson dialog (Visualize → Define → Break It Down → Recognize → Metaphor → Information → Reflect → Apply → Assess) — colorful, branded per step, but visually consistent in rhythm.
 
-User asks for two things:
-1. **Replace "next-button-through-9-steps" with a vibrant, block-style layout inside each term** — DNA-ordered tiles instead of linear pagination.
-2. **Stimulating quizzes with shuffled answers** — confirm/extend shuffling everywhere.
+## Visual direction
 
-Looking at current state:
-- `LearningOrbDialog.tsx` uses linear Back/Next nav through `adaptedSteps[]` (9 steps).
-- `shuffleOptions.ts` already exists and is used in `ReinforcementDialog` + `QuizPage`. Need to verify `LearningOrbDialog`'s built-in quiz step + `ModuleQuizPage` + `StateboardQuiz` use it too.
-- DNA already produces `adaptedSteps` order — we just need to expose it visually.
+Think *Vogue* / *The Gentlewoman* / *Kinfolk*:
 
-## Plan: Block-Style Layer Navigator + Universal Answer Shuffling
+- **Issue header on every step** — small uppercase eyebrow ("Layer 06 — Information") + oversized Playfair display headline in the step's signature color
+- **Colored "spread" background** — instead of plain cream, each step gets a soft tinted backdrop derived from its signature color (e.g. Visualize=blue wash, Information=pink wash, Apply=green wash). Same intensity across steps for consistency.
+- **Color-blocked section cards** — replace gray-bordered white cards with full-color gradient header bars + cream body, matching the step's gradient. Numbered ("01 / 06") like magazine articles.
+- **Drop cap on body paragraphs** — first letter of each section body in oversized Playfair, colored in step accent. Strong magazine signature.
+- **Pull quotes** — Memory Cue, Mentor Check-In, Affirmation, Metaphor become large italic Playfair pull quotes with colored vertical rules, not boxed cards.
+- **Consistent type rhythm** — eyebrows always 10px uppercase tracked, headings always Playfair, body always DM Sans — no exceptions.
+- **Subtle paper texture** — very light grain overlay on the dialog background to feel printed, not digital.
 
-### 1. New: Block-Style Step Navigator (replaces linear Next button)
+## What changes
 
-Create **`src/components/LayerBlockNavigator.tsx`** — a colorful tile grid shown at the top of `LearningOrbDialog`, replacing the small step dots.
+```text
+Before                              After
+────────────────────────────────    ────────────────────────────────
+[ white card ]                      LAYER 06 · INFORMATION
+[ small color icon + heading  ]      ─────────────────────────────
+[ gray body text              ]     The Breakdown
+[ ──── ]                            of the System
+[ small icon + heading        ]
+[ gray body text              ]     ┃ T he epidermis is not just
+                                    ┃   skin. It is a structured
+                                    ┃   system designed for
+                                    ┃   continuous renewal…
 
-- Renders one vibrant tile per step in the **DNA-adapted order** (already computed as `adaptedSteps`)
-- Each tile shows: step number badge, icon, short label, and a status ring (locked / available / current / complete)
-- Tiles use the existing per-step accent colors (already in `STEPS[].color`) with gradient fills + soft glow for vibrancy
-- Tap a tile → jumps to that step (only if unlocked: current + completed steps tappable; next step always tappable; future ones locked until prerequisites done)
-- Current step pulses; completed tiles show a check; locked tiles dim with a small lock icon
-- Mobile: 2-column grid; desktop: horizontal scroll row of 9
+                                    ╱╱  Protect. Present. Renew.
+                                    ╱╱  — pull quote in step color
+```
 
-DNA wiring (already in place — just surface it):
-- `adaptedSteps` order already reflects dominantLayer / engagement
-- Add a small caption above the grid: "Your TJ-recommended path" with the first 2-3 step names highlighted
+## Scope (files touched)
 
-### 2. Layout shift in `LearningOrbDialog`
+1. **`src/components/LearningOrbDialog.tsx`** — wrap all `renderContent()` cases in a shared `<EditorialSpread>` shell that supplies: tinted background wash, eyebrow ("Layer N · Step Name"), and oversized Playfair title. Replace the existing white card boxes inside Information, Recognize, Visualize, Scripture, Definition, Metaphor, Reflect, Apply, Assess with the new editorial card treatment.
 
-- Keep top header (avatar, voice toggle, title) unchanged
-- **Replace** the existing step-dots row + bottom Back/Next bar with:
-  - Top: `LayerBlockNavigator` (collapsible "Show all steps" on mobile)
-  - Bottom: only **"Mark step complete"** button (advances state + unlocks next tile) and **"Let TJ Explain Again"**
-- Linear Back/Next removed; navigation is tile-driven
-- Reinforcement gate logic preserved — locked tiles stay locked while reinforcement is active
+2. **`src/components/LearningOrbStepContent.tsx`** — same editorial treatment applied to the Information step's lesson_narrative renderer (Key Point, Sections, Memory Cue, Mentor Check-In, Purpose) so the new Epidermis narrative gets the magazine look. Pull quotes for Memory Cue and Mentor Check-In, drop caps on Section bodies, numbered section labels.
 
-### 3. More stimulating quiz visuals (built-in quiz step inside the orb)
+3. **`src/index.css`** — add a small set of editorial utility classes:
+   - `.editorial-eyebrow` (10px uppercase, tracked, semi-bold)
+   - `.editorial-headline` (Playfair, 32-40px, tight leading)
+   - `.editorial-body` (DM Sans, generous leading)
+   - `.editorial-dropcap` (first-letter pseudo, Playfair, ~52px, colored)
+   - `.editorial-pullquote` (Playfair italic, large, with left vertical rule)
+   - `.editorial-paper` (very subtle grain overlay)
+   - One CSS variable per step (`--editorial-wash`) so the wash color can be set inline per step without re-declaring gradients everywhere.
 
-In the `quiz` case of `renderContent`:
-- Wrap each option in a vibrant gradient card (using `blockAccentColors` from `src/lib/colors.ts`) with hover lift + tap scale
-- Add a subtle icon per option (A=spark, B=leaf, C=star, D=heart) so learners stop pattern-matching letters
-- Larger touch targets, bolder typography, soft shadow on selected
+4. **Step config (top of `LearningOrbDialog.tsx`)** — extend each `STEPS` entry with one new field: `wash` (the soft tinted background for that step). Existing `color` and `gradient` stay; this only adds the soft wash so all 10 steps get a different signature backdrop while sharing the same layout.
 
-### 4. Universal answer shuffling
+## Things explicitly kept the same
 
-Audit & ensure `shuffleOptions(...)` (already in `src/lib/shuffleOptions.ts`) is applied in **every** quiz surface:
+- 9-step flow, step order, and DNA-driven reordering
+- Tab navigator (`LayerBlockNavigator`), progress bar, TJ avatar caption, "Why This Step Matters" toggle
+- Voice/speak buttons, quiz logic, reinforcement gating, coin awards, confetti
+- All data sources — still 100% static (no AI calls re-introduced)
+- Step signature colors (Visualize blue, Information pink, etc.) — only the surrounding treatment changes
 
-| File | Status | Action |
-|---|---|---|
-| `ReinforcementDialog.tsx` | ✅ done | none |
-| `QuizPage.tsx` | ✅ done | none |
-| `ModuleQuizPage.tsx` | ❓ verify | add if missing |
-| `LearningOrbDialog.tsx` (quiz step) | ❓ verify | add if missing |
-| `LearningOrbStepContent.tsx` (`StateboardQuiz`) | ❓ verify | add if missing |
-| `DailyPopQuestion.tsx` | ❌ likely raw | add shuffle |
-| `RandomQuizPopup.tsx` | ❌ likely raw | add shuffle |
-| `PopQuizPage.tsx` | ❓ verify | add if missing |
+## Out of scope
 
-Seed shuffle by `question.id` so order is stable within a session but randomized across question loads.
+- The Game Grid, dashboard, and other pages — this is strictly the in-lesson reading experience the user is on right now.
+- The `UploadedTermCard` (legacy tabbed view) — it isn't the path the user navigates through; we can apply the same look later if requested.
+- Adding new content fields. We're styling existing content only.
 
-### 5. Files
+## Risks / notes
 
-**New**
-- `src/components/LayerBlockNavigator.tsx`
-
-**Modified**
-- `src/components/LearningOrbDialog.tsx` — swap step dots + Back/Next for tile navigator; restyle quiz options
-- `src/components/LearningOrbStepContent.tsx` — apply shuffle in `StateboardQuiz`
-- `src/pages/ModuleQuizPage.tsx` — apply shuffle
-- `src/pages/PopQuizPage.tsx` — apply shuffle
-- `src/components/DailyPopQuestion.tsx` — apply shuffle
-- `src/components/RandomQuizPopup.tsx` — apply shuffle
-
-### Notes
-- DNA logic, step content, audio, and reinforcement gate all preserved
-- All existing collapsible blocks (just shipped) stay inside each step
-- Colors come from existing `pageColors` / `blockAccentColors` — no new palette
-- Locked tiles enforce DNA-recommended order while still letting confident learners revisit completed steps
-
+- The Information step has two renderers (the rich `expandedInfo` block in `LearningOrbDialog.tsx` and the new `lesson_narrative` block in `LearningOrbStepContent.tsx`). Both will get the same editorial treatment so Epidermis (which uses the new path) and other terms (which still use the legacy path) feel identical.
+- Drop caps are CSS pseudo-elements — they don't affect content or screen readers.
+- No changes to fonts (Playfair Display + DM Sans are already loaded), so no perf hit.
