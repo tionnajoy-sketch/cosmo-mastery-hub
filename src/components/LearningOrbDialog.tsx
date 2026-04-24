@@ -277,6 +277,7 @@ const LearningOrbDialog = ({
   // Quiz
   const [quizSelected, setQuizSelected] = useState<string | null>(null);
   const [quizRevealed, setQuizRevealed] = useState(false);
+  const [quizAttempted, setQuizAttempted] = useState(false);
   const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -332,6 +333,7 @@ const LearningOrbDialog = ({
       setJournalNote(block.user_notes || "");
       setQuizSelected(null);
       setQuizRevealed(false);
+      setQuizAttempted(false);
       setAiQuestion(null);
       setRecognizeSelected(null);
       setRecognizeRevealed(false);
@@ -516,6 +518,82 @@ const LearningOrbDialog = ({
   const quizQuestion = hasBuiltinQuiz ? block.quiz_question : aiQuestion?.question;
   const quizOptions = hasBuiltinQuiz ? block.quiz_options.map(String) : (aiQuestion?.options || []);
   const quizAnswer = hasBuiltinQuiz ? block.quiz_answer : (aiQuestion?.answer || "");
+
+  /* ─── Static reteach text resolved per term ─── */
+  const reteachText =
+    block.static_break_it_down?.trim() ||
+    block.metaphor?.trim() ||
+    block.static_metaphor?.trim() ||
+    `Stay with the core idea of ${block.term_title}: ${block.definition || ""}`;
+
+  /* ─── Assess DNA persistence (per user, per term) ─── */
+  const persistAssessmentDNA = useCallback(async (args: {
+    correct: boolean;
+    isFirstAttempt: boolean;
+    reviewPath?: string | null;
+  }) => {
+    if (!user || !block) return;
+    const { data: existing } = await (supabase as any)
+      .from("assessment_dna")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("term_id", block.id)
+      .maybeSingle();
+
+    const attempt_count = (existing?.attempt_count ?? 0) + 1;
+    const accuracy_score = (existing?.accuracy_score ?? 0) + (args.correct ? 1 : 0);
+    const dominant_gap = args.correct ? null : "function_gap";
+    const reteach_trigger = !args.correct;
+    const recommended_static_action = args.correct
+      ? "Continue"
+      : (attempt_count >= 2 ? "Practice Again" : "Review Breakdown");
+
+    let mastery_status: string = existing?.mastery_status || "New";
+    if (args.correct) {
+      if (args.isFirstAttempt && attempt_count === 1) mastery_status = "Mastered";
+      else if (existing?.last_answer_correct === false || existing?.last_review_path) mastery_status = "Reinforced";
+      else mastery_status = "Mastered";
+    } else {
+      mastery_status = "Developing";
+    }
+
+    const first_attempt_correct =
+      existing?.first_attempt_correct ?? (attempt_count === 1 ? args.correct : null);
+
+    await (supabase as any)
+      .from("assessment_dna")
+      .upsert(
+        {
+          user_id: user.id,
+          term_id: block.id,
+          accuracy_score,
+          attempt_count,
+          last_answer_correct: args.correct,
+          dominant_gap,
+          reteach_trigger,
+          recommended_static_action,
+          last_review_path: args.reviewPath ?? existing?.last_review_path ?? null,
+          mastery_status,
+          first_attempt_correct,
+        },
+        { onConflict: "user_id,term_id" },
+      );
+  }, [user, block]);
+
+  /* ─── Jump to a previous step by key ─── */
+  const jumpToStepKey = useCallback((key: string, reviewPath: string) => {
+    const idx = adaptedSteps.findIndex(s => s.key === key);
+    if (idx < 0) return;
+    if (user && block) {
+      (supabase as any)
+        .from("assessment_dna")
+        .update({ last_review_path: reviewPath })
+        .eq("user_id", user.id)
+        .eq("term_id", block.id);
+    }
+    stopSpeaking();
+    setCurrentStep(idx);
+  }, [adaptedSteps, user, block, stopSpeaking]);
 
   /* ─── Editorial spread shell — wraps every step's content ─── */
   const stepIndex = currentStep;
@@ -1091,20 +1169,17 @@ const LearningOrbDialog = ({
                               setQuizSelected(letter);
                               setQuizRevealed(true);
                               const correct = isCorrect;
+                              const isFirstAttempt = !quizAttempted;
+                              setQuizAttempted(true);
                               updateDNA({ quizCorrect: correct, layerCompleted: "quiz" });
                               if (correct) {
                                 addCoins(10, "correct");
                                 await recordCorrect(block.id, false);
-                                setReinforcementResolved(true);
                               } else {
-                                // Stay on screen so the learner can read the
-                                // explanation and choose what to do next.
-                                // Reinforcement is offered as a button below,
-                                // not auto-launched.
                                 setMissedQuestionText(quizQuestion);
                                 await recordIncorrect(block.id);
-                                setReinforcementResolved(true);
                               }
+                              await persistAssessmentDNA({ correct, isFirstAttempt });
                             }}
                             whileHover={!quizRevealed ? { scale: 1.03, y: -2 } : {}}
                             whileTap={!quizRevealed ? { scale: 0.97 } : {}}
@@ -1137,60 +1212,155 @@ const LearningOrbDialog = ({
                     </div>
                     {quizRevealed && (() => {
                       const wasCorrect = quizSelected === sh.correctLetter;
+                      const correctText = sh.options.find(o => o.letter === sh.correctLetter)?.text || "";
+                      const memoryLock = block.static_metaphor?.split("\n")[0]?.trim()
+                        || `${block.term_title} — hold the core idea.`;
+                      const accent = wasCorrect ? "hsl(145 55% 38%)" : "hsl(352 65% 50%)";
+                      const accentSoft = wasCorrect ? "hsl(145 50% 96%)" : "hsl(352 70% 97%)";
+                      const accentBorder = wasCorrect ? "hsl(145 45% 70%)" : "hsl(352 65% 78%)";
+
                       return (
-                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 pt-1">
-                          {/* Verdict banner */}
-                          <div
-                            className="rounded-xl px-4 py-3 flex items-center gap-3"
-                            style={{
-                              background: wasCorrect ? "hsl(145 45% 94%)" : "hsl(0 60% 96%)",
-                              border: `1.5px solid ${wasCorrect ? "hsl(145 45% 70%)" : "hsl(0 60% 75%)"}`,
-                            }}
+                        <motion.aside
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.35 }}
+                          className="rounded-2xl overflow-hidden mt-2"
+                          style={{
+                            background: accentSoft,
+                            border: `2px solid ${accentBorder}`,
+                            boxShadow: "0 12px 30px -12px hsl(0 0% 0% / 0.18)",
+                          }}
+                        >
+                          <header
+                            className="px-5 py-4 flex items-start gap-3"
+                            style={{ borderBottom: `1px solid ${accentBorder}` }}
                           >
                             {wasCorrect ? (
-                              <CheckCircle2 className="h-5 w-5 flex-shrink-0" style={{ color: "hsl(145 55% 35%)" }} />
+                              <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: accent }} />
                             ) : (
-                              <XCircle className="h-5 w-5 flex-shrink-0" style={{ color: "hsl(0 65% 45%)" }} />
+                              <XCircle className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: accent }} />
                             )}
-                            <div className="min-w-0">
-                              <p className="font-display text-base font-bold leading-tight" style={{ color: wasCorrect ? "hsl(145 45% 25%)" : "hsl(0 50% 30%)" }}>
-                                {wasCorrect ? "Correct — beautifully done." : "Not quite. Take a breath."}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: accent }}>
+                                Learning Checkpoint
                               </p>
-                              <p className="text-xs leading-snug mt-0.5" style={{ color: wasCorrect ? "hsl(145 35% 30%)" : "hsl(0 35% 35%)" }}>
+                              <h3 className="font-display text-xl sm:text-2xl font-bold leading-tight mt-1" style={{ color: "hsl(220 25% 18%)" }}>
                                 {wasCorrect
-                                  ? "Read why this answer holds, then exit or continue when you are ready."
-                                  : `The correct answer was “${sh.options.find(o => o.letter === sh.correctLetter)?.text || ""}.” Read the reason below.`}
+                                  ? "Correct — you understood the function."
+                                  : "Not quite — let’s correct the thinking."}
+                              </h3>
+                              <p className="text-sm italic mt-1" style={{ color: "hsl(220 15% 38%)" }}>
+                                {wasCorrect
+                                  ? "This is more than memorizing a definition."
+                                  : "You are close. Now connect the function."}
                               </p>
                             </div>
-                          </div>
+                          </header>
 
-                          {/* Explanation */}
-                          {block.static_assess_explanation && (
-                            <article className="editorial-card">
-                              <div className="editorial-card-header"><span className="num">!</span><span className="label">Why this answer</span></div>
-                              <div className="editorial-card-body">{block.static_assess_explanation}</div>
-                            </article>
-                          )}
+                          <div className="px-5 py-4 space-y-4" style={{ background: "hsl(40 30% 99%)" }}>
+                            {/* Body */}
+                            <p className="text-[15px] leading-relaxed" style={{ color: "hsl(220 20% 22%)", fontFamily: "var(--font-body, inherit)" }}>
+                              {wasCorrect
+                                ? `${block.term_title} ${block.definition ? block.definition.charAt(0).toLowerCase() + block.definition.slice(1) : "works as a system, not just a label."} You recognized the system behind the word.`
+                                : (
+                                  <>
+                                    The correct answer is <strong style={{ color: accent }}>“{correctText}.”</strong>{" "}
+                                    {reteachText}
+                                  </>
+                                )}
+                            </p>
 
-                          {/* Action row — learner stays in control */}
-                          <div className="flex flex-wrap gap-2 pt-1">
-                            <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>
-                              Try Again
-                            </Button>
-                            {!wasCorrect && (
-                              <Button size="sm" variant="outline" onClick={() => { setReinforcementResolved(false); setReinforcementOpen(true); }}>
-                                Practice this with TJ
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              onClick={() => { stopSpeaking(); onOpenChange(false); }}
-                              style={{ background: step.gradient, color: "white" }}
+                            {/* Memory Lock */}
+                            <div
+                              className="rounded-xl px-4 py-3"
+                              style={{
+                                background: "white",
+                                border: "1px dashed hsl(220 15% 80%)",
+                              }}
                             >
-                              Exit Lesson
-                            </Button>
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: "hsl(220 15% 45%)" }}>
+                                Memory Lock
+                              </p>
+                              <p className="font-display text-base font-semibold mt-1" style={{ color: "hsl(220 25% 18%)" }}>
+                                {memoryLock}
+                              </p>
+                            </div>
+
+                            {/* DNA Insight */}
+                            <div
+                              className="rounded-xl px-4 py-3 flex items-start gap-3"
+                              style={{
+                                background: `${accent}10`,
+                                border: `1px solid ${accentBorder}`,
+                              }}
+                            >
+                              <span
+                                className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full font-display text-xs font-bold"
+                                style={{ background: accent, color: "white" }}
+                              >
+                                ✦
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: accent }}>
+                                  DNA Insight
+                                </p>
+                                <p className="text-sm leading-snug mt-0.5" style={{ color: "hsl(220 20% 22%)" }}>
+                                  {wasCorrect
+                                    ? "Your Function Recognition strengthened. Recall accuracy +1."
+                                    : "Your Function Recognition needs reinforcement. Try the recommended path below."}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Action row — learner picks the next move */}
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {wasCorrect ? (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => { persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Continue" }); goNext(); }}
+                                    style={{ background: accent, color: "white" }}
+                                  >
+                                    Continue
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => jumpToStepKey("definition", "Review Concept")}>
+                                    Review Concept
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => { setQuizSelected(null); setQuizRevealed(false); persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Practice Again" }); }}
+                                  >
+                                    Practice Again
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => { setQuizSelected(null); setQuizRevealed(false); persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Try Again" }); }}
+                                    style={{ background: accent, color: "white" }}
+                                  >
+                                    Try Again
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => jumpToStepKey("breakdown", "Review Breakdown")}>
+                                    Review Breakdown
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => jumpToStepKey("metaphor", "Review Metaphor")}>
+                                    Review Metaphor
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => { persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Continue" }); goNext(); }}
+                                  >
+                                    Continue
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </div>
-                        </motion.div>
+                        </motion.aside>
                       );
                     })()}
                   </div>
