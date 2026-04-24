@@ -902,24 +902,11 @@ const LearningOrbDialog = ({
 
             {!expandedInfo && !infoLoading && (
               <div className="text-center py-4">
-                <Button onClick={fetchExpandedInfo} className="gap-2 shadow-md" style={{ background: step.gradient, color: "white" }}>
-                  <Sparkles className="h-4 w-4" /> Load Lesson
-                </Button>
+                <p className="text-sm italic" style={{ color: c.subtext }}>
+                  Lesson content for this term hasn't been added yet.
+                </p>
               </div>
             )}
-
-            {/* TJ Learning Studio — additional modes */}
-            <div className="space-y-2 pt-3 border-t" style={{ borderColor: "hsl(var(--border))" }}>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">More Ways to Learn</p>
-              <TJLearningStudio
-                termName={block.term_title}
-                definition={block.definition}
-                metaphor={block.metaphor}
-                additionalContent={block.practice_scenario}
-                onAudioScript={(script) => { if (voiceEnabled) speakText(script.slice(0, 1200)); }}
-                onContentGenerated={(text) => { if (voiceEnabled) speakText(text.slice(0, 1000)); }}
-              />
-            </div>
           </motion.div>
         );
       }
