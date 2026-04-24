@@ -437,7 +437,36 @@ const StepContent = (props: StepContentProps) => {
       );
 
     case "information": {
-      const narrative = block.lesson_narrative;
+      // Build an editorial narrative for EVERY term. If the admin has authored
+      // a structured `lesson_narrative`, use it; otherwise auto-derive one
+      // from the term's existing fields so the magazine treatment is
+      // consistent across the whole library.
+      const authored = block.lesson_narrative;
+      const derivedSections: { heading: string; body: string }[] = [];
+      if (!authored) {
+        if (block.static_information) {
+          const raw = String(block.static_information);
+          const parts = raw.split(/^##\s+/m).filter(Boolean);
+          if (parts.length > 1) {
+            parts.forEach((p) => {
+              const lines = p.trim().split("\n");
+              derivedSections.push({ heading: lines[0]?.trim() || "Section", body: lines.slice(1).join("\n").trim() });
+            });
+          } else {
+            derivedSections.push({ heading: "The Full Story", body: raw.trim() });
+          }
+        } else if (block.definition) {
+          derivedSections.push({ heading: "What it means", body: block.definition });
+          if (block.metaphor) derivedSections.push({ heading: "A picture for it", body: block.metaphor });
+        }
+      }
+      const narrative = authored ?? {
+        key_point: block.affirmation || `Remember "${block.term_title}" — say it, picture it, connect it to something you know.`,
+        sections: derivedSections,
+        memory_cue: block.metaphor || undefined,
+        mentor_check_in: undefined,
+        purpose: undefined,
+      };
       const hasNarrative = !!(narrative && (narrative.sections?.length || narrative.key_point || narrative.purpose));
       return (
         <div className="space-y-4">
