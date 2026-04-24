@@ -1353,12 +1353,11 @@ const LearningOrbDialog = ({
                                     size="sm"
                                     onClick={() => {
                                       setQuizFeedbackLocked(false);
-                                      persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Continue" });
-                                      goNext();
+                                      persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Stay In Lesson" });
                                     }}
                                     style={{ background: accent, color: "white" }}
                                   >
-                                    Continue
+                                    Stay in Lesson
                                   </Button>
                                   <Button size="sm" variant="outline" onClick={() => jumpToStepKey("definition", "Review Concept")}>
                                     Review Concept
@@ -1404,11 +1403,10 @@ const LearningOrbDialog = ({
                                     variant="ghost"
                                     onClick={() => {
                                       setQuizFeedbackLocked(false);
-                                      persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Continue" });
-                                      goNext();
+                                      persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Stay In Lesson" });
                                     }}
                                   >
-                                    Continue
+                                    Stay in Lesson
                                   </Button>
                                   <Button size="sm" variant="ghost" onClick={() => onOpenChange(false)}>
                                     Exit Lesson
