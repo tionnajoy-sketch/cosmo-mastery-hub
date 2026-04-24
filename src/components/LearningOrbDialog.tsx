@@ -481,6 +481,18 @@ const LearningOrbDialog = ({
   const step = adaptedSteps[currentStep];
   const progressPercent = ((currentStep + 1) / adaptedSteps.length) * 100;
 
+  // Push current lesson + step to global context so DNA progress tracker can tag events
+  useEffect(() => {
+    setLessonContext({
+      module_id: (block as any).module_id ?? null,
+      term_id: (block as any).id ?? null,
+      term_title: block.term_title ?? null,
+      step_key: step?.key ?? null,
+      step_label: step?.label ?? null,
+    });
+    return () => { clearLessonContext(); };
+  }, [block, step?.key, step?.label]);
+
   // DNA-adapted encouragement message
   const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
