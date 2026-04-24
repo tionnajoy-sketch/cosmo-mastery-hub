@@ -63,6 +63,17 @@ const termToBlock = (t: Term): UploadedBlock => ({
   quiz_question_3: "", quiz_options_3: [], quiz_answer_3: "",
   user_notes: "",
   concept_identity: Array.isArray(t.concept_identity) ? t.concept_identity : [],
+  static_visualize: (t as any).visualize_content || "",
+  static_define: (t as any).define_content || "",
+  static_break_it_down: (t as any).break_it_down_content || "",
+  static_recognize: (t as any).recognize_content || "",
+  static_metaphor: (t as any).metaphor_content || "",
+  static_information: (t as any).information_content || "",
+  static_reflect: (t as any).reflect_content || "",
+  static_apply: (t as any).apply_content || "",
+  static_assess_question: (t as any).assess_question || "",
+  static_assess_answer: (t as any).assess_answer || "",
+  static_assess_explanation: (t as any).assess_explanation || "",
 });
 
 const groupTermsBySection = (terms: Term[]) => {
