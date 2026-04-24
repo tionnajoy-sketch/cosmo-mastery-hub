@@ -246,17 +246,46 @@ const LearningOrbDialog = ({
     return STEPS.filter(s => s.key !== "scripture");
   }, [hasScripture]);
 
-  // Reorder steps based on DNA layer strength
+  // Reorder steps based on DNA layer strength.
+  // INVARIANTS:
+  //  - "visual" (Visualize) is ALWAYS step 1
+  //  - "quiz"   (Assess / Final Check) is ALWAYS the LAST step
+  // The DNA-preferred layer slots into position 2 (between Visualize and the rest).
   const adaptedSteps = useMemo(() => {
-    if (!dna) return availableSteps;
+    // Always pull quiz to the end and visual to the front, regardless of DNA.
+    const pinFirstAndLast = (arr: typeof availableSteps) => {
+      const visual = arr.find(s => s.key === "visual");
+      const quiz = arr.find(s => s.key === "quiz");
+      const middle = arr.filter(s => s.key !== "visual" && s.key !== "quiz");
+      return [
+        ...(visual ? [visual] : []),
+        ...middle,
+        ...(quiz ? [quiz] : []),
+      ];
+    };
+
+    if (!dna) return pinFirstAndLast(availableSteps);
+
     const LAYER_MAP: Record<string, string> = { D: "definition", V: "visual", M: "metaphor", I: "information", R: "reflection", A: "application", K: "quiz", B: "breakdown", N: "recognize", S: "scripture" };
     const preferred = LAYER_MAP[dna.layerStrength];
-    if (!preferred) return availableSteps;
-    // Keep first step (Visualize), move preferred step to second position
-    const rest = availableSteps.filter(s => s.key !== availableSteps[0].key && s.key !== preferred);
+    // Never let the preferred layer disturb the visual-first / quiz-last rule.
+    if (!preferred || preferred === "visual" || preferred === "quiz") {
+      return pinFirstAndLast(availableSteps);
+    }
     const preferredStep = availableSteps.find(s => s.key === preferred);
-    if (!preferredStep) return availableSteps;
-    return [availableSteps[0], preferredStep, ...rest];
+    if (!preferredStep) return pinFirstAndLast(availableSteps);
+
+    const visual = availableSteps.find(s => s.key === "visual");
+    const quiz = availableSteps.find(s => s.key === "quiz");
+    const middle = availableSteps.filter(
+      s => s.key !== "visual" && s.key !== "quiz" && s.key !== preferred,
+    );
+    return [
+      ...(visual ? [visual] : []),
+      preferredStep,
+      ...middle,
+      ...(quiz ? [quiz] : []),
+    ];
   }, [dna, availableSteps]);
 
   const [currentStep, setCurrentStep] = useState(0);
