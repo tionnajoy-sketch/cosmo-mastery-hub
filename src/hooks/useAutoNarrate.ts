@@ -1,73 +1,47 @@
-import { useEffect, useRef } from "react";
-import { fetchTTSWithFallback } from "@/lib/browserTTS";
-import { useSoundsEnabled } from "@/hooks/useCoins";
+// VOICE DISABLED — all auto-narration and TTS playback is turned off app-wide.
+// Force the global pause flag and stop any in-flight audio on import.
 
-/** Shared narration ref so any page can stop a previous page's audio */
 let globalAudioRef: HTMLAudioElement | null = null;
-let globalSpeechActive = false;
 
 export function stopGlobalNarration() {
   if (globalAudioRef) {
-    globalAudioRef.pause();
+    try { globalAudioRef.pause(); } catch {}
     globalAudioRef = null;
   }
-  window.speechSynthesis.cancel();
-  globalSpeechActive = false;
-}
-
-export async function startGlobalNarration(text: string): Promise<HTMLAudioElement | null> {
-  // Hard global gate — if paused app-wide, never start narration
-  if (localStorage.getItem("tj_voice_globally_paused") !== "false") return null;
-  stopGlobalNarration();
-  if (!text?.trim()) return null;
+  try { window.speechSynthesis?.cancel(); } catch {}
   try {
-    const audio = await fetchTTSWithFallback(text, { usageType: "lesson" });
-    if (!audio) return null;
-    globalAudioRef = audio;
-    globalSpeechActive = true;
-    audio.onended = () => { globalAudioRef = null; globalSpeechActive = false; };
-    audio.onerror = () => { globalAudioRef = null; globalSpeechActive = false; };
-    await audio.play();
-    return audio;
-  } catch {
-    globalSpeechActive = false;
-    return null;
-  }
+    document.querySelectorAll("audio").forEach((a) => {
+      try { (a as HTMLAudioElement).pause(); } catch {}
+    });
+  } catch {}
 }
 
-/** Global voice pause flag — when true, ALL auto-narration is suppressed app-wide. */
+// Force-disable on module load
+if (typeof window !== "undefined") {
+  try {
+    localStorage.setItem("tj_voice_globally_paused", "true");
+    document.querySelectorAll("audio").forEach((a) => {
+      try { (a as HTMLAudioElement).pause(); } catch {}
+    });
+    window.speechSynthesis?.cancel();
+  } catch {}
+}
+
+export async function startGlobalNarration(_text: string): Promise<HTMLAudioElement | null> {
+  // Voice is fully disabled
+  return null;
+}
+
 const VOICE_PAUSE_KEY = "tj_voice_globally_paused";
 export function isVoiceGloballyPaused(): boolean {
-  // Default: paused. User must explicitly set to "false" to allow narration.
-  return localStorage.getItem(VOICE_PAUSE_KEY) !== "false";
+  return true; // always paused
 }
-export function setVoiceGloballyPaused(paused: boolean) {
-  localStorage.setItem(VOICE_PAUSE_KEY, paused ? "true" : "false");
-  if (paused) stopGlobalNarration();
+export function setVoiceGloballyPaused(_paused: boolean) {
+  localStorage.setItem(VOICE_PAUSE_KEY, "true");
+  stopGlobalNarration();
 }
 
-/**
- * Hook: auto-narrate text when a page mounts (respects sound toggle + global pause).
- * Stops narration on unmount. Only fires once per mount.
- */
-export function useAutoNarrate(text: string | (() => string), delayMs = 800) {
-  const { soundsEnabled } = useSoundsEnabled();
-  const hasFired = useRef(false);
-
-  useEffect(() => {
-    if (isVoiceGloballyPaused()) return;
-    if (!soundsEnabled || hasFired.current) return;
-    hasFired.current = true;
-    const resolved = typeof text === "function" ? text() : text;
-    if (!resolved?.trim()) return;
-    const timer = setTimeout(() => {
-      if (isVoiceGloballyPaused()) return;
-      startGlobalNarration(resolved);
-    }, delayMs);
-    return () => clearTimeout(timer);
-  }, [soundsEnabled]);
-
-  useEffect(() => {
-    return () => stopGlobalNarration();
-  }, []);
+/** No-op: auto-narration is permanently disabled. */
+export function useAutoNarrate(_text: string | (() => string), _delayMs = 800) {
+  // intentionally empty
 }
