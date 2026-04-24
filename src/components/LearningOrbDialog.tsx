@@ -72,6 +72,17 @@ const STEPS: StepDef[] = [
     neuroNote: "Cognitive labeling anchors meaning in your semantic memory network.",
   },
   {
+    key: "recall_reconstruction",
+    label: "Recall",
+    color: "hsl(355 70% 44%)",
+    gradient: "linear-gradient(135deg, hsl(355 70% 44%), hsl(8 78% 52%))",
+    wash: "hsl(358 60% 94%)",
+    issue: "From You, Not Me",
+    kicker: "Produce it — don't just recognize it.",
+    caption: "Now build it back from your own brain…",
+    neuroNote: "Active production (vs. recognition) forces retrieval pathways to fire — the strongest form of memory consolidation.",
+  },
+  {
     key: "scripture",
     label: "Scripture",
     color: "hsl(30 60% 42%)",
