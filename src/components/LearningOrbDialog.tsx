@@ -174,8 +174,26 @@ const fetchTTS = (text: string): Promise<HTMLAudioElement | null> => fetchTTSWit
 
 /* ─── Main Component ─── */
 const LearningOrbDialog = ({
-  open, onOpenChange, block, onNotesChange, mode = "uploaded", blockIndex = 0, onComplete,
+  open, onOpenChange, block: rawBlock, onNotesChange, mode = "uploaded", blockIndex = 0, onComplete,
 }: LearningOrbDialogProps) => {
+  // ─── Static content overrides (built-in terms) ───
+  // If admin has saved pre-written content for a step, prefer it over legacy/AI fields
+  // so all users see the same structured experience without an AI call.
+  const block = useMemo<UploadedBlock | null>(() => {
+    if (!rawBlock) return null;
+    const b = { ...rawBlock };
+    if (b.static_define) b.definition = b.static_define;
+    if (b.static_metaphor) b.metaphor = b.static_metaphor;
+    if (b.static_visualize) b.visualization_desc = b.static_visualize;
+    if (b.static_reflect) b.reflection_prompt = b.static_reflect;
+    if (b.static_apply) b.practice_scenario = b.static_apply;
+    if (b.static_assess_question) {
+      b.quiz_question = b.static_assess_question;
+      b.quiz_answer = b.static_assess_answer || b.quiz_answer;
+    }
+    return b;
+  }, [rawBlock]);
+
   const { user, profile } = useAuth();
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
