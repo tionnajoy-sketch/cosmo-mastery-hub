@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_dna: {
+        Row: {
+          accuracy_score: number
+          attempt_count: number
+          confidence_signal: string | null
+          created_at: string
+          dominant_gap: string | null
+          first_attempt_correct: boolean | null
+          id: string
+          last_answer_correct: boolean | null
+          last_review_path: string | null
+          mastery_status: string
+          recommended_static_action: string | null
+          reteach_trigger: boolean
+          term_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy_score?: number
+          attempt_count?: number
+          confidence_signal?: string | null
+          created_at?: string
+          dominant_gap?: string | null
+          first_attempt_correct?: boolean | null
+          id?: string
+          last_answer_correct?: boolean | null
+          last_review_path?: string | null
+          mastery_status?: string
+          recommended_static_action?: string | null
+          reteach_trigger?: boolean
+          term_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy_score?: number
+          attempt_count?: number
+          confidence_signal?: string | null
+          created_at?: string
+          dominant_gap?: string | null
+          first_attempt_correct?: boolean | null
+          id?: string
+          last_answer_correct?: boolean | null
+          last_review_path?: string | null
+          mastery_status?: string
+          recommended_static_action?: string | null
+          reteach_trigger?: boolean
+          term_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bookmarks: {
         Row: {
           created_at: string
