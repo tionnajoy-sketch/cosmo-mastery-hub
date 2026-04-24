@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, RefreshCw, Sparkles,
+  ArrowLeft, ArrowRight, RefreshCw,
   Loader2, CheckCircle2, XCircle, Volume2, VolumeX,
   Square,
 } from "lucide-react";
