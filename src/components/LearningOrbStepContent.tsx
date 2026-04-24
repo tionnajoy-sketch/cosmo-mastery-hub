@@ -584,40 +584,9 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
   const hasStaticAssess = !!(block.static_assess_question && block.static_assess_answer);
   const hasBuiltinQuiz = block.quiz_question && block.quiz_options.length > 0;
 
-  const generateQuestion = async () => {
-    if (hasStaticAssess) return; // never call AI when static assess exists
-    setAiLoading(true);
-    setAiError("");
-    try {
-      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
-        body: {
-          messages: [{
-            role: "user",
-            content: `Create a State Board Cosmetology exam-style multiple choice question about "${block.term_title}". Definition: "${block.definition}". Respond ONLY with JSON: {"question":"...","options":["A)...","B)...","C)...","D)..."],"answer":"the full text of the correct option"}. No markdown.`,
-          }],
-          sectionName: "State Board Quiz",
-        },
-      });
-      const text = data?.response || data?.choices?.[0]?.message?.content || "";
-      const match = text.match(/\{[\s\S]*\}/);
-      if (match) {
-        const parsed = JSON.parse(match[0]);
-        setAiQuestion(parsed);
-      } else {
-        setAiError("Could not generate question. Try again.");
-      }
-    } catch {
-      setAiError("Failed to generate question.");
-    }
-    setAiLoading(false);
-  };
-
-  // Auto-generate ONLY if no static and no built-in quiz
-  useState(() => {
-    if (!hasStaticAssess && !hasBuiltinQuiz && !aiQuestion && !aiLoading) {
-      generateQuestion();
-    }
-  });
+  // STATIC-ONLY: lesson assessments never call AI. If no static or
+  // built-in question exists, the UI shows a friendly "coming soon" hint.
+  const generateQuestion = async () => { /* no-op */ };
 
   // Build 4 options for static assess: correct + 3 plausible distractors derived from term/definition.
   const staticDistractors = (() => {
