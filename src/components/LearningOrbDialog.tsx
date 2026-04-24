@@ -51,7 +51,7 @@ interface EditorialShellProps {
   stepKicker: string;
 }
 
-const EditorialShell = ({
+const EditorialShellBase = ({
   children,
   hideHeader = false,
   stepColor,
