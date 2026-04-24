@@ -278,6 +278,7 @@ const LearningOrbDialog = ({
   const [quizSelected, setQuizSelected] = useState<string | null>(null);
   const [quizRevealed, setQuizRevealed] = useState(false);
   const [quizAttempted, setQuizAttempted] = useState(false);
+  const [quizFeedbackLocked, setQuizFeedbackLocked] = useState(false);
   const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -334,6 +335,7 @@ const LearningOrbDialog = ({
       setQuizSelected(null);
       setQuizRevealed(false);
       setQuizAttempted(false);
+      setQuizFeedbackLocked(false);
       setAiQuestion(null);
       setRecognizeSelected(null);
       setRecognizeRevealed(false);
@@ -471,8 +473,9 @@ const LearningOrbDialog = ({
       updateDNA({ layerCompleted: step.key, timeSpentSeconds: 30 });
     }
 
-    // Quiz step requires an answer before completing
+    // Quiz step requires an answer and an explicit learner choice before completing
     if (step.key === "quiz" && !quizRevealed) return;
+    if (step.key === "quiz" && quizFeedbackLocked) return;
     // GATE: lock progression while reinforcement is unresolved
     if (step.key === "quiz" && !reinforcementResolved) return;
 
@@ -1168,6 +1171,7 @@ const LearningOrbDialog = ({
                               if (quizRevealed) return;
                               setQuizSelected(letter);
                               setQuizRevealed(true);
+                              setQuizFeedbackLocked(true);
                               const correct = isCorrect;
                               const isFirstAttempt = !quizAttempted;
                               setQuizAttempted(true);
@@ -1318,7 +1322,11 @@ const LearningOrbDialog = ({
                                 <>
                                   <Button
                                     size="sm"
-                                    onClick={() => { persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Continue" }); goNext(); }}
+                                    onClick={() => {
+                                      setQuizFeedbackLocked(false);
+                                      persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Continue" });
+                                      goNext();
+                                    }}
                                     style={{ background: accent, color: "white" }}
                                   >
                                     Continue
@@ -1329,16 +1337,29 @@ const LearningOrbDialog = ({
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => { setQuizSelected(null); setQuizRevealed(false); persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Practice Again" }); }}
+                                    onClick={() => {
+                                      setQuizSelected(null);
+                                      setQuizRevealed(false);
+                                      setQuizFeedbackLocked(false);
+                                      persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Practice Again" });
+                                    }}
                                   >
                                     Practice Again
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => onOpenChange(false)}>
+                                    Exit Lesson
                                   </Button>
                                 </>
                               ) : (
                                 <>
                                   <Button
                                     size="sm"
-                                    onClick={() => { setQuizSelected(null); setQuizRevealed(false); persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Try Again" }); }}
+                                    onClick={() => {
+                                      setQuizSelected(null);
+                                      setQuizRevealed(false);
+                                      setQuizFeedbackLocked(false);
+                                      persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Try Again" });
+                                    }}
                                     style={{ background: accent, color: "white" }}
                                   >
                                     Try Again
@@ -1352,9 +1373,16 @@ const LearningOrbDialog = ({
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    onClick={() => { persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Continue" }); goNext(); }}
+                                    onClick={() => {
+                                      setQuizFeedbackLocked(false);
+                                      persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Continue" });
+                                      goNext();
+                                    }}
                                   >
                                     Continue
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => onOpenChange(false)}>
+                                    Exit Lesson
                                   </Button>
                                 </>
                               )}
@@ -1554,11 +1582,13 @@ const LearningOrbDialog = ({
                 <RefreshCw className="h-3.5 w-3.5" /> Let TJ Explain Again
               </Button>
               <Button size="sm" className="gap-1 text-sm px-5 shadow-md"
-                style={{ background: step.gradient, color: "white", opacity: (step.key === "quiz" && (!quizRevealed || !reinforcementResolved)) ? 0.5 : 1 }}
+                style={{ background: step.gradient, color: "white", opacity: (step.key === "quiz" && (!quizRevealed || !reinforcementResolved || quizFeedbackLocked)) ? 0.5 : 1 }}
                 onClick={goNext}
-                disabled={step.key === "quiz" && (!quizRevealed || !reinforcementResolved)}>
+                disabled={step.key === "quiz" && (!quizRevealed || !reinforcementResolved || quizFeedbackLocked)}>
                 {step.key === "quiz" && !reinforcementResolved
                   ? "🔒 Reinforcement"
+                  : step.key === "quiz" && quizFeedbackLocked
+                  ? "Choose Next Action"
                   : currentStep === adaptedSteps.length - 1 ? "Complete" : "Mark Step Complete"}
                 {currentStep < adaptedSteps.length - 1 && reinforcementResolved && <ArrowRight className="h-4 w-4" />}
               </Button>
