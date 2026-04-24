@@ -70,7 +70,11 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
   const ksRoot = getBlockOpenState(dnaContext, "root-word");
   const ksDeeper = getBlockOpenState(dnaContext, "deeper");
 
+  // STATIC-FIRST: if admin saved a Break-It-Down for this term, show it and skip AI.
+  const staticBreakdown = block.static_break_it_down?.trim() || "";
+
   const decode = async () => {
+    if (staticBreakdown) return; // never call AI when static content exists
     setLoading(true);
     setError("");
     try {
