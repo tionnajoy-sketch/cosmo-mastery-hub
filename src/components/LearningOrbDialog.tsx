@@ -744,56 +744,29 @@ const LearningOrbDialog = ({
   const issueNumber = String(stepIndex + 1).padStart(2, "0");
   const totalNumber = String(adaptedSteps.length).padStart(2, "0");
 
-  const EditorialShell = ({ children, hideHeader = false }: { children: React.ReactNode; hideHeader?: boolean }): JSX.Element => (
-    <div
-      className="editorial-spread"
-      style={
-        {
-          "--step-color": step.color,
-          "--step-wash": step.wash,
-          "--step-gradient": step.gradient,
-        } as React.CSSProperties
-      }
-    >
-      {!hideHeader && (
-        <header className="mb-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="editorial-eyebrow">
-              Layer {issueNumber} · {step.label}
-            </span>
-            <span className="editorial-tag">{block.term_title}</span>
-          </div>
-          <h2 className="editorial-headline">
-            {step.issue}
-          </h2>
-          <p className="editorial-subhead">{step.kicker}</p>
-          <hr className="editorial-rule" />
-        </header>
-      )}
-      {children}
-    </div>
-  );
-
-  const StepCard = ({
-    num,
-    label,
-    title,
-    children,
-  }: {
-    num?: string;
-    label: string;
-    title?: string;
-    children: React.ReactNode;
-  }): JSX.Element => (
-    <article className="editorial-card">
-      <div className="editorial-card-header">
-        {num && <span className="num">{num}</span>}
-        <span className="label">{label}</span>
-        {title && <span className="title">{title}</span>}
-      </div>
-      <div className="editorial-card-body">{children}</div>
-    </article>
-  );
+  // Stable wrapper — useMemo keeps component identity constant across
+  // renders so React doesn't remount the subtree (which would steal focus
+  // from inputs like the Recall Reconstruction textarea).
+  // We deliberately shadow the module-scope `EditorialShell` so the existing
+  // JSX usages below don't need to change.
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  const EditorialShell = useMemo(() => {
+    const Wrapped = (props: { children: React.ReactNode; hideHeader?: boolean }) => (
+      <EditorialShellBase
+        {...props}
+        stepColor={step.color}
+        stepWash={step.wash}
+        stepGradient={step.gradient}
+        issueNumber={issueNumber}
+        stepLabel={step.label}
+        termTitle={block.term_title}
+        stepIssue={step.issue}
+        stepKicker={step.kicker}
+      />
+    );
+    Wrapped.displayName = "EditorialShell";
+    return Wrapped;
+  }, [step.color, step.wash, step.gradient, step.label, step.issue, step.kicker, issueNumber, block.term_title]);
 
   /* ─── Render Center Content ─── */
   const renderContent = () => {
