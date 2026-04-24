@@ -1221,6 +1221,12 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                   </div>
                   {quizRevealed && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 pt-1">
+                      {block.static_assess_explanation && (
+                        <div className="w-full p-3 rounded-lg" style={{ background: `${step.color}10`, border: `1.5px solid ${step.color}30` }}>
+                          <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: step.color }}>Why</p>
+                          <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.static_assess_explanation}</p>
+                        </div>
+                      )}
                       <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>Try Again</Button>
                       {!hasBuiltinQuiz && (
                         <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuizQuestion(); }}
