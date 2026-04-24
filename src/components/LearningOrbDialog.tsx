@@ -533,6 +533,8 @@ const LearningOrbDialog = ({
     } else {
       updateDNA({ layerCompleted: step.key, timeSpentSeconds: 30 });
     }
+    // NEW: bump the 9 brain-strength scores per the static layer spec.
+    brainCompleteLayer(step.key).catch(() => {});
 
     // Quiz step requires an answer and an explicit learner choice before completing
     if (step.key === "quiz" && !quizRevealed) return;
@@ -1466,6 +1468,23 @@ const LearningOrbDialog = ({
               )}
             </EditorialShell>
           </motion.div>
+        );
+
+      case "recall_reconstruction":
+        return (
+          <EditorialShell>
+            <RecallReconstruction
+              termId={block.id}
+              termTitle={block.term_title}
+              definition={block.definition || ""}
+              accentColor={step.color}
+              onTriggerReinforcement={() => setStrengthenOpen(true)}
+              onComplete={() => {
+                markStepDone();
+                if (currentStep < adaptedSteps.length - 1) setCurrentStep((s) => s + 1);
+              }}
+            />
+          </EditorialShell>
         );
 
       default: return null;
