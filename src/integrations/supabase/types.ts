@@ -567,6 +567,7 @@ export type Database = {
           behavior_history: Json
           birth_month: number | null
           birth_year: number | null
+          brain_strengths: Json
           created_at: string
           dna_confidence: string | null
           dna_engagement: number | null
@@ -592,6 +593,7 @@ export type Database = {
           behavior_history?: Json
           birth_month?: number | null
           birth_year?: number | null
+          brain_strengths?: Json
           created_at?: string
           dna_confidence?: string | null
           dna_engagement?: number | null
@@ -617,6 +619,7 @@ export type Database = {
           behavior_history?: Json
           birth_month?: number | null
           birth_year?: number | null
+          brain_strengths?: Json
           created_at?: string
           dna_confidence?: string | null
           dna_engagement?: number | null
@@ -741,6 +744,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      recall_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          mode: string
+          reinforcement_passed: boolean | null
+          response: string
+          score_pct: number
+          term_id: string
+          triggered_reinforcement: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mode?: string
+          reinforcement_passed?: boolean | null
+          response?: string
+          score_pct?: number
+          term_id: string
+          triggered_reinforcement?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mode?: string
+          reinforcement_passed?: boolean | null
+          response?: string
+          score_pct?: number
+          term_id?: string
+          triggered_reinforcement?: boolean
+          user_id?: string
+        }
+        Relationships: []
       }
       reflections: {
         Row: {

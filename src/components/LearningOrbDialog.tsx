@@ -29,6 +29,9 @@ import { useReinforcement } from "@/hooks/useReinforcement";
 import { shuffleOptions } from "@/lib/shuffleOptions";
 import LayerBlockNavigator from "@/components/LayerBlockNavigator";
 import { setLessonContext, clearLessonContext } from "@/lib/dna/currentLessonContext";
+import RecallReconstruction from "@/components/orb-steps/RecallReconstruction";
+import StrengthenLayerDialog from "@/components/StrengthenLayerDialog";
+import { useBrainStrengths } from "@/hooks/useBrainStrengths";
 
 const c = pageColors.study;
 
@@ -67,6 +70,17 @@ const STEPS: StepDef[] = [
     kicker: "What it actually means, said simply.",
     caption: "Now let's understand what it means…",
     neuroNote: "Cognitive labeling anchors meaning in your semantic memory network.",
+  },
+  {
+    key: "recall_reconstruction",
+    label: "Recall",
+    color: "hsl(355 70% 44%)",
+    gradient: "linear-gradient(135deg, hsl(355 70% 44%), hsl(8 78% 52%))",
+    wash: "hsl(358 60% 94%)",
+    issue: "From You, Not Me",
+    kicker: "Produce it — don't just recognize it.",
+    caption: "Now build it back from your own brain…",
+    neuroNote: "Active production (vs. recognition) forces retrieval pathways to fire — the strongest form of memory consolidation.",
   },
   {
     key: "scripture",
@@ -238,6 +252,8 @@ const LearningOrbDialog = ({
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
+  const { completeLayer: brainCompleteLayer, recordAssess: brainRecordAssess } = useBrainStrengths();
+  const [strengthenOpen, setStrengthenOpen] = useState(false);
   const blockState = (type: Parameters<typeof getBlockOpenState>[1]) => getBlockOpenState(dnaContext, type);
   const { adaptCaption, toneProfile } = useTJTone();
   // Filter out scripture step if block has no source text/page reference
@@ -517,6 +533,8 @@ const LearningOrbDialog = ({
     } else {
       updateDNA({ layerCompleted: step.key, timeSpentSeconds: 30 });
     }
+    // NEW: bump the 9 brain-strength scores per the static layer spec.
+    brainCompleteLayer(step.key).catch(() => {});
 
     // Quiz step requires an answer and an explicit learner choice before completing
     if (step.key === "quiz" && !quizRevealed) return;
@@ -1452,6 +1470,23 @@ const LearningOrbDialog = ({
           </motion.div>
         );
 
+      case "recall_reconstruction":
+        return (
+          <EditorialShell>
+            <RecallReconstruction
+              termId={block.id}
+              termTitle={block.term_title}
+              definition={block.definition || ""}
+              accentColor={step.color}
+              onTriggerReinforcement={() => setStrengthenOpen(true)}
+              onComplete={() => {
+                markStepDone();
+                if (currentStep < adaptedSteps.length - 1) setCurrentStep((s) => s + 1);
+              }}
+            />
+          </EditorialShell>
+        );
+
       default: return null;
     }
   };
@@ -1556,6 +1591,22 @@ const LearningOrbDialog = ({
           metaphor={block.metaphor}
           missedQuestion={missedQuestionText || quizQuestion || `Question about ${block.term_title}`}
           missedAnswerExplanation={block.definition}
+        />
+        {/* NEW: "Strengthen This Layer" reinforcement loop (recall < 60%) */}
+        <StrengthenLayerDialog
+          open={strengthenOpen}
+          onOpenChange={setStrengthenOpen}
+          termId={block.id}
+          termTitle={block.term_title}
+          definition={block.definition || ""}
+          metaphor={block.metaphor || (block as any).static_metaphor}
+          visualDesc={block.visualization_desc || (block as any).static_visualize}
+          microBreakdown={(block as any).static_break_it_down}
+          imageUrl={imageUrl}
+          onResolved={({ passed }) => {
+            markStepDone();
+            if (passed && currentStep < adaptedSteps.length - 1) setCurrentStep((s) => s + 1);
+          }}
         />
         {/* Subtle BG */}
         <div className="absolute inset-0 bg-cover bg-center pointer-events-none" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.06, filter: "brightness(1.2)" }} />
