@@ -672,7 +672,7 @@ const LearningOrbDialog = ({
   const issueNumber = String(stepIndex + 1).padStart(2, "0");
   const totalNumber = String(adaptedSteps.length).padStart(2, "0");
 
-  const EditorialShell = ({ children, hideHeader = false }: { children: React.ReactNode; hideHeader?: boolean }) => (
+  const EditorialShell = ({ children, hideHeader = false }: { children: React.ReactNode; hideHeader?: boolean }): JSX.Element => (
     <div
       className="editorial-spread"
       style={
@@ -712,7 +712,7 @@ const LearningOrbDialog = ({
     label: string;
     title?: string;
     children: React.ReactNode;
-  }) => (
+  }): JSX.Element => (
     <article className="editorial-card">
       <div className="editorial-card-header">
         {num && <span className="num">{num}</span>}
