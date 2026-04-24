@@ -129,20 +129,9 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
           )}
 
           {!etymology && !loading && !staticBreakdown && (
-            <div className="space-y-3">
-              <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
-                Understanding where a word comes from helps you remember what it means.
-              </p>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={decode}
-                className="gap-2"
-                style={{ borderColor: "hsl(30 85% 45%)", color: "hsl(30 85% 45%)" }}
-              >
-                🔍 Decode This Word
-              </Button>
-            </div>
+            <p className="text-sm italic" style={{ color: c.subtext }}>
+              Word breakdown for this term hasn't been added yet.
+            </p>
           )}
 
           {staticBreakdown && (
