@@ -870,6 +870,7 @@ export type Database = {
           definition: string
           id: string
           information_content: string
+          lesson_narrative: Json
           metaphor: string
           metaphor_content: string
           order: number
@@ -892,6 +893,7 @@ export type Database = {
           definition?: string
           id?: string
           information_content?: string
+          lesson_narrative?: Json
           metaphor?: string
           metaphor_content?: string
           order?: number
@@ -914,6 +916,7 @@ export type Database = {
           definition?: string
           id?: string
           information_content?: string
+          lesson_narrative?: Json
           metaphor?: string
           metaphor_content?: string
           order?: number
