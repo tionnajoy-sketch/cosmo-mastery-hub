@@ -1171,6 +1171,7 @@ const LearningOrbDialog = ({
                               if (quizRevealed) return;
                               setQuizSelected(letter);
                               setQuizRevealed(true);
+                              setQuizFeedbackLocked(true);
                               const correct = isCorrect;
                               const isFirstAttempt = !quizAttempted;
                               setQuizAttempted(true);
@@ -1321,7 +1322,11 @@ const LearningOrbDialog = ({
                                 <>
                                   <Button
                                     size="sm"
-                                    onClick={() => { persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Continue" }); goNext(); }}
+                                    onClick={() => {
+                                      setQuizFeedbackLocked(false);
+                                      persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Continue" });
+                                      goNext();
+                                    }}
                                     style={{ background: accent, color: "white" }}
                                   >
                                     Continue
@@ -1332,16 +1337,29 @@ const LearningOrbDialog = ({
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => { setQuizSelected(null); setQuizRevealed(false); persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Practice Again" }); }}
+                                    onClick={() => {
+                                      setQuizSelected(null);
+                                      setQuizRevealed(false);
+                                      setQuizFeedbackLocked(false);
+                                      persistAssessmentDNA({ correct: true, isFirstAttempt: false, reviewPath: "Practice Again" });
+                                    }}
                                   >
                                     Practice Again
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => onOpenChange(false)}>
+                                    Exit Lesson
                                   </Button>
                                 </>
                               ) : (
                                 <>
                                   <Button
                                     size="sm"
-                                    onClick={() => { setQuizSelected(null); setQuizRevealed(false); persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Try Again" }); }}
+                                    onClick={() => {
+                                      setQuizSelected(null);
+                                      setQuizRevealed(false);
+                                      setQuizFeedbackLocked(false);
+                                      persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Try Again" });
+                                    }}
                                     style={{ background: accent, color: "white" }}
                                   >
                                     Try Again
@@ -1355,9 +1373,16 @@ const LearningOrbDialog = ({
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    onClick={() => { persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Continue" }); goNext(); }}
+                                    onClick={() => {
+                                      setQuizFeedbackLocked(false);
+                                      persistAssessmentDNA({ correct: false, isFirstAttempt: false, reviewPath: "Continue" });
+                                      goNext();
+                                    }}
                                   >
                                     Continue
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => onOpenChange(false)}>
+                                    Exit Lesson
                                   </Button>
                                 </>
                               )}
