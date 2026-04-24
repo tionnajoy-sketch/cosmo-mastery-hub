@@ -473,111 +473,13 @@ const LearningOrbDialog = ({
     if (currentStep > 0) setCurrentStep(s => s - 1);
   };
 
-  const fetchEtymology = async () => {
-    setEtymLoading(true);
-    try {
-      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
-        body: {
-          messages: [{
-            role: "user",
-            content: `Break down the word "${block.term_title}" into its etymological parts. Respond ONLY with JSON: {"pronunciation":"...", "parts":[{"part":"...","meaning":"...","origin":"Latin/Greek/etc"}], "summary":"one sentence explaining why the word makes sense"}. No markdown.`,
-          }],
-          sectionName: "Etymology",
-        },
-      });
-      const text = data?.response || "";
-      const match = text.match(/\{[\s\S]*\}/);
-      if (match) setEtymology(JSON.parse(match[0]));
-    } catch {}
-    setEtymLoading(false);
-  };
-
-  const fetchExpandedInfo = async () => {
-    setInfoLoading(true);
-    try {
-      const depthInstruction = rules.contentDepth === "brief"
-        ? "Keep each section to 1-2 sentences."
-        : rules.contentDepth === "deep"
-        ? "Go deep with thorough paragraphs and connections."
-        : "Keep it concise but thorough — 2-3 sentences each.";
-      const programName = profile?.selected_program || "cosmetology";
-      const dnaLayer = dna?.layerStrength || "D";
-      const toneMode = toneProfile || "encouraging";
-      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
-        body: {
-          messages: [{
-            role: "user",
-            content: `You are TJ Anderson, a warm and knowledgeable mentor. Provide a deeper teaching for "${block.term_title}" (definition: "${block.definition}").
-
-Structure your response with these EXACT section headers using markdown ##:
-
-## Simple Explanation
-A clear, plain-language explanation anyone can understand.
-
-## The Lesson
-Teach the concept more deeply — help the student truly understand it, not just memorize it.
-
-## History & Origin
-Where did this word or concept come from? What's the etymology or historical background?
-
-## Why It Matters
-Why is this important in ${programName}? Connect it to real practice and career success.
-
-## How This Fits You
-Personalize this for a learner whose strongest learning layer is "${dnaLayer}" and who prefers a "${toneMode}" teaching style. Speak directly to them.
-
-${depthInstruction}
-Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
-          }],
-          sectionName: "Deep Teaching",
-        },
-      });
-      const info = data?.response || "";
-      setExpandedInfo(info);
-      if (info && voiceEnabled) speakText(info.slice(0, 1000));
-    } catch {}
-    setInfoLoading(false);
-  };
-
-  const generateImage = async () => {
-    if (imageUrl || imageLoading) return;
-    setImageLoading(true);
-    try {
-      const { data } = await supabase.functions.invoke("generate-term-image", {
-        body: { termId: block.id, term: block.term_title, definition: block.definition, metaphor: block.metaphor },
-      });
-      const url = data?.image_url || data?.imageUrl;
-      if (url) {
-        setImageUrl(url);
-        if (mode === "uploaded") await supabase.from("uploaded_module_blocks").update({ image_url: url }).eq("id", block.id);
-      }
-    } catch {} finally { setImageLoading(false); }
-  };
-
-  const generateQuizQuestion = async () => {
-    setAiLoading(true);
-    try {
-      const difficultyHint = rules.difficulty === "guided"
-        ? "Make the question straightforward with clear options. Add a hint."
-        : rules.difficulty === "challenge"
-        ? "Make the question challenging — use scenario-based or application-style questions."
-        : "Standard difficulty for exam preparation.";
-      const programName = profile?.selected_program || "cosmetology";
-      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
-        body: {
-          messages: [{
-            role: "user",
-            content: `Create a ${programName} exam-style multiple choice question about "${block.term_title}". Definition: "${block.definition}". ${difficultyHint} Respond ONLY with JSON: {"question":"...","options":["A)...","B)...","C)...","D)..."],"answer":"the full text of the correct option"}. No markdown.`,
-          }],
-          sectionName: "State Board Quiz",
-        },
-      });
-      const text = data?.response || "";
-      const match = text.match(/\{[\s\S]*\}/);
-      if (match) setAiQuestion(JSON.parse(match[0]));
-    } catch {}
-    setAiLoading(false);
-  };
+  // STATIC-ONLY: all AI generators removed from lesson steps.
+  // These no-op stubs keep call sites safe. Content for each step is read
+  // exclusively from the term's database fields (static_* columns).
+  const fetchEtymology = async () => { /* no-op: static-only */ };
+  const fetchExpandedInfo = async () => { /* no-op: static-only */ };
+  const generateImage = async () => { /* no-op: static-only */ };
+  const generateQuizQuestion = async () => { /* no-op: static-only */ };
 
   const hasBuiltinQuiz = block.quiz_question && block.quiz_options?.length > 0;
   const quizQuestion = hasBuiltinQuiz ? block.quiz_question : aiQuestion?.question;
