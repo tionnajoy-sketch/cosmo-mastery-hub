@@ -252,6 +252,8 @@ const LearningOrbDialog = ({
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
+  const { completeLayer: brainCompleteLayer, recordAssess: brainRecordAssess } = useBrainStrengths();
+  const [strengthenOpen, setStrengthenOpen] = useState(false);
   const blockState = (type: Parameters<typeof getBlockOpenState>[1]) => getBlockOpenState(dnaContext, type);
   const { adaptCaption, toneProfile } = useTJTone();
   // Filter out scripture step if block has no source text/page reference
