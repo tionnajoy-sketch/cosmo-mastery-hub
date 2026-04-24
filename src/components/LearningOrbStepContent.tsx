@@ -436,22 +436,146 @@ const StepContent = (props: StepContentProps) => {
         </div>
       );
 
-    case "information":
+    case "information": {
+      const narrative = block.lesson_narrative;
+      const hasNarrative = !!(narrative && (narrative.sections?.length || narrative.key_point || narrative.purpose));
       return (
-        <div className="space-y-3">
-          <motion.p
-            className="text-base leading-relaxed"
-            style={{ color: c.bodyText }}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-          >
-            {block.affirmation}
-          </motion.p>
-          <SpeakButton text={block.affirmation} size="sm" label="Hear affirmation" onComplete={props.handleAudioComplete} />
-          <BrainNote text="Affirmations activate your limbic system and build emotional confidence around what you're learning." />
+        <div className="space-y-4">
+          {hasNarrative ? (
+            <>
+              {narrative.key_point && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-xl px-4 py-3"
+                  style={{
+                    background: `${stepColor}10`,
+                    border: `1.5px solid ${stepColor}40`,
+                  }}
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: stepColor }}>
+                    🔑 Key Point
+                  </p>
+                  <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+                    {narrative.key_point}
+                  </p>
+                </motion.div>
+              )}
+
+              {narrative.sections?.map((sec, i) => (
+                <motion.section
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 + i * 0.04 }}
+                  className="rounded-xl overflow-hidden"
+                  style={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                  }}
+                >
+                  <div
+                    className="px-4 py-2"
+                    style={{ background: `${stepColor}08`, borderBottom: "1px solid hsl(var(--border))" }}
+                  >
+                    <h4 className="font-display text-sm font-bold m-0" style={{ color: stepColor }}>
+                      {sec.heading}
+                    </h4>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: c.bodyText }}>
+                      {sec.body}
+                    </p>
+                  </div>
+                </motion.section>
+              ))}
+
+              {narrative.memory_cue && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="rounded-xl px-4 py-4 text-center"
+                  style={{
+                    background: "linear-gradient(135deg, hsl(280 35% 96%), hsl(280 30% 92%))",
+                    border: "1.5px solid hsl(280 35% 80%)",
+                  }}
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(280 45% 40%)" }}>
+                    💜 Remember
+                  </p>
+                  <p className="text-base font-display font-bold leading-snug" style={{ color: "hsl(280 50% 30%)" }}>
+                    {narrative.memory_cue}
+                  </p>
+                </motion.div>
+              )}
+
+              {narrative.mentor_check_in && narrative.mentor_check_in.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-xl px-4 py-3"
+                  style={{
+                    background: "hsl(var(--card))",
+                    border: `1.5px dashed ${stepColor}60`,
+                  }}
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: stepColor }}>
+                    💬 TJ Mentor Check-In
+                  </p>
+                  <ul className="space-y-2">
+                    {narrative.mentor_check_in.map((q, i) => (
+                      <li key={i} className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+                        • {q}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+
+              {narrative.purpose && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="rounded-xl px-4 py-3"
+                  style={{
+                    background: `${stepColor}06`,
+                    borderLeft: `3px solid ${stepColor}`,
+                  }}
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: stepColor }}>
+                    Purpose
+                  </p>
+                  <p className="text-sm leading-relaxed italic" style={{ color: c.bodyText }}>
+                    {narrative.purpose}
+                  </p>
+                </motion.div>
+              )}
+
+              <SpeakButton
+                text={`${narrative.key_point || ""}. ${(narrative.sections || []).map(s => `${s.heading}. ${s.body}`).join(" ")}. ${narrative.memory_cue || ""}.`}
+                size="sm"
+                label="Listen to lesson"
+                onComplete={props.handleAudioComplete}
+              />
+            </>
+          ) : (
+            <>
+              <motion.p
+                className="text-base leading-relaxed"
+                style={{ color: c.bodyText }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+              >
+                {block.affirmation}
+              </motion.p>
+              <SpeakButton text={block.affirmation} size="sm" label="Hear affirmation" onComplete={props.handleAudioComplete} />
+              <BrainNote text="Affirmations activate your limbic system and build emotional confidence around what you're learning." />
+            </>
+          )}
         </div>
       );
+    }
 
     case "reflection":
       return (
