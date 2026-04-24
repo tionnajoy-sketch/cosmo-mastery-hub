@@ -517,6 +517,62 @@ const LearningOrbDialog = ({
   const quizOptions = hasBuiltinQuiz ? block.quiz_options.map(String) : (aiQuestion?.options || []);
   const quizAnswer = hasBuiltinQuiz ? block.quiz_answer : (aiQuestion?.answer || "");
 
+  /* ─── Editorial spread shell — wraps every step's content ─── */
+  const stepIndex = currentStep;
+  const issueNumber = String(stepIndex + 1).padStart(2, "0");
+  const totalNumber = String(adaptedSteps.length).padStart(2, "0");
+
+  const EditorialShell = ({ children, hideHeader = false }: { children: React.ReactNode; hideHeader?: boolean }) => (
+    <div
+      className="editorial-spread"
+      style={
+        {
+          "--step-color": step.color,
+          "--step-wash": step.wash,
+          "--step-gradient": step.gradient,
+        } as React.CSSProperties
+      }
+    >
+      {!hideHeader && (
+        <header className="mb-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="editorial-eyebrow">
+              Layer {issueNumber} · {step.label}
+            </span>
+            <span className="editorial-tag">{block.term_title}</span>
+          </div>
+          <h2 className="editorial-headline">
+            {step.issue}
+          </h2>
+          <p className="editorial-subhead">{step.kicker}</p>
+          <hr className="editorial-rule" />
+        </header>
+      )}
+      {children}
+    </div>
+  );
+
+  const StepCard = ({
+    num,
+    label,
+    title,
+    children,
+  }: {
+    num?: string;
+    label: string;
+    title?: string;
+    children: React.ReactNode;
+  }) => (
+    <article className="editorial-card">
+      <div className="editorial-card-header">
+        {num && <span className="num">{num}</span>}
+        <span className="label">{label}</span>
+        {title && <span className="title">{title}</span>}
+      </div>
+      <div className="editorial-card-body">{children}</div>
+    </article>
+  );
+
   /* ─── Render Center Content ─── */
   const renderContent = () => {
     switch (step.key) {
