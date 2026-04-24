@@ -591,18 +591,18 @@ const LearningOrbDialog = ({
       case "visual":
         return (
           <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center space-y-5 py-4">
-            <TJVisualEngine
-              termId={block.id}
-              termName={block.term_title}
-              definition={block.definition}
-              metaphor={block.metaphor}
-              existingImageUrl={imageUrl}
-              onImageGenerated={(url) => {
-                setImageUrl(url);
-                if (mode === "uploaded") supabase.from("uploaded_module_blocks").update({ image_url: url }).eq("id", block.id);
-              }}
-            />
-            {block.visualization_desc && <p className="text-sm max-w-md text-center" style={{ color: c.subtext }}>{block.visualization_desc}</p>}
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-center" style={{ color: step.color }}>{block.term_title}</h2>
+            {imageUrl ? (
+              <img src={imageUrl} alt={block.term_title} className="rounded-2xl max-w-md w-full shadow-md" />
+            ) : null}
+            {block.static_visualize && (
+              <div className="p-4 rounded-xl max-w-md text-center" style={{ background: `${step.color}10`, border: `1.5px solid ${step.color}30`, color: c.bodyText }}>
+                <p className="text-base leading-relaxed whitespace-pre-wrap">{block.static_visualize}</p>
+              </div>
+            )}
+            {!imageUrl && !block.static_visualize && block.visualization_desc && (
+              <p className="text-sm max-w-md text-center" style={{ color: c.subtext }}>{block.visualization_desc}</p>
+            )}
             {block.video_url && <VideoPlayer url={block.video_url} />}
           </motion.div>
         );
