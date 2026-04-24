@@ -74,6 +74,7 @@ const termToBlock = (t: Term): UploadedBlock => ({
   static_assess_question: (t as any).assess_question || "",
   static_assess_answer: (t as any).assess_answer || "",
   static_assess_explanation: (t as any).assess_explanation || "",
+  lesson_narrative: (t as any).lesson_narrative && typeof (t as any).lesson_narrative === "object" ? (t as any).lesson_narrative : undefined,
 });
 
 const groupTermsBySection = (terms: Term[]) => {

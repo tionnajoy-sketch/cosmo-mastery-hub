@@ -52,6 +52,7 @@ const termToBlock = (t: any, blockNum: number): UploadedBlock => ({
   static_assess_question: t.assess_question || "",
   static_assess_answer: t.assess_answer || "",
   static_assess_explanation: t.assess_explanation || "",
+  lesson_narrative: t.lesson_narrative && typeof t.lesson_narrative === "object" ? t.lesson_narrative : undefined,
 });
 
 const StudyPage = () => {
