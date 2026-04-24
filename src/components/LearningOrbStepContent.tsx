@@ -73,34 +73,9 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
   // STATIC-FIRST: if admin saved a Break-It-Down for this term, show it and skip AI.
   const staticBreakdown = block.static_break_it_down?.trim() || "";
 
-  const decode = async () => {
-    if (staticBreakdown) return; // never call AI when static content exists
-    setLoading(true);
-    setError("");
-    try {
-      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
-        body: {
-          messages: [
-            {
-              role: "user",
-              content: `Break down the word "${block.term_title}" into its etymological parts (prefix, root, suffix). For each part give: the part itself, its language of origin (Latin, Greek, etc.), and its meaning. Definition for context: "${block.definition}". Respond ONLY with a JSON array like: [{"part":"Epi","origin":"Greek","meaning":"upon, above"},{"part":"dermis","origin":"Greek","meaning":"skin"}]. No markdown, no explanation, just the JSON array.`,
-            },
-          ],
-          sectionName: "Etymology",
-        },
-      });
-      const text = data?.response || data?.choices?.[0]?.message?.content || "";
-      const match = text.match(/\[[\s\S]*\]/);
-      if (match) {
-        setEtymology(JSON.parse(match[0]));
-      } else {
-        setError("Could not parse etymology. Try again.");
-      }
-    } catch {
-      setError("Failed to load etymology.");
-    }
-    setLoading(false);
-  };
+  // STATIC-ONLY: never call AI from lesson steps. Render static content
+  // when present; otherwise show a gentle "coming soon" message.
+  const decode = async () => { /* no-op */ };
 
   // Short Key Concept summary built from the term + definition (1 line)
   const keyConcept = block.definition
@@ -154,20 +129,9 @@ const EtymologyBreakdown = ({ block, stepColor }: { block: UploadedBlock; stepCo
           )}
 
           {!etymology && !loading && !staticBreakdown && (
-            <div className="space-y-3">
-              <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
-                Understanding where a word comes from helps you remember what it means.
-              </p>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={decode}
-                className="gap-2"
-                style={{ borderColor: "hsl(30 85% 45%)", color: "hsl(30 85% 45%)" }}
-              >
-                🔍 Decode This Word
-              </Button>
-            </div>
+            <p className="text-sm italic" style={{ color: c.subtext }}>
+              Word breakdown for this term hasn't been added yet.
+            </p>
           )}
 
           {staticBreakdown && (
@@ -609,40 +573,9 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
   const hasStaticAssess = !!(block.static_assess_question && block.static_assess_answer);
   const hasBuiltinQuiz = block.quiz_question && block.quiz_options.length > 0;
 
-  const generateQuestion = async () => {
-    if (hasStaticAssess) return; // never call AI when static assess exists
-    setAiLoading(true);
-    setAiError("");
-    try {
-      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
-        body: {
-          messages: [{
-            role: "user",
-            content: `Create a State Board Cosmetology exam-style multiple choice question about "${block.term_title}". Definition: "${block.definition}". Respond ONLY with JSON: {"question":"...","options":["A)...","B)...","C)...","D)..."],"answer":"the full text of the correct option"}. No markdown.`,
-          }],
-          sectionName: "State Board Quiz",
-        },
-      });
-      const text = data?.response || data?.choices?.[0]?.message?.content || "";
-      const match = text.match(/\{[\s\S]*\}/);
-      if (match) {
-        const parsed = JSON.parse(match[0]);
-        setAiQuestion(parsed);
-      } else {
-        setAiError("Could not generate question. Try again.");
-      }
-    } catch {
-      setAiError("Failed to generate question.");
-    }
-    setAiLoading(false);
-  };
-
-  // Auto-generate ONLY if no static and no built-in quiz
-  useState(() => {
-    if (!hasStaticAssess && !hasBuiltinQuiz && !aiQuestion && !aiLoading) {
-      generateQuestion();
-    }
-  });
+  // STATIC-ONLY: lesson assessments never call AI. If no static or
+  // built-in question exists, the UI shows a friendly "coming soon" hint.
+  const generateQuestion = async () => { /* no-op */ };
 
   // Build 4 options for static assess: correct + 3 plausible distractors derived from term/definition.
   const staticDistractors = (() => {
@@ -756,11 +689,6 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
               <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>
                 Try Again
               </Button>
-              {!hasBuiltinQuiz && !hasStaticAssess && (
-                <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuestion(); }} style={{ borderColor: stepColor, color: stepColor }}>
-                  New Question
-                </Button>
-              )}
             </div>
           )}
         </div>
@@ -768,9 +696,9 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
 
       {!hasBuiltinQuiz && !hasStaticAssess && !aiQuestion && !aiLoading && !aiError && (
         <div className="text-center py-4">
-          <Button size="sm" onClick={generateQuestion} className="gap-2" style={{ background: stepColor, color: "white" }}>
-            🎓 Generate State Board Question
-          </Button>
+          <p className="text-sm italic" style={{ color: c.subtext }}>
+            No assessment question has been added for this term yet.
+          </p>
         </div>
       )}
     </div>

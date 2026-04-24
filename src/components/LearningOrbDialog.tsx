@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, RefreshCw, Sparkles,
+  ArrowLeft, ArrowRight, RefreshCw,
   Loader2, CheckCircle2, XCircle, Volume2, VolumeX,
   Square,
 } from "lucide-react";
@@ -21,8 +21,6 @@ import { fireBlockCompleteConfetti } from "@/lib/confetti";
 import SpeakButton from "@/components/SpeakButton";
 import SpeechToTextButton from "@/components/SpeechToTextButton";
 import VideoPlayer from "@/components/VideoPlayer";
-import TJLearningStudio from "@/components/TJLearningStudio";
-import TJVisualEngine from "@/components/TJVisualEngine";
 import { LayerBlockSection, getBlockOpenState } from "@/components/LayerBlockSection";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 import tjBackground from "@/assets/tj-background.jpg";
@@ -364,22 +362,9 @@ const LearningOrbDialog = ({
     return () => clearTimeout(timeout);
   }, [journalNote, block?.id, user, mode]);
 
-  // Auto-fetch content on step change.
-  // STATIC-FIRST: if admin has saved pre-written content for this term,
-  // we NEVER call AI — every learner sees the same structured experience.
-  useEffect(() => {
-    if (!block) return;
-    const s = adaptedSteps[currentStep];
-    if (s?.key === "breakdown" && !etymology && !etymLoading && !block.static_break_it_down) {
-      fetchEtymology();
-    }
-    if (s?.key === "quiz" && !block.quiz_question && !aiQuestion && !aiLoading && !block.static_assess_question) {
-      generateQuizQuestion();
-    }
-    if (s?.key === "information" && !expandedInfo && !infoLoading && !block.static_information) {
-      fetchExpandedInfo();
-    }
-  }, [currentStep, block?.id]);
+  // STATIC-ONLY: lesson steps never call AI. Content comes from
+  // pre-written database fields only. If a static field is empty for a
+  // term, the step simply renders no extra content (admin should fill it).
 
   // Auto-speak on step change
   useEffect(() => {
@@ -486,111 +471,13 @@ const LearningOrbDialog = ({
     if (currentStep > 0) setCurrentStep(s => s - 1);
   };
 
-  const fetchEtymology = async () => {
-    setEtymLoading(true);
-    try {
-      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
-        body: {
-          messages: [{
-            role: "user",
-            content: `Break down the word "${block.term_title}" into its etymological parts. Respond ONLY with JSON: {"pronunciation":"...", "parts":[{"part":"...","meaning":"...","origin":"Latin/Greek/etc"}], "summary":"one sentence explaining why the word makes sense"}. No markdown.`,
-          }],
-          sectionName: "Etymology",
-        },
-      });
-      const text = data?.response || "";
-      const match = text.match(/\{[\s\S]*\}/);
-      if (match) setEtymology(JSON.parse(match[0]));
-    } catch {}
-    setEtymLoading(false);
-  };
-
-  const fetchExpandedInfo = async () => {
-    setInfoLoading(true);
-    try {
-      const depthInstruction = rules.contentDepth === "brief"
-        ? "Keep each section to 1-2 sentences."
-        : rules.contentDepth === "deep"
-        ? "Go deep with thorough paragraphs and connections."
-        : "Keep it concise but thorough — 2-3 sentences each.";
-      const programName = profile?.selected_program || "cosmetology";
-      const dnaLayer = dna?.layerStrength || "D";
-      const toneMode = toneProfile || "encouraging";
-      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
-        body: {
-          messages: [{
-            role: "user",
-            content: `You are TJ Anderson, a warm and knowledgeable mentor. Provide a deeper teaching for "${block.term_title}" (definition: "${block.definition}").
-
-Structure your response with these EXACT section headers using markdown ##:
-
-## Simple Explanation
-A clear, plain-language explanation anyone can understand.
-
-## The Lesson
-Teach the concept more deeply — help the student truly understand it, not just memorize it.
-
-## History & Origin
-Where did this word or concept come from? What's the etymology or historical background?
-
-## Why It Matters
-Why is this important in ${programName}? Connect it to real practice and career success.
-
-## How This Fits You
-Personalize this for a learner whose strongest learning layer is "${dnaLayer}" and who prefers a "${toneMode}" teaching style. Speak directly to them.
-
-${depthInstruction}
-Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
-          }],
-          sectionName: "Deep Teaching",
-        },
-      });
-      const info = data?.response || "";
-      setExpandedInfo(info);
-      if (info && voiceEnabled) speakText(info.slice(0, 1000));
-    } catch {}
-    setInfoLoading(false);
-  };
-
-  const generateImage = async () => {
-    if (imageUrl || imageLoading) return;
-    setImageLoading(true);
-    try {
-      const { data } = await supabase.functions.invoke("generate-term-image", {
-        body: { termId: block.id, term: block.term_title, definition: block.definition, metaphor: block.metaphor },
-      });
-      const url = data?.image_url || data?.imageUrl;
-      if (url) {
-        setImageUrl(url);
-        if (mode === "uploaded") await supabase.from("uploaded_module_blocks").update({ image_url: url }).eq("id", block.id);
-      }
-    } catch {} finally { setImageLoading(false); }
-  };
-
-  const generateQuizQuestion = async () => {
-    setAiLoading(true);
-    try {
-      const difficultyHint = rules.difficulty === "guided"
-        ? "Make the question straightforward with clear options. Add a hint."
-        : rules.difficulty === "challenge"
-        ? "Make the question challenging — use scenario-based or application-style questions."
-        : "Standard difficulty for exam preparation.";
-      const programName = profile?.selected_program || "cosmetology";
-      const { data } = await supabase.functions.invoke("ai-mentor-chat", {
-        body: {
-          messages: [{
-            role: "user",
-            content: `Create a ${programName} exam-style multiple choice question about "${block.term_title}". Definition: "${block.definition}". ${difficultyHint} Respond ONLY with JSON: {"question":"...","options":["A)...","B)...","C)...","D)..."],"answer":"the full text of the correct option"}. No markdown.`,
-          }],
-          sectionName: "State Board Quiz",
-        },
-      });
-      const text = data?.response || "";
-      const match = text.match(/\{[\s\S]*\}/);
-      if (match) setAiQuestion(JSON.parse(match[0]));
-    } catch {}
-    setAiLoading(false);
-  };
+  // STATIC-ONLY: all AI generators removed from lesson steps.
+  // These no-op stubs keep call sites safe. Content for each step is read
+  // exclusively from the term's database fields (static_* columns).
+  const fetchEtymology = async () => { /* no-op: static-only */ };
+  const fetchExpandedInfo = async () => { /* no-op: static-only */ };
+  const generateImage = async () => { /* no-op: static-only */ };
+  const generateQuizQuestion = async () => { /* no-op: static-only */ };
 
   const hasBuiltinQuiz = block.quiz_question && block.quiz_options?.length > 0;
   const quizQuestion = hasBuiltinQuiz ? block.quiz_question : aiQuestion?.question;
@@ -639,9 +526,9 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                 </div>
               </div>
             ) : (
-              <Button onClick={fetchEtymology} className="mx-auto flex gap-2" style={{ background: step.gradient, color: "white" }}>
-                <Sparkles className="h-4 w-4" /> Break Down This Word
-              </Button>
+              <p className="text-center text-sm italic" style={{ color: c.subtext }}>
+                Word breakdown coming soon for this term.
+              </p>
             )}
           </motion.div>
         );
@@ -702,18 +589,18 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
       case "visual":
         return (
           <motion.div key="visual" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col items-center space-y-5 py-4">
-            <TJVisualEngine
-              termId={block.id}
-              termName={block.term_title}
-              definition={block.definition}
-              metaphor={block.metaphor}
-              existingImageUrl={imageUrl}
-              onImageGenerated={(url) => {
-                setImageUrl(url);
-                if (mode === "uploaded") supabase.from("uploaded_module_blocks").update({ image_url: url }).eq("id", block.id);
-              }}
-            />
-            {block.visualization_desc && <p className="text-sm max-w-md text-center" style={{ color: c.subtext }}>{block.visualization_desc}</p>}
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-center" style={{ color: step.color }}>{block.term_title}</h2>
+            {imageUrl ? (
+              <img src={imageUrl} alt={block.term_title} className="rounded-2xl max-w-md w-full shadow-md" />
+            ) : null}
+            {block.static_visualize && (
+              <div className="p-4 rounded-xl max-w-md text-center" style={{ background: `${step.color}10`, border: `1.5px solid ${step.color}30`, color: c.bodyText }}>
+                <p className="text-base leading-relaxed whitespace-pre-wrap">{block.static_visualize}</p>
+              </div>
+            )}
+            {!imageUrl && !block.static_visualize && block.visualization_desc && (
+              <p className="text-sm max-w-md text-center" style={{ color: c.subtext }}>{block.visualization_desc}</p>
+            )}
             {block.video_url && <VideoPlayer url={block.video_url} />}
           </motion.div>
         );
@@ -1013,24 +900,11 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
 
             {!expandedInfo && !infoLoading && (
               <div className="text-center py-4">
-                <Button onClick={fetchExpandedInfo} className="gap-2 shadow-md" style={{ background: step.gradient, color: "white" }}>
-                  <Sparkles className="h-4 w-4" /> Load Lesson
-                </Button>
+                <p className="text-sm italic" style={{ color: c.subtext }}>
+                  Lesson content for this term hasn't been added yet.
+                </p>
               </div>
             )}
-
-            {/* TJ Learning Studio — additional modes */}
-            <div className="space-y-2 pt-3 border-t" style={{ borderColor: "hsl(var(--border))" }}>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">More Ways to Learn</p>
-              <TJLearningStudio
-                termName={block.term_title}
-                definition={block.definition}
-                metaphor={block.metaphor}
-                additionalContent={block.practice_scenario}
-                onAudioScript={(script) => { if (voiceEnabled) speakText(script.slice(0, 1200)); }}
-                onContentGenerated={(text) => { if (voiceEnabled) speakText(text.slice(0, 1000)); }}
-              />
-            </div>
           </motion.div>
         );
       }
@@ -1237,10 +1111,6 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                         </div>
                       )}
                       <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>Try Again</Button>
-                      {!hasBuiltinQuiz && (
-                        <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuizQuestion(); }}
-                          style={{ borderColor: step.color, color: step.color }}>New Question</Button>
-                      )}
                       {!reinforcementResolved && (
                         <p className="w-full text-xs italic" style={{ color: "hsl(25 70% 40%)" }}>
                           🔒 Locked — TJ is preparing a reinforcement lesson before you continue.
@@ -1253,7 +1123,9 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
             })()}
             {!hasBuiltinQuiz && !aiQuestion && !aiLoading && (
               <div className="text-center py-6">
-                <Button onClick={generateQuizQuestion} className="gap-2" style={{ background: step.gradient, color: "white" }}>🎓 Generate Question</Button>
+                <p className="text-sm italic" style={{ color: c.subtext }}>
+                  No assessment question has been added for this term yet.
+                </p>
               </div>
             )}
           </motion.div>
