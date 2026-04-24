@@ -859,36 +859,69 @@ export type Database = {
       terms: {
         Row: {
           affirmation: string
+          apply_content: string
+          assess_answer: string
+          assess_explanation: string
+          assess_question: string
           block_number: number
+          break_it_down_content: string
           concept_identity: Json
+          define_content: string
           definition: string
           id: string
+          information_content: string
           metaphor: string
+          metaphor_content: string
           order: number
+          recognize_content: string
+          reflect_content: string
           section_id: string
           term: string
+          visualize_content: string
         }
         Insert: {
           affirmation?: string
+          apply_content?: string
+          assess_answer?: string
+          assess_explanation?: string
+          assess_question?: string
           block_number?: number
+          break_it_down_content?: string
           concept_identity?: Json
+          define_content?: string
           definition?: string
           id?: string
+          information_content?: string
           metaphor?: string
+          metaphor_content?: string
           order?: number
+          recognize_content?: string
+          reflect_content?: string
           section_id: string
           term: string
+          visualize_content?: string
         }
         Update: {
           affirmation?: string
+          apply_content?: string
+          assess_answer?: string
+          assess_explanation?: string
+          assess_question?: string
           block_number?: number
+          break_it_down_content?: string
           concept_identity?: Json
+          define_content?: string
           definition?: string
           id?: string
+          information_content?: string
           metaphor?: string
+          metaphor_content?: string
           order?: number
+          recognize_content?: string
+          reflect_content?: string
           section_id?: string
           term?: string
+          visualize_content?: string
         }
         Relationships: [
           {
@@ -1301,6 +1334,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       wrong_answers: {
         Row: {
           block_number: number
@@ -1367,9 +1421,16 @@ export type Database = {
           user_name: string
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "instructor" | "student"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1496,6 +1557,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "instructor", "student"],
+    },
   },
 } as const

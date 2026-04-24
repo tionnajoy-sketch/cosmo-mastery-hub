@@ -174,8 +174,26 @@ const fetchTTS = (text: string): Promise<HTMLAudioElement | null> => fetchTTSWit
 
 /* ─── Main Component ─── */
 const LearningOrbDialog = ({
-  open, onOpenChange, block, onNotesChange, mode = "uploaded", blockIndex = 0, onComplete,
+  open, onOpenChange, block: rawBlock, onNotesChange, mode = "uploaded", blockIndex = 0, onComplete,
 }: LearningOrbDialogProps) => {
+  // ─── Static content overrides (built-in terms) ───
+  // If admin has saved pre-written content for a step, prefer it over legacy/AI fields
+  // so all users see the same structured experience without an AI call.
+  const block = useMemo<UploadedBlock | null>(() => {
+    if (!rawBlock) return null;
+    const b = { ...rawBlock };
+    if (b.static_define) b.definition = b.static_define;
+    if (b.static_metaphor) b.metaphor = b.static_metaphor;
+    if (b.static_visualize) b.visualization_desc = b.static_visualize;
+    if (b.static_reflect) b.reflection_prompt = b.static_reflect;
+    if (b.static_apply) b.practice_scenario = b.static_apply;
+    if (b.static_assess_question) {
+      b.quiz_question = b.static_assess_question;
+      b.quiz_answer = b.static_assess_answer || b.quiz_answer;
+    }
+    return b;
+  }, [rawBlock]);
+
   const { user, profile } = useAuth();
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
@@ -280,6 +298,13 @@ const LearningOrbDialog = ({
       setRecognizeRevealed(false);
       setEtymology(null);
       setExpandedInfo("");
+      // Pre-seed with admin-authored static content so no AI call is needed
+      if (block.static_break_it_down) {
+        setEtymology({ parts: [], pronunciation: "", summary: block.static_break_it_down });
+      }
+      if (block.static_information) {
+        setExpandedInfo(block.static_information);
+      }
       completedRef.current = false;
       autoVoiceRef.current = false;
     }
@@ -692,6 +717,11 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
         const shuffled = [...identityItems].sort(() => Math.random() - 0.5);
         return (
           <motion.div key="recognize" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5 py-6">
+            {block.static_recognize && (
+              <div className="p-4 rounded-xl max-w-md mx-auto" style={{ background: `${step.color}10`, border: `1.5px solid ${step.color}30` }}>
+                <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.static_recognize}</p>
+              </div>
+            )}
             <p className="text-base font-medium text-center" style={{ color: c.termHeading }}>
               Which of these best describes <strong style={{ color: step.color }}>{block.term_title}</strong>?
             </p>
@@ -1191,6 +1221,12 @@ Do NOT use code fences. Write in a warm, ${toneMode} tone throughout.`,
                   </div>
                   {quizRevealed && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 pt-1">
+                      {block.static_assess_explanation && (
+                        <div className="w-full p-3 rounded-lg" style={{ background: `${step.color}10`, border: `1.5px solid ${step.color}30` }}>
+                          <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: step.color }}>Why</p>
+                          <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>{block.static_assess_explanation}</p>
+                        </div>
+                      )}
                       <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>Try Again</Button>
                       {!hasBuiltinQuiz && (
                         <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuizQuestion(); }}

@@ -50,6 +50,7 @@ import TJCafe from "./components/TJCafe";
 import { useStudyBreak } from "./hooks/useStudyBreak";
 import VoiceCacheDashboard from "./pages/VoiceCacheDashboard";
 import StruggleTermsPage from "./pages/StruggleTermsPage";
+import AdminContentPage from "./pages/AdminContentPage";
 import NotFound from "./pages/NotFound";
 import GlobalMenuFab from "@/components/GlobalMenuFab";
 
@@ -104,6 +105,7 @@ const AppContent = () => {
         <Route path="/game-grid" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
         <Route path="/voice-cache" element={<ProtectedRoute><VoiceCacheDashboard /></ProtectedRoute>} />
         <Route path="/my-notes" element={<ProtectedRoute><StruggleTermsPage /></ProtectedRoute>} />
+        <Route path="/admin/content" element={<ProtectedRoute><AdminContentPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />

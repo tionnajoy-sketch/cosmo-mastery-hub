@@ -19,7 +19,7 @@ const c = pageColors.study;
 
 interface Term { id: string; term: string; definition: string; metaphor: string; affirmation: string; concept_identity?: any; }
 
-const termToBlock = (t: Term, blockNum: number): UploadedBlock => ({
+const termToBlock = (t: any, blockNum: number): UploadedBlock => ({
   id: t.id,
   block_number: blockNum,
   term_title: t.term,
@@ -41,6 +41,17 @@ const termToBlock = (t: Term, blockNum: number): UploadedBlock => ({
   quiz_answer_3: "",
   user_notes: "",
   concept_identity: Array.isArray(t.concept_identity) ? t.concept_identity : [],
+  static_visualize: t.visualize_content || "",
+  static_define: t.define_content || "",
+  static_break_it_down: t.break_it_down_content || "",
+  static_recognize: t.recognize_content || "",
+  static_metaphor: t.metaphor_content || "",
+  static_information: t.information_content || "",
+  static_reflect: t.reflect_content || "",
+  static_apply: t.apply_content || "",
+  static_assess_question: t.assess_question || "",
+  static_assess_answer: t.assess_answer || "",
+  static_assess_explanation: t.assess_explanation || "",
 });
 
 const StudyPage = () => {
