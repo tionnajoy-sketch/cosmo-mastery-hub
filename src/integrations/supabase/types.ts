@@ -214,6 +214,66 @@ export type Database = {
         }
         Relationships: []
       }
+      dna_milestones: {
+        Row: {
+          id: string
+          metadata: Json
+          milestone_key: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          metadata?: Json
+          milestone_key: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          metadata?: Json
+          milestone_key?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dna_progress_events: {
+        Row: {
+          created_at: string
+          delta: number | null
+          field: string
+          from_value: string
+          id: string
+          lesson_context: Json
+          note: string
+          to_value: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta?: number | null
+          field: string
+          from_value?: string
+          id?: string
+          lesson_context?: Json
+          note?: string
+          to_value?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number | null
+          field?: string
+          from_value?: string
+          id?: string
+          lesson_context?: Json
+          note?: string
+          to_value?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           correctness: boolean | null

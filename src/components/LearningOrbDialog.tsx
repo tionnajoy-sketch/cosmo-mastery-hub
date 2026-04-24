@@ -28,6 +28,7 @@ import ReinforcementDialog from "@/components/ReinforcementDialog";
 import { useReinforcement } from "@/hooks/useReinforcement";
 import { shuffleOptions } from "@/lib/shuffleOptions";
 import LayerBlockNavigator from "@/components/LayerBlockNavigator";
+import { setLessonContext, clearLessonContext } from "@/lib/dna/currentLessonContext";
 
 const c = pageColors.study;
 
@@ -474,6 +475,21 @@ const LearningOrbDialog = ({
       setTimeout(() => speakText(textToSpeak), 200);
     }
   }, [currentStep, etymology, expandedInfo]);
+
+  // Push current lesson + step to global context so DNA progress tracker can tag events.
+  // Must run before any early-return to satisfy rules of hooks.
+  useEffect(() => {
+    if (!block) return;
+    const stepNow = adaptedSteps[currentStep];
+    setLessonContext({
+      module_id: (block as any).module_id ?? null,
+      term_id: (block as any).id ?? null,
+      term_title: (block as any).term_title ?? null,
+      step_key: stepNow?.key ?? null,
+      step_label: stepNow?.label ?? null,
+    });
+    return () => { clearLessonContext(); };
+  }, [block, currentStep, adaptedSteps]);
 
   if (!block) return null;
 
