@@ -333,6 +333,7 @@ const LearningOrbDialog = ({
       setJournalNote(block.user_notes || "");
       setQuizSelected(null);
       setQuizRevealed(false);
+      setQuizAttempted(false);
       setAiQuestion(null);
       setRecognizeSelected(null);
       setRecognizeRevealed(false);
