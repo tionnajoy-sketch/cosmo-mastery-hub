@@ -356,18 +356,19 @@ const LearningOrbDialog = ({
     return () => clearTimeout(timeout);
   }, [journalNote, block?.id, user, mode]);
 
-  // Auto-fetch etymology on breakdown step
+  // Auto-fetch content on step change.
+  // STATIC-FIRST: if admin has saved pre-written content for this term,
+  // we NEVER call AI — every learner sees the same structured experience.
   useEffect(() => {
     if (!block) return;
     const s = adaptedSteps[currentStep];
-    if (s?.key === "breakdown" && !etymology && !etymLoading) {
+    if (s?.key === "breakdown" && !etymology && !etymLoading && !block.static_break_it_down) {
       fetchEtymology();
     }
-    if (s?.key === "quiz" && !block.quiz_question && !aiQuestion && !aiLoading) {
+    if (s?.key === "quiz" && !block.quiz_question && !aiQuestion && !aiLoading && !block.static_assess_question) {
       generateQuizQuestion();
     }
-    // Auto-fetch deep teaching when landing on the Information step
-    if (s?.key === "information" && !expandedInfo && !infoLoading) {
+    if (s?.key === "information" && !expandedInfo && !infoLoading && !block.static_information) {
       fetchExpandedInfo();
     }
   }, [currentStep, block?.id]);
