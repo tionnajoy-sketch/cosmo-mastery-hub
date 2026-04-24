@@ -134,8 +134,8 @@ const DNAProgressBubble = () => {
         .select("milestone_key, unlocked_at")
         .eq("user_id", user.id),
     ]);
-    setEvents((ev as DBEvent[]) || []);
-    setMilestones((ms as DBMilestone[]) || []);
+    setEvents((ev as unknown as DBEvent[]) || []);
+    setMilestones((ms as unknown as DBMilestone[]) || []);
     setLoading(false);
   }, [user]);
 
@@ -215,7 +215,7 @@ const DNAProgressBubble = () => {
             .eq("user_id", user.id)
             .order("created_at", { ascending: true });
           const unlocked = new Set(milestones.map((m) => m.milestone_key));
-          const newly = evaluateMilestones((fresh as MilestoneEvent[]) || [], unlocked);
+          const newly = evaluateMilestones((fresh as unknown as MilestoneEvent[]) || [], unlocked);
           if (newly.length > 0) persistNewMilestones(newly);
         }
       })();
