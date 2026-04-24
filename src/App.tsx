@@ -53,6 +53,7 @@ import StruggleTermsPage from "./pages/StruggleTermsPage";
 import AdminContentPage from "./pages/AdminContentPage";
 import NotFound from "./pages/NotFound";
 import GlobalMenuFab from "@/components/GlobalMenuFab";
+import DNAProgressBubble from "@/components/DNAProgressBubble";
 
 const queryClient = new QueryClient();
 
@@ -111,6 +112,7 @@ const AppContent = () => {
       <AskTJFullScreen />
       <TJCafe open={showCafe} onDismiss={dismissCafe} requiredMode={!isManual} />
       <GlobalMenuFab />
+      <DNAProgressBubble />
     </>
   );
 };
