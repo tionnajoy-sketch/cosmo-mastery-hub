@@ -35,6 +35,78 @@ import { useBrainStrengths } from "@/hooks/useBrainStrengths";
 
 const c = pageColors.study;
 
+/* ─── Stable wrapper components (defined at module scope so React doesn't
+ *     remount their subtrees on every parent render — critical for inputs
+ *     like the Recall Reconstruction textarea to keep focus). ─── */
+interface EditorialShellProps {
+  children: React.ReactNode;
+  hideHeader?: boolean;
+  stepColor: string;
+  stepWash: string;
+  stepGradient: string;
+  issueNumber: string;
+  stepLabel: string;
+  termTitle: string;
+  stepIssue: string;
+  stepKicker: string;
+}
+
+const EditorialShell = ({
+  children,
+  hideHeader = false,
+  stepColor,
+  stepWash,
+  stepGradient,
+  issueNumber,
+  stepLabel,
+  termTitle,
+  stepIssue,
+  stepKicker,
+}: EditorialShellProps) => (
+  <div
+    className="editorial-spread"
+    style={
+      {
+        "--step-color": stepColor,
+        "--step-wash": stepWash,
+        "--step-gradient": stepGradient,
+      } as React.CSSProperties
+    }
+  >
+    {!hideHeader && (
+      <header className="mb-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="editorial-eyebrow">
+            Layer {issueNumber} · {stepLabel}
+          </span>
+          <span className="editorial-tag">{termTitle}</span>
+        </div>
+        <h2 className="editorial-headline">{stepIssue}</h2>
+        <p className="editorial-subhead">{stepKicker}</p>
+        <hr className="editorial-rule" />
+      </header>
+    )}
+    {children}
+  </div>
+);
+
+interface StepCardProps {
+  num?: string;
+  label: string;
+  title?: string;
+  children: React.ReactNode;
+}
+const StepCard = ({ num, label, title, children }: StepCardProps) => (
+  <article className="editorial-card">
+    <div className="editorial-card-header">
+      {num && <span className="num">{num}</span>}
+      <span className="label">{label}</span>
+      {title && <span className="title">{title}</span>}
+    </div>
+    <div className="editorial-card-body">{children}</div>
+  </article>
+);
+
 /* ─── 9-Step Configuration ─── */
 interface StepDef {
   key: string;
