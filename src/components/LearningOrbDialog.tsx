@@ -517,6 +517,82 @@ const LearningOrbDialog = ({
   const quizOptions = hasBuiltinQuiz ? block.quiz_options.map(String) : (aiQuestion?.options || []);
   const quizAnswer = hasBuiltinQuiz ? block.quiz_answer : (aiQuestion?.answer || "");
 
+  /* ─── Static reteach text resolved per term ─── */
+  const reteachText =
+    block.static_break_it_down?.trim() ||
+    block.metaphor?.trim() ||
+    block.static_metaphor?.trim() ||
+    `Stay with the core idea of ${block.term_title}: ${block.definition || ""}`;
+
+  /* ─── Assess DNA persistence (per user, per term) ─── */
+  const persistAssessmentDNA = useCallback(async (args: {
+    correct: boolean;
+    isFirstAttempt: boolean;
+    reviewPath?: string | null;
+  }) => {
+    if (!user || !block) return;
+    const { data: existing } = await (supabase as any)
+      .from("assessment_dna")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("term_id", block.id)
+      .maybeSingle();
+
+    const attempt_count = (existing?.attempt_count ?? 0) + 1;
+    const accuracy_score = (existing?.accuracy_score ?? 0) + (args.correct ? 1 : 0);
+    const dominant_gap = args.correct ? null : "function_gap";
+    const reteach_trigger = !args.correct;
+    const recommended_static_action = args.correct
+      ? "Continue"
+      : (attempt_count >= 2 ? "Practice Again" : "Review Breakdown");
+
+    let mastery_status: string = existing?.mastery_status || "New";
+    if (args.correct) {
+      if (args.isFirstAttempt && attempt_count === 1) mastery_status = "Mastered";
+      else if (existing?.last_answer_correct === false || existing?.last_review_path) mastery_status = "Reinforced";
+      else mastery_status = "Mastered";
+    } else {
+      mastery_status = "Developing";
+    }
+
+    const first_attempt_correct =
+      existing?.first_attempt_correct ?? (attempt_count === 1 ? args.correct : null);
+
+    await (supabase as any)
+      .from("assessment_dna")
+      .upsert(
+        {
+          user_id: user.id,
+          term_id: block.id,
+          accuracy_score,
+          attempt_count,
+          last_answer_correct: args.correct,
+          dominant_gap,
+          reteach_trigger,
+          recommended_static_action,
+          last_review_path: args.reviewPath ?? existing?.last_review_path ?? null,
+          mastery_status,
+          first_attempt_correct,
+        },
+        { onConflict: "user_id,term_id" },
+      );
+  }, [user, block]);
+
+  /* ─── Jump to a previous step by key ─── */
+  const jumpToStepKey = useCallback((key: string, reviewPath: string) => {
+    const idx = adaptedSteps.findIndex(s => s.key === key);
+    if (idx < 0) return;
+    if (user && block) {
+      (supabase as any)
+        .from("assessment_dna")
+        .update({ last_review_path: reviewPath })
+        .eq("user_id", user.id)
+        .eq("term_id", block.id);
+    }
+    stopSpeaking();
+    setCurrentStep(idx);
+  }, [adaptedSteps, user, block, stopSpeaking]);
+
   /* ─── Editorial spread shell — wraps every step's content ─── */
   const stepIndex = currentStep;
   const issueNumber = String(stepIndex + 1).padStart(2, "0");
