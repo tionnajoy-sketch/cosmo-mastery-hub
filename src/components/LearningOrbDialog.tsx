@@ -277,6 +277,7 @@ const LearningOrbDialog = ({
   // Quiz
   const [quizSelected, setQuizSelected] = useState<string | null>(null);
   const [quizRevealed, setQuizRevealed] = useState(false);
+  const [quizAttempted, setQuizAttempted] = useState(false);
   const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
