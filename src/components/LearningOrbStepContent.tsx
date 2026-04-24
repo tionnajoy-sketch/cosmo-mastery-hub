@@ -700,11 +700,6 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
               <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>
                 Try Again
               </Button>
-              {!hasBuiltinQuiz && !hasStaticAssess && (
-                <Button size="sm" variant="outline" onClick={() => { setAiQuestion(null); setQuizSelected(null); setQuizRevealed(false); generateQuestion(); }} style={{ borderColor: stepColor, color: stepColor }}>
-                  New Question
-                </Button>
-              )}
             </div>
           )}
         </div>
