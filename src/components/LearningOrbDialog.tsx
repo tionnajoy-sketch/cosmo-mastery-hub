@@ -298,6 +298,13 @@ const LearningOrbDialog = ({
       setRecognizeRevealed(false);
       setEtymology(null);
       setExpandedInfo("");
+      // Pre-seed with admin-authored static content so no AI call is needed
+      if (block.static_break_it_down) {
+        setEtymology({ parts: [], pronunciation: "", summary: block.static_break_it_down });
+      }
+      if (block.static_information) {
+        setExpandedInfo(block.static_information);
+      }
       completedRef.current = false;
       autoVoiceRef.current = false;
     }
