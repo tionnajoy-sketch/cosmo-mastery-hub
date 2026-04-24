@@ -58,6 +58,15 @@ export interface UploadedBlock {
   static_assess_question?: string;
   static_assess_answer?: string;
   static_assess_explanation?: string;
+  // Long-form structured lesson narrative (admin-authored, AI-free)
+  lesson_narrative?: {
+    title?: string;
+    key_point?: string;
+    sections?: { heading: string; body: string }[];
+    memory_cue?: string;
+    mentor_check_in?: string[];
+    purpose?: string;
+  };
 }
 
 type TabType = "definition" | "scripture" | "identity" | "pronunciation" | "visualize" | "metaphor" | "affirmation" | "reflection" | "practice" | "quiz" | "journal";
