@@ -1,0 +1,15 @@
+{
+  "rule_type": "unlock",
+  "rules": [
+    { "stage": "visualize", "requires_completed": [] },
+    { "stage": "define", "requires_completed": ["visualize"] },
+    { "stage": "breakdown", "requires_completed": ["define"] },
+    { "stage": "recall_reconstruction", "requires_completed": ["breakdown"] },
+    { "stage": "recognize", "requires_completed": ["recall_reconstruction"], "min_accuracy": 50 },
+    { "stage": "metaphor", "requires_completed": ["recognize"] },
+    { "stage": "information", "requires_completed": ["metaphor"] },
+    { "stage": "reflection", "requires_completed": ["information"] },
+    { "stage": "application", "requires_completed": ["reflection"] },
+    { "stage": "assess", "requires_completed": ["application"] }
+  ]
+}

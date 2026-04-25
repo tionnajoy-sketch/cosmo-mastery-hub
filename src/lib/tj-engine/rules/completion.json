@@ -1,0 +1,15 @@
+{
+  "rule_type": "completion",
+  "rules": [
+    { "stage": "visualize", "min_chars": 0 },
+    { "stage": "define", "min_chars": 30, "min_keyword_hits": 1 },
+    { "stage": "breakdown", "min_chars": 25, "min_keyword_hits": 1 },
+    { "stage": "recall_reconstruction", "min_accuracy": 50 },
+    { "stage": "recognize", "min_accuracy": 50 },
+    { "stage": "metaphor", "min_chars": 30, "min_keyword_hits": 1 },
+    { "stage": "information", "min_chars": 0 },
+    { "stage": "reflection", "min_chars": 40, "min_keyword_hits": 1 },
+    { "stage": "application", "min_chars": 40, "min_keyword_hits": 1 },
+    { "stage": "assess", "min_accuracy": 100 }
+  ]
+}

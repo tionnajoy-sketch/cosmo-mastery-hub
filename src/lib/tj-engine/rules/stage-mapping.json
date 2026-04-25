@@ -1,0 +1,82 @@
+{
+  "rule_type": "stage_mapping",
+  "rules": [
+    {
+      "stage": "define",
+      "weight": 1.0,
+      "patterns": [
+        "is a", "is the", "means", "definition", "refers to", "describes",
+        "is when", "called", "term for", "known as"
+      ]
+    },
+    {
+      "stage": "application",
+      "weight": 1.0,
+      "patterns": [
+        "use it", "apply", "in practice", "during a", "i would", "i'd",
+        "performed by", "used for", "do this when", "step by step",
+        "first i", "then i", "before i"
+      ]
+    },
+    {
+      "stage": "breakdown",
+      "weight": 1.2,
+      "patterns": [
+        "prefix", "root", "suffix", "comes from", "from the latin", "from the greek",
+        "literally means", "word part", "stem", "-ology", "-itis", "-osis",
+        "morpho", "etymology"
+      ]
+    },
+    {
+      "stage": "recognize",
+      "weight": 1.0,
+      "patterns": [
+        "i see this", "i saw", "in the salon", "in real life", "looks like",
+        "i noticed", "an example is", "for example", "e.g.", "i recognize",
+        "in the field", "everyday"
+      ]
+    },
+    {
+      "stage": "metaphor",
+      "weight": 1.1,
+      "patterns": [
+        "like a", "as if", "similar to", "kind of like", "imagine", "think of it as",
+        "reminds me of", "compared to", "metaphor", "analogy", "it's like"
+      ]
+    },
+    {
+      "stage": "information",
+      "weight": 0.9,
+      "patterns": [
+        "additionally", "furthermore", "in detail", "the reason", "because",
+        "however", "context", "background", "history", "more specifically",
+        "the deeper", "another factor"
+      ]
+    },
+    {
+      "stage": "reflection",
+      "weight": 1.2,
+      "patterns": [
+        "i feel", "i think", "i realized", "i learned", "this matters to me",
+        "for me", "personally", "i used to", "now i", "growth", "i'm",
+        "made me", "changed how i"
+      ]
+    },
+    {
+      "stage": "assess",
+      "weight": 1.5,
+      "patterns": [
+        "the answer is", "correct answer", "option a", "option b", "option c", "option d",
+        "the term is", "the result is"
+      ]
+    },
+    {
+      "stage": "visualize",
+      "weight": 0.8,
+      "patterns": [
+        "i picture", "i imagine", "i see", "the image", "looks like a",
+        "visual", "in my mind"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "rule_type": "feedback",
+  "templates": [
+    {
+      "stage": "visualize",
+      "what_you_understood": "You took in the visual anchor.",
+      "what_is_incomplete": "We haven't put it into words yet.",
+      "what_layer_is_missing": "Define — naming what you see.",
+      "why_this_step_matters": "Images stick faster than words. The picture is your hook.",
+      "what_to_do_next": "Move to Define and lock the concept into language."
+    },
+    {
+      "stage": "define",
+      "what_you_understood": "You're naming the concept.",
+      "what_is_incomplete": "The definition needs a clearer subject + meaning pairing.",
+      "what_layer_is_missing": "Define — give a complete sentence that explains what it is.",
+      "why_this_step_matters": "A precise definition is the spine of every other layer.",
+      "what_to_do_next": "Rewrite as: \"___ is ___ that does ___.\""
+    },
+    {
+      "stage": "breakdown",
+      "what_you_understood": "You're working with the structure of the word.",
+      "what_is_incomplete": "The prefix, root, or suffix isn't fully separated yet.",
+      "what_layer_is_missing": "Break It Down — identify each word part and its meaning.",
+      "why_this_step_matters": "Decoding word parts makes new terms feel familiar instead of foreign.",
+      "what_to_do_next": "List prefix, root, and suffix on separate lines with their meanings."
+    },
+    {
+      "stage": "recall_reconstruction",
+      "what_you_understood": "You're rebuilding the definition from memory.",
+      "what_is_incomplete": "Some key words are still missing.",
+      "what_layer_is_missing": "Recall — locking the definition without the source visible.",
+      "why_this_step_matters": "Active recall is what moves a term from short-term to long-term memory.",
+      "what_to_do_next": "Re-read the definition once, then try the blanks again."
+    },
+    {
+      "stage": "recognize",
+      "what_you_understood": "You're starting to spot the pattern.",
+      "what_is_incomplete": "The match wasn't quite the strongest example yet.",
+      "what_layer_is_missing": "Recognize — pointing to a real-world instance.",
+      "why_this_step_matters": "If you can find it in the wild, you own it.",
+      "what_to_do_next": "Try one more example and explain why it fits."
+    },
+    {
+      "stage": "metaphor",
+      "what_you_understood": "You're reaching for an analogy.",
+      "what_is_incomplete": "The bridge between the concept and the familiar thing is still thin.",
+      "what_layer_is_missing": "Metaphor — a strong \"like a\" or \"as if\" comparison.",
+      "why_this_step_matters": "Analogies let your brain reuse pathways you already trust.",
+      "what_to_do_next": "Finish the sentence: \"This is like a ___ because ___.\""
+    },
+    {
+      "stage": "information",
+      "what_you_understood": "You're taking in the deeper layer.",
+      "what_is_incomplete": "We haven't anchored the why yet.",
+      "what_layer_is_missing": "Information — the context that makes the concept matter.",
+      "why_this_step_matters": "Context is what turns facts into understanding.",
+      "what_to_do_next": "Read the expanded text and note the one detail that surprised you."
+    },
+    {
+      "stage": "reflection",
+      "what_you_understood": "You're making it personal.",
+      "what_is_incomplete": "Your own voice and insight aren't fully showing yet.",
+      "what_layer_is_missing": "Reflection — what this means for you, your growth, your work.",
+      "why_this_step_matters": "Reflection is where information becomes identity.",
+      "what_to_do_next": "Write 2–3 sentences starting with \"For me, this means…\""
+    },
+    {
+      "stage": "application",
+      "what_you_understood": "You're putting the concept to work.",
+      "what_is_incomplete": "The scenario needs a concrete action and outcome.",
+      "what_layer_is_missing": "Apply — showing the steps you'd take in practice.",
+      "why_this_step_matters": "If you can use it, you understand it.",
+      "what_to_do_next": "Walk through the scenario step by step: first I __, then I __."
+    },
+    {
+      "stage": "assess",
+      "what_you_understood": "You attempted the assessment.",
+      "what_is_incomplete": "The answer wasn't quite right.",
+      "what_layer_is_missing": "Recall — clean retrieval without support.",
+      "why_this_step_matters": "Mastery is recall under pressure. We're not skipping past this.",
+      "what_to_do_next": "We'll strengthen this layer together — no advancing yet."
+    }
+  ]
+}
