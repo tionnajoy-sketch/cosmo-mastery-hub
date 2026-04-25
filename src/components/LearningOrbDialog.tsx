@@ -1260,6 +1260,31 @@ const LearningOrbDialog = ({
                 </div>
               </article>
 
+              {/* Submit to TJ Engine for inline structured feedback */}
+              <div className="mt-4 flex justify-end">
+                <Button
+                  size="sm"
+                  className="gap-1.5 text-xs px-4 shadow-md"
+                  style={{ background: step.gradient, color: "white" }}
+                  disabled={!journalNote.trim() || tjSubmitting === "reflection"}
+                  onClick={() => submitToTJ("reflection", journalNote)}
+                >
+                  {tjSubmitting === "reflection" ? (
+                    <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Reading…</>
+                  ) : (
+                    <>Submit to TJ <ArrowRight className="h-3.5 w-3.5" /></>
+                  )}
+                </Button>
+              </div>
+
+              {tjFeedbackByStage.reflection && (
+                <TJFeedbackPanel
+                  evaluation={tjFeedbackByStage.reflection}
+                  accentColor={step.color}
+                  actions={tjActionsFor("reflection")}
+                />
+              )}
+
               {block.metaphor && (
                 <blockquote className="editorial-pullquote mt-4">
                   <span className="pq-eyebrow">Recall the Metaphor</span>
