@@ -1089,6 +1089,93 @@ export type Database = {
           },
         ]
       }
+      tj_rules: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          notes: string
+          payload: Json
+          rule_key: string
+          rule_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string
+          payload?: Json
+          rule_key: string
+          rule_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string
+          payload?: Json
+          rule_key?: string
+          rule_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tj_term_stages: {
+        Row: {
+          accuracy_score: number
+          attempt_count: number
+          completion_state: string
+          created_at: string
+          detected_stage: string | null
+          id: string
+          last_feedback: Json
+          last_submission: string
+          missing_layer: string | null
+          recommended_next_action: string
+          reinforcement_triggered: boolean
+          stage_id: string
+          term_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy_score?: number
+          attempt_count?: number
+          completion_state?: string
+          created_at?: string
+          detected_stage?: string | null
+          id?: string
+          last_feedback?: Json
+          last_submission?: string
+          missing_layer?: string | null
+          recommended_next_action?: string
+          reinforcement_triggered?: boolean
+          stage_id: string
+          term_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy_score?: number
+          attempt_count?: number
+          completion_state?: string
+          created_at?: string
+          detected_stage?: string | null
+          id?: string
+          last_feedback?: Json
+          last_submission?: string
+          missing_layer?: string | null
+          recommended_next_action?: string
+          reinforcement_triggered?: boolean
+          stage_id?: string
+          term_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tts_cache: {
         Row: {
           cache_hits: number
