@@ -169,6 +169,54 @@ export type Database = {
           },
         ]
       }
+      confidence_ratings: {
+        Row: {
+          block_number: number | null
+          confidence_rating: number
+          created_at: string
+          id: string
+          is_correct: boolean
+          module_id: string | null
+          question_ref: string
+          question_text: string
+          section_id: string | null
+          surface: string
+          term_id: string | null
+          understanding_status: string
+          user_id: string
+        }
+        Insert: {
+          block_number?: number | null
+          confidence_rating: number
+          created_at?: string
+          id?: string
+          is_correct: boolean
+          module_id?: string | null
+          question_ref?: string
+          question_text?: string
+          section_id?: string | null
+          surface: string
+          term_id?: string | null
+          understanding_status: string
+          user_id: string
+        }
+        Update: {
+          block_number?: number | null
+          confidence_rating?: number
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          module_id?: string | null
+          question_ref?: string
+          question_text?: string
+          section_id?: string | null
+          surface?: string
+          term_id?: string | null
+          understanding_status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cosmo_grid_sessions: {
         Row: {
           completed: boolean
