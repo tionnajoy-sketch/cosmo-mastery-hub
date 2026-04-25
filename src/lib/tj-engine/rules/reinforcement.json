@@ -1,0 +1,63 @@
+{
+  "rule_type": "reinforcement",
+  "rules": [
+    {
+      "stage": "define",
+      "trigger_after_attempts": 2,
+      "focus_shift": "Slow down the language. We're shaping a clean sentence, not a long one.",
+      "reteach_summary": "A definition has 3 parts: subject, what it is, what it does.",
+      "memory_cue": "\"___ is ___ that does ___.\"",
+      "micro_check": "Fill the blanks above for this term."
+    },
+    {
+      "stage": "breakdown",
+      "trigger_after_attempts": 2,
+      "focus_shift": "Stop translating. Just split.",
+      "reteach_summary": "Find the prefix (front), root (middle), suffix (end). Then meanings.",
+      "memory_cue": "Front-Middle-End → Meaning-Meaning-Meaning",
+      "micro_check": "Split this term into 3 word parts."
+    },
+    {
+      "stage": "recall_reconstruction",
+      "trigger_after_attempts": 1,
+      "trigger_below_accuracy": 50,
+      "focus_shift": "We'll show the definition once, then try again — recall, not memorize.",
+      "reteach_summary": "Read it slow. Cover. Rebuild. That's the loop.",
+      "memory_cue": "Read → Cover → Rebuild",
+      "micro_check": "Try the blanks one more time after a quick re-read."
+    },
+    {
+      "stage": "metaphor",
+      "trigger_after_attempts": 2,
+      "focus_shift": "Pick something you already know well — even something silly.",
+      "reteach_summary": "A metaphor needs two things: the concept + the familiar thing it acts like.",
+      "memory_cue": "\"This is like a ___ because ___.\"",
+      "micro_check": "Finish the sentence above."
+    },
+    {
+      "stage": "reflection",
+      "trigger_after_attempts": 2,
+      "focus_shift": "I want your voice — not the textbook's.",
+      "reteach_summary": "Reflection = what this means for YOU.",
+      "memory_cue": "\"For me, this means…\"",
+      "micro_check": "Two sentences in your own voice."
+    },
+    {
+      "stage": "application",
+      "trigger_after_attempts": 2,
+      "focus_shift": "Walk me through it like you're at the chair.",
+      "reteach_summary": "Application = concrete steps in a real moment.",
+      "memory_cue": "First I __. Then I __. Finally I __.",
+      "micro_check": "Give me the three steps."
+    },
+    {
+      "stage": "assess",
+      "trigger_after_attempts": 1,
+      "trigger_below_accuracy": 100,
+      "focus_shift": "We're not advancing yet. We're rebuilding the pathway.",
+      "reteach_summary": "Mastery is clean recall. We loop back to Define and Recall briefly.",
+      "memory_cue": "Define → Recall → Reassess",
+      "micro_check": "Try the question again after the quick reteach."
+    }
+  ]
+}

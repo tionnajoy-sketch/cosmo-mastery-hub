@@ -1,0 +1,15 @@
+{
+  "rule_type": "dna_update",
+  "rules": [
+    { "stage": "visualize",             "brain_key": "visual",      "brain_delta_complete": 3, "brain_delta_attempt": 1, "signal_delta": { "engagement": 1 } },
+    { "stage": "define",                "brain_key": "language",    "brain_delta_complete": 3, "brain_delta_attempt": 1, "signal_delta": { "retention": 2 } },
+    { "stage": "breakdown",             "brain_key": "analysis",    "brain_delta_complete": 3, "brain_delta_attempt": 1, "signal_delta": { "retention": 1 } },
+    { "stage": "recall_reconstruction", "brain_key": "recall",      "brain_delta_complete": 5, "brain_delta_attempt": 1, "signal_delta": { "retention": 3, "confidence": 2 } },
+    { "stage": "recognize",             "brain_key": "pattern",     "brain_delta_complete": 3, "brain_delta_attempt": 1, "signal_delta": { "engagement": 1 } },
+    { "stage": "metaphor",              "brain_key": "abstraction", "brain_delta_complete": 3, "brain_delta_attempt": 1, "signal_delta": { "retention": 2 } },
+    { "stage": "information",           "brain_key": "intake",      "brain_delta_complete": 3, "brain_delta_attempt": 1, "signal_delta": { "retention": 1 } },
+    { "stage": "reflection",            "brain_key": "reflection",  "brain_delta_complete": 5, "brain_delta_attempt": 1, "signal_delta": { "confidence": 3 } },
+    { "stage": "application",           "brain_key": "application", "brain_delta_complete": 4, "brain_delta_attempt": 1, "signal_delta": { "confidence": 2 } },
+    { "stage": "assess",                "brain_key": "recall",      "brain_delta_complete": 4, "brain_delta_attempt": 1, "signal_delta": { "confidence": 2, "engagement": 1 } }
+  ]
+}

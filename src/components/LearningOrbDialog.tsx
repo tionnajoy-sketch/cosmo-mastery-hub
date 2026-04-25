@@ -32,6 +32,22 @@ import { setLessonContext, clearLessonContext } from "@/lib/dna/currentLessonCon
 import RecallReconstruction from "@/components/orb-steps/RecallReconstruction";
 import StrengthenLayerDialog from "@/components/StrengthenLayerDialog";
 import { useBrainStrengths } from "@/hooks/useBrainStrengths";
+import { useTJEngine } from "@/hooks/useTJEngine";
+
+// Map Learning Orb step keys → canonical TJ Engine stage IDs.
+const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
+  visual: "visualize",
+  definition: "define",
+  scripture: "define",
+  breakdown: "breakdown",
+  recall_reconstruction: "recall_reconstruction",
+  recognize: "recognize",
+  metaphor: "metaphor",
+  information: "information",
+  reflection: "reflection",
+  application: "application",
+  quiz: "assess",
+};
 
 const c = pageColors.study;
 
@@ -325,6 +341,7 @@ const LearningOrbDialog = ({
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
   const { completeLayer: brainCompleteLayer, recordAssess: brainRecordAssess } = useBrainStrengths();
+  const { submitStage: tjSubmitStage } = useTJEngine(block?.id ?? null);
   const [strengthenOpen, setStrengthenOpen] = useState(false);
   const blockState = (type: Parameters<typeof getBlockOpenState>[1]) => getBlockOpenState(dnaContext, type);
   const { adaptCaption, toneProfile } = useTJTone();
@@ -607,6 +624,14 @@ const LearningOrbDialog = ({
     }
     // NEW: bump the 9 brain-strength scores per the static layer spec.
     brainCompleteLayer(step.key).catch(() => {});
+
+    // TJ Engine governance: run typed-text stages through the rule
+    // pipeline so submission, feedback, completion state, and
+    // reinforcement are persisted in tj_term_stages.
+    const tjStage = ORB_STEP_TO_TJ_STAGE[step.key];
+    if (tjStage && (step.key === "reflection" || step.key === "application") && journalNote) {
+      tjSubmitStage({ stage: tjStage as any, rawText: journalNote }).catch(() => {});
+    }
 
     // Quiz step requires an answer and an explicit learner choice before completing
     if (step.key === "quiz" && !quizRevealed) return;
