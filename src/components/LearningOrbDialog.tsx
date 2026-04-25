@@ -758,7 +758,10 @@ const LearningOrbDialog = ({
       });
       setJournalNote("");
     },
-    onStrengthenLayer: () => setStrengthenOpen(true),
+    onStrengthenLayer: () => {
+      behaviorIntake.recordMicroDecision("reinforcement_opened");
+      setStrengthenOpen(true);
+    },
     onReviewConcept: () => {
       setTjFeedbackByStage((m) => {
         const n = { ...m };
