@@ -33,6 +33,8 @@ import RecallReconstruction from "@/components/orb-steps/RecallReconstruction";
 import StrengthenLayerDialog from "@/components/StrengthenLayerDialog";
 import { useBrainStrengths } from "@/hooks/useBrainStrengths";
 import { useTJEngine } from "@/hooks/useTJEngine";
+import TJFeedbackPanel from "@/components/TJFeedbackPanel";
+import type { EngineEvaluation, StageId } from "@/lib/tj-engine";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
