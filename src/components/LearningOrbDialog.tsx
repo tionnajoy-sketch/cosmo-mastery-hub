@@ -631,10 +631,17 @@ const LearningOrbDialog = ({
 
     // TJ Engine governance: run typed-text stages through the rule
     // pipeline so submission, feedback, completion state, and
-    // reinforcement are persisted in tj_term_stages.
-    const tjStage = ORB_STEP_TO_TJ_STAGE[step.key];
-    if (tjStage && (step.key === "reflection" || step.key === "application") && journalNote) {
-      tjSubmitStage({ stage: tjStage as any, rawText: journalNote }).catch(() => {});
+    // reinforcement are persisted in tj_term_stages. Skip if the
+    // student already explicitly submitted via the inline "Submit to TJ"
+    // button (we don't want to double-evaluate the same response).
+    const tjStage = ORB_STEP_TO_TJ_STAGE[step.key] as StageId | undefined;
+    if (
+      tjStage &&
+      (step.key === "reflection" || step.key === "application") &&
+      journalNote &&
+      !tjFeedbackByStage[tjStage]
+    ) {
+      tjSubmitStage({ stage: tjStage, rawText: journalNote }).catch(() => {});
     }
 
     // Quiz step requires an answer and an explicit learner choice before completing
