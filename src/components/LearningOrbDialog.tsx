@@ -611,6 +611,16 @@ const LearningOrbDialog = ({
   // DNA-adapted encouragement message
   const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
+  // Mentor Check-In gating (Information step)
+  const mentorCheckInQuestions: string[] = useMemo(() => {
+    const n: any = (block as any)?.lesson_narrative;
+    return Array.isArray(n?.mentor_check_in) ? n.mentor_check_in.filter((q: any) => typeof q === "string" && q.trim().length > 0) : [];
+  }, [block]);
+  const mentorCheckInRequired = step.key === "information" && mentorCheckInQuestions.length > 0;
+  const mentorCheckInComplete = mentorCheckInQuestions.every(
+    (_, i) => (mentorCheckInAnswers[i] || "").trim().length >= 3,
+  );
+
   const markStepDone = () => {
     setCompletedSteps((prev) => {
       const n = new Set(prev);
