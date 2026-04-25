@@ -725,6 +725,16 @@ const LearningOrbDialog = ({
       const evalResult = await tjSubmitStage({ stage, rawText, accuracyScore });
       if (evalResult) {
         setTjFeedbackByStage((m) => ({ ...m, [stage]: evalResult }));
+        // Commit the Learner Behavior Intake snapshot for this stage.
+        const suggestion = await behaviorIntake.commit({
+          completionState: evalResult.decision.completion_state,
+          attemptCount: evalResult.interpretation.word_count > 0
+            ? (evalResult as any)?.attempt_count ?? 1
+            : 1,
+          accuracyScore,
+          detectedStage: evalResult.interpretation.detected_stage ?? null,
+        });
+        setBehaviorSuggestionByStage((m) => ({ ...m, [stage]: suggestion ?? null }));
       }
     } finally {
       setTjSubmitting(null);
