@@ -65,6 +65,8 @@ const QuizPage = () => {
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [reinforcementOpen, setReinforcementOpen] = useState(false);
   const [reinforcementResolved, setReinforcementResolved] = useState(true);
+  const [confidenceStatusByQ, setConfidenceStatusByQ] = useState<Record<number, UnderstandingStatus>>({});
+  const confidenceComplete = selectedAnswer ? !!confidenceStatusByQ[currentIndex] : true;
 
   useEffect(() => {
     if (!id || !block) return;
