@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { EngineEvaluation, NextActionType } from "@/lib/tj-engine";
+import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 
 export interface TJFeedbackActions {
   onContinue: () => void;
@@ -35,6 +36,8 @@ interface Props {
   evaluation: EngineEvaluation;
   accentColor: string;
   actions: TJFeedbackActions;
+  /** Optional rule-based suggestion from the Learner Behavior Intake Layer. */
+  behaviorSuggestion?: BehaviorSuggestion | null;
 }
 
 interface Row {
