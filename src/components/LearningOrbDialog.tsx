@@ -341,6 +341,7 @@ const LearningOrbDialog = ({
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
   const { completeLayer: brainCompleteLayer, recordAssess: brainRecordAssess } = useBrainStrengths();
+  const { submitStage: tjSubmitStage } = useTJEngine(block?.id ?? null);
   const [strengthenOpen, setStrengthenOpen] = useState(false);
   const blockState = (type: Parameters<typeof getBlockOpenState>[1]) => getBlockOpenState(dnaContext, type);
   const { adaptCaption, toneProfile } = useTJTone();
