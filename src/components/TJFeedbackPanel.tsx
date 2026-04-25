@@ -47,7 +47,7 @@ interface Row {
   tint: string;
 }
 
-const TJFeedbackPanel = ({ evaluation, accentColor, actions }: Props) => {
+const TJFeedbackPanel = ({ evaluation, accentColor, actions, behaviorSuggestion }: Props) => {
   const fb = evaluation.feedback;
   const decision = evaluation.decision;
   const isComplete = decision.completion_state === "complete";
