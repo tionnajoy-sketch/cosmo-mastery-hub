@@ -349,6 +349,9 @@ const LearningOrbDialog = ({
   const { submitStage: tjSubmitStage } = useTJEngine(block?.id ?? null);
   const [tjFeedbackByStage, setTjFeedbackByStage] = useState<Partial<Record<StageId, EngineEvaluation>>>({});
   const [tjSubmitting, setTjSubmitting] = useState<StageId | null>(null);
+  const [behaviorSuggestionByStage, setBehaviorSuggestionByStage] = useState<
+    Partial<Record<StageId, BehaviorSuggestion | null>>
+  >({});
   const [strengthenOpen, setStrengthenOpen] = useState(false);
   const blockState = (type: Parameters<typeof getBlockOpenState>[1]) => getBlockOpenState(dnaContext, type);
   const { adaptCaption, toneProfile } = useTJTone();
