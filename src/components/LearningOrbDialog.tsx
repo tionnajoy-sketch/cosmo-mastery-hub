@@ -630,6 +630,8 @@ const LearningOrbDialog = ({
   };
 
   const goNext = () => {
+    // GATE: Information step requires answering all TJ Mentor Check-In questions
+    if (mentorCheckInRequired && !mentorCheckInComplete) return;
     stopSpeaking();
     // Track DNA updates based on current step
     if (step.key === "reflection" && journalNote.length > 0) {
