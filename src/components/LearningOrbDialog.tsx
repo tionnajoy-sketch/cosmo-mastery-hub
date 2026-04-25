@@ -1138,17 +1138,60 @@ const LearningOrbDialog = ({
                 )}
 
                 {narrative.mentor_check_in && narrative.mentor_check_in.length > 0 && (
-                  <article className="editorial-card mt-3">
+                  <article className="editorial-card mt-3" style={{ borderColor: mentorCheckInComplete ? "hsl(145 40% 70%)" : "hsl(0 0% 0% / 0.12)" }}>
                     <div className="editorial-card-header">
                       <span className="num">★</span>
-                      <span className="label">TJ Mentor Check-In</span>
+                      <span className="label">TJ Mentor Check-In · Required</span>
                     </div>
                     <div className="editorial-card-body">
-                      <ol className="space-y-2 list-decimal list-inside m-0">
-                        {narrative.mentor_check_in.map((q: string, i: number) => (
-                          <li key={i} className="leading-relaxed">{q}</li>
-                        ))}
-                      </ol>
+                      <p className="text-xs mb-3" style={{ color: c.subtext }}>
+                        Answer each question in your own words to continue. Even one short sentence is enough — TJ just wants to hear your thinking.
+                      </p>
+                      <div className="space-y-3">
+                        {narrative.mentor_check_in.map((q: string, i: number) => {
+                          const val = mentorCheckInAnswers[i] || "";
+                          const ok = val.trim().length >= 3;
+                          return (
+                            <div key={i}>
+                              <label className="block text-sm font-medium leading-relaxed mb-1.5" style={{ color: c.bodyText }}>
+                                <span className="mr-1.5 font-semibold" style={{ color: step.color }}>{i + 1}.</span>{q}
+                              </label>
+                              <div className="relative">
+                                <textarea
+                                  value={val}
+                                  onChange={(e) => setMentorCheckInAnswers((m) => ({ ...m, [i]: e.target.value }))}
+                                  placeholder="Type or speak your answer…"
+                                  className="w-full min-h-[72px] p-2.5 pr-10 rounded-lg text-sm resize-none focus:outline-none focus:ring-2"
+                                  style={{
+                                    border: `1px solid ${ok ? "hsl(145 45% 55%)" : "hsl(0 0% 0% / 0.14)"}`,
+                                    color: c.bodyText,
+                                    background: "hsl(40 30% 99%)",
+                                    fontFamily: "var(--font-body)",
+                                  }}
+                                />
+                                <div className="absolute right-1.5 bottom-1.5">
+                                  <SpeechToTextButton
+                                    onTranscript={(text) =>
+                                      setMentorCheckInAnswers((m) => ({
+                                        ...m,
+                                        [i]: m[i] ? `${m[i]} ${text}` : text,
+                                      }))
+                                    }
+                                  />
+                                </div>
+                              </div>
+                              {ok && (
+                                <p className="text-[11px] mt-1" style={{ color: "hsl(145 40% 40%)" }}>✓ Got it</p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {!mentorCheckInComplete && (
+                        <p className="text-xs mt-3 italic" style={{ color: "hsl(25 65% 45%)" }}>
+                          Answer all {narrative.mentor_check_in.length} questions to continue to the next step.
+                        </p>
+                      )}
                     </div>
                   </article>
                 )}
