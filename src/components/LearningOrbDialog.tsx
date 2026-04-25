@@ -35,6 +35,9 @@ import { useBrainStrengths } from "@/hooks/useBrainStrengths";
 import { useTJEngine } from "@/hooks/useTJEngine";
 import TJFeedbackPanel from "@/components/TJFeedbackPanel";
 import type { EngineEvaluation, StageId } from "@/lib/tj-engine";
+import { useBehaviorIntake } from "@/hooks/useBehaviorIntake";
+import BehaviorIntakeStrip from "@/components/behavior-intake/BehaviorIntakeStrip";
+import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
