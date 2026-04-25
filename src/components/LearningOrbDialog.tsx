@@ -1428,6 +1428,17 @@ const LearningOrbDialog = ({
                 </div>
               </article>
 
+              {/* Learner Behavior Intake — captures confidence, thinking path, etc. */}
+              <BehaviorIntakeStrip
+                intake={behaviorIntake}
+                showExplainBack={true}
+                showErrorPicker={
+                  !!tjFeedbackByStage.application &&
+                  tjFeedbackByStage.application.decision.completion_state !== "complete"
+                }
+                accentColor={step.color}
+              />
+
               {/* Submit to TJ Engine for inline structured feedback */}
               <div className="mt-4 flex justify-end">
                 <Button
@@ -1450,6 +1461,7 @@ const LearningOrbDialog = ({
                   evaluation={tjFeedbackByStage.application}
                   accentColor={step.color}
                   actions={tjActionsFor("application")}
+                  behaviorSuggestion={behaviorSuggestionByStage.application}
                 />
               )}
             </EditorialShell>
