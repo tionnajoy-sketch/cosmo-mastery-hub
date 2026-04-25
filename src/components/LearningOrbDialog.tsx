@@ -1915,17 +1915,19 @@ const LearningOrbDialog = ({
                 <RefreshCw className="h-3.5 w-3.5" /> Let TJ Explain Again
               </Button>
               <Button size="sm" className="gap-1 text-sm px-5 shadow-md"
-                style={{ background: step.gradient, color: "white", opacity: step.key === "quiz" ? 0.5 : 1 }}
+                style={{ background: step.gradient, color: "white", opacity: (step.key === "quiz" || (mentorCheckInRequired && !mentorCheckInComplete)) ? 0.5 : 1 }}
                 onClick={goNext}
-                disabled={step.key === "quiz"}>
-                {step.key === "quiz" && !reinforcementResolved
+                disabled={step.key === "quiz" || (mentorCheckInRequired && !mentorCheckInComplete)}>
+                {mentorCheckInRequired && !mentorCheckInComplete
+                  ? "🔒 Answer Check-In to Continue"
+                  : step.key === "quiz" && !reinforcementResolved
                   ? "🔒 Reinforcement"
                   : step.key === "quiz" && quizFeedbackLocked
                   ? "Choose Next Action"
                   : step.key === "quiz"
                   ? "Stay in Lesson"
                   : currentStep === adaptedSteps.length - 1 ? "Complete" : "Mark Step Complete"}
-                {currentStep < adaptedSteps.length - 1 && reinforcementResolved && <ArrowRight className="h-4 w-4" />}
+                {currentStep < adaptedSteps.length - 1 && reinforcementResolved && !(mentorCheckInRequired && !mentorCheckInComplete) && <ArrowRight className="h-4 w-4" />}
               </Button>
             </div>
           </div>
