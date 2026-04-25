@@ -166,6 +166,7 @@ const QuizPage = () => {
 
   const handleNext = () => {
     if (!reinforcementResolved) return; // safeguard
+    if (!confidenceComplete) return; // require confidence rating
     if (isLastQuestion) {
       navigate(`/section/${id}/results/${block}`, { state: { score, total: questions.length, mode, wrongCount } });
     } else {
