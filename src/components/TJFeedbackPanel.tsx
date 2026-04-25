@@ -169,6 +169,22 @@ const TJFeedbackPanel = ({ evaluation, accentColor, actions, behaviorSuggestion 
         >
           Recommended Next
         </p>
+        {behaviorSuggestion && behaviorSuggestion.route !== "continue" && (
+          <div
+            className="mb-2.5 rounded-lg px-3 py-2 text-[11px] leading-relaxed"
+            style={{
+              background: `${accentColor}10`,
+              border: `1px dashed ${accentColor}55`,
+              color: "hsl(0 0% 25%)",
+            }}
+          >
+            <span className="font-semibold" style={{ color: accentColor }}>
+              Behavior signal:
+            </span>{" "}
+            {behaviorSuggestion.reason}{" "}
+            <span className="font-medium">→ {behaviorSuggestion.label}</span>
+          </div>
+        )}
         <ActionButtons
           nextAction={decision.next_action}
           accentColor={accentColor}
