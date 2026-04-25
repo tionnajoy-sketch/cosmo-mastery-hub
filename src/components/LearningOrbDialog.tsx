@@ -625,6 +625,14 @@ const LearningOrbDialog = ({
     // NEW: bump the 9 brain-strength scores per the static layer spec.
     brainCompleteLayer(step.key).catch(() => {});
 
+    // TJ Engine governance: run typed-text stages through the rule
+    // pipeline so submission, feedback, completion state, and
+    // reinforcement are persisted in tj_term_stages.
+    const tjStage = ORB_STEP_TO_TJ_STAGE[step.key];
+    if (tjStage && (step.key === "reflection" || step.key === "application") && journalNote) {
+      tjSubmitStage({ stage: tjStage as any, rawText: journalNote }).catch(() => {});
+    }
+
     // Quiz step requires an answer and an explicit learner choice before completing
     if (step.key === "quiz" && !quizRevealed) return;
     if (step.key === "quiz" && quizFeedbackLocked) return;
