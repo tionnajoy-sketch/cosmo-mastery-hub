@@ -32,6 +32,22 @@ import { setLessonContext, clearLessonContext } from "@/lib/dna/currentLessonCon
 import RecallReconstruction from "@/components/orb-steps/RecallReconstruction";
 import StrengthenLayerDialog from "@/components/StrengthenLayerDialog";
 import { useBrainStrengths } from "@/hooks/useBrainStrengths";
+import { useTJEngine } from "@/hooks/useTJEngine";
+
+// Map Learning Orb step keys → canonical TJ Engine stage IDs.
+const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
+  visual: "visualize",
+  definition: "define",
+  scripture: "define",
+  breakdown: "breakdown",
+  recall_reconstruction: "recall_reconstruction",
+  recognize: "recognize",
+  metaphor: "metaphor",
+  information: "information",
+  reflection: "reflection",
+  application: "application",
+  quiz: "assess",
+};
 
 const c = pageColors.study;
 
