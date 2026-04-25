@@ -441,6 +441,9 @@ const LearningOrbDialog = ({
   const [expandedInfo, setExpandedInfo] = useState("");
   const [infoLoading, setInfoLoading] = useState(false);
 
+  // Required TJ Mentor Check-In answers (Information step)
+  const [mentorCheckInAnswers, setMentorCheckInAnswers] = useState<Record<number, string>>({});
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const completedRef = useRef(false);
   const autoVoiceRef = useRef(false);
