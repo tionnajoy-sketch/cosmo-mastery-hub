@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { EngineEvaluation, NextActionType } from "@/lib/tj-engine";
+import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 
 export interface TJFeedbackActions {
   onContinue: () => void;
@@ -35,6 +36,8 @@ interface Props {
   evaluation: EngineEvaluation;
   accentColor: string;
   actions: TJFeedbackActions;
+  /** Optional rule-based suggestion from the Learner Behavior Intake Layer. */
+  behaviorSuggestion?: BehaviorSuggestion | null;
 }
 
 interface Row {
@@ -44,7 +47,7 @@ interface Row {
   tint: string;
 }
 
-const TJFeedbackPanel = ({ evaluation, accentColor, actions }: Props) => {
+const TJFeedbackPanel = ({ evaluation, accentColor, actions, behaviorSuggestion }: Props) => {
   const fb = evaluation.feedback;
   const decision = evaluation.decision;
   const isComplete = decision.completion_state === "complete";
@@ -166,6 +169,22 @@ const TJFeedbackPanel = ({ evaluation, accentColor, actions }: Props) => {
         >
           Recommended Next
         </p>
+        {behaviorSuggestion && behaviorSuggestion.route !== "continue" && (
+          <div
+            className="mb-2.5 rounded-lg px-3 py-2 text-[11px] leading-relaxed"
+            style={{
+              background: `${accentColor}10`,
+              border: `1px dashed ${accentColor}55`,
+              color: "hsl(0 0% 25%)",
+            }}
+          >
+            <span className="font-semibold" style={{ color: accentColor }}>
+              Behavior signal:
+            </span>{" "}
+            {behaviorSuggestion.reason}{" "}
+            <span className="font-medium">→ {behaviorSuggestion.label}</span>
+          </div>
+        )}
         <ActionButtons
           nextAction={decision.next_action}
           accentColor={accentColor}

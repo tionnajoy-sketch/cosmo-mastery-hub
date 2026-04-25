@@ -35,6 +35,9 @@ import { useBrainStrengths } from "@/hooks/useBrainStrengths";
 import { useTJEngine } from "@/hooks/useTJEngine";
 import TJFeedbackPanel from "@/components/TJFeedbackPanel";
 import type { EngineEvaluation, StageId } from "@/lib/tj-engine";
+import { useBehaviorIntake } from "@/hooks/useBehaviorIntake";
+import BehaviorIntakeStrip from "@/components/behavior-intake/BehaviorIntakeStrip";
+import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
@@ -346,6 +349,9 @@ const LearningOrbDialog = ({
   const { submitStage: tjSubmitStage } = useTJEngine(block?.id ?? null);
   const [tjFeedbackByStage, setTjFeedbackByStage] = useState<Partial<Record<StageId, EngineEvaluation>>>({});
   const [tjSubmitting, setTjSubmitting] = useState<StageId | null>(null);
+  const [behaviorSuggestionByStage, setBehaviorSuggestionByStage] = useState<
+    Partial<Record<StageId, BehaviorSuggestion | null>>
+  >({});
   const [strengthenOpen, setStrengthenOpen] = useState(false);
   const blockState = (type: Parameters<typeof getBlockOpenState>[1]) => getBlockOpenState(dnaContext, type);
   const { adaptCaption, toneProfile } = useTJTone();
@@ -609,6 +615,15 @@ const LearningOrbDialog = ({
   const step = adaptedSteps[currentStep];
   const progressPercent = ((currentStep + 1) / adaptedSteps.length) * 100;
 
+  // ─── Learner Behavior Intake Layer (rule-based, no AI) ───
+  // Captures confidence, thinking path, explain-back, error type,
+  // mode, micro-decisions, second-chance, integrity, breakdown, and load.
+  const currentTjStage = (ORB_STEP_TO_TJ_STAGE[step?.key ?? ""] ?? null) as StageId | null;
+  const behaviorIntake = useBehaviorIntake({
+    termId: block?.id ?? null,
+    stageId: currentTjStage,
+  });
+
   // DNA-adapted encouragement message
   const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
@@ -710,6 +725,16 @@ const LearningOrbDialog = ({
       const evalResult = await tjSubmitStage({ stage, rawText, accuracyScore });
       if (evalResult) {
         setTjFeedbackByStage((m) => ({ ...m, [stage]: evalResult }));
+        // Commit the Learner Behavior Intake snapshot for this stage.
+        const suggestion = await behaviorIntake.commit({
+          completionState: evalResult.decision.completion_state,
+          attemptCount: evalResult.interpretation.word_count > 0
+            ? (evalResult as any)?.attempt_count ?? 1
+            : 1,
+          accuracyScore,
+          detectedStage: evalResult.interpretation.detected_stage ?? null,
+        });
+        setBehaviorSuggestionByStage((m) => ({ ...m, [stage]: suggestion ?? null }));
       }
     } finally {
       setTjSubmitting(null);
@@ -733,7 +758,10 @@ const LearningOrbDialog = ({
       });
       setJournalNote("");
     },
-    onStrengthenLayer: () => setStrengthenOpen(true),
+    onStrengthenLayer: () => {
+      behaviorIntake.recordMicroDecision("reinforcement_opened");
+      setStrengthenOpen(true);
+    },
     onReviewConcept: () => {
       setTjFeedbackByStage((m) => {
         const n = { ...m };
@@ -1326,6 +1354,18 @@ const LearningOrbDialog = ({
                 </div>
               </article>
 
+              {/* Learner Behavior Intake — captures confidence, thinking path, etc. */}
+              <BehaviorIntakeStrip
+                intake={behaviorIntake}
+                showExplainBack={true}
+                showErrorPicker={
+                  !!tjFeedbackByStage.reflection &&
+                  tjFeedbackByStage.reflection.decision.completion_state !== "complete"
+                }
+                attemptCount={tjFeedbackByStage.reflection?.interpretation?.word_count ? 1 : 1}
+                accentColor={step.color}
+              />
+
               {/* Submit to TJ Engine for inline structured feedback */}
               <div className="mt-4 flex justify-end">
                 <Button
@@ -1348,6 +1388,7 @@ const LearningOrbDialog = ({
                   evaluation={tjFeedbackByStage.reflection}
                   accentColor={step.color}
                   actions={tjActionsFor("reflection")}
+                  behaviorSuggestion={behaviorSuggestionByStage.reflection}
                 />
               )}
 
@@ -1390,6 +1431,17 @@ const LearningOrbDialog = ({
                 </div>
               </article>
 
+              {/* Learner Behavior Intake — captures confidence, thinking path, etc. */}
+              <BehaviorIntakeStrip
+                intake={behaviorIntake}
+                showExplainBack={true}
+                showErrorPicker={
+                  !!tjFeedbackByStage.application &&
+                  tjFeedbackByStage.application.decision.completion_state !== "complete"
+                }
+                accentColor={step.color}
+              />
+
               {/* Submit to TJ Engine for inline structured feedback */}
               <div className="mt-4 flex justify-end">
                 <Button
@@ -1412,6 +1464,7 @@ const LearningOrbDialog = ({
                   evaluation={tjFeedbackByStage.application}
                   accentColor={step.color}
                   actions={tjActionsFor("application")}
+                  behaviorSuggestion={behaviorSuggestionByStage.application}
                 />
               )}
             </EditorialShell>
