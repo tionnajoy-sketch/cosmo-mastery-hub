@@ -679,6 +679,49 @@ const LearningOrbDialog = ({
     if (currentStep > 0) setCurrentStep(s => s - 1);
   };
 
+  /* ─── TJ Engine: explicit submit + inline feedback handlers ─── */
+  const submitToTJ = async (stage: StageId, rawText: string, accuracyScore = 0) => {
+    if (!rawText.trim()) return;
+    setTjSubmitting(stage);
+    try {
+      const evalResult = await tjSubmitStage({ stage, rawText, accuracyScore });
+      if (evalResult) {
+        setTjFeedbackByStage((m) => ({ ...m, [stage]: evalResult }));
+      }
+    } finally {
+      setTjSubmitting(null);
+    }
+  };
+
+  const tjActionsFor = (stage: StageId) => ({
+    onContinue: () => {
+      setTjFeedbackByStage((m) => {
+        const n = { ...m };
+        delete n[stage];
+        return n;
+      });
+      goNext();
+    },
+    onPracticeAgain: () => {
+      setTjFeedbackByStage((m) => {
+        const n = { ...m };
+        delete n[stage];
+        return n;
+      });
+      setJournalNote("");
+    },
+    onStrengthenLayer: () => setStrengthenOpen(true),
+    onReviewConcept: () => {
+      setTjFeedbackByStage((m) => {
+        const n = { ...m };
+        delete n[stage];
+        return n;
+      });
+      stopSpeaking();
+      setCurrentStep(0);
+    },
+  });
+
   // STATIC-ONLY: all AI generators removed from lesson steps.
   // These no-op stubs keep call sites safe. Content for each step is read
   // exclusively from the term's database fields (static_* columns).
