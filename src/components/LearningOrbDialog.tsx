@@ -441,6 +441,9 @@ const LearningOrbDialog = ({
   const [expandedInfo, setExpandedInfo] = useState("");
   const [infoLoading, setInfoLoading] = useState(false);
 
+  // Required TJ Mentor Check-In answers (Information step)
+  const [mentorCheckInAnswers, setMentorCheckInAnswers] = useState<Record<number, string>>({});
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const completedRef = useRef(false);
   const autoVoiceRef = useRef(false);
@@ -480,6 +483,7 @@ const LearningOrbDialog = ({
       setRecognizeRevealed(false);
       setEtymology(null);
       setExpandedInfo("");
+      setMentorCheckInAnswers({});
       // Pre-seed with admin-authored static content so no AI call is needed
       if (block.static_break_it_down) {
         setEtymology({ parts: [], pronunciation: "", summary: block.static_break_it_down });
@@ -608,6 +612,16 @@ const LearningOrbDialog = ({
   // DNA-adapted encouragement message
   const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
+  // Mentor Check-In gating (Information step)
+  const mentorCheckInQuestions: string[] = useMemo(() => {
+    const n: any = (block as any)?.lesson_narrative;
+    return Array.isArray(n?.mentor_check_in) ? n.mentor_check_in.filter((q: any) => typeof q === "string" && q.trim().length > 0) : [];
+  }, [block]);
+  const mentorCheckInRequired = step.key === "information" && mentorCheckInQuestions.length > 0;
+  const mentorCheckInComplete = mentorCheckInQuestions.every(
+    (_, i) => (mentorCheckInAnswers[i] || "").trim().length >= 3,
+  );
+
   const markStepDone = () => {
     setCompletedSteps((prev) => {
       const n = new Set(prev);
@@ -617,6 +631,8 @@ const LearningOrbDialog = ({
   };
 
   const goNext = () => {
+    // GATE: Information step requires answering all TJ Mentor Check-In questions
+    if (mentorCheckInRequired && !mentorCheckInComplete) return;
     stopSpeaking();
     // Track DNA updates based on current step
     if (step.key === "reflection" && journalNote.length > 0) {
@@ -1122,17 +1138,60 @@ const LearningOrbDialog = ({
                 )}
 
                 {narrative.mentor_check_in && narrative.mentor_check_in.length > 0 && (
-                  <article className="editorial-card mt-3">
+                  <article className="editorial-card mt-3" style={{ borderColor: mentorCheckInComplete ? "hsl(145 40% 70%)" : "hsl(0 0% 0% / 0.12)" }}>
                     <div className="editorial-card-header">
                       <span className="num">★</span>
-                      <span className="label">TJ Mentor Check-In</span>
+                      <span className="label">TJ Mentor Check-In · Required</span>
                     </div>
                     <div className="editorial-card-body">
-                      <ol className="space-y-2 list-decimal list-inside m-0">
-                        {narrative.mentor_check_in.map((q: string, i: number) => (
-                          <li key={i} className="leading-relaxed">{q}</li>
-                        ))}
-                      </ol>
+                      <p className="text-xs mb-3" style={{ color: c.subtext }}>
+                        Answer each question in your own words to continue. Even one short sentence is enough — TJ just wants to hear your thinking.
+                      </p>
+                      <div className="space-y-3">
+                        {narrative.mentor_check_in.map((q: string, i: number) => {
+                          const val = mentorCheckInAnswers[i] || "";
+                          const ok = val.trim().length >= 3;
+                          return (
+                            <div key={i}>
+                              <label className="block text-sm font-medium leading-relaxed mb-1.5" style={{ color: c.bodyText }}>
+                                <span className="mr-1.5 font-semibold" style={{ color: step.color }}>{i + 1}.</span>{q}
+                              </label>
+                              <div className="relative">
+                                <textarea
+                                  value={val}
+                                  onChange={(e) => setMentorCheckInAnswers((m) => ({ ...m, [i]: e.target.value }))}
+                                  placeholder="Type or speak your answer…"
+                                  className="w-full min-h-[72px] p-2.5 pr-10 rounded-lg text-sm resize-none focus:outline-none focus:ring-2"
+                                  style={{
+                                    border: `1px solid ${ok ? "hsl(145 45% 55%)" : "hsl(0 0% 0% / 0.14)"}`,
+                                    color: c.bodyText,
+                                    background: "hsl(40 30% 99%)",
+                                    fontFamily: "var(--font-body)",
+                                  }}
+                                />
+                                <div className="absolute right-1.5 bottom-1.5">
+                                  <SpeechToTextButton
+                                    onTranscript={(text) =>
+                                      setMentorCheckInAnswers((m) => ({
+                                        ...m,
+                                        [i]: m[i] ? `${m[i]} ${text}` : text,
+                                      }))
+                                    }
+                                  />
+                                </div>
+                              </div>
+                              {ok && (
+                                <p className="text-[11px] mt-1" style={{ color: "hsl(145 40% 40%)" }}>✓ Got it</p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {!mentorCheckInComplete && (
+                        <p className="text-xs mt-3 italic" style={{ color: "hsl(25 65% 45%)" }}>
+                          Answer all {narrative.mentor_check_in.length} questions to continue to the next step.
+                        </p>
+                      )}
                     </div>
                   </article>
                 )}
@@ -1856,17 +1915,19 @@ const LearningOrbDialog = ({
                 <RefreshCw className="h-3.5 w-3.5" /> Let TJ Explain Again
               </Button>
               <Button size="sm" className="gap-1 text-sm px-5 shadow-md"
-                style={{ background: step.gradient, color: "white", opacity: step.key === "quiz" ? 0.5 : 1 }}
+                style={{ background: step.gradient, color: "white", opacity: (step.key === "quiz" || (mentorCheckInRequired && !mentorCheckInComplete)) ? 0.5 : 1 }}
                 onClick={goNext}
-                disabled={step.key === "quiz"}>
-                {step.key === "quiz" && !reinforcementResolved
+                disabled={step.key === "quiz" || (mentorCheckInRequired && !mentorCheckInComplete)}>
+                {mentorCheckInRequired && !mentorCheckInComplete
+                  ? "🔒 Answer Check-In to Continue"
+                  : step.key === "quiz" && !reinforcementResolved
                   ? "🔒 Reinforcement"
                   : step.key === "quiz" && quizFeedbackLocked
                   ? "Choose Next Action"
                   : step.key === "quiz"
                   ? "Stay in Lesson"
                   : currentStep === adaptedSteps.length - 1 ? "Complete" : "Mark Step Complete"}
-                {currentStep < adaptedSteps.length - 1 && reinforcementResolved && <ArrowRight className="h-4 w-4" />}
+                {currentStep < adaptedSteps.length - 1 && reinforcementResolved && !(mentorCheckInRequired && !mentorCheckInComplete) && <ArrowRight className="h-4 w-4" />}
               </Button>
             </div>
           </div>
