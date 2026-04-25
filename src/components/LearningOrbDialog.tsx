@@ -33,6 +33,8 @@ import RecallReconstruction from "@/components/orb-steps/RecallReconstruction";
 import StrengthenLayerDialog from "@/components/StrengthenLayerDialog";
 import { useBrainStrengths } from "@/hooks/useBrainStrengths";
 import { useTJEngine } from "@/hooks/useTJEngine";
+import TJFeedbackPanel from "@/components/TJFeedbackPanel";
+import type { EngineEvaluation, StageId } from "@/lib/tj-engine";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
@@ -342,6 +344,8 @@ const LearningOrbDialog = ({
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
   const { completeLayer: brainCompleteLayer, recordAssess: brainRecordAssess } = useBrainStrengths();
   const { submitStage: tjSubmitStage } = useTJEngine(block?.id ?? null);
+  const [tjFeedbackByStage, setTjFeedbackByStage] = useState<Partial<Record<StageId, EngineEvaluation>>>({});
+  const [tjSubmitting, setTjSubmitting] = useState<StageId | null>(null);
   const [strengthenOpen, setStrengthenOpen] = useState(false);
   const blockState = (type: Parameters<typeof getBlockOpenState>[1]) => getBlockOpenState(dnaContext, type);
   const { adaptCaption, toneProfile } = useTJTone();
@@ -627,10 +631,17 @@ const LearningOrbDialog = ({
 
     // TJ Engine governance: run typed-text stages through the rule
     // pipeline so submission, feedback, completion state, and
-    // reinforcement are persisted in tj_term_stages.
-    const tjStage = ORB_STEP_TO_TJ_STAGE[step.key];
-    if (tjStage && (step.key === "reflection" || step.key === "application") && journalNote) {
-      tjSubmitStage({ stage: tjStage as any, rawText: journalNote }).catch(() => {});
+    // reinforcement are persisted in tj_term_stages. Skip if the
+    // student already explicitly submitted via the inline "Submit to TJ"
+    // button (we don't want to double-evaluate the same response).
+    const tjStage = ORB_STEP_TO_TJ_STAGE[step.key] as StageId | undefined;
+    if (
+      tjStage &&
+      (step.key === "reflection" || step.key === "application") &&
+      journalNote &&
+      !tjFeedbackByStage[tjStage]
+    ) {
+      tjSubmitStage({ stage: tjStage, rawText: journalNote }).catch(() => {});
     }
 
     // Quiz step requires an answer and an explicit learner choice before completing
@@ -674,6 +685,49 @@ const LearningOrbDialog = ({
     stopSpeaking();
     if (currentStep > 0) setCurrentStep(s => s - 1);
   };
+
+  /* ─── TJ Engine: explicit submit + inline feedback handlers ─── */
+  const submitToTJ = async (stage: StageId, rawText: string, accuracyScore = 0) => {
+    if (!rawText.trim()) return;
+    setTjSubmitting(stage);
+    try {
+      const evalResult = await tjSubmitStage({ stage, rawText, accuracyScore });
+      if (evalResult) {
+        setTjFeedbackByStage((m) => ({ ...m, [stage]: evalResult }));
+      }
+    } finally {
+      setTjSubmitting(null);
+    }
+  };
+
+  const tjActionsFor = (stage: StageId) => ({
+    onContinue: () => {
+      setTjFeedbackByStage((m) => {
+        const n = { ...m };
+        delete n[stage];
+        return n;
+      });
+      goNext();
+    },
+    onPracticeAgain: () => {
+      setTjFeedbackByStage((m) => {
+        const n = { ...m };
+        delete n[stage];
+        return n;
+      });
+      setJournalNote("");
+    },
+    onStrengthenLayer: () => setStrengthenOpen(true),
+    onReviewConcept: () => {
+      setTjFeedbackByStage((m) => {
+        const n = { ...m };
+        delete n[stage];
+        return n;
+      });
+      stopSpeaking();
+      setCurrentStep(0);
+    },
+  });
 
   // STATIC-ONLY: all AI generators removed from lesson steps.
   // These no-op stubs keep call sites safe. Content for each step is read
@@ -1213,6 +1267,31 @@ const LearningOrbDialog = ({
                 </div>
               </article>
 
+              {/* Submit to TJ Engine for inline structured feedback */}
+              <div className="mt-4 flex justify-end">
+                <Button
+                  size="sm"
+                  className="gap-1.5 text-xs px-4 shadow-md"
+                  style={{ background: step.gradient, color: "white" }}
+                  disabled={!journalNote.trim() || tjSubmitting === "reflection"}
+                  onClick={() => submitToTJ("reflection", journalNote)}
+                >
+                  {tjSubmitting === "reflection" ? (
+                    <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Reading…</>
+                  ) : (
+                    <>Submit to TJ <ArrowRight className="h-3.5 w-3.5" /></>
+                  )}
+                </Button>
+              </div>
+
+              {tjFeedbackByStage.reflection && (
+                <TJFeedbackPanel
+                  evaluation={tjFeedbackByStage.reflection}
+                  accentColor={step.color}
+                  actions={tjActionsFor("reflection")}
+                />
+              )}
+
               {block.metaphor && (
                 <blockquote className="editorial-pullquote mt-4">
                   <span className="pq-eyebrow">Recall the Metaphor</span>
@@ -1251,6 +1330,31 @@ const LearningOrbDialog = ({
                   {!journalSaving && journalNote && <p className="text-xs mt-1" style={{ color: "hsl(145 40% 45%)" }}>✓ Saved</p>}
                 </div>
               </article>
+
+              {/* Submit to TJ Engine for inline structured feedback */}
+              <div className="mt-4 flex justify-end">
+                <Button
+                  size="sm"
+                  className="gap-1.5 text-xs px-4 shadow-md"
+                  style={{ background: step.gradient, color: "white" }}
+                  disabled={!journalNote.trim() || tjSubmitting === "application"}
+                  onClick={() => submitToTJ("application", journalNote)}
+                >
+                  {tjSubmitting === "application" ? (
+                    <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Reading…</>
+                  ) : (
+                    <>Submit to TJ <ArrowRight className="h-3.5 w-3.5" /></>
+                  )}
+                </Button>
+              </div>
+
+              {tjFeedbackByStage.application && (
+                <TJFeedbackPanel
+                  evaluation={tjFeedbackByStage.application}
+                  accentColor={step.color}
+                  actions={tjActionsFor("application")}
+                />
+              )}
             </EditorialShell>
           </motion.div>
         );
