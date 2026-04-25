@@ -349,6 +349,72 @@ export type Database = {
           },
         ]
       }
+      learner_behavior_signals: {
+        Row: {
+          attempt_number: number
+          breakdown_point: string | null
+          cognitive_load: string
+          confidence_rating: number | null
+          created_at: string
+          error_type: string
+          explain_back_text: string
+          explain_back_word_count: number
+          id: string
+          layer_completion_integrity: number
+          micro_decisions: Json
+          mode: string
+          second_chance_improved: boolean
+          second_chance_used: boolean
+          stage_id: string
+          term_id: string
+          thinking_path: string | null
+          time_on_stage_ms: number
+          user_id: string
+        }
+        Insert: {
+          attempt_number?: number
+          breakdown_point?: string | null
+          cognitive_load?: string
+          confidence_rating?: number | null
+          created_at?: string
+          error_type?: string
+          explain_back_text?: string
+          explain_back_word_count?: number
+          id?: string
+          layer_completion_integrity?: number
+          micro_decisions?: Json
+          mode?: string
+          second_chance_improved?: boolean
+          second_chance_used?: boolean
+          stage_id: string
+          term_id: string
+          thinking_path?: string | null
+          time_on_stage_ms?: number
+          user_id: string
+        }
+        Update: {
+          attempt_number?: number
+          breakdown_point?: string | null
+          cognitive_load?: string
+          confidence_rating?: number | null
+          created_at?: string
+          error_type?: string
+          explain_back_text?: string
+          explain_back_word_count?: number
+          id?: string
+          layer_completion_integrity?: number
+          micro_decisions?: Json
+          mode?: string
+          second_chance_improved?: boolean
+          second_chance_used?: boolean
+          stage_id?: string
+          term_id?: string
+          thinking_path?: string | null
+          time_on_stage_ms?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       module_chapters: {
         Row: {
           chapter_number: number
