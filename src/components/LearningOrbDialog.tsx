@@ -615,6 +615,15 @@ const LearningOrbDialog = ({
   const step = adaptedSteps[currentStep];
   const progressPercent = ((currentStep + 1) / adaptedSteps.length) * 100;
 
+  // ─── Learner Behavior Intake Layer (rule-based, no AI) ───
+  // Captures confidence, thinking path, explain-back, error type,
+  // mode, micro-decisions, second-chance, integrity, breakdown, and load.
+  const currentTjStage = (ORB_STEP_TO_TJ_STAGE[step?.key ?? ""] ?? null) as StageId | null;
+  const behaviorIntake = useBehaviorIntake({
+    termId: block?.id ?? null,
+    stageId: currentTjStage,
+  });
+
   // DNA-adapted encouragement message
   const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
