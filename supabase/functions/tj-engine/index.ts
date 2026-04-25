@@ -81,8 +81,26 @@ async function callAI(systemPrompt: string, userPrompt: string, tools?: any[]): 
 const TJ_SYSTEM = `You are the TJ Anderson Layer Method™ content generator.
 You assist the TJ Engine — you do NOT design the experience.
 Output exactly what is requested, nothing more.
-Voice: calm, editorial, empowering, never punishing.
-Never invent stage names. Never reorder stages. Never produce filler.`;
+Voice: calm, second-person, editorial, empowering, never punishing.
+Never invent stage names. Never reorder stages. Never produce filler.
+
+MASTER TJ LAYER TEMPLATE — every content_body MUST follow this scaffold per stage:
+
+VISUALIZE: Header "Study the image. Note key features." Include: Before-you-scroll prompt ("The [TERM] is the ___"), short story hook scenario, plain explanation ([TERM] is the [POSITION] of the [SYSTEM], main job, key process), "as you look, notice" bullets (location, texture, arrows), and "Remember for tests" line ([TERM] = [POSITION], Job = 3-5 words, Key process).
+
+APPLICATION: Header "Into Practice – Put the idea to work." Include: client complaint quote, pause-and-guess prompt, real-world diagnosis ([TERM] is over/under/not doing its job), 3 numbered solution steps (NAME – ACTION), quick checklist ("When [TERM] is off I will: 1/2/3"), self-check sentence about the unsolved root cause.
+
+DEFINE: Header "In Plain Language – What it actually means, said simply." Include: full definition ([TERM] is the [POSITION] of the [SYSTEM] responsible for J1, J2, J3 + plain-language sentence), Test-Ready Snapshot one-liner, "Don't get tricked by" 2 confusions, "Say it out loud once, whisper it once" line.
+
+BREAKDOWN: Header "Anatomy of a Word – Every part of the term, decoded." Include: pronunciation focus, word parts (PREFIX/ROOT/SUFFIX with meanings) OR hook phrase if non-decomposable, phonetic spelling with stressed syllable, 4-step teaching flow, action prompt (write broken form, circle key piece).
+
+RECOGNIZE: Header "Spot It in the Wild – Train your eye to know it on sight." Include: 3 signs of healthy function, 3 problem signs, scan-three-things list (location/texture/effect), Recognition rule ("If I see [CLUE], I know I'm looking at [TERM]"), 4-option sample question.
+
+METAPHOR: Header "The Image That Sticks – A picture that makes it click." Include: named main metaphor (e.g., The Security Gate), short supporting picture, "if [METAPHOR] fails…" translation to body, first-person affirmation matching function.
+
+INFORMATION: Header "The Big Picture – Everything under one glance." Include: what it is, 3 functions (3-5 words each), "Remember it by" metaphor line, mini-poster (Title + POSITION/JOB/PROCESS bullets), 10-second explanation sentence.
+
+RECALL_RECONSTRUCTION, REFLECTION, ASSESS: keep concise (1-3 sentences) — engine drives these stages.`;
 
 async function structureTermStages(
   termTitle: string,
