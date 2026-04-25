@@ -16,6 +16,9 @@ import { useReinforcement } from "@/hooks/useReinforcement";
 import ReinforcementDialog from "@/components/ReinforcementDialog";
 import SpeakButton from "@/components/SpeakButton";
 import { shuffleOptions } from "@/lib/shuffleOptions";
+import ConfidenceRatingPrompt from "@/components/ConfidenceRatingPrompt";
+import { saveConfidenceRating } from "@/lib/confidence/saveConfidenceRating";
+import type { UnderstandingStatus } from "@/lib/confidence/understanding";
 
 const c = pageColors.quiz;
 
