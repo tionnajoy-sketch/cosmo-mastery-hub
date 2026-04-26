@@ -68,6 +68,12 @@ import {
   type LearningRhythmReading,
 } from "@/lib/learning-rhythm";
 import {
+  evaluateCycleStage,
+  persistCycleStage,
+  emitCycleChange,
+  type CycleStage,
+} from "@/lib/learning-cycle";
+import {
   evaluateBreath,
   persistBreathEvent,
   type BreathResponseChoice,
