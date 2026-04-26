@@ -469,6 +469,20 @@ const LearningOrbDialog = ({
   const [breakdownRouteCard, setBreakdownRouteCard] = useState<BreakdownRouteAction | null>(null);
   const [dominantBreakdownPattern, setDominantBreakdownPattern] = useState<BreakdownPoint | null>(null);
 
+  // Cognitive Load Indicator — rule-based, derived from existing signals.
+  const sessionIdRef = useRef<string>(getSessionId());
+  const termOpenedAtRef = useRef<number>(Date.now());
+  const questionOpenedAtRef = useRef<number | null>(null);
+  const clickTimesRef = useRef<number[]>([]);
+  const lastInteractionRef = useRef<number>(Date.now());
+  const skippedStepsRef = useRef<Set<number>>(new Set());
+  const [skippedSectionsCount, setSkippedSectionsCount] = useState(0);
+  const [fastClickingPattern, setFastClickingPattern] = useState(false);
+  const [longPausePattern, setLongPausePattern] = useState(false);
+  const [cogLoad, setCogLoad] = useState<CognitiveLoadReading>({ level: "low", reasons: [] });
+  const [cogLoadAcked, setCogLoadAcked] = useState(false);
+  const [pauseTickMs, setPauseTickMs] = useState(0);
+
   // Etymology
   const [etymology, setEtymology] = useState<{ parts: { part: string; meaning: string; origin: string }[]; pronunciation: string; summary: string } | null>(null);
   const [etymLoading, setEtymLoading] = useState(false);
