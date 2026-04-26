@@ -7,6 +7,8 @@ import ScrollToTop from "@/components/ScrollToTop";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CoinProvider } from "@/hooks/useCoins";
 import { BackgroundUploadProvider } from "@/contexts/BackgroundUploadContext";
+import { SessionBalanceProvider } from "@/contexts/SessionBalanceContext";
+import SessionBalancePrompt from "@/components/session-balance/SessionBalancePrompt";
 import BackgroundUploadBanner from "@/components/BackgroundUploadBanner";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
