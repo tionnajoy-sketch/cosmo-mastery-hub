@@ -2015,10 +2015,24 @@ const LearningOrbDialog = ({
                               const correct = isCorrect;
                               const isFirstAttempt = !quizAttempted;
                               setQuizAttempted(true);
+                              // Learning Cycle Loop signals
+                              lastQuizCorrectRef.current = correct;
+                              justAnsweredRef.current = true;
                               updateDNA({ quizCorrect: correct, layerCompleted: "quiz" });
                               if (correct) {
                                 addCoins(10, "correct");
                                 await recordCorrect(block.id, false);
+                                if (isFirstAttempt && incorrectAttemptsCount === 0) {
+                                  masteryReachedRef.current = true;
+                                }
+                                // Recovery Mode exits when learner answers correctly.
+                                if (recovery.active) {
+                                  recovery.exit("correct_answer", {
+                                    termId: block?.id ?? null,
+                                    moduleId: (block as any)?.module_id ?? null,
+                                    sessionId: sessionIdRef.current,
+                                  });
+                                }
                               } else {
                                 setMissedQuestionText(quizQuestion);
                                 await recordIncorrect(block.id);
