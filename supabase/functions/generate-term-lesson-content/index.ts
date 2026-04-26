@@ -330,6 +330,23 @@ Deno.serve(async (req) => {
 
         const assessAnswer = `${parsed.correct_choice}) ${correctText.trim()}`;
 
+        if (dryRun) {
+          results.push({
+            term_id: t.id,
+            term: t.term,
+            status: "ok",
+            preview: {
+              break_it_down_content: breakDown,
+              information_content: information,
+              apply_content: apply,
+              assess_question: assessQ,
+              assess_answer: assessAnswer,
+              assess_explanation: parsed.assess_explanation.trim(),
+            },
+          });
+          continue;
+        }
+
         const { error: updErr } = await supabase
           .from("terms")
           .update({
