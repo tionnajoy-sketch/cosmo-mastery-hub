@@ -3,6 +3,7 @@ import { useCoins, useSoundsEnabled } from "@/hooks/useCoins";
 import { BookOpen, Volume2, VolumeX } from "lucide-react";
 import CoinDisplay from "@/components/CoinDisplay";
 import AppMenuSheet from "@/components/AppMenuSheet";
+import LearningRhythmBadge from "@/components/learning-rhythm/LearningRhythmBadge";
 
 const AppHeader = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const AppHeader = () => {
           <span className="font-display text-lg font-bold text-foreground tracking-tight">TJ Test Prep</span>
         </div>
         <div className="flex items-center gap-3">
+          <LearningRhythmBadge />
           <CoinDisplay coins={stats.coins} showAnimation={showCoinAnimation} lastAdded={lastAdded} />
           <button
             onClick={toggleSounds}
