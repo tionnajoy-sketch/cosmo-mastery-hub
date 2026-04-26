@@ -42,6 +42,7 @@ import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer";
 import EntryPointGate from "@/components/entry-point/EntryPointGate";
 import type { ThinkingPath } from "@/lib/entry-point";
+import { useSessionBalanceOptional } from "@/contexts/SessionBalanceContext";
 import { BreakdownPointPrompt } from "@/components/breakdown-point/BreakdownPointPrompt";
 import {
   REPEATED_STRUGGLE_THRESHOLD,
@@ -392,6 +393,7 @@ const LearningOrbDialog = ({
   }, [rawBlock]);
 
   const { user, profile } = useAuth();
+  const sessionBalance = useSessionBalanceOptional();
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
@@ -678,6 +680,18 @@ const LearningOrbDialog = ({
       questionOpenedAtRef.current = null;
     }
   }, [currentStep, adaptedSteps]);
+
+  // Session Balance: report the active surface (learning / support / quiz)
+  // based on the current orb step, only while the dialog is open.
+  useEffect(() => {
+    if (!sessionBalance) return;
+    if (!open) {
+      sessionBalance.setActiveSurface("idle");
+      return;
+    }
+    const key = adaptedSteps[currentStep]?.key;
+    sessionBalance.setActiveSurfaceFromStepKey(key);
+  }, [open, currentStep, adaptedSteps, sessionBalance]);
 
   // Cognitive Load: recompute reading from current signals
   useEffect(() => {

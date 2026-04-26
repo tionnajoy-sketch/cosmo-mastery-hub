@@ -1459,6 +1459,90 @@ export type Database = {
         }
         Relationships: []
       }
+      recovery_mode_events: {
+        Row: {
+          action: string
+          created_at: string
+          exit_reason: string | null
+          id: string
+          module_id: string | null
+          reasons: Json
+          session_id: string
+          term_id: string | null
+          trigger_source: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          exit_reason?: string | null
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          exit_reason?: string | null
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reentry_choices: {
+        Row: {
+          created_at: string
+          id: string
+          module_id: string | null
+          reasons: Json
+          recovery_success: boolean
+          reentry_choice: string
+          resolved_at: string | null
+          routed_to: string
+          session_id: string
+          term_id: string | null
+          trigger_source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          recovery_success?: boolean
+          reentry_choice: string
+          resolved_at?: string | null
+          routed_to?: string
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          recovery_success?: boolean
+          reentry_choice?: string
+          resolved_at?: string | null
+          routed_to?: string
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reflections: {
         Row: {
           id: string
@@ -1561,6 +1645,54 @@ export type Database = {
           id?: string
           name?: string
           order?: number
+        }
+        Relationships: []
+      }
+      session_balance_events: {
+        Row: {
+          cafe_ms: number
+          created_at: string
+          event_type: string
+          id: string
+          ignore_count: number
+          learning_ms: number
+          quiz_ms: number
+          reasons: Json
+          session_balance_flag: string
+          session_id: string
+          support_ms: number
+          total_active_ms: number
+          user_id: string
+        }
+        Insert: {
+          cafe_ms?: number
+          created_at?: string
+          event_type: string
+          id?: string
+          ignore_count?: number
+          learning_ms?: number
+          quiz_ms?: number
+          reasons?: Json
+          session_balance_flag?: string
+          session_id?: string
+          support_ms?: number
+          total_active_ms?: number
+          user_id: string
+        }
+        Update: {
+          cafe_ms?: number
+          created_at?: string
+          event_type?: string
+          id?: string
+          ignore_count?: number
+          learning_ms?: number
+          quiz_ms?: number
+          reasons?: Json
+          session_balance_flag?: string
+          session_id?: string
+          support_ms?: number
+          total_active_ms?: number
+          user_id?: string
         }
         Relationships: []
       }

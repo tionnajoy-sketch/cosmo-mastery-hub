@@ -7,6 +7,8 @@ import ScrollToTop from "@/components/ScrollToTop";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CoinProvider } from "@/hooks/useCoins";
 import { BackgroundUploadProvider } from "@/contexts/BackgroundUploadContext";
+import { SessionBalanceProvider } from "@/contexts/SessionBalanceContext";
+import SessionBalancePrompt from "@/components/session-balance/SessionBalancePrompt";
 import BackgroundUploadBanner from "@/components/BackgroundUploadBanner";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
@@ -112,7 +114,8 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />
-      <TJCafe open={showCafe} onDismiss={dismissCafe} requiredMode={!isManual} />
+      <TJCafe open={showCafe} onDismiss={() => { dismissCafe(); try { window.dispatchEvent(new CustomEvent("tj-cafe-closed")); } catch {} }} requiredMode={!isManual} />
+      <SessionBalancePrompt />
       <GlobalMenuFab />
       <DNAProgressBubble />
     </>
@@ -128,8 +131,10 @@ const App = () => (
         <AuthProvider>
           <CoinProvider>
             <BackgroundUploadProvider>
-              <AppContent />
-              <BackgroundUploadBanner />
+              <SessionBalanceProvider>
+                <AppContent />
+                <BackgroundUploadBanner />
+              </SessionBalanceProvider>
             </BackgroundUploadProvider>
           </CoinProvider>
         </AuthProvider>
