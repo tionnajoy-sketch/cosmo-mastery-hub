@@ -388,7 +388,7 @@ const LearningOrbDialog = ({
   //  - "visual" (Visualize) is ALWAYS step 1
   //  - "quiz"   (Assess / Final Check) is ALWAYS the LAST step
   // The DNA-preferred layer slots into position 2 (between Visualize and the rest).
-  const adaptedSteps = useMemo(() => {
+  const dnaOrderedSteps = useMemo(() => {
     // Always pull quiz to the end and visual to the front, regardless of DNA.
     const pinFirstAndLast = (arr: typeof availableSteps) => {
       const visual = arr.find(s => s.key === "visual");
@@ -424,6 +424,12 @@ const LearningOrbDialog = ({
       ...(quiz ? [quiz] : []),
     ];
   }, [dna, availableSteps]);
+
+  // Apply Teach/Test mode filter on top of the DNA-ordered list.
+  const adaptedSteps = useMemo(
+    () => filterStepsByMode(dnaOrderedSteps, learningMode),
+    [dnaOrderedSteps, learningMode]
+  );
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
