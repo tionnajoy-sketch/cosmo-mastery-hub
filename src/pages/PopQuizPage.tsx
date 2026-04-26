@@ -25,6 +25,8 @@ const PopQuizPage = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [confidenceStatusByQ, setConfidenceStatusByQ] = useState<Record<number, UnderstandingStatus>>({});
+  const confidenceComplete = selectedAnswer ? !!confidenceStatusByQ[currentIndex] : true;
 
   useEffect(() => {
     if (!user || !id) return;
