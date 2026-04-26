@@ -169,8 +169,33 @@ const PopQuizPage = () => {
                   </CardContent>
                 </Card>
 
-                <Button className="w-full py-5 text-base" style={{ background: c.nextButton, color: "white" }} onClick={handleNext}>
-                  {isLastQuestion ? "See Results" : "Next Question"}
+                {user && (
+                  <ConfidenceRatingPrompt
+                    isCorrect={isCorrect}
+                    onSubmit={async (rating) => {
+                      const status = await saveConfidenceRating({
+                        userId: user.id,
+                        surface: "pop_quiz",
+                        questionRef: currentQuestion.id,
+                        questionText: currentQuestion.question_text,
+                        sectionId: id ?? null,
+                        isCorrect,
+                        confidence: rating,
+                      });
+                      setConfidenceStatusByQ((m) => ({ ...m, [currentIndex]: status }));
+                    }}
+                  />
+                )}
+
+                <Button
+                  className="w-full py-5 text-base mt-3 disabled:opacity-50"
+                  style={{ background: c.nextButton, color: "white" }}
+                  onClick={() => { if (confidenceComplete) handleNext(); }}
+                  disabled={!confidenceComplete}
+                >
+                  {!confidenceComplete
+                    ? "🔒 Rate your confidence to continue"
+                    : isLastQuestion ? "See Results" : "Next Question"}
                 </Button>
               </motion.div>
             )}
