@@ -15,6 +15,7 @@ import { LayerBlockSection, getBlockOpenState } from "@/components/LayerBlockSec
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 import { shuffleOptions } from "@/lib/shuffleOptions";
+import GuidedLessonPanel from "@/components/guided-lesson/GuidedLessonPanel";
 
 const c = pageColors.study;
 
