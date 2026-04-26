@@ -1730,15 +1730,8 @@ const LearningOrbDialog = ({
                             )}
 
                             {(wasCorrect || revealAnswerOverride) && (
-                              <></>
-                            )}
-
-                            {(wasCorrect || (errorReflectionDone && secondChanceDone) || revealAnswerOverride) && (
-                              <></>
-                            )}
-
-                            {(wasCorrect || revealAnswerOverride || (errorReflectionDone && secondChanceDone && secondChanceBehavior === "show_answer")) && (
                               <>
+
 
                             {/* Body */}
                             <p className="text-[15px] leading-relaxed" style={{ color: "hsl(220 20% 22%)", fontFamily: "var(--font-body, inherit)" }}>
