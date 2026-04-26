@@ -1648,6 +1648,54 @@ export type Database = {
         }
         Relationships: []
       }
+      session_balance_events: {
+        Row: {
+          cafe_ms: number
+          created_at: string
+          event_type: string
+          id: string
+          ignore_count: number
+          learning_ms: number
+          quiz_ms: number
+          reasons: Json
+          session_balance_flag: string
+          session_id: string
+          support_ms: number
+          total_active_ms: number
+          user_id: string
+        }
+        Insert: {
+          cafe_ms?: number
+          created_at?: string
+          event_type: string
+          id?: string
+          ignore_count?: number
+          learning_ms?: number
+          quiz_ms?: number
+          reasons?: Json
+          session_balance_flag?: string
+          session_id?: string
+          support_ms?: number
+          total_active_ms?: number
+          user_id: string
+        }
+        Update: {
+          cafe_ms?: number
+          created_at?: string
+          event_type?: string
+          id?: string
+          ignore_count?: number
+          learning_ms?: number
+          quiz_ms?: number
+          reasons?: Json
+          session_balance_flag?: string
+          session_id?: string
+          support_ms?: number
+          total_active_ms?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       student_contracts: {
         Row: {
           commitment_text: string
