@@ -452,6 +452,10 @@ const LearningOrbDialog = ({
     setCompleted(false);
   }, [learningMode]);
 
+  // Layer Integrity Check (Mastery Check gate)
+  const [integrityAck, setIntegrityAck] = useState(false);
+  const [explainItBackDone, setExplainItBackDone] = useState(false);
+
   // Visual
   const [imageUrl, setImageUrl] = useState("");
   const [imageLoading, setImageLoading] = useState(false);
