@@ -961,6 +961,13 @@ const LearningOrbDialog = ({
               <div className="mt-3">
                 <SpeakButton text={`${block.term_title}. ${block.definition}`} size="sm" label="Listen" />
               </div>
+              <div className="mt-4">
+                <ExplainItBackLayer
+                  termId={block.id}
+                  trigger="definition"
+                  contextRef={`define:${block.term_title}`}
+                />
+              </div>
             </EditorialShell>
           </motion.div>
         );
