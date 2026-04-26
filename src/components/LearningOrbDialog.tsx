@@ -44,6 +44,9 @@ import EntryPointGate from "@/components/entry-point/EntryPointGate";
 import type { ThinkingPath } from "@/lib/entry-point";
 import WrongAnswerErrorPicker from "@/components/error-type/WrongAnswerErrorPicker";
 import SecondChancePrompt from "@/components/second-chance/SecondChancePrompt";
+import { useLearningMode } from "@/hooks/useLearningMode";
+import { LearningModeToggle } from "@/components/learning-mode/LearningModeToggle";
+import { filterStepsByMode } from "@/lib/learning-mode";
 import {
   recordSecondChancePick,
   resolveTryAgainOutcome,
@@ -354,6 +357,12 @@ const LearningOrbDialog = ({
   }, [rawBlock]);
 
   const { user, profile } = useAuth();
+  const { mode: learningMode, setMode: setLearningMode, stats: learningModeStats } = useLearningMode({
+    userId: user?.id ?? null,
+    termId: block?.id ?? null,
+    moduleId: (block as any)?.module_id ?? null,
+    enabled: open && !!user?.id && !!block?.id,
+  });
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
@@ -379,7 +388,7 @@ const LearningOrbDialog = ({
   //  - "visual" (Visualize) is ALWAYS step 1
   //  - "quiz"   (Assess / Final Check) is ALWAYS the LAST step
   // The DNA-preferred layer slots into position 2 (between Visualize and the rest).
-  const adaptedSteps = useMemo(() => {
+  const dnaOrderedSteps = useMemo(() => {
     // Always pull quiz to the end and visual to the front, regardless of DNA.
     const pinFirstAndLast = (arr: typeof availableSteps) => {
       const visual = arr.find(s => s.key === "visual");
@@ -416,6 +425,12 @@ const LearningOrbDialog = ({
     ];
   }, [dna, availableSteps]);
 
+  // Apply Teach/Test mode filter on top of the DNA-ordered list.
+  const adaptedSteps = useMemo(
+    () => filterStepsByMode(dnaOrderedSteps, learningMode),
+    [dnaOrderedSteps, learningMode]
+  );
+
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [completed, setCompleted] = useState(false);
@@ -424,6 +439,12 @@ const LearningOrbDialog = ({
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showNeuro, setShowNeuro] = useState(false);
+
+  // Reset step pointer when learning mode changes the visible step list.
+  useEffect(() => {
+    setCurrentStep(0);
+    setCompleted(false);
+  }, [learningMode]);
 
   // Visual
   const [imageUrl, setImageUrl] = useState("");
@@ -2126,6 +2147,18 @@ const LearningOrbDialog = ({
               <div className="flex-shrink-0 text-right">
                 <p className="text-xs font-semibold" style={{ color: step.color }}>Step {currentStep + 1} of {adaptedSteps.length}</p>
               </div>
+            </div>
+
+            {/* Learning Mode Toggle (Teach vs Test) */}
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <p className="text-[10px] uppercase tracking-widest" style={{ color: c.subtext }}>
+                {learningMode === "teach" ? "Instruction layers" : "Practice + assessment"}
+              </p>
+              <LearningModeToggle
+                mode={learningMode}
+                onChange={setLearningMode}
+                switchCount={learningModeStats?.mode_switch_count ?? 0}
+              />
             </div>
 
             {/* Progress bar */}

@@ -547,6 +547,90 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_mode_events: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          from_mode: string | null
+          id: string
+          module_id: string | null
+          term_id: string | null
+          to_mode: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number
+          from_mode?: string | null
+          id?: string
+          module_id?: string | null
+          term_id?: string | null
+          to_mode: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          from_mode?: string | null
+          id?: string
+          module_id?: string | null
+          term_id?: string | null
+          to_mode?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      learning_mode_stats: {
+        Row: {
+          created_at: string
+          first_mode: string | null
+          id: string
+          last_mode: string | null
+          mode_switch_count: number
+          module_id: string | null
+          preferred_mode: string | null
+          teach_mode_time: number
+          teach_open_count: number
+          term_id: string | null
+          test_mode_time: number
+          test_open_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_mode?: string | null
+          id?: string
+          last_mode?: string | null
+          mode_switch_count?: number
+          module_id?: string | null
+          preferred_mode?: string | null
+          teach_mode_time?: number
+          teach_open_count?: number
+          term_id?: string | null
+          test_mode_time?: number
+          test_open_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_mode?: string | null
+          id?: string
+          last_mode?: string | null
+          mode_switch_count?: number
+          module_id?: string | null
+          preferred_mode?: string | null
+          teach_mode_time?: number
+          teach_open_count?: number
+          term_id?: string | null
+          test_mode_time?: number
+          test_open_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       micro_decision_events: {
         Row: {
           action: string
