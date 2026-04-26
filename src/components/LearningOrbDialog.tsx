@@ -1758,6 +1758,16 @@ const LearningOrbDialog = ({
                             </div>
                           </div>
                         </motion.aside>
+                        {!wasCorrect && (
+                          <div className="mt-3">
+                            <ExplainItBackLayer
+                              termId={block.id}
+                              trigger="missed_question"
+                              contextRef={`missed_question:${(missedQuestionText || quizQuestion || "").slice(0, 80)}`}
+                            />
+                          </div>
+                        )}
+                        </>
                       );
                     })()}
                   </div>
