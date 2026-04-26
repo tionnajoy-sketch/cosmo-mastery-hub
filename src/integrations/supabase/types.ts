@@ -763,6 +763,54 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_rhythm_states: {
+        Row: {
+          cognitive_load: string | null
+          confidence: number | null
+          created_at: string
+          fast_clicking_pattern: boolean
+          id: string
+          learning_rhythm_state: string
+          long_pause_pattern: boolean
+          module_id: string | null
+          reasons: Json
+          session_id: string
+          term_id: string | null
+          user_id: string
+          wrong_attempts: number
+        }
+        Insert: {
+          cognitive_load?: string | null
+          confidence?: number | null
+          created_at?: string
+          fast_clicking_pattern?: boolean
+          id?: string
+          learning_rhythm_state: string
+          long_pause_pattern?: boolean
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          user_id: string
+          wrong_attempts?: number
+        }
+        Update: {
+          cognitive_load?: string | null
+          confidence?: number | null
+          created_at?: string
+          fast_clicking_pattern?: boolean
+          id?: string
+          learning_rhythm_state?: string
+          long_pause_pattern?: boolean
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          user_id?: string
+          wrong_attempts?: number
+        }
+        Relationships: []
+      }
       micro_decision_events: {
         Row: {
           action: string
