@@ -733,6 +733,51 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_cycle_stages: {
+        Row: {
+          created_at: string
+          cycle_stage: string
+          id: string
+          is_correct: boolean | null
+          module_id: string | null
+          previous_stage: string | null
+          reasons: Json
+          session_id: string
+          step_key: string
+          term_id: string | null
+          user_id: string
+          wrong_attempts: number
+        }
+        Insert: {
+          created_at?: string
+          cycle_stage: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string | null
+          previous_stage?: string | null
+          reasons?: Json
+          session_id?: string
+          step_key?: string
+          term_id?: string | null
+          user_id: string
+          wrong_attempts?: number
+        }
+        Update: {
+          created_at?: string
+          cycle_stage?: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string | null
+          previous_stage?: string | null
+          reasons?: Json
+          session_id?: string
+          step_key?: string
+          term_id?: string | null
+          user_id?: string
+          wrong_attempts?: number
+        }
+        Relationships: []
+      }
       learning_mode_events: {
         Row: {
           created_at: string
@@ -1040,6 +1085,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pace_adjustments: {
+        Row: {
+          breath_choice: string
+          created_at: string
+          id: string
+          module_id: string | null
+          pace_choice: string
+          pace_override: boolean
+          reasons: Json
+          route_step: number
+          session_id: string
+          term_id: string | null
+          user_id: string
+        }
+        Insert: {
+          breath_choice: string
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          pace_choice: string
+          pace_override?: boolean
+          reasons?: Json
+          route_step?: number
+          session_id?: string
+          term_id?: string | null
+          user_id: string
+        }
+        Update: {
+          breath_choice?: string
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          pace_choice?: string
+          pace_override?: boolean
+          reasons?: Json
+          route_step?: number
+          session_id?: string
+          term_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       posttest_results: {
         Row: {
@@ -1372,6 +1459,90 @@ export type Database = {
         }
         Relationships: []
       }
+      recovery_mode_events: {
+        Row: {
+          action: string
+          created_at: string
+          exit_reason: string | null
+          id: string
+          module_id: string | null
+          reasons: Json
+          session_id: string
+          term_id: string | null
+          trigger_source: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          exit_reason?: string | null
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          exit_reason?: string | null
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reentry_choices: {
+        Row: {
+          created_at: string
+          id: string
+          module_id: string | null
+          reasons: Json
+          recovery_success: boolean
+          reentry_choice: string
+          resolved_at: string | null
+          routed_to: string
+          session_id: string
+          term_id: string | null
+          trigger_source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          recovery_success?: boolean
+          reentry_choice: string
+          resolved_at?: string | null
+          routed_to?: string
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          recovery_success?: boolean
+          reentry_choice?: string
+          resolved_at?: string | null
+          routed_to?: string
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reflections: {
         Row: {
           id: string
@@ -1477,6 +1648,54 @@ export type Database = {
         }
         Relationships: []
       }
+      session_balance_events: {
+        Row: {
+          cafe_ms: number
+          created_at: string
+          event_type: string
+          id: string
+          ignore_count: number
+          learning_ms: number
+          quiz_ms: number
+          reasons: Json
+          session_balance_flag: string
+          session_id: string
+          support_ms: number
+          total_active_ms: number
+          user_id: string
+        }
+        Insert: {
+          cafe_ms?: number
+          created_at?: string
+          event_type: string
+          id?: string
+          ignore_count?: number
+          learning_ms?: number
+          quiz_ms?: number
+          reasons?: Json
+          session_balance_flag?: string
+          session_id?: string
+          support_ms?: number
+          total_active_ms?: number
+          user_id: string
+        }
+        Update: {
+          cafe_ms?: number
+          created_at?: string
+          event_type?: string
+          id?: string
+          ignore_count?: number
+          learning_ms?: number
+          quiz_ms?: number
+          reasons?: Json
+          session_balance_flag?: string
+          session_id?: string
+          support_ms?: number
+          total_active_ms?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       student_contracts: {
         Row: {
           commitment_text: string
@@ -1568,6 +1787,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      term_guided_lessons: {
+        Row: {
+          created_at: string
+          guided_understanding: string
+          history_context: string
+          id: string
+          model_used: string | null
+          opening_breakdown: string
+          origin_root_meaning: string
+          term_id: string
+          updated_at: string
+          voice_version: string
+          why_it_matters: string
+        }
+        Insert: {
+          created_at?: string
+          guided_understanding?: string
+          history_context?: string
+          id?: string
+          model_used?: string | null
+          opening_breakdown?: string
+          origin_root_meaning?: string
+          term_id: string
+          updated_at?: string
+          voice_version?: string
+          why_it_matters?: string
+        }
+        Update: {
+          created_at?: string
+          guided_understanding?: string
+          history_context?: string
+          id?: string
+          model_used?: string | null
+          opening_breakdown?: string
+          origin_root_meaning?: string
+          term_id?: string
+          updated_at?: string
+          voice_version?: string
+          why_it_matters?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "term_guided_lessons_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       term_images: {
         Row: {
