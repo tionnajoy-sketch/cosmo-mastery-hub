@@ -1800,6 +1800,8 @@ const LearningOrbDialog = ({
                                 </>
                               )}
                             </div>
+                              </>
+                            )}
                           </div>
                         </motion.aside>
                         {!wasCorrect && (
