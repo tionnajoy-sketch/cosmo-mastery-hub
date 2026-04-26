@@ -39,6 +39,8 @@ import { useBehaviorIntake } from "@/hooks/useBehaviorIntake";
 import BehaviorIntakeStrip from "@/components/behavior-intake/BehaviorIntakeStrip";
 import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer";
+import EntryPointGate from "@/components/entry-point/EntryPointGate";
+import type { ThinkingPath } from "@/lib/entry-point";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
