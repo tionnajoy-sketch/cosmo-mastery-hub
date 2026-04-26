@@ -16,6 +16,9 @@ import { useReinforcement } from "@/hooks/useReinforcement";
 import ReinforcementDialog from "@/components/ReinforcementDialog";
 import SpeakButton from "@/components/SpeakButton";
 import { shuffleOptions } from "@/lib/shuffleOptions";
+import ConfidenceRatingPrompt from "@/components/ConfidenceRatingPrompt";
+import { saveConfidenceRating } from "@/lib/confidence/saveConfidenceRating";
+import type { UnderstandingStatus } from "@/lib/confidence/understanding";
 
 const c = pageColors.quiz;
 
@@ -62,6 +65,8 @@ const QuizPage = () => {
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [reinforcementOpen, setReinforcementOpen] = useState(false);
   const [reinforcementResolved, setReinforcementResolved] = useState(true);
+  const [confidenceStatusByQ, setConfidenceStatusByQ] = useState<Record<number, UnderstandingStatus>>({});
+  const confidenceComplete = selectedAnswer ? !!confidenceStatusByQ[currentIndex] : true;
 
   useEffect(() => {
     if (!id || !block) return;
@@ -161,6 +166,7 @@ const QuizPage = () => {
 
   const handleNext = () => {
     if (!reinforcementResolved) return; // safeguard
+    if (!confidenceComplete) return; // require confidence rating
     if (isLastQuestion) {
       navigate(`/section/${id}/results/${block}`, { state: { score, total: questions.length, mode, wrongCount } });
     } else {
@@ -499,17 +505,39 @@ const QuizPage = () => {
                   </CardContent>
                 </Card>
 
+                {user && (
+                  <ConfidenceRatingPrompt
+                    isCorrect={isCorrect}
+                    onSubmit={async (rating) => {
+                      const status = await saveConfidenceRating({
+                        userId: user.id,
+                        surface: "section_quiz",
+                        questionRef: currentQuestion.id,
+                        questionText: currentQuestion.question_text,
+                        sectionId: id ?? null,
+                        termId: currentQuestion.related_term_id ?? null,
+                        blockNumber: Number(block),
+                        isCorrect,
+                        confidence: rating,
+                      });
+                      setConfidenceStatusByQ((m) => ({ ...m, [currentIndex]: status }));
+                    }}
+                  />
+                )}
+
                 <Button
-                  className="w-full py-5 text-base disabled:opacity-50"
+                  className="w-full py-5 text-base disabled:opacity-50 mt-3"
                   style={{ background: c.nextButton, color: "white" }}
                   onClick={handleNext}
-                  disabled={!reinforcementResolved}
+                  disabled={!reinforcementResolved || !confidenceComplete}
                 >
                   {!reinforcementResolved
                     ? "🔒 Complete reinforcement to continue"
-                    : isLastQuestion
-                      ? "See Results"
-                      : "Next Question"}
+                    : !confidenceComplete
+                      ? "🔒 Rate your confidence to continue"
+                      : isLastQuestion
+                        ? "See Results"
+                        : "Next Question"}
                 </Button>
               </motion.div>
             )}

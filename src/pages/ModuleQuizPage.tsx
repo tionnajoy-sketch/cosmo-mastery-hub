@@ -12,6 +12,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useCoins } from "@/hooks/useCoins";
 import SpeakButton from "@/components/SpeakButton";
 import { shuffleOptions } from "@/lib/shuffleOptions";
+import ConfidenceRatingPrompt from "@/components/ConfidenceRatingPrompt";
+import { saveConfidenceRating } from "@/lib/confidence/saveConfidenceRating";
+import type { UnderstandingStatus } from "@/lib/confidence/understanding";
 
 const c = pageColors.quiz;
 
@@ -62,6 +65,8 @@ const ModuleQuizPage = () => {
   const [calmMessage] = useState(() => calmingQuizMessages[Math.floor(Math.random() * calmingQuizMessages.length)]);
   const [previousBest, setPreviousBest] = useState<{ score: number; total: number } | null>(null);
   const [totalAttempts, setTotalAttempts] = useState(0);
+  const [confidenceStatusByQ, setConfidenceStatusByQ] = useState<Record<number, UnderstandingStatus>>({});
+  const confidenceComplete = selectedAnswer ? !!confidenceStatusByQ[currentIndex] : true;
 
   useEffect(() => {
     if (!id || !block) return;
@@ -164,6 +169,7 @@ const ModuleQuizPage = () => {
   };
 
   const handleNext = () => {
+    if (!confidenceComplete) return;
     if (isLastQuestion) {
       navigate(`/module/${id}/results/${block}`, { state: { score, total: questions.length, mode, wrongCount, moduleTitle } });
     } else {
@@ -432,8 +438,36 @@ const ModuleQuizPage = () => {
                   </CardContent>
                 </Card>
 
-                <Button className="w-full py-5 text-base" style={{ background: c.nextButton, color: "white" }} onClick={handleNext}>
-                  {isLastQuestion ? "See Results" : "Next Question"}
+                {user && (
+                  <ConfidenceRatingPrompt
+                    isCorrect={isCorrect}
+                    onSubmit={async (rating) => {
+                      const status = await saveConfidenceRating({
+                        userId: user.id,
+                        surface: "module_quiz",
+                        questionRef: currentQuestion.id ?? `${id}-${currentIndex}`,
+                        questionText: currentQuestion.question_text,
+                        moduleId: id ?? null,
+                        blockNumber: Number(block),
+                        isCorrect,
+                        confidence: rating,
+                      });
+                      setConfidenceStatusByQ((m) => ({ ...m, [currentIndex]: status }));
+                    }}
+                  />
+                )}
+
+                <Button
+                  className="w-full py-5 text-base mt-3 disabled:opacity-50"
+                  style={{ background: c.nextButton, color: "white" }}
+                  onClick={handleNext}
+                  disabled={!confidenceComplete}
+                >
+                  {!confidenceComplete
+                    ? "🔒 Rate your confidence to continue"
+                    : isLastQuestion
+                      ? "See Results"
+                      : "Next Question"}
                 </Button>
               </motion.div>
             )}

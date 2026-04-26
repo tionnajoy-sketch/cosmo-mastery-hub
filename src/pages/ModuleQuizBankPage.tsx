@@ -10,6 +10,9 @@ import { ArrowLeft, CheckCircle2, XCircle, Brain, Heart, Target, Eye, BookOpen, 
 import { pageColors } from "@/lib/colors";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useCoins } from "@/hooks/useCoins";
+import ConfidenceRatingPrompt from "@/components/ConfidenceRatingPrompt";
+import { saveConfidenceRating } from "@/lib/confidence/saveConfidenceRating";
+import type { UnderstandingStatus } from "@/lib/confidence/understanding";
 
 const c = pageColors.quiz;
 
@@ -48,6 +51,8 @@ const ModuleQuizBankPage = () => {
   const [preQuizMessage] = useState(() => preQuizMessages[Math.floor(Math.random() * preQuizMessages.length)]);
   const [resultsSaved, setResultsSaved] = useState(false);
   const { addCoins } = useCoins();
+  const [confidenceStatusByQ, setConfidenceStatusByQ] = useState<Record<number, UnderstandingStatus>>({});
+  const confidenceComplete = selectedAnswer ? !!confidenceStatusByQ[currentIndex] : true;
 
   useEffect(() => {
     if (!id) return;
@@ -93,6 +98,7 @@ const ModuleQuizBankPage = () => {
   };
 
   const handleNext = async () => {
+    if (!confidenceComplete) return;
     if (isLastQuestion) {
       // Save results
       if (user && !resultsSaved) {
@@ -320,8 +326,35 @@ const ModuleQuizBankPage = () => {
                   </CardContent>
                 </Card>
 
-                <Button onClick={handleNext} className="w-full mt-4 py-5" style={{ background: c.nextButton, color: "hsl(0 0% 100%)" }}>
-                  {isLastQuestion ? "See Results" : "Next Question"}
+                {user && (
+                  <ConfidenceRatingPrompt
+                    isCorrect={isCorrect}
+                    onSubmit={async (rating) => {
+                      const status = await saveConfidenceRating({
+                        userId: user.id,
+                        surface: "module_quiz_bank",
+                        questionRef: `${id}-bank-${currentIndex}`,
+                        questionText: currentQuestion.question_text,
+                        moduleId: id ?? null,
+                        isCorrect,
+                        confidence: rating,
+                      });
+                      setConfidenceStatusByQ((m) => ({ ...m, [currentIndex]: status }));
+                    }}
+                  />
+                )}
+
+                <Button
+                  onClick={handleNext}
+                  disabled={!confidenceComplete}
+                  className="w-full mt-4 py-5 disabled:opacity-50"
+                  style={{ background: c.nextButton, color: "hsl(0 0% 100%)" }}
+                >
+                  {!confidenceComplete
+                    ? "🔒 Rate your confidence to continue"
+                    : isLastQuestion
+                      ? "See Results"
+                      : "Next Question"}
                 </Button>
               </motion.div>
             )}
