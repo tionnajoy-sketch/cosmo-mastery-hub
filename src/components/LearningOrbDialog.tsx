@@ -2062,6 +2062,7 @@ const LearningOrbDialog = ({
             </div>
           </div>
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );
