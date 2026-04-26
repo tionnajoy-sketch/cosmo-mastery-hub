@@ -629,6 +629,80 @@ const LearningOrbDialog = ({
     return () => clearTimeout(timer);
   }, [block?.id, open]);
 
+  // Cognitive Load: track skipped sections (advancing without completing prior step)
+  const prevStepRef = useRef<number>(0);
+  useEffect(() => {
+    const prev = prevStepRef.current;
+    if (currentStep > prev && !completedSteps.has(prev) && !skippedStepsRef.current.has(prev)) {
+      skippedStepsRef.current.add(prev);
+      setSkippedSectionsCount(skippedStepsRef.current.size);
+    }
+    prevStepRef.current = currentStep;
+    setCogLoadAcked(false);
+  }, [currentStep, completedSteps]);
+
+  // Cognitive Load: mark when a question becomes the active surface
+  useEffect(() => {
+    const key = adaptedSteps[currentStep]?.key;
+    if (key === "quiz" || key === "recognize" || key === "recall_reconstruction") {
+      questionOpenedAtRef.current = Date.now();
+    } else {
+      questionOpenedAtRef.current = null;
+    }
+  }, [currentStep, adaptedSteps]);
+
+  // Cognitive Load: recompute reading from current signals
+  useEffect(() => {
+    if (!open) return;
+    const now = Date.now();
+    const reading = computeCognitiveLoad({
+      timeOnTermMs: now - termOpenedAtRef.current,
+      timeOnQuestionMs: questionOpenedAtRef.current ? now - questionOpenedAtRef.current : 0,
+      wrongAttempts: incorrectAttemptsCount,
+      fastClickingPattern,
+      longPausePattern,
+      skippedSections: skippedSectionsCount,
+    });
+    setCogLoad((prev) =>
+      prev.level === reading.level && prev.reasons.join("|") === reading.reasons.join("|")
+        ? prev
+        : reading,
+    );
+  }, [
+    open,
+    incorrectAttemptsCount,
+    fastClickingPattern,
+    longPausePattern,
+    skippedSectionsCount,
+    pauseTickMs,
+    currentStep,
+  ]);
+
+  // Persist a snapshot whenever the load level changes to non-low
+  const lastPersistedRef = useRef<string>("");
+  useEffect(() => {
+    if (!open || !user?.id || !block?.id) return;
+    if (cogLoad.level === "low") return;
+    const sig = `${cogLoad.level}|${currentStep}`;
+    if (sig === lastPersistedRef.current) return;
+    lastPersistedRef.current = sig;
+    persistCognitiveLoad({
+      userId: user.id,
+      termId: block.id,
+      moduleId: (block as any)?.module_id ?? null,
+      sessionId: sessionIdRef.current,
+      reading: cogLoad,
+      signals: {
+        timeOnTermMs: Date.now() - termOpenedAtRef.current,
+        timeOnQuestionMs: questionOpenedAtRef.current ? Date.now() - questionOpenedAtRef.current : 0,
+        wrongAttempts: incorrectAttemptsCount,
+        fastClickingPattern,
+        longPausePattern,
+        skippedSections: skippedSectionsCount,
+      },
+    });
+  }, [cogLoad, open, user?.id, block?.id, currentStep, incorrectAttemptsCount, fastClickingPattern, longPausePattern, skippedSectionsCount]);
+
   // Load saved data for builtin
   useEffect(() => {
     if (!block || mode !== "builtin" || !user) return;
