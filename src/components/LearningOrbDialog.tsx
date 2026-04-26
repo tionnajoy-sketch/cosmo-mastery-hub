@@ -870,6 +870,15 @@ const LearningOrbDialog = ({
   const [differentWayOpen, setDifferentWayOpen] = useState(false);
   const [slowDownOpen, setSlowDownOpen] = useState(false);
 
+  // ---------------- Re-Entry Intelligence ----------------
+  // After TJ Café or Recovery Mode, ask the learner how they want to re-enter
+  // instead of dropping them back into the same exact state. We persist the
+  // choice and flip recovery_success once they answer correctly.
+  const [reentryOpen, setReentryOpen] = useState(false);
+  const [reentryTrigger, setReentryTrigger] = useState<ReentryTrigger>("tj_cafe");
+  const pendingReentryIdRef = useRef<string | null>(null);
+  const recoveryWasActiveRef = useRef<boolean>(false);
+
   // Track rhythm state so the breath evaluator can use it without recomputing.
   useEffect(() => {
     const reading = computeLearningRhythm({
