@@ -16,6 +16,7 @@ import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 import { shuffleOptions } from "@/lib/shuffleOptions";
 import GuidedLessonPanel from "@/components/guided-lesson/GuidedLessonPanel";
+import DeepDiveWithTJ from "@/components/deep-dive/DeepDiveWithTJ";
 
 const c = pageColors.study;
 
@@ -865,6 +866,14 @@ const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, se
           </p>
         </div>
       )}
+
+      {/* Optional Deep Dive — clean separation, collapsed by default */}
+      <DeepDiveWithTJ
+        termId={block.id}
+        termTitle={block.term_title}
+        definition={block.definition}
+        stepColor={stepColor}
+      />
     </div>
   );
 };
