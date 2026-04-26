@@ -654,6 +654,18 @@ const LearningOrbDialog = ({
     }
   }, [currentStep, adaptedSteps]);
 
+  // Session Balance: report the active surface (learning / support / quiz)
+  // based on the current orb step, only while the dialog is open.
+  useEffect(() => {
+    if (!sessionBalance) return;
+    if (!open) {
+      sessionBalance.setActiveSurface("idle");
+      return;
+    }
+    const key = adaptedSteps[currentStep]?.key;
+    sessionBalance.setActiveSurfaceFromStepKey(key);
+  }, [open, currentStep, adaptedSteps, sessionBalance]);
+
   // Cognitive Load: recompute reading from current signals
   useEffect(() => {
     if (!open) return;
