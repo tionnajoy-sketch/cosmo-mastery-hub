@@ -1,13 +1,14 @@
 // TJ Anderson Layer Method™ — One-Shot Term Lesson Content Generator
 //
-// Generates and persists three pieces of structured lesson content per term,
+// Generates and persists FOUR pieces of structured lesson content per term,
 // directly into the `terms` table. Skips terms that already have content
 // unless `force: true`. After this runs, the app renders cached fields with
 // ZERO live AI calls.
 //
-// 1) BREAK DOWN  → terms.break_it_down_content (root, origin, plain breakdown)
-// 2) INFORMATION → terms.information_content   (what / does / why it matters)
-// 3) ASSESS      → terms.assess_question + assess_answer + assess_explanation
+// 1) BREAK DOWN  → terms.break_it_down_content (root, prefix/suffix, plain breakdown)
+// 2) INFORMATION → terms.information_content   (TJ teaching style + memory anchor)
+// 3) APPLY       → terms.apply_content         (own-words prompt, TJ Anderson Layer Method)
+// 4) ASSESS      → terms.assess_question + assess_answer + assess_explanation
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -26,33 +27,43 @@ YOUR VOICE — non-negotiable:
 - You sound like a real teacher talking to a real student — not a textbook, not a robot, not academic.
 - Short sentences. Plain words. Use "you" and sometimes "we" or "I".
 - Never start with "In this section…" or "This is about…". Just teach.
+- Prioritize UNDERSTANDING over memorization.
 
 WHAT TO AVOID:
 - Textbook phrasing ("It is defined as…", "Refers to…", "Pertaining to…").
 - Heavy scientific/Latin/Greek jargon unless the term itself requires it — and when you must use it, immediately translate it.
 - Lists of facts to memorize. Teach for understanding.
 - Long paragraphs. Keep things tight.
+- Basic mnemonics like "ROY G BIV". Memory anchors must be conceptual hooks, not letter tricks.
 
-YOU MUST PRODUCE THREE THINGS:
+YOU MUST PRODUCE FOUR THINGS:
 
-1) BREAK DOWN (Anatomy of the Word) — 3 short fields:
+1) BREAK DOWN (Anatomy of the Word):
    - root_meaning: the literal meaning of the root(s), one sentence.
+   - prefix_suffix: any prefix/suffix and what it means, one sentence. If none, write "No prefix or suffix worth breaking down — the root carries the meaning."
    - word_origin: where the word comes from (Greek, Latin, French, modern, etc.), one sentence.
    - simple_breakdown: split the word into pieces and translate each in plain language. 2–4 short sentences.
 
-2) INFORMATION (Full Lesson) — one tight teaching paragraph (5–9 short sentences) covering:
-   - what the term is in plain words,
-   - what it does,
-   - why it matters in real-world cosmetology (chair, client, salon).
-   Conversational. TJ voice. No headings inside this field. No bullet points. No textbook tone.
+2) INFORMATION (TJ Teaching Style — full lesson):
+   Write four short, clearly-separated parts inside ONE field structure:
+   - what_it_is: what the term is in plain words, like you're sitting next to the student. 2–3 short sentences.
+   - why_it_matters: why this matters in real cosmetology practice (chair, client, salon, license). 2–3 short sentences.
+   - real_client_scenario: a real, concrete client moment where this shows up (e.g., "When a client sits in your chair with…"). 2–4 short sentences.
+   - memory_anchor: a CONCEPTUAL hook — a question to ask yourself, a feeling, a comparison, or a "think of it like…" image — that helps the student RECOGNIZE this in real life. NOT a letter mnemonic. 2–4 short sentences. Lead with a single bold word or phrase the learner can return to (e.g., "Think FOUNDATION." or "Ask yourself: protecting or supporting?").
 
-3) ASSESS (One state-board-style question):
+3) APPLY (TJ Anderson Layer Method — own-words prompt):
+   - apply_intro: one short, encouraging sentence inviting the student to apply what they just learned in their own words. TJ voice.
+   - apply_q1: a question prompting them to explain what the concept REALLY means in their own words.
+   - apply_q2: a question prompting them to explain why it matters in real practice with a client.
+   - apply_q3: a question prompting them to explain how they would teach this to someone else.
+
+4) ASSESS (One state-board-style question):
    - assess_question: a clear scenario or knowledge-check question. One question only.
    - choice_a, choice_b, choice_c, choice_d: four plausible options. Only ONE correct.
    - correct_choice: exactly one of "A", "B", "C", "D".
    - assess_explanation: 2–4 short sentences explaining why the correct answer is correct, and briefly why the others are not. TJ voice.
 
-Stay consistent across all terms.`;
+Stay consistent across all terms. Same voice every time.`;
 
 const lessonJsonSchema = {
   name: "save_term_lesson",
@@ -60,10 +71,22 @@ const lessonJsonSchema = {
   schema: {
     type: "object",
     properties: {
+      // Break Down
       root_meaning: { type: "string" },
+      prefix_suffix: { type: "string" },
       word_origin: { type: "string" },
       simple_breakdown: { type: "string" },
-      information: { type: "string" },
+      // Information
+      what_it_is: { type: "string" },
+      why_it_matters: { type: "string" },
+      real_client_scenario: { type: "string" },
+      memory_anchor: { type: "string" },
+      // Apply
+      apply_intro: { type: "string" },
+      apply_q1: { type: "string" },
+      apply_q2: { type: "string" },
+      apply_q3: { type: "string" },
+      // Assess
       assess_question: { type: "string" },
       choice_a: { type: "string" },
       choice_b: { type: "string" },
@@ -74,9 +97,17 @@ const lessonJsonSchema = {
     },
     required: [
       "root_meaning",
+      "prefix_suffix",
       "word_origin",
       "simple_breakdown",
-      "information",
+      "what_it_is",
+      "why_it_matters",
+      "real_client_scenario",
+      "memory_anchor",
+      "apply_intro",
+      "apply_q1",
+      "apply_q2",
+      "apply_q3",
       "assess_question",
       "choice_a",
       "choice_b",
@@ -91,9 +122,17 @@ const lessonJsonSchema = {
 
 interface LessonPayload {
   root_meaning: string;
+  prefix_suffix: string;
   word_origin: string;
   simple_breakdown: string;
-  information: string;
+  what_it_is: string;
+  why_it_matters: string;
+  real_client_scenario: string;
+  memory_anchor: string;
+  apply_intro: string;
+  apply_q1: string;
+  apply_q2: string;
+  apply_q3: string;
   assess_question: string;
   choice_a: string;
   choice_b: string;
@@ -127,18 +166,34 @@ Deno.serve(async (req) => {
     if (termId) {
       const { data, error } = await supabase
         .from("terms")
-        .select("id, term, definition, break_it_down_content, information_content, assess_question")
+        .select("id, term, definition, break_it_down_content, information_content, apply_content, assess_question")
         .eq("id", termId)
         .maybeSingle();
       if (error || !data) return json({ error: "Term not found" }, 404);
-      const hasAll = !!(data.break_it_down_content && data.information_content && data.assess_question);
+      const hasAll = !!(
+        data.break_it_down_content &&
+        data.information_content &&
+        data.apply_content &&
+        data.assess_question
+      );
       if (hasAll && !force) return json({ skipped: true, reason: "already has content", term_id: termId });
       targets = [{ id: data.id, term: data.term, definition: data.definition }];
     } else if (batch) {
       let q = supabase.from("terms").select("id, term, definition").order("term").limit(limit);
       if (!force) {
-        // Only terms missing any of the three fields
-        q = q.or("break_it_down_content.is.null,break_it_down_content.eq.,information_content.is.null,information_content.eq.,assess_question.is.null,assess_question.eq.");
+        // Only terms missing any of the four fields
+        q = q.or(
+          [
+            "break_it_down_content.is.null",
+            "break_it_down_content.eq.",
+            "information_content.is.null",
+            "information_content.eq.",
+            "apply_content.is.null",
+            "apply_content.eq.",
+            "assess_question.is.null",
+            "assess_question.eq.",
+          ].join(","),
+        );
       }
       const { data, error } = await q;
       if (error) throw error;
@@ -155,7 +210,7 @@ Deno.serve(async (req) => {
           `TERM: ${t.term}`,
           t.definition ? `DEFINITION (textbook reference — rewrite in your voice): ${t.definition}` : "",
           "",
-          "Generate the Break Down, Information, and Assess content now. Stay in TJ's voice. Keep things tight. The Assess question must be state-board style with exactly one correct option.",
+          "Generate the Break Down, Information (with memory anchor), Apply (own-words prompts), and Assess content now. Stay in TJ's voice. Keep things tight. The Assess question must be state-board style with exactly one correct option.",
         ].filter(Boolean).join("\n");
 
         const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -202,12 +257,40 @@ Deno.serve(async (req) => {
         try { parsed = JSON.parse(content); }
         catch { results.push({ term_id: t.id, term: t.term, status: "error", error: "bad_json" }); continue; }
 
+        // 1) BREAK DOWN
         const breakDown = [
           `**Root meaning:** ${parsed.root_meaning.trim()}`,
+          `**Prefix / suffix:** ${parsed.prefix_suffix.trim()}`,
           `**Where it comes from:** ${parsed.word_origin.trim()}`,
           `**Plain-language breakdown:** ${parsed.simple_breakdown.trim()}`,
         ].join("\n\n");
 
+        // 2) INFORMATION (TJ Teaching Style + Memory Anchor)
+        const information = [
+          `**What it is**\n\n${parsed.what_it_is.trim()}`,
+          `**Why it matters in practice**\n\n${parsed.why_it_matters.trim()}`,
+          `**In the chair — real client moment**\n\n${parsed.real_client_scenario.trim()}`,
+          `**TJ Memory Anchor**\n\n${parsed.memory_anchor.trim()}`,
+        ].join("\n\n");
+
+        // 3) APPLY (TJ Anderson Layer Method — own words)
+        const apply = [
+          `**Apply the TJ Anderson Layer Method**`,
+          ``,
+          parsed.apply_intro.trim(),
+          ``,
+          `In your own words:`,
+          ``,
+          `1. ${parsed.apply_q1.trim()}`,
+          ``,
+          `2. ${parsed.apply_q2.trim()}`,
+          ``,
+          `3. ${parsed.apply_q3.trim()}`,
+          ``,
+          `*(Short answer box or voice input)*`,
+        ].join("\n");
+
+        // 4) ASSESS
         const correctText =
           parsed.correct_choice === "A" ? parsed.choice_a :
           parsed.correct_choice === "B" ? parsed.choice_b :
@@ -229,7 +312,8 @@ Deno.serve(async (req) => {
           .from("terms")
           .update({
             break_it_down_content: breakDown,
-            information_content: parsed.information.trim(),
+            information_content: information,
+            apply_content: apply,
             assess_question: assessQ,
             assess_answer: assessAnswer,
             assess_explanation: parsed.assess_explanation.trim(),
