@@ -38,6 +38,7 @@ import type { EngineEvaluation, StageId } from "@/lib/tj-engine";
 import { useBehaviorIntake } from "@/hooks/useBehaviorIntake";
 import BehaviorIntakeStrip from "@/components/behavior-intake/BehaviorIntakeStrip";
 import type { BehaviorSuggestion } from "@/lib/behavior-intake";
+import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
@@ -960,6 +961,13 @@ const LearningOrbDialog = ({
               <div className="mt-3">
                 <SpeakButton text={`${block.term_title}. ${block.definition}`} size="sm" label="Listen" />
               </div>
+              <div className="mt-4">
+                <ExplainItBackLayer
+                  termId={block.id}
+                  trigger="definition"
+                  contextRef={`define:${block.term_title}`}
+                />
+              </div>
             </EditorialShell>
           </motion.div>
         );
@@ -1003,6 +1011,13 @@ const LearningOrbDialog = ({
                   )}
                 </div>
               )}
+              <div className="mt-4">
+                <ExplainItBackLayer
+                  termId={block.id}
+                  trigger="guided_lesson"
+                  contextRef={`guided_lesson:${block.term_title}`}
+                />
+              </div>
             </EditorialShell>
           </motion.div>
         );
@@ -1579,6 +1594,7 @@ const LearningOrbDialog = ({
                       const accentBorder = wasCorrect ? "hsl(145 45% 70%)" : "hsl(352 65% 78%)";
 
                       return (
+                        <>
                         <motion.aside
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -1742,6 +1758,16 @@ const LearningOrbDialog = ({
                             </div>
                           </div>
                         </motion.aside>
+                        {!wasCorrect && (
+                          <div className="mt-3">
+                            <ExplainItBackLayer
+                              termId={block.id}
+                              trigger="missed_question"
+                              contextRef={`missed_question:${(missedQuestionText || quizQuestion || "").slice(0, 80)}`}
+                            />
+                          </div>
+                        )}
+                        </>
                       );
                     })()}
                   </div>
