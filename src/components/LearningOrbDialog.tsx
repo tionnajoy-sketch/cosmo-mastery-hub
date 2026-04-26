@@ -1379,6 +1379,38 @@ const LearningOrbDialog = ({
     setCurrentStep(idx);
   }, [adaptedSteps, user, block, stopSpeaking]);
 
+  /* ─── Re-Entry choice handler ─── */
+  const handleReentryChoice = useCallback(async (choice: ReentryChoice) => {
+    const opt = REENTRY_OPTIONS.find((o) => o.choice === choice);
+    if (!opt) { setReentryOpen(false); return; }
+    setReentryOpen(false);
+
+    // "Start simpler" — flag the simpler-version pathway used by the AI generator.
+    if (choice === "start_simpler") {
+      try { (window as any).__tjSimplerVersion = true; } catch {}
+    }
+
+    // Route to the chosen layer.
+    jumpToStepKey(opt.routeStep, `Re-entry → ${opt.label}`);
+
+    // Persist the choice and remember the row id so we can flip
+    // recovery_success when the learner answers correctly.
+    if (user?.id) {
+      const id = await logReentryChoice({
+        userId: user.id,
+        termId: block?.id ?? null,
+        moduleId: (block as any)?.module_id ?? null,
+        sessionId: sessionIdRef.current,
+        trigger: reentryTrigger,
+        choice,
+        routedTo: opt.routeStep,
+        reasons: [reentryTrigger],
+      });
+      pendingReentryIdRef.current = id;
+    }
+  }, [jumpToStepKey, user?.id, block, reentryTrigger]);
+
+
   /* ─── Editorial spread shell — wraps every step's content ─── */
   const stepIndex = currentStep;
   const issueNumber = String(stepIndex + 1).padStart(2, "0");
