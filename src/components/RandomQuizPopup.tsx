@@ -30,6 +30,7 @@ const RandomQuizPopup = () => {
   const [visible, setVisible] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [confidenceStatus, setConfidenceStatus] = useState<UnderstandingStatus | null>(null);
 
   const fetchRandomWrongQuestion = useCallback(async () => {
     if (!user) return;
