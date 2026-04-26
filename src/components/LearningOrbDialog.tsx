@@ -2600,6 +2600,30 @@ const LearningOrbDialog = ({
         onChoose={handleBreathChoice}
         onDismiss={handleBreathDismiss}
       />
+      <DifferentWayPicker
+        open={differentWayOpen}
+        onPick={(pace, stepKey) => {
+          setDifferentWayOpen(false);
+          logPace("different_way", pace);
+          jumpToStepKey(stepKey, `Pace → Different way (${stepKey})`);
+        }}
+        onClose={() => setDifferentWayOpen(false)}
+      />
+      <SlowDownGuide
+        open={slowDownOpen}
+        onAdvance={(step: SlowDownStep, index: number) => {
+          logPace("slow_down", step.pace, { routeStep: index + 1 });
+          jumpToStepKey(step.stepKey as PaceOrbStepKey, `Slow down → ${step.label}`);
+        }}
+        onComplete={() => {
+          setSlowDownOpen(false);
+          logPace("slow_down", "slow_down_complete", { routeStep: 5 });
+        }}
+        onExit={(atIndex) => {
+          setSlowDownOpen(false);
+          logPace("slow_down", "slow_down_exit", { routeStep: atIndex + 1 });
+        }}
+      />
     </Dialog>
   );
 };
