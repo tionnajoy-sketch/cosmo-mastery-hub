@@ -357,6 +357,12 @@ const LearningOrbDialog = ({
   }, [rawBlock]);
 
   const { user, profile } = useAuth();
+  const { mode: learningMode, setMode: setLearningMode, stats: learningModeStats } = useLearningMode({
+    userId: user?.id ?? null,
+    termId: block?.id ?? null,
+    moduleId: (block as any)?.module_id ?? null,
+    enabled: open && !!user?.id && !!block?.id,
+  });
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
