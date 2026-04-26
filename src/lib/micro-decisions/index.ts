@@ -85,7 +85,7 @@ export async function recordMicroEvent(args: RecordEventArgs): Promise<void> {
       surface: args.surface ?? "",
       action: args.action,
       time_on_surface_ms: args.timeOnSurfaceMs ?? null,
-      metadata: args.metadata ?? {},
+      metadata: (args.metadata ?? {}) as never,
     });
   } catch (e) {
     // Soft-fail — silent tracking must never block the UI.
