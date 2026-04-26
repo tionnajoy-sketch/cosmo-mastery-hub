@@ -2154,6 +2154,12 @@ const LearningOrbDialog = ({
                                     sessionId: sessionIdRef.current,
                                   });
                                 }
+                                // Re-Entry Intelligence — flag recovery_success on the
+                                // most recent re-entry choice once the learner gets it right.
+                                if (pendingReentryIdRef.current) {
+                                  await markReentrySuccess(pendingReentryIdRef.current);
+                                  pendingReentryIdRef.current = null;
+                                }
                               } else {
                                 setMissedQuestionText(quizQuestion);
                                 await recordIncorrect(block.id);
