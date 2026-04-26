@@ -155,8 +155,31 @@ const RandomQuizPopup = () => {
                   )}
                 </div>
                 <p className="text-xs mb-3" style={{ color: "hsl(220 15% 45%)" }}>{question.explanation}</p>
-                <Button size="sm" onClick={handleDismiss} className="w-full text-xs" style={{ background: "hsl(220 50% 55%)", color: "white" }}>
-                  Continue Studying
+                {user && (
+                  <ConfidenceRatingPrompt
+                    isCorrect={isCorrect}
+                    compact
+                    onSubmit={async (rating) => {
+                      const status = await saveConfidenceRating({
+                        userId: user.id,
+                        surface: "random_quiz",
+                        questionRef: question.id,
+                        questionText: question.question_text,
+                        isCorrect,
+                        confidence: rating,
+                      });
+                      setConfidenceStatus(status);
+                    }}
+                  />
+                )}
+                <Button
+                  size="sm"
+                  onClick={handleDismiss}
+                  disabled={!confidenceStatus}
+                  className="w-full text-xs mt-3 disabled:opacity-50"
+                  style={{ background: "hsl(220 50% 55%)", color: "white" }}
+                >
+                  {confidenceStatus ? "Continue Studying" : "🔒 Rate your confidence to continue"}
                 </Button>
               </motion.div>
             )}
