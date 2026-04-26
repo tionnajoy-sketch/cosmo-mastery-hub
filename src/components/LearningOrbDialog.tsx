@@ -2045,6 +2045,7 @@ const LearningOrbDialog = ({
             </EditorialShell>
           </motion.div>
         );
+      }
 
       case "recall_reconstruction":
         return (
