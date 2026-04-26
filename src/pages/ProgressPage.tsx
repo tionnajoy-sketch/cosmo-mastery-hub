@@ -136,6 +136,9 @@ const ProgressPage = () => {
           </Card>
         </motion.div>
 
+        {/* Understanding Status (from confidence ratings) */}
+        {user && <UnderstandingStatusCard userId={user.id} />}
+
         {/* Block Scores */}
         {blockScores.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
