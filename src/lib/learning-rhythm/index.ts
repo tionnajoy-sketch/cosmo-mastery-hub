@@ -125,12 +125,64 @@ export async function loadLatestRhythm(
 }
 
 // ---- Subtle UI palette (paired with semantic tokens) ----
-export const RHYTHM_COPY: Record<LearningRhythmState, { label: string; hint: string }> = {
-  flow:        { label: "Flow",        hint: "You're moving smoothly." },
-  steady:      { label: "Steady",      hint: "Holding a calm pace." },
-  strained:    { label: "Strained",    hint: "Slow down — this one needs care." },
-  overwhelmed: { label: "Overwhelmed", hint: "A short reset may help." },
-  recovering:  { label: "Recovering",  hint: "Coming back from a reset." },
+export interface RhythmCopy {
+  label: string;
+  hint: string;
+  meaning: string;
+  actions: string[];
+}
+
+export const RHYTHM_COPY: Record<LearningRhythmState, RhythmCopy> = {
+  flow: {
+    label: "Flow",
+    hint: "You're moving smoothly.",
+    meaning: "You're locked in. Concepts are clicking and your pace feels effortless.",
+    actions: [
+      "Keep going — try one more layer while it's clicking.",
+      "Lock it in with a quick reflection.",
+      "Try a harder example to deepen mastery.",
+    ],
+  },
+  steady: {
+    label: "Steady",
+    hint: "Holding a calm pace.",
+    meaning: "You're learning at a healthy, sustainable pace. Nothing alarming, nothing rushed.",
+    actions: [
+      "Stay in this rhythm — it's where retention lives.",
+      "Try a Recall step to test what's sticking.",
+      "Move on when you feel ready.",
+    ],
+  },
+  strained: {
+    label: "Strained",
+    hint: "Slow down — this one needs care.",
+    meaning: "Something is slightly off — a couple of misses or hesitation. Not a crisis, just friction.",
+    actions: [
+      "Slow it down — revisit the Breakdown layer.",
+      "Try the Visual or Metaphor for a different angle.",
+      "Re-read the definition before the next attempt.",
+    ],
+  },
+  overwhelmed: {
+    label: "Overwhelmed",
+    hint: "A short reset may help.",
+    meaning: "Multiple wrong attempts, fast clicks or a long pause — your brain is asking for a break.",
+    actions: [
+      "Take 60 seconds in TJ Café.",
+      "Try a simpler version of the question.",
+      "Switch to the Visual or Metaphor layer.",
+    ],
+  },
+  recovering: {
+    label: "Recovering",
+    hint: "Coming back from a reset.",
+    meaning: "You just returned from a reset. We're easing back in, not throwing you into the deep end.",
+    actions: [
+      "Pick a softer entry: Visual, Metaphor or Guided Lesson.",
+      "Re-read the concept before answering.",
+      "One small win first — confidence rebuilds fast.",
+    ],
+  },
 };
 
 // Broadcast helper so any surface (header, dashboard) can react instantly.
