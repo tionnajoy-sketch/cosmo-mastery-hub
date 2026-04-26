@@ -2216,6 +2216,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_learner_behavior: {
+        Args: never
+        Returns: {
+          block_number: number
+          breakdown_point: string
+          chapter_label: string
+          cognitive_load: string
+          confidence_rating: number
+          error_type: string
+          incorrect_attempts: number
+          last_reviewed_at: string
+          mastery_status: string
+          memory_anchor_skips: number
+          most_skipped_layer: string
+          preferred_mode: string
+          preferred_thinking_path: string
+          quiz_avoidance_count: number
+          recovery_pattern: string
+          reflection_skips: number
+          review_due_at: string
+          second_chance_behavior: string
+          section_id: string
+          section_name: string
+          term_id: string
+          term_name: string
+          understanding_status: string
+          user_id: string
+          user_name: string
+        }[]
+      }
       get_leaderboard: {
         Args: never
         Returns: {
