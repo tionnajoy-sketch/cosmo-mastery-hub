@@ -74,6 +74,14 @@ import {
   type BreathSignals,
 } from "@/lib/breath-trigger";
 import BreathPrompt from "@/components/breath-trigger/BreathPrompt";
+import DifferentWayPicker from "@/components/pace-adjustment/DifferentWayPicker";
+import SlowDownGuide from "@/components/pace-adjustment/SlowDownGuide";
+import {
+  logPaceAdjustment,
+  type PaceChoice,
+  type OrbStepKey as PaceOrbStepKey,
+  type SlowDownStep,
+} from "@/lib/pace-adjustment";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
