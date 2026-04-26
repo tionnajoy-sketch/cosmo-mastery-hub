@@ -141,6 +141,26 @@ export function useBehaviorIntake({ termId, stageId, attemptNumber = 1 }: UseBeh
       };
 
       await saveSignal(snap);
+
+      // Track thinking pattern (rule-based, no AI). Only when learner actually
+      // picked how they processed it AND the engine produced a pass/fail signal.
+      if (draft.thinkingPath) {
+        const isCorrect =
+          outcome.completionState === "complete"
+            ? true
+            : outcome.completionState === "locked"
+              ? null
+              : outcome.accuracyScore >= 70;
+        void recordThinkingSelection({
+          userId: user.id,
+          thinkingPath: draft.thinkingPath,
+          isCorrect,
+          termId,
+          attemptNumber: outcome.attemptCount,
+          surface: stageId,
+        });
+      }
+
       const suggestion = recommendNextRoute(snap);
       setLastSuggestion(suggestion);
       return suggestion;
