@@ -1172,6 +1172,7 @@ const LearningOrbDialog = ({
         onComplete?.();
       }
       setCompleted(true);
+      masteryReachedRef.current = true;
     }
   };
 
