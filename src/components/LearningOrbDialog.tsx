@@ -51,6 +51,15 @@ import {
   type BreakdownPoint,
   type BreakdownRouteAction,
 } from "@/lib/breakdown-point";
+import CognitiveLoadPrompt from "@/components/cognitive-load/CognitiveLoadPrompt";
+import {
+  computeCognitiveLoad,
+  persistCognitiveLoad,
+  getSessionId,
+  type CognitiveLoad,
+  type CognitiveLoadAction,
+  type CognitiveLoadReading,
+} from "@/lib/cognitive-load";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
