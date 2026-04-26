@@ -10,6 +10,9 @@ import { ArrowLeft, CheckCircle2, XCircle, Brain, Heart, Target, Eye, BookOpen, 
 import { pageColors } from "@/lib/colors";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useCoins } from "@/hooks/useCoins";
+import ConfidenceRatingPrompt from "@/components/ConfidenceRatingPrompt";
+import { saveConfidenceRating } from "@/lib/confidence/saveConfidenceRating";
+import type { UnderstandingStatus } from "@/lib/confidence/understanding";
 
 const c = pageColors.quiz;
 
