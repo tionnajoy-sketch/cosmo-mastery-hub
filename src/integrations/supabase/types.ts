@@ -1459,6 +1459,45 @@ export type Database = {
         }
         Relationships: []
       }
+      recovery_mode_events: {
+        Row: {
+          action: string
+          created_at: string
+          exit_reason: string | null
+          id: string
+          module_id: string | null
+          reasons: Json
+          session_id: string
+          term_id: string | null
+          trigger_source: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          exit_reason?: string | null
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          exit_reason?: string | null
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       reflections: {
         Row: {
           id: string
