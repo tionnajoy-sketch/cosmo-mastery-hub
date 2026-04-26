@@ -366,6 +366,7 @@ const LearningOrbDialog = ({
   }, [rawBlock]);
 
   const { user, profile } = useAuth();
+  const sessionBalance = useSessionBalanceOptional();
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
