@@ -2324,6 +2324,54 @@ const LearningOrbDialog = ({
                   🔑 Key Point: Remember "{block.term_title}" — say it, picture it, connect it to something you know.
                 </motion.div>
               )}
+              {/* ═══════ Cognitive Load Indicator ═══════ */}
+              {cogLoad.level !== "low" && !cogLoadAcked && (
+                <div className="mb-4">
+                  <CognitiveLoadPrompt
+                    level={cogLoad.level as Exclude<CognitiveLoad, "low">}
+                    reasons={cogLoad.reasons}
+                    onAction={(action: CognitiveLoadAction) => {
+                      // Persist the chosen action with the current snapshot
+                      if (user?.id && block?.id) {
+                        persistCognitiveLoad({
+                          userId: user.id,
+                          termId: block.id,
+                          moduleId: (block as any)?.module_id ?? null,
+                          sessionId: sessionIdRef.current,
+                          reading: cogLoad,
+                          signals: {
+                            timeOnTermMs: Date.now() - termOpenedAtRef.current,
+                            timeOnQuestionMs: questionOpenedAtRef.current ? Date.now() - questionOpenedAtRef.current : 0,
+                            wrongAttempts: incorrectAttemptsCount,
+                            fastClickingPattern,
+                            longPausePattern,
+                            skippedSections: skippedSectionsCount,
+                          },
+                          promptAction: action,
+                        });
+                      }
+                      setCogLoadAcked(true);
+                      // Route the chosen action
+                      if (action === "show_visual") {
+                        jumpToStepKey("visual", "Cognitive Load → Visual");
+                      } else if (action === "show_metaphor") {
+                        jumpToStepKey("metaphor", "Cognitive Load → Metaphor");
+                      } else if (action === "tj_cafe") {
+                        try { openTJCafe(); } catch {}
+                      } else if (action === "simpler_question") {
+                        // Reset quiz UI and re-trigger an AI-generated simpler item
+                        setQuizSelected(null);
+                        setQuizRevealed(false);
+                        setAiQuestion(null);
+                        const idx = adaptedSteps.findIndex((s) => s.key === "quiz");
+                        if (idx >= 0) setCurrentStep(idx);
+                      }
+                      // "continue" = just dismiss
+                    }}
+                    onDismiss={() => setCogLoadAcked(true)}
+                  />
+                </div>
+              )}
               <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
             </div>
           </div>
