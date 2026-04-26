@@ -10,7 +10,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const VOICE_VERSION = "tj-deep-dive-v1";
+const VOICE_VERSION = "tj-deep-dive-v2";
 const DEFAULT_MODEL = "google/gemini-2.5-flash";
 
 const TJ_SYSTEM_PROMPT = `You are TJ Anderson, a real cosmetology teacher writing a "Deep Dive with TJ" — an OPTIONAL, story-driven extension for a learner who already finished the main lesson and wants to go deeper.
