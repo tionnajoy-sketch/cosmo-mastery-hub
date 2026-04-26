@@ -98,6 +98,7 @@ const ModuleQuizBankPage = () => {
   };
 
   const handleNext = async () => {
+    if (!confidenceComplete) return;
     if (isLastQuestion) {
       // Save results
       if (user && !resultsSaved) {
