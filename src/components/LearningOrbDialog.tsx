@@ -2149,6 +2149,18 @@ const LearningOrbDialog = ({
               </div>
             </div>
 
+            {/* Learning Mode Toggle (Teach vs Test) */}
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <p className="text-[10px] uppercase tracking-widest" style={{ color: c.subtext }}>
+                {learningMode === "teach" ? "Instruction layers" : "Practice + assessment"}
+              </p>
+              <LearningModeToggle
+                mode={learningMode}
+                onChange={setLearningMode}
+                switchCount={learningModeStats?.mode_switch_count ?? 0}
+              />
+            </div>
+
             {/* Progress bar */}
             <div className="mt-2"><Progress value={progressPercent} className="h-1.5" /></div>
 
