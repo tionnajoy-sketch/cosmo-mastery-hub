@@ -137,6 +137,60 @@ export type Database = {
         }
         Relationships: []
       }
+      breath_trigger_events: {
+        Row: {
+          breath_response_choice: string
+          cognitive_load: string | null
+          confidence_rating: number | null
+          created_at: string
+          fast_clicking_pattern: boolean
+          id: string
+          learning_rhythm_state: string | null
+          long_pause_pattern: boolean
+          module_id: string | null
+          repeated_skipping: boolean
+          session_id: string
+          term_id: string | null
+          trigger_reasons: Json
+          user_id: string
+          wrong_attempts: number
+        }
+        Insert: {
+          breath_response_choice: string
+          cognitive_load?: string | null
+          confidence_rating?: number | null
+          created_at?: string
+          fast_clicking_pattern?: boolean
+          id?: string
+          learning_rhythm_state?: string | null
+          long_pause_pattern?: boolean
+          module_id?: string | null
+          repeated_skipping?: boolean
+          session_id?: string
+          term_id?: string | null
+          trigger_reasons?: Json
+          user_id: string
+          wrong_attempts?: number
+        }
+        Update: {
+          breath_response_choice?: string
+          cognitive_load?: string | null
+          confidence_rating?: number | null
+          created_at?: string
+          fast_clicking_pattern?: boolean
+          id?: string
+          learning_rhythm_state?: string | null
+          long_pause_pattern?: boolean
+          module_id?: string | null
+          repeated_skipping?: boolean
+          session_id?: string
+          term_id?: string | null
+          trigger_reasons?: Json
+          user_id?: string
+          wrong_attempts?: number
+        }
+        Relationships: []
+      }
       cognitive_load_snapshots: {
         Row: {
           cognitive_load: string
