@@ -137,6 +137,60 @@ export type Database = {
         }
         Relationships: []
       }
+      cognitive_load_snapshots: {
+        Row: {
+          cognitive_load: string
+          created_at: string
+          fast_clicking_pattern: boolean
+          id: string
+          long_pause_pattern: boolean
+          module_id: string | null
+          prompt_action: string | null
+          reasons: Json
+          session_id: string
+          skipped_sections: number
+          term_id: string | null
+          time_on_question_ms: number
+          time_on_term_ms: number
+          user_id: string
+          wrong_attempts: number
+        }
+        Insert: {
+          cognitive_load: string
+          created_at?: string
+          fast_clicking_pattern?: boolean
+          id?: string
+          long_pause_pattern?: boolean
+          module_id?: string | null
+          prompt_action?: string | null
+          reasons?: Json
+          session_id?: string
+          skipped_sections?: number
+          term_id?: string | null
+          time_on_question_ms?: number
+          time_on_term_ms?: number
+          user_id: string
+          wrong_attempts?: number
+        }
+        Update: {
+          cognitive_load?: string
+          created_at?: string
+          fast_clicking_pattern?: boolean
+          id?: string
+          long_pause_pattern?: boolean
+          module_id?: string | null
+          prompt_action?: string | null
+          reasons?: Json
+          session_id?: string
+          skipped_sections?: number
+          term_id?: string | null
+          time_on_question_ms?: number
+          time_on_term_ms?: number
+          user_id?: string
+          wrong_attempts?: number
+        }
+        Relationships: []
+      }
       community_posts: {
         Row: {
           author_name: string
