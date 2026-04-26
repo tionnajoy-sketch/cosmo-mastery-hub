@@ -68,6 +68,14 @@ import {
   type LearningRhythmReading,
 } from "@/lib/learning-rhythm";
 import {
+  evaluateCycleStage,
+  persistCycleStage,
+  emitCycleChange,
+  type CycleStage,
+} from "@/lib/learning-cycle";
+import { useRecoveryMode } from "@/contexts/RecoveryModeContext";
+import { RECOVERY_PRIORITY_LAYERS } from "@/lib/recovery-mode";
+import {
   evaluateBreath,
   persistBreathEvent,
   type BreathResponseChoice,
