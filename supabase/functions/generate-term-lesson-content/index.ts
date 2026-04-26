@@ -130,8 +130,11 @@ const lessonJsonSchema = {
       // Apply
       apply_intro: { type: "string" },
       apply_q1: { type: "string" },
+      apply_q1_type: { type: "string", enum: ["Explain", "Decide", "Identify", "Correct", "Compare", "Predict", "Connect"] },
       apply_q2: { type: "string" },
+      apply_q2_type: { type: "string", enum: ["Explain", "Decide", "Identify", "Correct", "Compare", "Predict", "Connect"] },
       apply_q3: { type: "string" },
+      apply_q3_type: { type: "string", enum: ["Explain", "Decide", "Identify", "Correct", "Compare", "Predict", "Connect"] },
       // Assess
       assess_question: { type: "string" },
       choice_a: { type: "string" },
@@ -152,8 +155,11 @@ const lessonJsonSchema = {
       "memory_anchor",
       "apply_intro",
       "apply_q1",
+      "apply_q1_type",
       "apply_q2",
+      "apply_q2_type",
       "apply_q3",
+      "apply_q3_type",
       "assess_question",
       "choice_a",
       "choice_b",
