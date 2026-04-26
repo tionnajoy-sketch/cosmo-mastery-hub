@@ -90,6 +90,14 @@ import {
   type OrbStepKey as PaceOrbStepKey,
   type SlowDownStep,
 } from "@/lib/pace-adjustment";
+import ReentryPrompt from "@/components/reentry/ReentryPrompt";
+import {
+  REENTRY_OPTIONS,
+  logReentryChoice,
+  markReentrySuccess,
+  type ReentryChoice,
+  type ReentryTrigger,
+} from "@/lib/reentry";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
