@@ -41,6 +41,16 @@ import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer";
 import EntryPointGate from "@/components/entry-point/EntryPointGate";
 import type { ThinkingPath } from "@/lib/entry-point";
+import { BreakdownPointPrompt } from "@/components/breakdown-point/BreakdownPointPrompt";
+import {
+  REPEATED_STRUGGLE_THRESHOLD,
+  resolveBreakdownRoute,
+  recordBreakdownPoint,
+  loadBreakdownPattern,
+  BREAKDOWN_LABEL,
+  type BreakdownPoint,
+  type BreakdownRouteAction,
+} from "@/lib/breakdown-point";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
