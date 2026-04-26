@@ -51,6 +51,7 @@ import { useStudyBreak } from "./hooks/useStudyBreak";
 import VoiceCacheDashboard from "./pages/VoiceCacheDashboard";
 import StruggleTermsPage from "./pages/StruggleTermsPage";
 import AdminContentPage from "./pages/AdminContentPage";
+import AdminLearnerBehaviorPage from "./pages/AdminLearnerBehaviorPage";
 import NotFound from "./pages/NotFound";
 import GlobalMenuFab from "@/components/GlobalMenuFab";
 import DNAProgressBubble from "@/components/DNAProgressBubble";
@@ -107,6 +108,7 @@ const AppContent = () => {
         <Route path="/voice-cache" element={<ProtectedRoute><VoiceCacheDashboard /></ProtectedRoute>} />
         <Route path="/my-notes" element={<ProtectedRoute><StruggleTermsPage /></ProtectedRoute>} />
         <Route path="/admin/content" element={<ProtectedRoute><AdminContentPage /></ProtectedRoute>} />
+        <Route path="/admin/learner-behavior" element={<ProtectedRoute><AdminLearnerBehaviorPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />
