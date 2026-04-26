@@ -137,6 +137,60 @@ export type Database = {
         }
         Relationships: []
       }
+      breath_trigger_events: {
+        Row: {
+          breath_response_choice: string
+          cognitive_load: string | null
+          confidence_rating: number | null
+          created_at: string
+          fast_clicking_pattern: boolean
+          id: string
+          learning_rhythm_state: string | null
+          long_pause_pattern: boolean
+          module_id: string | null
+          repeated_skipping: boolean
+          session_id: string
+          term_id: string | null
+          trigger_reasons: Json
+          user_id: string
+          wrong_attempts: number
+        }
+        Insert: {
+          breath_response_choice: string
+          cognitive_load?: string | null
+          confidence_rating?: number | null
+          created_at?: string
+          fast_clicking_pattern?: boolean
+          id?: string
+          learning_rhythm_state?: string | null
+          long_pause_pattern?: boolean
+          module_id?: string | null
+          repeated_skipping?: boolean
+          session_id?: string
+          term_id?: string | null
+          trigger_reasons?: Json
+          user_id: string
+          wrong_attempts?: number
+        }
+        Update: {
+          breath_response_choice?: string
+          cognitive_load?: string | null
+          confidence_rating?: number | null
+          created_at?: string
+          fast_clicking_pattern?: boolean
+          id?: string
+          learning_rhythm_state?: string | null
+          long_pause_pattern?: boolean
+          module_id?: string | null
+          repeated_skipping?: boolean
+          session_id?: string
+          term_id?: string | null
+          trigger_reasons?: Json
+          user_id?: string
+          wrong_attempts?: number
+        }
+        Relationships: []
+      }
       cognitive_load_snapshots: {
         Row: {
           cognitive_load: string
@@ -679,6 +733,51 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_cycle_stages: {
+        Row: {
+          created_at: string
+          cycle_stage: string
+          id: string
+          is_correct: boolean | null
+          module_id: string | null
+          previous_stage: string | null
+          reasons: Json
+          session_id: string
+          step_key: string
+          term_id: string | null
+          user_id: string
+          wrong_attempts: number
+        }
+        Insert: {
+          created_at?: string
+          cycle_stage: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string | null
+          previous_stage?: string | null
+          reasons?: Json
+          session_id?: string
+          step_key?: string
+          term_id?: string | null
+          user_id: string
+          wrong_attempts?: number
+        }
+        Update: {
+          created_at?: string
+          cycle_stage?: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string | null
+          previous_stage?: string | null
+          reasons?: Json
+          session_id?: string
+          step_key?: string
+          term_id?: string | null
+          user_id?: string
+          wrong_attempts?: number
+        }
+        Relationships: []
+      }
       learning_mode_events: {
         Row: {
           created_at: string
@@ -760,6 +859,54 @@ export type Database = {
           test_open_count?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      learning_rhythm_states: {
+        Row: {
+          cognitive_load: string | null
+          confidence: number | null
+          created_at: string
+          fast_clicking_pattern: boolean
+          id: string
+          learning_rhythm_state: string
+          long_pause_pattern: boolean
+          module_id: string | null
+          reasons: Json
+          session_id: string
+          term_id: string | null
+          user_id: string
+          wrong_attempts: number
+        }
+        Insert: {
+          cognitive_load?: string | null
+          confidence?: number | null
+          created_at?: string
+          fast_clicking_pattern?: boolean
+          id?: string
+          learning_rhythm_state: string
+          long_pause_pattern?: boolean
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          user_id: string
+          wrong_attempts?: number
+        }
+        Update: {
+          cognitive_load?: string | null
+          confidence?: number | null
+          created_at?: string
+          fast_clicking_pattern?: boolean
+          id?: string
+          learning_rhythm_state?: string
+          long_pause_pattern?: boolean
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          user_id?: string
+          wrong_attempts?: number
         }
         Relationships: []
       }
@@ -938,6 +1085,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pace_adjustments: {
+        Row: {
+          breath_choice: string
+          created_at: string
+          id: string
+          module_id: string | null
+          pace_choice: string
+          pace_override: boolean
+          reasons: Json
+          route_step: number
+          session_id: string
+          term_id: string | null
+          user_id: string
+        }
+        Insert: {
+          breath_choice: string
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          pace_choice: string
+          pace_override?: boolean
+          reasons?: Json
+          route_step?: number
+          session_id?: string
+          term_id?: string | null
+          user_id: string
+        }
+        Update: {
+          breath_choice?: string
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          pace_choice?: string
+          pace_override?: boolean
+          reasons?: Json
+          route_step?: number
+          session_id?: string
+          term_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       posttest_results: {
         Row: {
@@ -1266,6 +1455,90 @@ export type Database = {
           score_pct?: number
           term_id?: string
           triggered_reinforcement?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recovery_mode_events: {
+        Row: {
+          action: string
+          created_at: string
+          exit_reason: string | null
+          id: string
+          module_id: string | null
+          reasons: Json
+          session_id: string
+          term_id: string | null
+          trigger_source: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          exit_reason?: string | null
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          exit_reason?: string | null
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reentry_choices: {
+        Row: {
+          created_at: string
+          id: string
+          module_id: string | null
+          reasons: Json
+          recovery_success: boolean
+          reentry_choice: string
+          resolved_at: string | null
+          routed_to: string
+          session_id: string
+          term_id: string | null
+          trigger_source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          recovery_success?: boolean
+          reentry_choice: string
+          resolved_at?: string | null
+          routed_to?: string
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          recovery_success?: boolean
+          reentry_choice?: string
+          resolved_at?: string | null
+          routed_to?: string
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string
           user_id?: string
         }
         Relationships: []
@@ -2216,6 +2489,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_learner_behavior: {
+        Args: never
+        Returns: {
+          block_number: number
+          breakdown_point: string
+          chapter_label: string
+          cognitive_load: string
+          confidence_rating: number
+          error_type: string
+          incorrect_attempts: number
+          last_reviewed_at: string
+          mastery_status: string
+          memory_anchor_skips: number
+          most_skipped_layer: string
+          preferred_mode: string
+          preferred_thinking_path: string
+          quiz_avoidance_count: number
+          recovery_pattern: string
+          reflection_skips: number
+          review_due_at: string
+          second_chance_behavior: string
+          section_id: string
+          section_name: string
+          term_id: string
+          term_name: string
+          understanding_status: string
+          user_id: string
+          user_name: string
+        }[]
+      }
       get_leaderboard: {
         Args: never
         Returns: {
