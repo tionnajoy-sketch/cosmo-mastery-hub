@@ -2021,6 +2021,75 @@ export type Database = {
           },
         ]
       }
+      thinking_pattern_events: {
+        Row: {
+          attempt_number: number
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          module_id: string | null
+          surface: string
+          term_id: string | null
+          thinking_path: string
+          user_id: string
+        }
+        Insert: {
+          attempt_number?: number
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string | null
+          surface?: string
+          term_id?: string | null
+          thinking_path: string
+          user_id: string
+        }
+        Update: {
+          attempt_number?: number
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string | null
+          surface?: string
+          term_id?: string | null
+          thinking_path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      thinking_pattern_profile: {
+        Row: {
+          correct_counts: Json
+          counts: Json
+          least_effective: string | null
+          most_successful: string | null
+          most_used: string | null
+          total_selections: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          correct_counts?: Json
+          counts?: Json
+          least_effective?: string | null
+          most_successful?: string | null
+          most_used?: string | null
+          total_selections?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          correct_counts?: Json
+          counts?: Json
+          least_effective?: string | null
+          most_successful?: string | null
+          most_used?: string | null
+          total_selections?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tj_rules: {
         Row: {
           created_at: string
