@@ -36,6 +36,7 @@ import { useTJEngine } from "@/hooks/useTJEngine";
 import TJFeedbackPanel from "@/components/TJFeedbackPanel";
 import type { EngineEvaluation, StageId } from "@/lib/tj-engine";
 import { useBehaviorIntake } from "@/hooks/useBehaviorIntake";
+import { useMicroDecisions } from "@/hooks/useMicroDecisions";
 import BehaviorIntakeStrip from "@/components/behavior-intake/BehaviorIntakeStrip";
 import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer";
@@ -653,6 +654,15 @@ const LearningOrbDialog = ({
   const behaviorIntake = useBehaviorIntake({
     termId: block?.id ?? null,
     stageId: currentTjStage,
+  });
+
+  // Silent micro-decision tracker — fast clicks, long pauses, skips, repeats.
+  // Never blocks the UI; persists raw events + derived flags.
+  const microDecisions = useMicroDecisions({
+    termId: block?.id ?? null,
+    moduleId: (block as any)?.module_id ?? null,
+    blockNumber: (block as any)?.block_number ?? null,
+    surface: step?.key ?? "",
   });
 
   // DNA-adapted encouragement message
