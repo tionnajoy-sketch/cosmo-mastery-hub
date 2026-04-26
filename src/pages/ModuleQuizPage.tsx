@@ -65,6 +65,8 @@ const ModuleQuizPage = () => {
   const [calmMessage] = useState(() => calmingQuizMessages[Math.floor(Math.random() * calmingQuizMessages.length)]);
   const [previousBest, setPreviousBest] = useState<{ score: number; total: number } | null>(null);
   const [totalAttempts, setTotalAttempts] = useState(0);
+  const [confidenceStatusByQ, setConfidenceStatusByQ] = useState<Record<number, UnderstandingStatus>>({});
+  const confidenceComplete = selectedAnswer ? !!confidenceStatusByQ[currentIndex] : true;
 
   useEffect(() => {
     if (!id || !block) return;
