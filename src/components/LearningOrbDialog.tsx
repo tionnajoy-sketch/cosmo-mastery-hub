@@ -1602,7 +1602,75 @@ const LearningOrbDialog = ({
         );
       }
 
-      case "quiz":
+      case "quiz": {
+        // Layer Completion Integrity Check — soft gate before Mastery Check
+        const completedKeys = Array.from(completedSteps)
+          .map((idx) => adaptedSteps[idx]?.key)
+          .filter((k): k is string => !!k);
+        const integrityResult = computeIntegrity({
+          completedStepKeys: completedKeys,
+          explainItBackCompleted: explainItBackDone,
+        });
+        const showIntegrityGate = !integrityAck && !integrityResult.passes;
+
+        if (showIntegrityGate) {
+          const handleDecision = async (
+            decision: "continue_anyway" | "go_to_missing" | "show_most_important"
+          ) => {
+            if (user?.id) {
+              try {
+                await recordIntegrityCheck({
+                  userId: user.id,
+                  termId: block.id,
+                  moduleId: (block as any)?.module_id ?? null,
+                  result: integrityResult,
+                  decision,
+                });
+              } catch (err) {
+                console.error("[integrity] record failed", err);
+              }
+            }
+            if (decision === "continue_anyway") {
+              setIntegrityAck(true);
+              return;
+            }
+            if (decision === "show_most_important" && integrityResult.mostImportantMissing) {
+              const targetKey = layerToStepKey(integrityResult.mostImportantMissing);
+              const idx = adaptedSteps.findIndex((s) => s.key === targetKey);
+              if (idx >= 0) {
+                stopSpeaking();
+                setCurrentStep(idx);
+                return;
+              }
+            }
+            // go_to_missing — jump to first missing layer in the visible flow
+            const firstMissingKey = integrityResult.missing
+              .map((l) => layerToStepKey(l))
+              .find((k) => adaptedSteps.some((s) => s.key === k));
+            if (firstMissingKey) {
+              const idx = adaptedSteps.findIndex((s) => s.key === firstMissingKey);
+              if (idx >= 0) {
+                stopSpeaking();
+                setCurrentStep(idx);
+                return;
+              }
+            }
+            // Fallback: go back one step
+            if (currentStep > 0) setCurrentStep((s) => s - 1);
+          };
+
+          return (
+            <motion.div key="quiz-integrity" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+              <LayerIntegrityGate
+                result={integrityResult}
+                onContinueAnyway={() => handleDecision("continue_anyway")}
+                onGoToMissing={() => handleDecision("go_to_missing")}
+                onShowMostImportant={() => handleDecision("show_most_important")}
+              />
+            </motion.div>
+          );
+        }
+
         return (
           <motion.div key="quiz" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
             <EditorialShell>
