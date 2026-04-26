@@ -2553,6 +2553,12 @@ const LearningOrbDialog = ({
         </div>
         )}
       </DialogContent>
+      <BreathPrompt
+        open={breathOpen}
+        reasons={breathReasons}
+        onChoose={handleBreathChoice}
+        onDismiss={handleBreathDismiss}
+      />
     </Dialog>
   );
 };
