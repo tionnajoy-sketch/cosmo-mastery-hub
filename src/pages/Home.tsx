@@ -23,6 +23,7 @@ import AppFooter from "@/components/AppFooter";
 import { openTJCafe } from "@/hooks/useStudyBreak";
 import { Eye, Mic, PenLine, BookOpen as BookOpenIcon2 } from "lucide-react";
 import BehaviorSummaryPanel from "@/components/behavior-summary/BehaviorSummaryPanel";
+import ThinkingPatternCard from "@/components/thinking-pattern/ThinkingPatternCard";
 
 const c = pageColors.home;
 
