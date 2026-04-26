@@ -23,6 +23,7 @@ import AppFooter from "@/components/AppFooter";
 import { openTJCafe } from "@/hooks/useStudyBreak";
 import { Eye, Mic, PenLine, BookOpen as BookOpenIcon2 } from "lucide-react";
 import BehaviorSummaryPanel from "@/components/behavior-summary/BehaviorSummaryPanel";
+import ThinkingPatternCard from "@/components/thinking-pattern/ThinkingPatternCard";
 
 const c = pageColors.home;
 
@@ -262,6 +263,9 @@ const Home = () => {
 
         {/* ── Behavior Summary Panel ── */}
         <BehaviorSummaryPanel />
+
+        {/* ── Thinking Pattern Profile ── */}
+        <ThinkingPatternCard />
 
         {/* ── Your Learning Style ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
