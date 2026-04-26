@@ -848,6 +848,7 @@ const LearningOrbDialog = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, currentStep, incorrectAttemptsCount, completed]);
 
+  // ---------------- Breath Trigger System ----------------
   // Pauses or redirects learning when behavior signals indicate strain.
   const [breathOpen, setBreathOpen] = useState(false);
   const [breathReasons, setBreathReasons] = useState<string[]>([]);
