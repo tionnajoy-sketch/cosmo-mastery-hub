@@ -1185,6 +1185,8 @@ const LearningOrbDialog = ({
         onComplete?.();
       }
       setCompleted(true);
+      // Learning Cycle Loop → Mastery on full term completion
+      masteryReachedRef.current = true;
     }
   };
 
