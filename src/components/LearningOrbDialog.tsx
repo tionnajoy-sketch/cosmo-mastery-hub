@@ -2794,6 +2794,11 @@ const LearningOrbDialog = ({
                   />
                 </div>
               )}
+              <ReentryPrompt
+                open={reentryOpen}
+                onChoose={handleReentryChoice}
+                onDismiss={() => setReentryOpen(false)}
+              />
               <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
             </div>
           </div>
