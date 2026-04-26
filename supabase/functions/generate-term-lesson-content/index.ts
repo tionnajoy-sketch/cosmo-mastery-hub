@@ -183,8 +183,11 @@ interface LessonPayload {
   memory_anchor: string;
   apply_intro: string;
   apply_q1: string;
+  apply_q1_type: string;
   apply_q2: string;
+  apply_q2_type: string;
   apply_q3: string;
+  apply_q3_type: string;
   assess_question: string;
   choice_a: string;
   choice_b: string;
