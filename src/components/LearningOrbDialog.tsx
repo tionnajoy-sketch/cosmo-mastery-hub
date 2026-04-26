@@ -68,6 +68,12 @@ import {
   type LearningRhythmReading,
 } from "@/lib/learning-rhythm";
 import {
+  evaluateCycleStage,
+  persistCycleStage,
+  emitCycleChange,
+  type CycleStage,
+} from "@/lib/learning-cycle";
+import {
   evaluateBreath,
   persistBreathEvent,
   type BreathResponseChoice,
@@ -783,6 +789,78 @@ const LearningOrbDialog = ({
     longPausePattern,
   ]);
 
+  // ---------------- Learning Cycle Loop ----------------
+  // Non-linear stages: Learn → Try → Struggle → Reset → Re-enter → Mastery.
+  // Pure rule evaluation runs whenever a relevant signal changes.
+  const cycleStageRef = useRef<CycleStage | null>(null);
+  const lastQuizCorrectRef = useRef<boolean | null>(null);
+  const justAnsweredRef = useRef<boolean>(false);
+  const masteryReachedRef = useRef<boolean>(false);
+  const cycleResetEdgeRef = useRef<boolean>(false);
+
+  // Detect entry into reset stage from the café-closed event ref.
+  // We mirror cameFromResetRef into a separate edge ref so the cycle
+  // evaluator can fire "reset" then later "reenter" on next answer.
+  useEffect(() => {
+    const onCafeClosed = () => { cycleResetEdgeRef.current = true; };
+    window.addEventListener("tj-cafe-closed", onCafeClosed);
+    return () => window.removeEventListener("tj-cafe-closed", onCafeClosed);
+  }, []);
+
+  const recordCycleTransition = (
+    next: CycleStage,
+    reasons: string[],
+    stepKeyAtEvent: string,
+  ) => {
+    const prev = cycleStageRef.current;
+    if (prev === next) return;
+    cycleStageRef.current = next;
+    emitCycleChange(next);
+    if (user?.id) {
+      persistCycleStage({
+        userId: user.id,
+        termId: block?.id ?? null,
+        moduleId: (block as any)?.module_id ?? null,
+        sessionId: sessionIdRef.current,
+        stage: next,
+        previousStage: prev,
+        stepKey: stepKeyAtEvent,
+        wrongAttempts: incorrectAttemptsCount,
+        isCorrect: lastQuizCorrectRef.current,
+        reasons,
+      });
+    }
+  };
+
+  // Re-evaluate cycle stage whenever the relevant signals change.
+  useEffect(() => {
+    if (!open) return;
+    const stepKey = adaptedSteps[currentStep]?.key ?? "";
+    const decision = evaluateCycleStage(cycleStageRef.current, {
+      stepKey,
+      wrongAttempts: incorrectAttemptsCount,
+      isCorrect: lastQuizCorrectRef.current,
+      cameFromReset: cycleResetEdgeRef.current,
+      justAnswered: justAnsweredRef.current,
+      masteryReached: masteryReachedRef.current,
+    });
+
+    if (decision.next) {
+      recordCycleTransition(decision.next, decision.reasons, stepKey);
+      // Consume one-shot edges so they don't keep firing
+      if (decision.next === "reset")    cycleResetEdgeRef.current = false;
+      if (decision.next === "reenter")  justAnsweredRef.current = false;
+      if (decision.next === "mastery")  masteryReachedRef.current = false;
+      if (decision.next === "try")      justAnsweredRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    open,
+    currentStep,
+    incorrectAttemptsCount,
+    completed,
+  ]);
+
   // ---------------- Breath Trigger System ----------------
   // Pauses or redirects learning when behavior signals indicate strain.
   const [breathOpen, setBreathOpen] = useState(false);
@@ -1107,6 +1185,8 @@ const LearningOrbDialog = ({
         onComplete?.();
       }
       setCompleted(true);
+      // Learning Cycle Loop → Mastery on full term completion
+      masteryReachedRef.current = true;
     }
   };
 
@@ -1950,10 +2030,17 @@ const LearningOrbDialog = ({
                               const correct = isCorrect;
                               const isFirstAttempt = !quizAttempted;
                               setQuizAttempted(true);
+                              // Learning Cycle Loop signals
+                              lastQuizCorrectRef.current = correct;
+                              justAnsweredRef.current = true;
                               updateDNA({ quizCorrect: correct, layerCompleted: "quiz" });
                               if (correct) {
                                 addCoins(10, "correct");
                                 await recordCorrect(block.id, false);
+                                // Mastery: correct on first attempt with no prior wrongs
+                                if (isFirstAttempt && incorrectAttemptsCount === 0) {
+                                  masteryReachedRef.current = true;
+                                }
                               } else {
                                 setMissedQuestionText(quizQuestion);
                                 await recordIncorrect(block.id);
