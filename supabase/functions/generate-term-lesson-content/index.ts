@@ -211,7 +211,20 @@ Deno.serve(async (req) => {
       return json({ error: "Provide term_id, term_ids, or batch:true" }, 400);
     }
 
-    const results: Array<{ term_id: string; term: string; status: "ok" | "error"; error?: string }> = [];
+    const results: Array<{
+      term_id: string;
+      term: string;
+      status: "ok" | "error";
+      error?: string;
+      preview?: {
+        break_it_down_content: string;
+        information_content: string;
+        apply_content: string;
+        assess_question: string;
+        assess_answer: string;
+        assess_explanation: string;
+      };
+    }> = [];
 
     for (const t of targets) {
       try {
