@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import AppHeader from "@/components/AppHeader";
 import TermLessonContentBatch from "@/components/admin/TermLessonContentBatch";
+import DeepDiveCacheReset from "@/components/admin/DeepDiveCacheReset";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -160,8 +161,9 @@ const AdminContentPage = () => {
           </p>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 grid gap-6 lg:grid-cols-2">
           <TermLessonContentBatch />
+          <DeepDiveCacheReset />
         </div>
 
         <div className="grid lg:grid-cols-[320px,1fr] gap-6">
