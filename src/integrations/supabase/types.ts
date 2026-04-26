@@ -322,6 +322,42 @@ export type Database = {
         }
         Relationships: []
       }
+      error_type_picks: {
+        Row: {
+          block_number: number | null
+          created_at: string
+          error_type: string
+          id: string
+          module_id: string | null
+          question_ref: string
+          routed_to: string
+          term_id: string | null
+          user_id: string
+        }
+        Insert: {
+          block_number?: number | null
+          created_at?: string
+          error_type: string
+          id?: string
+          module_id?: string | null
+          question_ref?: string
+          routed_to?: string
+          term_id?: string | null
+          user_id: string
+        }
+        Update: {
+          block_number?: number | null
+          created_at?: string
+          error_type?: string
+          id?: string
+          module_id?: string | null
+          question_ref?: string
+          routed_to?: string
+          term_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       explain_it_back_responses: {
         Row: {
           block_number: number | null

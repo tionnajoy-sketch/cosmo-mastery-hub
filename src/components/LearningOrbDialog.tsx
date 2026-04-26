@@ -41,6 +41,7 @@ import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer";
 import EntryPointGate from "@/components/entry-point/EntryPointGate";
 import type { ThinkingPath } from "@/lib/entry-point";
+import WrongAnswerErrorPicker from "@/components/error-type/WrongAnswerErrorPicker";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
@@ -429,6 +430,10 @@ const LearningOrbDialog = ({
   const [quizRevealed, setQuizRevealed] = useState(false);
   const [quizAttempted, setQuizAttempted] = useState(false);
   const [quizFeedbackLocked, setQuizFeedbackLocked] = useState(false);
+  // Wrong-answer error reflection: when learner is wrong, hide the correct
+  // answer until they pick an error_type (or explicitly request reveal).
+  const [errorReflectionDone, setErrorReflectionDone] = useState(false);
+  const [revealAnswerOverride, setRevealAnswerOverride] = useState(false);
   const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -491,6 +496,8 @@ const LearningOrbDialog = ({
       setQuizRevealed(false);
       setQuizAttempted(false);
       setQuizFeedbackLocked(false);
+      setErrorReflectionDone(false);
+      setRevealAnswerOverride(false);
       setAiQuestion(null);
       setRecognizeSelected(null);
       setRecognizeRevealed(false);
@@ -1639,6 +1646,37 @@ const LearningOrbDialog = ({
                           </header>
 
                           <div className="px-5 py-4 space-y-4" style={{ background: "hsl(40 30% 99%)" }}>
+                            {/* Wrong-answer error reflection: gate the answer reveal until the
+                             *  learner names what happened (or explicitly chooses to see the answer). */}
+                            {!wasCorrect && !errorReflectionDone && !revealAnswerOverride && (
+                              <WrongAnswerErrorPicker
+                                termId={block.id}
+                                moduleId={(block as any).module_id ?? null}
+                                blockNumber={(block as any).block_number ?? null}
+                                questionRef={(missedQuestionText || quizQuestion || "").slice(0, 120)}
+                                termTitle={block.term_title}
+                                definition={block.definition}
+                                metaphor={block.metaphor || (block as any).static_metaphor}
+                                onResolved={({ revealAnswer, jumpTo }) => {
+                                  setErrorReflectionDone(true);
+                                  if (revealAnswer) {
+                                    setRevealAnswerOverride(true);
+                                  } else if (jumpTo === "quiz") {
+                                    // Slow-down / retry / misread / overthought → reset the quiz
+                                    setQuizSelected(null);
+                                    setQuizRevealed(false);
+                                    setQuizFeedbackLocked(false);
+                                    setErrorReflectionDone(false);
+                                    setRevealAnswerOverride(false);
+                                  } else if (jumpTo) {
+                                    jumpToStepKey(jumpTo, "Error-Type Routing");
+                                  }
+                                }}
+                              />
+                            )}
+
+                            {(wasCorrect || errorReflectionDone || revealAnswerOverride) && (
+                              <>
                             {/* Body */}
                             <p className="text-[15px] leading-relaxed" style={{ color: "hsl(220 20% 22%)", fontFamily: "var(--font-body, inherit)" }}>
                               {wasCorrect
@@ -1762,6 +1800,8 @@ const LearningOrbDialog = ({
                                 </>
                               )}
                             </div>
+                              </>
+                            )}
                           </div>
                         </motion.aside>
                         {!wasCorrect && (
