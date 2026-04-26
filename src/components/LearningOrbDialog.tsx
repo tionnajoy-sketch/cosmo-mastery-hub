@@ -430,6 +430,10 @@ const LearningOrbDialog = ({
   const [quizRevealed, setQuizRevealed] = useState(false);
   const [quizAttempted, setQuizAttempted] = useState(false);
   const [quizFeedbackLocked, setQuizFeedbackLocked] = useState(false);
+  // Wrong-answer error reflection: when learner is wrong, hide the correct
+  // answer until they pick an error_type (or explicitly request reveal).
+  const [errorReflectionDone, setErrorReflectionDone] = useState(false);
+  const [revealAnswerOverride, setRevealAnswerOverride] = useState(false);
   const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
