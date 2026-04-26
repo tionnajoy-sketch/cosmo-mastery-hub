@@ -483,6 +483,8 @@ const LearningOrbDialog = ({
       setCurrentStep(0);
       setCompletedSteps(new Set());
       setCompleted(false);
+      setEntryChosen(false);
+      setEntryPath(null);
       setImageUrl(block.image_url || "");
       setJournalNote(block.user_notes || "");
       setQuizSelected(null);
