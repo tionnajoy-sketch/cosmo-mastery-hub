@@ -154,9 +154,11 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const termId: string | undefined = body?.term_id;
+    const termIds: string[] | undefined = Array.isArray(body?.term_ids) ? body.term_ids : undefined;
     const batch: boolean = !!body?.batch;
     const limit: number = Math.max(1, Math.min(25, Number(body?.limit ?? 10)));
     const force: boolean = !!body?.force;
+    const dryRun: boolean = !!body?.dry_run;
     const model: string = body?.model || DEFAULT_MODEL;
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
