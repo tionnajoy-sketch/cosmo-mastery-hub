@@ -42,6 +42,7 @@ import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer";
 import EntryPointGate from "@/components/entry-point/EntryPointGate";
 import type { ThinkingPath } from "@/lib/entry-point";
+import { useSessionBalanceOptional } from "@/contexts/SessionBalanceContext";
 import { BreakdownPointPrompt } from "@/components/breakdown-point/BreakdownPointPrompt";
 import {
   REPEATED_STRUGGLE_THRESHOLD,
