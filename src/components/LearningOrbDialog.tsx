@@ -861,6 +861,7 @@ const LearningOrbDialog = ({
     completed,
   ]);
 
+  // ---------------- Breath Trigger System ----------------
   // Pauses or redirects learning when behavior signals indicate strain.
   const [breathOpen, setBreathOpen] = useState(false);
   const [breathReasons, setBreathReasons] = useState<string[]>([]);
