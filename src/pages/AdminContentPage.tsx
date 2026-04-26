@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import AppHeader from "@/components/AppHeader";
+import TermLessonContentBatch from "@/components/admin/TermLessonContentBatch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -157,6 +158,10 @@ const AdminContentPage = () => {
           <p className="text-sm text-muted-foreground mt-1">
             Edit pre-written content for each term. Saved content is shown to all learners on the matching TJ Layer Method step.
           </p>
+        </div>
+
+        <div className="mb-6">
+          <TermLessonContentBatch />
         </div>
 
         <div className="grid lg:grid-cols-[320px,1fr] gap-6">
