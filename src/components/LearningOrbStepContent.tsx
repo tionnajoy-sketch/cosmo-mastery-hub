@@ -377,7 +377,17 @@ const StepContent = (props: StepContentProps) => {
       );
 
     case "breakdown":
-      return <EtymologyBreakdown block={block} stepColor={stepColor} />;
+      return (
+        <div className="space-y-4">
+          <EtymologyBreakdown block={block} stepColor={stepColor} />
+          <GuidedLessonPanel
+            termId={(block as any).term_id || block.id}
+            termTitle={block.term_title}
+            definition={block.definition}
+            stepColor={stepColor}
+          />
+        </div>
+      );
 
     case "recognize":
       return (
