@@ -54,41 +54,38 @@ YOU MUST PRODUCE THREE THINGS:
 
 Stay consistent across all terms.`;
 
-const lessonTool = {
-  type: "function",
-  function: {
-    name: "save_term_lesson",
-    description: "Return the structured Break Down, Information, and Assess content for this term.",
-    parameters: {
-      type: "object",
-      properties: {
-        root_meaning: { type: "string" },
-        word_origin: { type: "string" },
-        simple_breakdown: { type: "string" },
-        information: { type: "string" },
-        assess_question: { type: "string" },
-        choice_a: { type: "string" },
-        choice_b: { type: "string" },
-        choice_c: { type: "string" },
-        choice_d: { type: "string" },
-        correct_choice: { type: "string", enum: ["A", "B", "C", "D"] },
-        assess_explanation: { type: "string" },
-      },
-      required: [
-        "root_meaning",
-        "word_origin",
-        "simple_breakdown",
-        "information",
-        "assess_question",
-        "choice_a",
-        "choice_b",
-        "choice_c",
-        "choice_d",
-        "correct_choice",
-        "assess_explanation",
-      ],
-      additionalProperties: false,
+const lessonJsonSchema = {
+  name: "save_term_lesson",
+  strict: true,
+  schema: {
+    type: "object",
+    properties: {
+      root_meaning: { type: "string" },
+      word_origin: { type: "string" },
+      simple_breakdown: { type: "string" },
+      information: { type: "string" },
+      assess_question: { type: "string" },
+      choice_a: { type: "string" },
+      choice_b: { type: "string" },
+      choice_c: { type: "string" },
+      choice_d: { type: "string" },
+      correct_choice: { type: "string", enum: ["A", "B", "C", "D"] },
+      assess_explanation: { type: "string" },
     },
+    required: [
+      "root_meaning",
+      "word_origin",
+      "simple_breakdown",
+      "information",
+      "assess_question",
+      "choice_a",
+      "choice_b",
+      "choice_c",
+      "choice_d",
+      "correct_choice",
+      "assess_explanation",
+    ],
+    additionalProperties: false,
   },
 } as const;
 
