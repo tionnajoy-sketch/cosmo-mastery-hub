@@ -547,6 +547,81 @@ export type Database = {
         }
         Relationships: []
       }
+      micro_decision_events: {
+        Row: {
+          action: string
+          block_number: number | null
+          created_at: string
+          id: string
+          metadata: Json
+          module_id: string | null
+          surface: string
+          term_id: string | null
+          time_on_surface_ms: number | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          block_number?: number | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          module_id?: string | null
+          surface?: string
+          term_id?: string | null
+          time_on_surface_ms?: number | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          block_number?: number | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          module_id?: string | null
+          surface?: string
+          term_id?: string | null
+          time_on_surface_ms?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      micro_decision_flags: {
+        Row: {
+          created_at: string
+          flag: string
+          id: string
+          last_triggered_at: string
+          occurrence_count: number
+          term_id: string | null
+          triggered: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          flag: string
+          id?: string
+          last_triggered_at?: string
+          occurrence_count?: number
+          term_id?: string | null
+          triggered?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          flag?: string
+          id?: string
+          last_triggered_at?: string
+          occurrence_count?: number
+          term_id?: string | null
+          triggered?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       module_chapters: {
         Row: {
           chapter_number: number

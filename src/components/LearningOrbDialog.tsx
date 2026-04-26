@@ -36,6 +36,7 @@ import { useTJEngine } from "@/hooks/useTJEngine";
 import TJFeedbackPanel from "@/components/TJFeedbackPanel";
 import type { EngineEvaluation, StageId } from "@/lib/tj-engine";
 import { useBehaviorIntake } from "@/hooks/useBehaviorIntake";
+import { useMicroDecisions } from "@/hooks/useMicroDecisions";
 import BehaviorIntakeStrip from "@/components/behavior-intake/BehaviorIntakeStrip";
 import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer";
@@ -655,6 +656,20 @@ const LearningOrbDialog = ({
     stageId: currentTjStage,
   });
 
+  // Silent micro-decision tracker — fast clicks, long pauses, skips, repeats.
+  // Never blocks the UI; persists raw events + derived flags.
+  const microDecisions = useMicroDecisions({
+    termId: block?.id ?? null,
+    moduleId: (block as any)?.module_id ?? null,
+    blockNumber: (block as any)?.block_number ?? null,
+    surface: step?.key ?? "",
+  });
+
+  // Mark question render time so micro-decisions can detect a fast Show-Answer click.
+  useEffect(() => {
+    if (step?.key === "quiz") microDecisions.markQuestionShown();
+  }, [step?.key, block?.id, microDecisions]);
+
   // DNA-adapted encouragement message
   const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
@@ -680,6 +695,23 @@ const LearningOrbDialog = ({
     // GATE: Information step requires answering all TJ Mentor Check-In questions
     if (mentorCheckInRequired && !mentorCheckInComplete) return;
     stopSpeaking();
+
+    // Silent micro-decision tracking — detect skips of key layers.
+    if (step.key === "reflection" && journalNote.trim().length === 0) {
+      void microDecisions.trackAction("reflection_skipped");
+    }
+    if (step.key === "metaphor") {
+      // Memory anchor lives inside the metaphor surface in this flow.
+      // Treat advancing without acknowledging the lock as a skip signal.
+      void microDecisions.trackAction("memory_anchor_skipped");
+    }
+    if (step.key === "definition" && !completedSteps.has(currentStep)) {
+      // Identity layer = the Define step where TJ identity scaffolding lives.
+      void microDecisions.trackAction("identity_layer_skipped");
+    }
+    if (step.key === "quiz" && !quizRevealed) {
+      void microDecisions.trackAction("quiz_skipped");
+    }
     // Track DNA updates based on current step
     if (step.key === "reflection" && journalNote.length > 0) {
       updateDNA({ layerCompleted: "reflection", reflectionLength: journalNote.length });
@@ -1685,11 +1717,12 @@ const LearningOrbDialog = ({
                                   // Routing/reveal is now decided by the Second Chance prompt
                                   // unless the learner explicitly clicked "Show me the answer anyway".
                                   setErrorReflectionDone(true);
-                                  setLastErrorType(errorType ?? null);
-                                  if (revealAnswer) {
-                                    setSecondChanceDone(true);
-                                    setRevealAnswerOverride(true);
-                                  }
+                                   setLastErrorType(errorType ?? null);
+                                   if (revealAnswer) {
+                                     setSecondChanceDone(true);
+                                     setRevealAnswerOverride(true);
+                                     void microDecisions.trackShowAnswer();
+                                   }
                                 }}
                               />
                             )}
@@ -1728,6 +1761,7 @@ const LearningOrbDialog = ({
                                     setRevealAnswerOverride(false);
                                   } else if (opt.key === "show_answer") {
                                     setRevealAnswerOverride(true);
+                                    void microDecisions.trackShowAnswer();
                                   } else if (opt.jumpTo) {
                                     jumpToStepKey(opt.jumpTo, "Second-Chance Routing");
                                   }
@@ -1992,7 +2026,7 @@ const LearningOrbDialog = ({
       if (!o) stopSpeaking();
       onOpenChange(o);
     }}>
-      <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }} onPointerDownOutside={(e) => { if (!reinforcementResolved) e.preventDefault(); }} onEscapeKeyDown={(e) => { if (!reinforcementResolved) e.preventDefault(); }}>
+      <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }} onPointerDownOutside={(e) => { if (!reinforcementResolved) e.preventDefault(); }} onEscapeKeyDown={(e) => { if (!reinforcementResolved) e.preventDefault(); }} onClickCapture={() => microDecisions.trackClick()}>
         {/* Locked reinforcement loop — gates progression after wrong in-flow quiz */}
         <ReinforcementDialog
           open={reinforcementOpen}
@@ -2042,6 +2076,11 @@ const LearningOrbDialog = ({
               onChosen={(path, routeTo) => {
                 setEntryPath(path);
                 setEntryChosen(true);
+                // Silent micro-decision: track entry-point pick (rolls up
+                // into repeated_visual / metaphor / guided_lesson flags).
+                if (path === "visual") void microDecisions.trackAction("entry_visual_picked");
+                else if (path === "metaphor") void microDecisions.trackAction("entry_metaphor_picked");
+                else if (path === "real_life") void microDecisions.trackAction("entry_guided_lesson_picked");
                 const idx = adaptedSteps.findIndex((s) => s.key === routeTo);
                 if (idx >= 0) setCurrentStep(idx);
               }}
