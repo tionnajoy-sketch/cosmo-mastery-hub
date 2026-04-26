@@ -39,6 +39,8 @@ import { useBehaviorIntake } from "@/hooks/useBehaviorIntake";
 import BehaviorIntakeStrip from "@/components/behavior-intake/BehaviorIntakeStrip";
 import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer";
+import EntryPointGate from "@/components/entry-point/EntryPointGate";
+import type { ThinkingPath } from "@/lib/entry-point";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
@@ -408,6 +410,8 @@ const LearningOrbDialog = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [completed, setCompleted] = useState(false);
+  const [entryChosen, setEntryChosen] = useState(false);
+  const [entryPath, setEntryPath] = useState<ThinkingPath | null>(null);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showNeuro, setShowNeuro] = useState(false);
@@ -479,6 +483,8 @@ const LearningOrbDialog = ({
       setCurrentStep(0);
       setCompletedSteps(new Set());
       setCompleted(false);
+      setEntryChosen(false);
+      setEntryPath(null);
       setImageUrl(block.image_url || "");
       setJournalNote(block.user_notes || "");
       setQuizSelected(null);
@@ -1924,6 +1930,28 @@ const LearningOrbDialog = ({
         <div className="absolute inset-0 bg-cover bg-center pointer-events-none" style={{ backgroundImage: `url(${tjBackground})`, opacity: 0.06, filter: "brightness(1.2)" }} />
         <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(0 0% 100% / 0.94) 0%, hsl(0 0% 98% / 0.96) 100%)" }} />
 
+        {/* ═══════ ENTRY POINT GATE — fires before each new term begins ═══════ */}
+        {!entryChosen && (
+          <div className="relative z-10 flex-1 overflow-y-auto">
+            <EntryPointGate
+              termId={block.id}
+              moduleId={(block as any).module_id ?? null}
+              termTitle={block.term_title}
+              onChosen={(path, routeTo) => {
+                setEntryPath(path);
+                setEntryChosen(true);
+                const idx = adaptedSteps.findIndex((s) => s.key === routeTo);
+                if (idx >= 0) setCurrentStep(idx);
+              }}
+              onSkip={() => {
+                setEntryChosen(true);
+                setCurrentStep(0);
+              }}
+            />
+          </div>
+        )}
+
+        {entryChosen && (
         <div className="relative z-10 flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* ═══════ TOP SECTION ═══════ */}
           <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 border-b" style={{ background: "hsl(var(--background) / 0.95)", backdropFilter: "blur(12px)" }}>
@@ -2034,6 +2062,7 @@ const LearningOrbDialog = ({
             </div>
           </div>
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );
