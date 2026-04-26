@@ -1079,6 +1079,7 @@ const LearningOrbDialog = ({
                   termId={block.id}
                   trigger="definition"
                   contextRef={`define:${block.term_title}`}
+                  onComplete={(r) => { if (!r.skipped) setExplainItBackDone(true); }}
                 />
               </div>
             </EditorialShell>
@@ -1129,6 +1130,7 @@ const LearningOrbDialog = ({
                   termId={block.id}
                   trigger="guided_lesson"
                   contextRef={`guided_lesson:${block.term_title}`}
+                  onComplete={(r) => { if (!r.skipped) setExplainItBackDone(true); }}
                 />
               </div>
             </EditorialShell>
@@ -1957,6 +1959,7 @@ const LearningOrbDialog = ({
                               termId={block.id}
                               trigger="missed_question"
                               contextRef={`missed_question:${(missedQuestionText || quizQuestion || "").slice(0, 80)}`}
+                              onComplete={(r) => { if (!r.skipped) setExplainItBackDone(true); }}
                             />
                           </div>
                         )}
