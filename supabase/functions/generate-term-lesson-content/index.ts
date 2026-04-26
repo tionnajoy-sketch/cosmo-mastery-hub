@@ -180,6 +180,13 @@ Deno.serve(async (req) => {
       );
       if (hasAll && !force) return json({ skipped: true, reason: "already has content", term_id: termId });
       targets = [{ id: data.id, term: data.term, definition: data.definition }];
+    } else if (termIds && termIds.length > 0) {
+      const { data, error } = await supabase
+        .from("terms")
+        .select("id, term, definition")
+        .in("id", termIds);
+      if (error) throw error;
+      targets = (data ?? []) as never;
     } else if (batch) {
       let q = supabase.from("terms").select("id, term, definition").order("term").limit(limit);
       if (!force) {
@@ -201,7 +208,7 @@ Deno.serve(async (req) => {
       if (error) throw error;
       targets = (data ?? []) as never;
     } else {
-      return json({ error: "Provide term_id or batch:true" }, 400);
+      return json({ error: "Provide term_id, term_ids, or batch:true" }, 400);
     }
 
     const results: Array<{ term_id: string; term: string; status: "ok" | "error"; error?: string }> = [];
