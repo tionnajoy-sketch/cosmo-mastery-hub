@@ -8,6 +8,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { pageColors } from "@/lib/colors";
 import { shuffleOptions } from "@/lib/shuffleOptions";
+import ConfidenceRatingPrompt from "@/components/ConfidenceRatingPrompt";
+import { saveConfidenceRating } from "@/lib/confidence/saveConfidenceRating";
+import type { UnderstandingStatus } from "@/lib/confidence/understanding";
 
 const c = pageColors.popQuiz;
 
