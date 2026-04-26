@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { stopGlobalNarration } from "@/hooks/useAutoNarrate";
+import { openTJCafe } from "@/hooks/useStudyBreak";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -51,6 +52,15 @@ import {
   type BreakdownPoint,
   type BreakdownRouteAction,
 } from "@/lib/breakdown-point";
+import CognitiveLoadPrompt from "@/components/cognitive-load/CognitiveLoadPrompt";
+import {
+  computeCognitiveLoad,
+  persistCognitiveLoad,
+  getSessionId,
+  type CognitiveLoad,
+  type CognitiveLoadAction,
+  type CognitiveLoadReading,
+} from "@/lib/cognitive-load";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
@@ -460,6 +470,20 @@ const LearningOrbDialog = ({
   const [breakdownRouteCard, setBreakdownRouteCard] = useState<BreakdownRouteAction | null>(null);
   const [dominantBreakdownPattern, setDominantBreakdownPattern] = useState<BreakdownPoint | null>(null);
 
+  // Cognitive Load Indicator — rule-based, derived from existing signals.
+  const sessionIdRef = useRef<string>(getSessionId());
+  const termOpenedAtRef = useRef<number>(Date.now());
+  const questionOpenedAtRef = useRef<number | null>(null);
+  const clickTimesRef = useRef<number[]>([]);
+  const lastInteractionRef = useRef<number>(Date.now());
+  const skippedStepsRef = useRef<Set<number>>(new Set());
+  const [skippedSectionsCount, setSkippedSectionsCount] = useState(0);
+  const [fastClickingPattern, setFastClickingPattern] = useState(false);
+  const [longPausePattern, setLongPausePattern] = useState(false);
+  const [cogLoad, setCogLoad] = useState<CognitiveLoadReading>({ level: "low", reasons: [] });
+  const [cogLoadAcked, setCogLoadAcked] = useState(false);
+  const [pauseTickMs, setPauseTickMs] = useState(0);
+
   // Etymology
   const [etymology, setEtymology] = useState<{ parts: { part: string; meaning: string; origin: string }[]; pronunciation: string; summary: string } | null>(null);
   const [etymLoading, setEtymLoading] = useState(false);
@@ -516,6 +540,18 @@ const LearningOrbDialog = ({
       setIncorrectAttemptsCount(0);
       setBreakdownAcked(false);
       setBreakdownRouteCard(null);
+      // Cognitive load reset
+      termOpenedAtRef.current = Date.now();
+      questionOpenedAtRef.current = null;
+      clickTimesRef.current = [];
+      lastInteractionRef.current = Date.now();
+      skippedStepsRef.current = new Set();
+      setSkippedSectionsCount(0);
+      setFastClickingPattern(false);
+      setLongPausePattern(false);
+      setCogLoad({ level: "low", reasons: [] });
+      setCogLoadAcked(false);
+      setPauseTickMs(0);
       // Pre-seed with admin-authored static content so no AI call is needed
       if (block.static_break_it_down) {
         setEtymology({ parts: [], pronunciation: "", summary: block.static_break_it_down });
@@ -548,6 +584,41 @@ const LearningOrbDialog = ({
     return () => { cancelled = true; };
   }, [block?.id, user?.id]);
 
+  /* ─── Cognitive Load: signal collection ─── */
+
+  // Click cadence tracking → fast clicking pattern (4+ clicks within 2s).
+  useEffect(() => {
+    if (!open) return;
+    const onClick = () => {
+      const now = Date.now();
+      lastInteractionRef.current = now;
+      const arr = clickTimesRef.current;
+      arr.push(now);
+      while (arr.length && now - arr[0] > 2000) arr.shift();
+      if (arr.length >= 4 && !fastClickingPattern) setFastClickingPattern(true);
+    };
+    const onMove = () => { lastInteractionRef.current = Date.now(); };
+    window.addEventListener("click", onClick);
+    window.addEventListener("keydown", onClick);
+    window.addEventListener("mousemove", onMove);
+    return () => {
+      window.removeEventListener("click", onClick);
+      window.removeEventListener("keydown", onClick);
+      window.removeEventListener("mousemove", onMove);
+    };
+  }, [open, fastClickingPattern]);
+
+  // Long-pause ticker — re-evaluates every 5s while dialog is open.
+  useEffect(() => {
+    if (!open) return;
+    const t = setInterval(() => {
+      const idle = Date.now() - lastInteractionRef.current;
+      setPauseTickMs(idle);
+      if (idle >= 45_000 && !longPausePattern) setLongPausePattern(true);
+    }, 5000);
+    return () => clearInterval(t);
+  }, [open, longPausePattern]);
+
   // AUTO-VOICE: speak on tile open (including step 0)
   useEffect(() => {
     if (!block || !open || autoVoiceRef.current || !voiceEnabled) return;
@@ -558,6 +629,80 @@ const LearningOrbDialog = ({
     }, 300);
     return () => clearTimeout(timer);
   }, [block?.id, open]);
+
+  // Cognitive Load: track skipped sections (advancing without completing prior step)
+  const prevStepRef = useRef<number>(0);
+  useEffect(() => {
+    const prev = prevStepRef.current;
+    if (currentStep > prev && !completedSteps.has(prev) && !skippedStepsRef.current.has(prev)) {
+      skippedStepsRef.current.add(prev);
+      setSkippedSectionsCount(skippedStepsRef.current.size);
+    }
+    prevStepRef.current = currentStep;
+    setCogLoadAcked(false);
+  }, [currentStep, completedSteps]);
+
+  // Cognitive Load: mark when a question becomes the active surface
+  useEffect(() => {
+    const key = adaptedSteps[currentStep]?.key;
+    if (key === "quiz" || key === "recognize" || key === "recall_reconstruction") {
+      questionOpenedAtRef.current = Date.now();
+    } else {
+      questionOpenedAtRef.current = null;
+    }
+  }, [currentStep, adaptedSteps]);
+
+  // Cognitive Load: recompute reading from current signals
+  useEffect(() => {
+    if (!open) return;
+    const now = Date.now();
+    const reading = computeCognitiveLoad({
+      timeOnTermMs: now - termOpenedAtRef.current,
+      timeOnQuestionMs: questionOpenedAtRef.current ? now - questionOpenedAtRef.current : 0,
+      wrongAttempts: incorrectAttemptsCount,
+      fastClickingPattern,
+      longPausePattern,
+      skippedSections: skippedSectionsCount,
+    });
+    setCogLoad((prev) =>
+      prev.level === reading.level && prev.reasons.join("|") === reading.reasons.join("|")
+        ? prev
+        : reading,
+    );
+  }, [
+    open,
+    incorrectAttemptsCount,
+    fastClickingPattern,
+    longPausePattern,
+    skippedSectionsCount,
+    pauseTickMs,
+    currentStep,
+  ]);
+
+  // Persist a snapshot whenever the load level changes to non-low
+  const lastPersistedRef = useRef<string>("");
+  useEffect(() => {
+    if (!open || !user?.id || !block?.id) return;
+    if (cogLoad.level === "low") return;
+    const sig = `${cogLoad.level}|${currentStep}`;
+    if (sig === lastPersistedRef.current) return;
+    lastPersistedRef.current = sig;
+    persistCognitiveLoad({
+      userId: user.id,
+      termId: block.id,
+      moduleId: (block as any)?.module_id ?? null,
+      sessionId: sessionIdRef.current,
+      reading: cogLoad,
+      signals: {
+        timeOnTermMs: Date.now() - termOpenedAtRef.current,
+        timeOnQuestionMs: questionOpenedAtRef.current ? Date.now() - questionOpenedAtRef.current : 0,
+        wrongAttempts: incorrectAttemptsCount,
+        fastClickingPattern,
+        longPausePattern,
+        skippedSections: skippedSectionsCount,
+      },
+    });
+  }, [cogLoad, open, user?.id, block?.id, currentStep, incorrectAttemptsCount, fastClickingPattern, longPausePattern, skippedSectionsCount]);
 
   // Load saved data for builtin
   useEffect(() => {
@@ -2179,6 +2324,54 @@ const LearningOrbDialog = ({
                   style={{ background: "hsl(45 80% 95%)", color: "hsl(45 50% 30%)", border: "1px solid hsl(45 60% 80%)" }}>
                   🔑 Key Point: Remember "{block.term_title}" — say it, picture it, connect it to something you know.
                 </motion.div>
+              )}
+              {/* ═══════ Cognitive Load Indicator ═══════ */}
+              {cogLoad.level !== "low" && !cogLoadAcked && (
+                <div className="mb-4">
+                  <CognitiveLoadPrompt
+                    level={cogLoad.level as Exclude<CognitiveLoad, "low">}
+                    reasons={cogLoad.reasons}
+                    onAction={(action: CognitiveLoadAction) => {
+                      // Persist the chosen action with the current snapshot
+                      if (user?.id && block?.id) {
+                        persistCognitiveLoad({
+                          userId: user.id,
+                          termId: block.id,
+                          moduleId: (block as any)?.module_id ?? null,
+                          sessionId: sessionIdRef.current,
+                          reading: cogLoad,
+                          signals: {
+                            timeOnTermMs: Date.now() - termOpenedAtRef.current,
+                            timeOnQuestionMs: questionOpenedAtRef.current ? Date.now() - questionOpenedAtRef.current : 0,
+                            wrongAttempts: incorrectAttemptsCount,
+                            fastClickingPattern,
+                            longPausePattern,
+                            skippedSections: skippedSectionsCount,
+                          },
+                          promptAction: action,
+                        });
+                      }
+                      setCogLoadAcked(true);
+                      // Route the chosen action
+                      if (action === "show_visual") {
+                        jumpToStepKey("visual", "Cognitive Load → Visual");
+                      } else if (action === "show_metaphor") {
+                        jumpToStepKey("metaphor", "Cognitive Load → Metaphor");
+                      } else if (action === "tj_cafe") {
+                        try { openTJCafe(); } catch {}
+                      } else if (action === "simpler_question") {
+                        // Reset quiz UI and re-trigger an AI-generated simpler item
+                        setQuizSelected(null);
+                        setQuizRevealed(false);
+                        setAiQuestion(null);
+                        const idx = adaptedSteps.findIndex((s) => s.key === "quiz");
+                        if (idx >= 0) setCurrentStep(idx);
+                      }
+                      // "continue" = just dismiss
+                    }}
+                    onDismiss={() => setCogLoadAcked(true)}
+                  />
+                </div>
               )}
               <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
             </div>
