@@ -1594,6 +1594,7 @@ const LearningOrbDialog = ({
                       const accentBorder = wasCorrect ? "hsl(145 45% 70%)" : "hsl(352 65% 78%)";
 
                       return (
+                        <>
                         <motion.aside
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
