@@ -815,6 +815,33 @@ const LearningOrbDialog = ({
     return () => window.removeEventListener("tj-cafe-closed", onCafeClosed);
   }, []);
 
+  // ---------------- Re-Entry Intelligence triggers ----------------
+  // Fire the prompt when the learner returns from TJ Café OR when Recovery
+  // Mode just exited. We never re-enter into the exact same state.
+  useEffect(() => {
+    if (!open) return;
+    const onCafeClosed = () => {
+      setReentryTrigger("tj_cafe");
+      setReentryOpen(true);
+    };
+    window.addEventListener("tj-cafe-closed", onCafeClosed);
+    return () => window.removeEventListener("tj-cafe-closed", onCafeClosed);
+  }, [open]);
+
+  // Detect Recovery Mode active → inactive transition (a "return").
+  useEffect(() => {
+    if (recovery.active) {
+      recoveryWasActiveRef.current = true;
+      return;
+    }
+    if (recoveryWasActiveRef.current && open) {
+      recoveryWasActiveRef.current = false;
+      setReentryTrigger("recovery_exit");
+      setReentryOpen(true);
+    }
+  }, [recovery.active, open]);
+
+
   const recordCycleTransition = (next: CycleStage, reasons: string[], stepKeyAtEvent: string) => {
     const prev = cycleStageRef.current;
     if (prev === next) return;
