@@ -496,6 +496,8 @@ const LearningOrbDialog = ({
       setQuizRevealed(false);
       setQuizAttempted(false);
       setQuizFeedbackLocked(false);
+      setErrorReflectionDone(false);
+      setRevealAnswerOverride(false);
       setAiQuestion(null);
       setRecognizeSelected(null);
       setRecognizeRevealed(false);
