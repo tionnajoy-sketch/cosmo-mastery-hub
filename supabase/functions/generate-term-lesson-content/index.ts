@@ -158,45 +158,48 @@ Deno.serve(async (req) => {
           "Generate the Break Down, Information, and Assess content now. Stay in TJ's voice. Keep things tight. The Assess question must be state-board style with exactly one correct option.",
         ].filter(Boolean).join("\n");
 
-        const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
-          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+          headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             model,
             messages: [
               { role: "system", content: TJ_SYSTEM_PROMPT },
               { role: "user", content: userPrompt },
             ],
-            tools: [lessonTool],
-            tool_choice: { type: "function", function: { name: "save_term_lesson" } },
+            response_format: { type: "json_schema", json_schema: lessonJsonSchema },
+            temperature: 0.7,
           }),
         });
 
         if (!aiResp.ok) {
+          const errTxt = await aiResp.text();
+          console.error("OpenAI error", aiResp.status, errTxt);
           if (aiResp.status === 429) {
             results.push({ term_id: t.id, term: t.term, status: "error", error: "rate_limited" });
-            // Backoff briefly between failures.
             await new Promise((r) => setTimeout(r, 1500));
             continue;
           }
-          if (aiResp.status === 402) {
-            results.push({ term_id: t.id, term: t.term, status: "error", error: "credits_exhausted" });
+          if (aiResp.status === 401) {
+            results.push({ term_id: t.id, term: t.term, status: "error", error: "invalid_api_key" });
             break;
           }
-          const errTxt = await aiResp.text();
-          console.error("AI gateway error", aiResp.status, errTxt);
-          results.push({ term_id: t.id, term: t.term, status: "error", error: `ai_${aiResp.status}` });
+          if (aiResp.status === 402 || aiResp.status === 403) {
+            results.push({ term_id: t.id, term: t.term, status: "error", error: "billing_or_access" });
+            break;
+          }
+          results.push({ term_id: t.id, term: t.term, status: "error", error: `openai_${aiResp.status}` });
           continue;
         }
 
         const aiJson = await aiResp.json();
-        const toolCall = aiJson?.choices?.[0]?.message?.tool_calls?.[0];
-        if (!toolCall?.function?.arguments) {
-          results.push({ term_id: t.id, term: t.term, status: "error", error: "no_tool_call" });
+        const content: string | undefined = aiJson?.choices?.[0]?.message?.content;
+        if (!content) {
+          results.push({ term_id: t.id, term: t.term, status: "error", error: "no_content" });
           continue;
         }
         let parsed: LessonPayload;
-        try { parsed = JSON.parse(toolCall.function.arguments); }
+        try { parsed = JSON.parse(content); }
         catch { results.push({ term_id: t.id, term: t.term, status: "error", error: "bad_json" }); continue; }
 
         const breakDown = [
