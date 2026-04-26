@@ -169,6 +169,7 @@ const ModuleQuizPage = () => {
   };
 
   const handleNext = () => {
+    if (!confidenceComplete) return;
     if (isLastQuestion) {
       navigate(`/module/${id}/results/${block}`, { state: { score, total: questions.length, mode, wrongCount, moduleTitle } });
     } else {
