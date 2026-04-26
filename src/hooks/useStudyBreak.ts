@@ -49,6 +49,8 @@ export const useStudyBreak = () => {
   const dismissCafe = useCallback(() => {
     setShowCafe(false);
     sessionStorage.setItem(SESSION_KEY, String(Date.now()));
+    // Signal "recovering" rhythm to any listener (Learning Rhythm System).
+    try { window.dispatchEvent(new CustomEvent("tj-cafe-closed")); } catch {}
   }, []);
 
   const openCafe = useCallback(() => {
