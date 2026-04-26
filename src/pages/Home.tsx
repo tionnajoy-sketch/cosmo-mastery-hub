@@ -259,6 +259,9 @@ const Home = () => {
       {/* ── Minimal Content ── */}
       <div className="flex-1 px-4 pb-6 max-w-2xl mx-auto w-full space-y-6">
 
+        {/* ── Behavior Summary Panel ── */}
+        <BehaviorSummaryPanel />
+
         {/* ── Your Learning Style ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
           <Card className="border-0 shadow-md bg-card overflow-hidden">
