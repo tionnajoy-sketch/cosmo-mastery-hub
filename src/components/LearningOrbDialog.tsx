@@ -47,6 +47,12 @@ import SecondChancePrompt from "@/components/second-chance/SecondChancePrompt";
 import { useLearningMode } from "@/hooks/useLearningMode";
 import { LearningModeToggle } from "@/components/learning-mode/LearningModeToggle";
 import { filterStepsByMode } from "@/lib/learning-mode";
+import { LayerIntegrityGate } from "@/components/layer-integrity/LayerIntegrityGate";
+import {
+  computeIntegrity,
+  layerToStepKey,
+  recordIntegrityCheck,
+} from "@/lib/layer-integrity";
 import {
   recordSecondChancePick,
   resolveTryAgainOutcome,
