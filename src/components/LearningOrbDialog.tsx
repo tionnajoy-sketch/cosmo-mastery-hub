@@ -690,6 +690,23 @@ const LearningOrbDialog = ({
     // GATE: Information step requires answering all TJ Mentor Check-In questions
     if (mentorCheckInRequired && !mentorCheckInComplete) return;
     stopSpeaking();
+
+    // Silent micro-decision tracking — detect skips of key layers.
+    if (step.key === "reflection" && journalNote.trim().length === 0) {
+      void microDecisions.trackAction("reflection_skipped");
+    }
+    if (step.key === "metaphor") {
+      // Memory anchor lives inside the metaphor surface in this flow.
+      // Treat advancing without acknowledging the lock as a skip signal.
+      void microDecisions.trackAction("memory_anchor_skipped");
+    }
+    if (step.key === "definition" && !completedSteps.has(currentStep)) {
+      // Identity layer = the Define step where TJ identity scaffolding lives.
+      void microDecisions.trackAction("identity_layer_skipped");
+    }
+    if (step.key === "quiz" && !quizRevealed) {
+      void microDecisions.trackAction("quiz_skipped");
+    }
     // Track DNA updates based on current step
     if (step.key === "reflection" && journalNote.length > 0) {
       updateDNA({ layerCompleted: "reflection", reflectionLength: journalNote.length });
