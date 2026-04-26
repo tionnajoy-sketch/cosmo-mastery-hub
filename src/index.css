@@ -337,3 +337,80 @@
   justify-content: space-between;
   gap: 0.5rem;
 }
+/* ============================================================
+   LMS scoped tokens — warm cream, deep teal, terracotta accents
+   Apply class="lms-scope" on the LMS layout root.
+   ============================================================ */
+.lms-scope {
+  --lms-cream: 38 40% 96%;
+  --lms-cream-soft: 38 30% 92%;
+  --lms-ink: 195 35% 14%;
+  --lms-ink-soft: 195 20% 30%;
+  --lms-muted: 195 12% 45%;
+  --lms-teal: 186 60% 22%;
+  --lms-teal-strong: 186 70% 18%;
+  --lms-teal-soft: 186 35% 90%;
+  --lms-terracotta: 14 60% 52%;
+  --lms-terracotta-soft: 14 60% 92%;
+  --lms-gold: 36 65% 50%;
+  --lms-gold-soft: 36 70% 92%;
+  --lms-card: 0 0% 100%;
+  --lms-border: 195 15% 88%;
+
+  background: hsl(var(--lms-cream));
+  color: hsl(var(--lms-ink));
+  font-family: var(--font-body, 'DM Sans'), system-ui, sans-serif;
+}
+.lms-scope .lms-card {
+  background: hsl(var(--lms-card));
+  border: 1px solid hsl(var(--lms-border));
+  border-radius: 16px;
+}
+.lms-scope .lms-btn-primary {
+  background: hsl(var(--lms-teal));
+  color: hsl(var(--lms-cream));
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background 0.18s ease;
+}
+.lms-scope .lms-btn-primary:hover { background: hsl(var(--lms-teal-strong)); }
+.lms-scope .lms-btn-secondary {
+  background: hsl(var(--lms-card));
+  color: hsl(var(--lms-teal));
+  border: 1px solid hsl(var(--lms-teal) / 0.35);
+  border-radius: 10px;
+  font-weight: 600;
+}
+.lms-scope .lms-chip-status {
+  background: hsl(var(--lms-terracotta-soft));
+  color: hsl(var(--lms-terracotta));
+  border: 1px solid hsl(var(--lms-terracotta) / 0.25);
+}
+.lms-scope .lms-chip-gold {
+  background: hsl(var(--lms-gold-soft));
+  color: hsl(var(--lms-gold));
+  border: 1px solid hsl(var(--lms-gold) / 0.3);
+}
+.lms-scope .lms-chip-teal {
+  background: hsl(var(--lms-teal-soft));
+  color: hsl(var(--lms-teal));
+  border: 1px solid hsl(var(--lms-teal) / 0.25);
+}
+.lms-scope .lms-progress-track {
+  background: hsl(var(--lms-cream-soft));
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+.lms-scope .lms-progress-fill {
+  background: linear-gradient(90deg, hsl(var(--lms-teal)), hsl(var(--lms-gold)));
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.lms-scope .lms-display {
+  font-family: 'Playfair Display', Georgia, serif;
+  letter-spacing: -0.01em;
+  color: hsl(var(--lms-ink));
+}
