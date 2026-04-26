@@ -160,6 +160,10 @@ const AdminContentPage = () => {
           </p>
         </div>
 
+        <div className="mb-6">
+          <TermLessonContentBatch />
+        </div>
+
         <div className="grid lg:grid-cols-[320px,1fr] gap-6">
           {/* Term list */}
           <div className="space-y-3">
