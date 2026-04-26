@@ -118,18 +118,20 @@ Deno.serve(async (req) => {
         }
       }
 
-      const { data: term, error: termErr } = await supabase
+      const { data: term } = await supabase
         .from("terms")
         .select("term, definition, break_it_down_content, metaphor_content")
         .eq("id", termId)
-        .single();
-      if (termErr || !term) {
-        return json({ error: "Term not found" }, 404);
+        .maybeSingle();
+      if (term) {
+        termTitle = term.term;
+        definition = term.definition || "";
+        breakItDown = term.break_it_down_content || "";
+        metaphor = term.metaphor_content || "";
+      } else if (!inlineTermTitle) {
+        // No terms row and no inline fallback — can't generate
+        return json({ error: "Term not found and no inline term_title provided" }, 404);
       }
-      termTitle = term.term;
-      definition = term.definition || "";
-      breakItDown = term.break_it_down_content || "";
-      metaphor = term.metaphor_content || "";
     }
 
     const userPrompt = [
