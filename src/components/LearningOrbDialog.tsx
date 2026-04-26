@@ -1583,6 +1583,12 @@ const LearningOrbDialog = ({
                                 setMissedQuestionText(quizQuestion);
                                 await recordIncorrect(block.id);
                               }
+                              // If this answer is the retry from a "Try again" Second-Chance pick,
+                              // resolve the recovery_pattern: correct → self-corrected, wrong → answer-dependent.
+                              if (pendingSecondChanceRowId) {
+                                await resolveTryAgainOutcome(pendingSecondChanceRowId, correct);
+                                setPendingSecondChanceRowId(null);
+                              }
                               await persistAssessmentDNA({ correct, isFirstAttempt });
                             }}
                             whileHover={!quizRevealed ? { scale: 1.03, y: -2 } : {}}
