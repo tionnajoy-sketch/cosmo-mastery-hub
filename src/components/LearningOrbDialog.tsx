@@ -791,6 +791,11 @@ const LearningOrbDialog = ({
   const breathCooldownRef = useRef<number>(0);
   const breathSignalsRef = useRef<BreathSignals | null>(null);
 
+  // ---------------- Guided Pace Adjustment ----------------
+  // Follow-up flows after a Breath choice. All decisions persist to pace_adjustments.
+  const [differentWayOpen, setDifferentWayOpen] = useState(false);
+  const [slowDownOpen, setSlowDownOpen] = useState(false);
+
   // Track rhythm state so the breath evaluator can use it without recomputing.
   useEffect(() => {
     const reading = computeLearningRhythm({
