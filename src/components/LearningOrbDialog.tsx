@@ -2069,6 +2069,11 @@ const LearningOrbDialog = ({
               onChosen={(path, routeTo) => {
                 setEntryPath(path);
                 setEntryChosen(true);
+                // Silent micro-decision: track entry-point pick (rolls up
+                // into repeated_visual / metaphor / guided_lesson flags).
+                if (path === "visual") void microDecisions.trackAction("entry_visual_picked");
+                else if (path === "metaphor") void microDecisions.trackAction("entry_metaphor_picked");
+                else if (path === "story" || path === "verbal") void microDecisions.trackAction("entry_guided_lesson_picked");
                 const idx = adaptedSteps.findIndex((s) => s.key === routeTo);
                 if (idx >= 0) setCurrentStep(idx);
               }}
