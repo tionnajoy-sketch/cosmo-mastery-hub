@@ -1674,26 +1674,72 @@ const LearningOrbDialog = ({
                                 termTitle={block.term_title}
                                 definition={block.definition}
                                 metaphor={block.metaphor || (block as any).static_metaphor}
-                                onResolved={({ revealAnswer, jumpTo }) => {
+                                onResolved={({ errorType, revealAnswer }) => {
+                                  // Capture the named error_type and pause for Second Chance.
+                                  // Routing/reveal is now decided by the Second Chance prompt
+                                  // unless the learner explicitly clicked "Show me the answer anyway".
                                   setErrorReflectionDone(true);
+                                  setLastErrorType(errorType ?? null);
                                   if (revealAnswer) {
+                                    setSecondChanceDone(true);
                                     setRevealAnswerOverride(true);
-                                  } else if (jumpTo === "quiz") {
-                                    // Slow-down / retry / misread / overthought → reset the quiz
-                                    setQuizSelected(null);
-                                    setQuizRevealed(false);
-                                    setQuizFeedbackLocked(false);
-                                    setErrorReflectionDone(false);
-                                    setRevealAnswerOverride(false);
-                                  } else if (jumpTo) {
-                                    jumpToStepKey(jumpTo, "Error-Type Routing");
                                   }
                                 }}
                               />
                             )}
 
-                            {(wasCorrect || errorReflectionDone || revealAnswerOverride) && (
+                            {/* Second Chance: hide answer until the learner picks how they recover. */}
+                            {!wasCorrect && errorReflectionDone && !secondChanceDone && !revealAnswerOverride && (
+                              <SecondChancePrompt
+                                onChoose={async (opt) => {
+                                  setSecondChanceBehavior(opt.key);
+                                  setSecondChanceDone(true);
+
+                                  // Persist pick (recovery_pattern resolved later for try_again).
+                                  let rowId: string | null = null;
+                                  if (user?.id) {
+                                    const res = await recordSecondChancePick({
+                                      userId: user.id,
+                                      termId: block.id,
+                                      moduleId: (block as any).module_id ?? null,
+                                      blockNumber: (block as any).block_number ?? null,
+                                      questionRef: (missedQuestionText || quizQuestion || "").slice(0, 120),
+                                      errorType: lastErrorType,
+                                      behavior: opt.key,
+                                      recoveryPattern: opt.recoveryPattern,
+                                    });
+                                    rowId = res.id;
+                                  }
+
+                                  if (opt.key === "try_again") {
+                                    // Reset the quiz; outcome resolves recovery_pattern on next answer.
+                                    setPendingSecondChanceRowId(rowId);
+                                    setQuizSelected(null);
+                                    setQuizRevealed(false);
+                                    setQuizFeedbackLocked(false);
+                                    setErrorReflectionDone(false);
+                                    setSecondChanceDone(false);
+                                    setRevealAnswerOverride(false);
+                                  } else if (opt.key === "show_answer") {
+                                    setRevealAnswerOverride(true);
+                                  } else if (opt.jumpTo) {
+                                    jumpToStepKey(opt.jumpTo, "Second-Chance Routing");
+                                  }
+                                }}
+                              />
+                            )}
+
+                            {(wasCorrect || revealAnswerOverride) && (
+                              <></>
+                            )}
+
+                            {(wasCorrect || (errorReflectionDone && secondChanceDone) || revealAnswerOverride) && (
+                              <></>
+                            )}
+
+                            {(wasCorrect || revealAnswerOverride || (errorReflectionDone && secondChanceDone && secondChanceBehavior === "show_answer")) && (
                               <>
+
                             {/* Body */}
                             <p className="text-[15px] leading-relaxed" style={{ color: "hsl(220 20% 22%)", fontFamily: "var(--font-body, inherit)" }}>
                               {wasCorrect
