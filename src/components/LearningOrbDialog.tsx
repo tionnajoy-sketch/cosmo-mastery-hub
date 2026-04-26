@@ -42,6 +42,13 @@ import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer"
 import EntryPointGate from "@/components/entry-point/EntryPointGate";
 import type { ThinkingPath } from "@/lib/entry-point";
 import WrongAnswerErrorPicker from "@/components/error-type/WrongAnswerErrorPicker";
+import SecondChancePrompt from "@/components/second-chance/SecondChancePrompt";
+import {
+  recordSecondChancePick,
+  resolveTryAgainOutcome,
+  type SecondChanceBehavior,
+} from "@/lib/second-chance";
+import type { ErrorType } from "@/lib/error-type";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
@@ -434,6 +441,12 @@ const LearningOrbDialog = ({
   // answer until they pick an error_type (or explicitly request reveal).
   const [errorReflectionDone, setErrorReflectionDone] = useState(false);
   const [revealAnswerOverride, setRevealAnswerOverride] = useState(false);
+  // Second-chance layer: after error_type is named, before answer is revealed,
+  // the learner picks how they want to recover. Tracks recovery_pattern.
+  const [secondChanceDone, setSecondChanceDone] = useState(false);
+  const [secondChanceBehavior, setSecondChanceBehavior] = useState<SecondChanceBehavior | null>(null);
+  const [pendingSecondChanceRowId, setPendingSecondChanceRowId] = useState<string | null>(null);
+  const [lastErrorType, setLastErrorType] = useState<ErrorType | null>(null);
   const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -498,6 +511,10 @@ const LearningOrbDialog = ({
       setQuizFeedbackLocked(false);
       setErrorReflectionDone(false);
       setRevealAnswerOverride(false);
+      setSecondChanceDone(false);
+      setSecondChanceBehavior(null);
+      setPendingSecondChanceRowId(null);
+      setLastErrorType(null);
       setAiQuestion(null);
       setRecognizeSelected(null);
       setRecognizeRevealed(false);
