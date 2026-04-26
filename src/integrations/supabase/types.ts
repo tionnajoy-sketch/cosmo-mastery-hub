@@ -1951,6 +1951,7 @@ export type Database = {
           block_number: number
           break_it_down_content: string
           concept_identity: Json
+          deep_dive_content: Json | null
           define_content: string
           definition: string
           id: string
@@ -1974,6 +1975,7 @@ export type Database = {
           block_number?: number
           break_it_down_content?: string
           concept_identity?: Json
+          deep_dive_content?: Json | null
           define_content?: string
           definition?: string
           id?: string
@@ -1997,6 +1999,7 @@ export type Database = {
           block_number?: number
           break_it_down_content?: string
           concept_identity?: Json
+          deep_dive_content?: Json | null
           define_content?: string
           definition?: string
           id?: string
