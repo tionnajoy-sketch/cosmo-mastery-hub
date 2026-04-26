@@ -381,7 +381,7 @@ const StepContent = (props: StepContentProps) => {
         <div className="space-y-4">
           <EtymologyBreakdown block={block} stepColor={stepColor} />
           <GuidedLessonPanel
-            termId={(block as any).term_id || block.id}
+            termId={block.id}
             termTitle={block.term_title}
             definition={block.definition}
             stepColor={stepColor}
