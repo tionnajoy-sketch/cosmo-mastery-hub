@@ -17,7 +17,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const DEFAULT_MODEL = "google/gemini-2.5-flash";
+const DEFAULT_MODEL = "gpt-4o-mini";
 
 const TJ_SYSTEM_PROMPT = `You are TJ Anderson, a real cosmetology teacher writing structured lesson content in your own voice for a student who has never seen this term before.
 
