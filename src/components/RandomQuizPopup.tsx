@@ -85,6 +85,7 @@ const RandomQuizPopup = () => {
     setQuestion(null);
     setSelected(null);
     setSubmitted(false);
+    setConfidenceStatus(null);
   };
 
   if (!visible || !question) return null;
