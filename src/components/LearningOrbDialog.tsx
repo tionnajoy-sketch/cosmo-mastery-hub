@@ -454,6 +454,12 @@ const LearningOrbDialog = ({
   const [reinforcementResolved, setReinforcementResolved] = useState(true);
   const [missedQuestionText, setMissedQuestionText] = useState("");
 
+  // Breakdown Point — "Where did this stop making sense?" prompt state
+  const [incorrectAttemptsCount, setIncorrectAttemptsCount] = useState(0);
+  const [breakdownAcked, setBreakdownAcked] = useState(false);
+  const [breakdownRouteCard, setBreakdownRouteCard] = useState<BreakdownRouteAction | null>(null);
+  const [dominantBreakdownPattern, setDominantBreakdownPattern] = useState<BreakdownPoint | null>(null);
+
   // Etymology
   const [etymology, setEtymology] = useState<{ parts: { part: string; meaning: string; origin: string }[]; pronunciation: string; summary: string } | null>(null);
   const [etymLoading, setEtymLoading] = useState(false);
