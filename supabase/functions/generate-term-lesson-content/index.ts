@@ -350,19 +350,17 @@ Deno.serve(async (req) => {
           `**TJ Memory Anchor**\n\n${parsed.memory_anchor.trim()}`,
         ].join("\n\n");
 
-        // 3) APPLY (TJ Anderson Layer Method — own words)
+        // 3) APPLY (TJ Anderson Layer Method — practice thinking like a pro)
         const apply = [
-          `**Apply the TJ Anderson Layer Method**`,
+          `**Practice thinking like a pro**`,
           ``,
           parsed.apply_intro.trim(),
           ``,
-          `In your own words:`,
+          `1. _${parsed.apply_q1_type.trim()}_ — ${parsed.apply_q1.trim()}`,
           ``,
-          `1. ${parsed.apply_q1.trim()}`,
+          `2. _${parsed.apply_q2_type.trim()}_ — ${parsed.apply_q2.trim()}`,
           ``,
-          `2. ${parsed.apply_q2.trim()}`,
-          ``,
-          `3. ${parsed.apply_q3.trim()}`,
+          `3. _${parsed.apply_q3_type.trim()}_ — ${parsed.apply_q3.trim()}`,
           ``,
           `*(Short answer box or voice input)*`,
         ].join("\n");
