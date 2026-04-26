@@ -36,29 +36,21 @@ import { useTJEngine } from "@/hooks/useTJEngine";
 import TJFeedbackPanel from "@/components/TJFeedbackPanel";
 import type { EngineEvaluation, StageId } from "@/lib/tj-engine";
 import { useBehaviorIntake } from "@/hooks/useBehaviorIntake";
-import { useMicroDecisions } from "@/hooks/useMicroDecisions";
 import BehaviorIntakeStrip from "@/components/behavior-intake/BehaviorIntakeStrip";
 import type { BehaviorSuggestion } from "@/lib/behavior-intake";
 import ExplainItBackLayer from "@/components/explain-it-back/ExplainItBackLayer";
 import EntryPointGate from "@/components/entry-point/EntryPointGate";
 import type { ThinkingPath } from "@/lib/entry-point";
-import WrongAnswerErrorPicker from "@/components/error-type/WrongAnswerErrorPicker";
-import SecondChancePrompt from "@/components/second-chance/SecondChancePrompt";
-import { useLearningMode } from "@/hooks/useLearningMode";
-import { LearningModeToggle } from "@/components/learning-mode/LearningModeToggle";
-import { filterStepsByMode } from "@/lib/learning-mode";
-import { LayerIntegrityGate } from "@/components/layer-integrity/LayerIntegrityGate";
+import { BreakdownPointPrompt } from "@/components/breakdown-point/BreakdownPointPrompt";
 import {
-  computeIntegrity,
-  layerToStepKey,
-  recordIntegrityCheck,
-} from "@/lib/layer-integrity";
-import {
-  recordSecondChancePick,
-  resolveTryAgainOutcome,
-  type SecondChanceBehavior,
-} from "@/lib/second-chance";
-import type { ErrorType } from "@/lib/error-type";
+  REPEATED_STRUGGLE_THRESHOLD,
+  resolveBreakdownRoute,
+  recordBreakdownPoint,
+  loadBreakdownPattern,
+  BREAKDOWN_LABEL,
+  type BreakdownPoint,
+  type BreakdownRouteAction,
+} from "@/lib/breakdown-point";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
@@ -363,12 +355,6 @@ const LearningOrbDialog = ({
   }, [rawBlock]);
 
   const { user, profile } = useAuth();
-  const { mode: learningMode, setMode: setLearningMode, stats: learningModeStats } = useLearningMode({
-    userId: user?.id ?? null,
-    termId: block?.id ?? null,
-    moduleId: (block as any)?.module_id ?? null,
-    enabled: open && !!user?.id && !!block?.id,
-  });
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
@@ -394,7 +380,7 @@ const LearningOrbDialog = ({
   //  - "visual" (Visualize) is ALWAYS step 1
   //  - "quiz"   (Assess / Final Check) is ALWAYS the LAST step
   // The DNA-preferred layer slots into position 2 (between Visualize and the rest).
-  const dnaOrderedSteps = useMemo(() => {
+  const adaptedSteps = useMemo(() => {
     // Always pull quiz to the end and visual to the front, regardless of DNA.
     const pinFirstAndLast = (arr: typeof availableSteps) => {
       const visual = arr.find(s => s.key === "visual");
@@ -431,12 +417,6 @@ const LearningOrbDialog = ({
     ];
   }, [dna, availableSteps]);
 
-  // Apply Teach/Test mode filter on top of the DNA-ordered list.
-  const adaptedSteps = useMemo(
-    () => filterStepsByMode(dnaOrderedSteps, learningMode),
-    [dnaOrderedSteps, learningMode]
-  );
-
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [completed, setCompleted] = useState(false);
@@ -445,16 +425,6 @@ const LearningOrbDialog = ({
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showNeuro, setShowNeuro] = useState(false);
-
-  // Reset step pointer when learning mode changes the visible step list.
-  useEffect(() => {
-    setCurrentStep(0);
-    setCompleted(false);
-  }, [learningMode]);
-
-  // Layer Integrity Check (Mastery Check gate)
-  const [integrityAck, setIntegrityAck] = useState(false);
-  const [explainItBackDone, setExplainItBackDone] = useState(false);
 
   // Visual
   const [imageUrl, setImageUrl] = useState("");
@@ -469,16 +439,6 @@ const LearningOrbDialog = ({
   const [quizRevealed, setQuizRevealed] = useState(false);
   const [quizAttempted, setQuizAttempted] = useState(false);
   const [quizFeedbackLocked, setQuizFeedbackLocked] = useState(false);
-  // Wrong-answer error reflection: when learner is wrong, hide the correct
-  // answer until they pick an error_type (or explicitly request reveal).
-  const [errorReflectionDone, setErrorReflectionDone] = useState(false);
-  const [revealAnswerOverride, setRevealAnswerOverride] = useState(false);
-  // Second-chance layer: after error_type is named, before answer is revealed,
-  // the learner picks how they want to recover. Tracks recovery_pattern.
-  const [secondChanceDone, setSecondChanceDone] = useState(false);
-  const [secondChanceBehavior, setSecondChanceBehavior] = useState<SecondChanceBehavior | null>(null);
-  const [pendingSecondChanceRowId, setPendingSecondChanceRowId] = useState<string | null>(null);
-  const [lastErrorType, setLastErrorType] = useState<ErrorType | null>(null);
   const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -493,6 +453,12 @@ const LearningOrbDialog = ({
   const [reinforcementOpen, setReinforcementOpen] = useState(false);
   const [reinforcementResolved, setReinforcementResolved] = useState(true);
   const [missedQuestionText, setMissedQuestionText] = useState("");
+
+  // Breakdown Point — "Where did this stop making sense?" prompt state
+  const [incorrectAttemptsCount, setIncorrectAttemptsCount] = useState(0);
+  const [breakdownAcked, setBreakdownAcked] = useState(false);
+  const [breakdownRouteCard, setBreakdownRouteCard] = useState<BreakdownRouteAction | null>(null);
+  const [dominantBreakdownPattern, setDominantBreakdownPattern] = useState<BreakdownPoint | null>(null);
 
   // Etymology
   const [etymology, setEtymology] = useState<{ parts: { part: string; meaning: string; origin: string }[]; pronunciation: string; summary: string } | null>(null);
@@ -535,26 +501,21 @@ const LearningOrbDialog = ({
       setCompleted(false);
       setEntryChosen(false);
       setEntryPath(null);
-      setIntegrityAck(false);
-      setExplainItBackDone(false);
       setImageUrl(block.image_url || "");
       setJournalNote(block.user_notes || "");
       setQuizSelected(null);
       setQuizRevealed(false);
       setQuizAttempted(false);
       setQuizFeedbackLocked(false);
-      setErrorReflectionDone(false);
-      setRevealAnswerOverride(false);
-      setSecondChanceDone(false);
-      setSecondChanceBehavior(null);
-      setPendingSecondChanceRowId(null);
-      setLastErrorType(null);
       setAiQuestion(null);
       setRecognizeSelected(null);
       setRecognizeRevealed(false);
       setEtymology(null);
       setExpandedInfo("");
       setMentorCheckInAnswers({});
+      setIncorrectAttemptsCount(0);
+      setBreakdownAcked(false);
+      setBreakdownRouteCard(null);
       // Pre-seed with admin-authored static content so no AI call is needed
       if (block.static_break_it_down) {
         setEtymology({ parts: [], pronunciation: "", summary: block.static_break_it_down });
@@ -567,20 +528,22 @@ const LearningOrbDialog = ({
     }
   }, [block?.id]);
 
-  // Hydrate explain-it-back completion (used by Layer Integrity Check).
+  // Hydrate incorrect-attempt count + cross-term breakdown pattern.
   useEffect(() => {
     if (!block?.id || !user?.id) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("explain_it_back_responses")
-        .select("id")
+      const { data: struggle } = await (supabase as any)
+        .from("term_struggle")
+        .select("incorrect_attempts")
         .eq("user_id", user.id)
         .eq("term_id", block.id)
-        .eq("skipped", false)
-        .limit(1)
         .maybeSingle();
-      if (!cancelled && data) setExplainItBackDone(true);
+      if (!cancelled && struggle) {
+        setIncorrectAttemptsCount(struggle.incorrect_attempts ?? 0);
+      }
+      const pattern = await loadBreakdownPattern(user.id);
+      if (!cancelled) setDominantBreakdownPattern(pattern.dominant);
     })();
     return () => { cancelled = true; };
   }, [block?.id, user?.id]);
@@ -707,20 +670,6 @@ const LearningOrbDialog = ({
     stageId: currentTjStage,
   });
 
-  // Silent micro-decision tracker — fast clicks, long pauses, skips, repeats.
-  // Never blocks the UI; persists raw events + derived flags.
-  const microDecisions = useMicroDecisions({
-    termId: block?.id ?? null,
-    moduleId: (block as any)?.module_id ?? null,
-    blockNumber: (block as any)?.block_number ?? null,
-    surface: step?.key ?? "",
-  });
-
-  // Mark question render time so micro-decisions can detect a fast Show-Answer click.
-  useEffect(() => {
-    if (step?.key === "quiz") microDecisions.markQuestionShown();
-  }, [step?.key, block?.id, microDecisions]);
-
   // DNA-adapted encouragement message
   const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
@@ -746,23 +695,6 @@ const LearningOrbDialog = ({
     // GATE: Information step requires answering all TJ Mentor Check-In questions
     if (mentorCheckInRequired && !mentorCheckInComplete) return;
     stopSpeaking();
-
-    // Silent micro-decision tracking — detect skips of key layers.
-    if (step.key === "reflection" && journalNote.trim().length === 0) {
-      void microDecisions.trackAction("reflection_skipped");
-    }
-    if (step.key === "metaphor") {
-      // Memory anchor lives inside the metaphor surface in this flow.
-      // Treat advancing without acknowledging the lock as a skip signal.
-      void microDecisions.trackAction("memory_anchor_skipped");
-    }
-    if (step.key === "definition" && !completedSteps.has(currentStep)) {
-      // Identity layer = the Define step where TJ identity scaffolding lives.
-      void microDecisions.trackAction("identity_layer_skipped");
-    }
-    if (step.key === "quiz" && !quizRevealed) {
-      void microDecisions.trackAction("quiz_skipped");
-    }
     // Track DNA updates based on current step
     if (step.key === "reflection" && journalNote.length > 0) {
       updateDNA({ layerCompleted: "reflection", reflectionLength: journalNote.length });
@@ -1079,7 +1011,6 @@ const LearningOrbDialog = ({
                   termId={block.id}
                   trigger="definition"
                   contextRef={`define:${block.term_title}`}
-                  onComplete={(r) => { if (!r.skipped) setExplainItBackDone(true); }}
                 />
               </div>
             </EditorialShell>
@@ -1130,7 +1061,6 @@ const LearningOrbDialog = ({
                   termId={block.id}
                   trigger="guided_lesson"
                   contextRef={`guided_lesson:${block.term_title}`}
-                  onComplete={(r) => { if (!r.skipped) setExplainItBackDone(true); }}
                 />
               </div>
             </EditorialShell>
@@ -1602,75 +1532,7 @@ const LearningOrbDialog = ({
         );
       }
 
-      case "quiz": {
-        // Layer Completion Integrity Check — soft gate before Mastery Check
-        const completedKeys = Array.from(completedSteps)
-          .map((idx) => adaptedSteps[idx]?.key)
-          .filter((k): k is string => !!k);
-        const integrityResult = computeIntegrity({
-          completedStepKeys: completedKeys,
-          explainItBackCompleted: explainItBackDone,
-        });
-        const showIntegrityGate = !integrityAck && !integrityResult.passes;
-
-        if (showIntegrityGate) {
-          const handleDecision = async (
-            decision: "continue_anyway" | "go_to_missing" | "show_most_important"
-          ) => {
-            if (user?.id) {
-              try {
-                await recordIntegrityCheck({
-                  userId: user.id,
-                  termId: block.id,
-                  moduleId: (block as any)?.module_id ?? null,
-                  result: integrityResult,
-                  decision,
-                });
-              } catch (err) {
-                console.error("[integrity] record failed", err);
-              }
-            }
-            if (decision === "continue_anyway") {
-              setIntegrityAck(true);
-              return;
-            }
-            if (decision === "show_most_important" && integrityResult.mostImportantMissing) {
-              const targetKey = layerToStepKey(integrityResult.mostImportantMissing);
-              const idx = adaptedSteps.findIndex((s) => s.key === targetKey);
-              if (idx >= 0) {
-                stopSpeaking();
-                setCurrentStep(idx);
-                return;
-              }
-            }
-            // go_to_missing — jump to first missing layer in the visible flow
-            const firstMissingKey = integrityResult.missing
-              .map((l) => layerToStepKey(l))
-              .find((k) => adaptedSteps.some((s) => s.key === k));
-            if (firstMissingKey) {
-              const idx = adaptedSteps.findIndex((s) => s.key === firstMissingKey);
-              if (idx >= 0) {
-                stopSpeaking();
-                setCurrentStep(idx);
-                return;
-              }
-            }
-            // Fallback: go back one step
-            if (currentStep > 0) setCurrentStep((s) => s - 1);
-          };
-
-          return (
-            <motion.div key="quiz-integrity" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
-              <LayerIntegrityGate
-                result={integrityResult}
-                onContinueAnyway={() => handleDecision("continue_anyway")}
-                onGoToMissing={() => handleDecision("go_to_missing")}
-                onShowMostImportant={() => handleDecision("show_most_important")}
-              />
-            </motion.div>
-          );
-        }
-
+      case "quiz":
         return (
           <motion.div key="quiz" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
             <EditorialShell>
@@ -1735,12 +1597,7 @@ const LearningOrbDialog = ({
                               } else {
                                 setMissedQuestionText(quizQuestion);
                                 await recordIncorrect(block.id);
-                              }
-                              // If this answer is the retry from a "Try again" Second-Chance pick,
-                              // resolve the recovery_pattern: correct → self-corrected, wrong → answer-dependent.
-                              if (pendingSecondChanceRowId) {
-                                await resolveTryAgainOutcome(pendingSecondChanceRowId, correct);
-                                setPendingSecondChanceRowId(null);
+                                setIncorrectAttemptsCount((n) => n + 1);
                               }
                               await persistAssessmentDNA({ correct, isFirstAttempt });
                             }}
@@ -1822,78 +1679,6 @@ const LearningOrbDialog = ({
                           </header>
 
                           <div className="px-5 py-4 space-y-4" style={{ background: "hsl(40 30% 99%)" }}>
-                            {/* Wrong-answer error reflection: gate the answer reveal until the
-                             *  learner names what happened (or explicitly chooses to see the answer). */}
-                            {!wasCorrect && !errorReflectionDone && !revealAnswerOverride && (
-                              <WrongAnswerErrorPicker
-                                termId={block.id}
-                                moduleId={(block as any).module_id ?? null}
-                                blockNumber={(block as any).block_number ?? null}
-                                questionRef={(missedQuestionText || quizQuestion || "").slice(0, 120)}
-                                termTitle={block.term_title}
-                                definition={block.definition}
-                                metaphor={block.metaphor || (block as any).static_metaphor}
-                                onResolved={({ errorType, revealAnswer }) => {
-                                  // Capture the named error_type and pause for Second Chance.
-                                  // Routing/reveal is now decided by the Second Chance prompt
-                                  // unless the learner explicitly clicked "Show me the answer anyway".
-                                  setErrorReflectionDone(true);
-                                   setLastErrorType(errorType ?? null);
-                                   if (revealAnswer) {
-                                     setSecondChanceDone(true);
-                                     setRevealAnswerOverride(true);
-                                     void microDecisions.trackShowAnswer();
-                                   }
-                                }}
-                              />
-                            )}
-
-                            {/* Second Chance: hide answer until the learner picks how they recover. */}
-                            {!wasCorrect && errorReflectionDone && !secondChanceDone && !revealAnswerOverride && (
-                              <SecondChancePrompt
-                                onChoose={async (opt) => {
-                                  setSecondChanceBehavior(opt.key);
-                                  setSecondChanceDone(true);
-
-                                  // Persist pick (recovery_pattern resolved later for try_again).
-                                  let rowId: string | null = null;
-                                  if (user?.id) {
-                                    const res = await recordSecondChancePick({
-                                      userId: user.id,
-                                      termId: block.id,
-                                      moduleId: (block as any).module_id ?? null,
-                                      blockNumber: (block as any).block_number ?? null,
-                                      questionRef: (missedQuestionText || quizQuestion || "").slice(0, 120),
-                                      errorType: lastErrorType,
-                                      behavior: opt.key,
-                                      recoveryPattern: opt.recoveryPattern,
-                                    });
-                                    rowId = res.id;
-                                  }
-
-                                  if (opt.key === "try_again") {
-                                    // Reset the quiz; outcome resolves recovery_pattern on next answer.
-                                    setPendingSecondChanceRowId(rowId);
-                                    setQuizSelected(null);
-                                    setQuizRevealed(false);
-                                    setQuizFeedbackLocked(false);
-                                    setErrorReflectionDone(false);
-                                    setSecondChanceDone(false);
-                                    setRevealAnswerOverride(false);
-                                  } else if (opt.key === "show_answer") {
-                                    setRevealAnswerOverride(true);
-                                    void microDecisions.trackShowAnswer();
-                                  } else if (opt.jumpTo) {
-                                    jumpToStepKey(opt.jumpTo, "Second-Chance Routing");
-                                  }
-                                }}
-                              />
-                            )}
-
-                            {(wasCorrect || revealAnswerOverride) && (
-                              <>
-
-
                             {/* Body */}
                             <p className="text-[15px] leading-relaxed" style={{ color: "hsl(220 20% 22%)", fontFamily: "var(--font-body, inherit)" }}>
                               {wasCorrect
@@ -2017,8 +1802,6 @@ const LearningOrbDialog = ({
                                 </>
                               )}
                             </div>
-                              </>
-                            )}
                           </div>
                         </motion.aside>
                         {!wasCorrect && (
@@ -2027,8 +1810,89 @@ const LearningOrbDialog = ({
                               termId={block.id}
                               trigger="missed_question"
                               contextRef={`missed_question:${(missedQuestionText || quizQuestion || "").slice(0, 80)}`}
-                              onComplete={(r) => { if (!r.skipped) setExplainItBackDone(true); }}
                             />
+                          </div>
+                        )}
+                        {!wasCorrect && incorrectAttemptsCount >= REPEATED_STRUGGLE_THRESHOLD && !breakdownAcked && !breakdownRouteCard && (
+                          <div className="mt-3">
+                            <BreakdownPointPrompt
+                              incorrectAttempts={incorrectAttemptsCount}
+                              dominantPattern={dominantBreakdownPattern}
+                              onPick={async (point) => {
+                                const route = resolveBreakdownRoute(point);
+                                const routedTo =
+                                  route.kind === "step" ? `step:${route.stepKey}` : route.kind;
+                                if (user?.id) {
+                                  try {
+                                    await recordBreakdownPoint({
+                                      userId: user.id,
+                                      termId: block.id,
+                                      moduleId: (block as any)?.module_id ?? null,
+                                      point,
+                                      incorrectAttempts: incorrectAttemptsCount,
+                                      routedTo,
+                                    });
+                                  } catch (err) {
+                                    console.error("[breakdown-point] record failed", err);
+                                  }
+                                }
+                                setBreakdownAcked(true);
+                                if (route.kind === "step") {
+                                  const idx = adaptedSteps.findIndex((s) => s.key === route.stepKey);
+                                  if (idx >= 0) {
+                                    stopSpeaking();
+                                    setQuizSelected(null);
+                                    setQuizRevealed(false);
+                                    setCurrentStep(idx);
+                                    return;
+                                  }
+                                }
+                                setBreakdownRouteCard(route);
+                              }}
+                              onDismiss={() => setBreakdownAcked(true)}
+                            />
+                          </div>
+                        )}
+                        {breakdownRouteCard && (
+                          <div
+                            className="mt-3 rounded-2xl border p-5 space-y-2"
+                            style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}
+                          >
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: "hsl(265 60% 45%)" }}>
+                              {breakdownRouteCard.kind === "question_strategy" && "Question-Reading Strategy"}
+                              {breakdownRouteCard.kind === "comparison_card" && "Compare the Answer Choices"}
+                              {breakdownRouteCard.kind === "guided_reset" && "Guided Reset"}
+                            </p>
+                            <p className="text-sm leading-relaxed" style={{ color: "hsl(var(--foreground))" }}>
+                              {breakdownRouteCard.kind === "question_strategy" && (
+                                <>Read the question twice before glancing at choices. Underline the verb (define, identify, choose). Then translate the question into your own words — what is it really asking?</>
+                              )}
+                              {breakdownRouteCard.kind === "comparison_card" && (
+                                <>Compare the two choices that feel closest. What single word makes them different? Eliminate the one that doesn't match the question's verb, then re-read the remaining option.</>
+                              )}
+                              {breakdownRouteCard.kind === "guided_reset" && (
+                                <>Take a breath. We'll start fresh from the Definition layer with a simpler breakdown — no pressure, no scoring this round.</>
+                              )}
+                            </p>
+                            <div className="flex gap-2 pt-2">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setBreakdownRouteCard(null);
+                                  if (breakdownRouteCard?.kind === "guided_reset") {
+                                    const idx = adaptedSteps.findIndex((s) => s.key === "definition");
+                                    if (idx >= 0) {
+                                      stopSpeaking();
+                                      setQuizSelected(null);
+                                      setQuizRevealed(false);
+                                      setCurrentStep(idx);
+                                    }
+                                  }
+                                }}
+                              >
+                                {breakdownRouteCard.kind === "guided_reset" ? "Start the reset" : "Got it"}
+                              </Button>
+                            </div>
                           </div>
                         )}
                         </>
@@ -2045,7 +1909,6 @@ const LearningOrbDialog = ({
             </EditorialShell>
           </motion.div>
         );
-      }
 
       case "recall_reconstruction":
         return (
@@ -2149,7 +2012,7 @@ const LearningOrbDialog = ({
       if (!o) stopSpeaking();
       onOpenChange(o);
     }}>
-      <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }} onPointerDownOutside={(e) => { if (!reinforcementResolved) e.preventDefault(); }} onEscapeKeyDown={(e) => { if (!reinforcementResolved) e.preventDefault(); }} onClickCapture={() => microDecisions.trackClick()}>
+      <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }} onPointerDownOutside={(e) => { if (!reinforcementResolved) e.preventDefault(); }} onEscapeKeyDown={(e) => { if (!reinforcementResolved) e.preventDefault(); }}>
         {/* Locked reinforcement loop — gates progression after wrong in-flow quiz */}
         <ReinforcementDialog
           open={reinforcementOpen}
@@ -2199,11 +2062,6 @@ const LearningOrbDialog = ({
               onChosen={(path, routeTo) => {
                 setEntryPath(path);
                 setEntryChosen(true);
-                // Silent micro-decision: track entry-point pick (rolls up
-                // into repeated_visual / metaphor / guided_lesson flags).
-                if (path === "visual") void microDecisions.trackAction("entry_visual_picked");
-                else if (path === "metaphor") void microDecisions.trackAction("entry_metaphor_picked");
-                else if (path === "real_life") void microDecisions.trackAction("entry_guided_lesson_picked");
                 const idx = adaptedSteps.findIndex((s) => s.key === routeTo);
                 if (idx >= 0) setCurrentStep(idx);
               }}
@@ -2249,18 +2107,6 @@ const LearningOrbDialog = ({
               <div className="flex-shrink-0 text-right">
                 <p className="text-xs font-semibold" style={{ color: step.color }}>Step {currentStep + 1} of {adaptedSteps.length}</p>
               </div>
-            </div>
-
-            {/* Learning Mode Toggle (Teach vs Test) */}
-            <div className="mt-2 flex items-center justify-between gap-2">
-              <p className="text-[10px] uppercase tracking-widest" style={{ color: c.subtext }}>
-                {learningMode === "teach" ? "Instruction layers" : "Practice + assessment"}
-              </p>
-              <LearningModeToggle
-                mode={learningMode}
-                onChange={setLearningMode}
-                switchCount={learningModeStats?.mode_switch_count ?? 0}
-              />
             </div>
 
             {/* Progress bar */}

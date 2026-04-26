@@ -104,6 +104,39 @@ export type Database = {
           },
         ]
       }
+      breakdown_point_picks: {
+        Row: {
+          breakdown_point: string
+          created_at: string
+          id: string
+          incorrect_attempts_at_pick: number
+          module_id: string | null
+          routed_to: string
+          term_id: string | null
+          user_id: string
+        }
+        Insert: {
+          breakdown_point: string
+          created_at?: string
+          id?: string
+          incorrect_attempts_at_pick?: number
+          module_id?: string | null
+          routed_to?: string
+          term_id?: string | null
+          user_id: string
+        }
+        Update: {
+          breakdown_point?: string
+          created_at?: string
+          id?: string
+          incorrect_attempts_at_pick?: number
+          module_id?: string | null
+          routed_to?: string
+          term_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_posts: {
         Row: {
           author_name: string
