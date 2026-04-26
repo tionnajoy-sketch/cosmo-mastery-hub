@@ -583,6 +583,41 @@ const LearningOrbDialog = ({
     return () => { cancelled = true; };
   }, [block?.id, user?.id]);
 
+  /* ─── Cognitive Load: signal collection ─── */
+
+  // Click cadence tracking → fast clicking pattern (4+ clicks within 2s).
+  useEffect(() => {
+    if (!open) return;
+    const onClick = () => {
+      const now = Date.now();
+      lastInteractionRef.current = now;
+      const arr = clickTimesRef.current;
+      arr.push(now);
+      while (arr.length && now - arr[0] > 2000) arr.shift();
+      if (arr.length >= 4 && !fastClickingPattern) setFastClickingPattern(true);
+    };
+    const onMove = () => { lastInteractionRef.current = Date.now(); };
+    window.addEventListener("click", onClick);
+    window.addEventListener("keydown", onClick);
+    window.addEventListener("mousemove", onMove);
+    return () => {
+      window.removeEventListener("click", onClick);
+      window.removeEventListener("keydown", onClick);
+      window.removeEventListener("mousemove", onMove);
+    };
+  }, [open, fastClickingPattern]);
+
+  // Long-pause ticker — re-evaluates every 5s while dialog is open.
+  useEffect(() => {
+    if (!open) return;
+    const t = setInterval(() => {
+      const idle = Date.now() - lastInteractionRef.current;
+      setPauseTickMs(idle);
+      if (idle >= 45_000 && !longPausePattern) setLongPausePattern(true);
+    }, 5000);
+    return () => clearInterval(t);
+  }, [open, longPausePattern]);
+
   // AUTO-VOICE: speak on tile open (including step 0)
   useEffect(() => {
     if (!block || !open || autoVoiceRef.current || !voiceEnabled) return;
