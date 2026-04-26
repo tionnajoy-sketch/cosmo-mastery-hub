@@ -44,6 +44,9 @@ import EntryPointGate from "@/components/entry-point/EntryPointGate";
 import type { ThinkingPath } from "@/lib/entry-point";
 import WrongAnswerErrorPicker from "@/components/error-type/WrongAnswerErrorPicker";
 import SecondChancePrompt from "@/components/second-chance/SecondChancePrompt";
+import { useLearningMode } from "@/hooks/useLearningMode";
+import { LearningModeToggle } from "@/components/learning-mode/LearningModeToggle";
+import { filterStepsByMode } from "@/lib/learning-mode";
 import {
   recordSecondChancePick,
   resolveTryAgainOutcome,
