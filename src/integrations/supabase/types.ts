@@ -733,6 +733,51 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_cycle_stages: {
+        Row: {
+          created_at: string
+          cycle_stage: string
+          id: string
+          is_correct: boolean | null
+          module_id: string | null
+          previous_stage: string | null
+          reasons: Json
+          session_id: string
+          step_key: string
+          term_id: string | null
+          user_id: string
+          wrong_attempts: number
+        }
+        Insert: {
+          created_at?: string
+          cycle_stage: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string | null
+          previous_stage?: string | null
+          reasons?: Json
+          session_id?: string
+          step_key?: string
+          term_id?: string | null
+          user_id: string
+          wrong_attempts?: number
+        }
+        Update: {
+          created_at?: string
+          cycle_stage?: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string | null
+          previous_stage?: string | null
+          reasons?: Json
+          session_id?: string
+          step_key?: string
+          term_id?: string | null
+          user_id?: string
+          wrong_attempts?: number
+        }
+        Relationships: []
+      }
       learning_mode_events: {
         Row: {
           created_at: string
