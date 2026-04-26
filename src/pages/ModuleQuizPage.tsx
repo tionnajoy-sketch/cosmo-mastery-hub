@@ -438,8 +438,36 @@ const ModuleQuizPage = () => {
                   </CardContent>
                 </Card>
 
-                <Button className="w-full py-5 text-base" style={{ background: c.nextButton, color: "white" }} onClick={handleNext}>
-                  {isLastQuestion ? "See Results" : "Next Question"}
+                {user && (
+                  <ConfidenceRatingPrompt
+                    isCorrect={isCorrect}
+                    onSubmit={async (rating) => {
+                      const status = await saveConfidenceRating({
+                        userId: user.id,
+                        surface: "module_quiz",
+                        questionRef: currentQuestion.id ?? `${id}-${currentIndex}`,
+                        questionText: currentQuestion.question_text,
+                        moduleId: id ?? null,
+                        blockNumber: Number(block),
+                        isCorrect,
+                        confidence: rating,
+                      });
+                      setConfidenceStatusByQ((m) => ({ ...m, [currentIndex]: status }));
+                    }}
+                  />
+                )}
+
+                <Button
+                  className="w-full py-5 text-base mt-3 disabled:opacity-50"
+                  style={{ background: c.nextButton, color: "white" }}
+                  onClick={handleNext}
+                  disabled={!confidenceComplete}
+                >
+                  {!confidenceComplete
+                    ? "🔒 Rate your confidence to continue"
+                    : isLastQuestion
+                      ? "See Results"
+                      : "Next Question"}
                 </Button>
               </motion.div>
             )}
