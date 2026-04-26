@@ -2026,7 +2026,7 @@ const LearningOrbDialog = ({
       if (!o) stopSpeaking();
       onOpenChange(o);
     }}>
-      <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }} onPointerDownOutside={(e) => { if (!reinforcementResolved) e.preventDefault(); }} onEscapeKeyDown={(e) => { if (!reinforcementResolved) e.preventDefault(); }}>
+      <DialogContent variant="fullscreen" style={{ background: "hsl(var(--background))" }} onPointerDownOutside={(e) => { if (!reinforcementResolved) e.preventDefault(); }} onEscapeKeyDown={(e) => { if (!reinforcementResolved) e.preventDefault(); }} onClickCapture={() => microDecisions.trackClick()}>
         {/* Locked reinforcement loop — gates progression after wrong in-flow quiz */}
         <ReinforcementDialog
           open={reinforcementOpen}
