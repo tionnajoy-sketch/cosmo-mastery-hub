@@ -1018,6 +1018,48 @@ export type Database = {
           },
         ]
       }
+      second_chance_picks: {
+        Row: {
+          block_number: number | null
+          created_at: string
+          error_type: string | null
+          id: string
+          module_id: string | null
+          question_ref: string | null
+          recovery_pattern: string | null
+          retry_correct: boolean | null
+          second_chance_behavior: string
+          term_id: string | null
+          user_id: string
+        }
+        Insert: {
+          block_number?: number | null
+          created_at?: string
+          error_type?: string | null
+          id?: string
+          module_id?: string | null
+          question_ref?: string | null
+          recovery_pattern?: string | null
+          retry_correct?: boolean | null
+          second_chance_behavior: string
+          term_id?: string | null
+          user_id: string
+        }
+        Update: {
+          block_number?: number | null
+          created_at?: string
+          error_type?: string | null
+          id?: string
+          module_id?: string | null
+          question_ref?: string | null
+          recovery_pattern?: string | null
+          retry_correct?: boolean | null
+          second_chance_behavior?: string
+          term_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       sections: {
         Row: {
           color_theme: string
