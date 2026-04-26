@@ -326,8 +326,35 @@ const ModuleQuizBankPage = () => {
                   </CardContent>
                 </Card>
 
-                <Button onClick={handleNext} className="w-full mt-4 py-5" style={{ background: c.nextButton, color: "hsl(0 0% 100%)" }}>
-                  {isLastQuestion ? "See Results" : "Next Question"}
+                {user && (
+                  <ConfidenceRatingPrompt
+                    isCorrect={isCorrect}
+                    onSubmit={async (rating) => {
+                      const status = await saveConfidenceRating({
+                        userId: user.id,
+                        surface: "module_quiz_bank",
+                        questionRef: `${id}-bank-${currentIndex}`,
+                        questionText: currentQuestion.question_text,
+                        moduleId: id ?? null,
+                        isCorrect,
+                        confidence: rating,
+                      });
+                      setConfidenceStatusByQ((m) => ({ ...m, [currentIndex]: status }));
+                    }}
+                  />
+                )}
+
+                <Button
+                  onClick={handleNext}
+                  disabled={!confidenceComplete}
+                  className="w-full mt-4 py-5 disabled:opacity-50"
+                  style={{ background: c.nextButton, color: "hsl(0 0% 100%)" }}
+                >
+                  {!confidenceComplete
+                    ? "🔒 Rate your confidence to continue"
+                    : isLastQuestion
+                      ? "See Results"
+                      : "Next Question"}
                 </Button>
               </motion.div>
             )}
