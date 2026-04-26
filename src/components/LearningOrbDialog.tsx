@@ -710,6 +710,64 @@ const LearningOrbDialog = ({
     });
   }, [cogLoad, open, user?.id, block?.id, currentStep, incorrectAttemptsCount, fastClickingPattern, longPausePattern, skippedSectionsCount]);
 
+  // ---------------- Learning Rhythm System ----------------
+  // Rule-based regulator (no AI) that derives a single rhythm state from
+  // cognitive load + wrong attempts + click/pause patterns + reset events.
+  const cameFromResetRef = useRef(false);
+  const lastRhythmRef = useRef<string>("");
+
+  useEffect(() => {
+    const onCafeClosed = () => { cameFromResetRef.current = true; };
+    window.addEventListener("tj-cafe-closed", onCafeClosed);
+    return () => window.removeEventListener("tj-cafe-closed", onCafeClosed);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const reading: LearningRhythmReading = computeLearningRhythm({
+      cognitiveLoad: cogLoad.level,
+      confidence: null,
+      wrongAttempts: incorrectAttemptsCount,
+      fastClickingPattern,
+      longPausePattern,
+      cameFromReset: cameFromResetRef.current,
+    });
+
+    const sig = `${reading.state}|${reading.reasons.join("|")}`;
+    if (sig === lastRhythmRef.current) return;
+    lastRhythmRef.current = sig;
+
+    emitRhythmChange(reading.state);
+
+    if (user?.id) {
+      persistLearningRhythm({
+        userId: user.id,
+        termId: block?.id ?? null,
+        moduleId: (block as any)?.module_id ?? null,
+        sessionId: sessionIdRef.current,
+        reading,
+        signals: {
+          cognitiveLoad: cogLoad.level,
+          confidence: null,
+          wrongAttempts: incorrectAttemptsCount,
+          fastClickingPattern,
+          longPausePattern,
+          cameFromReset: cameFromResetRef.current,
+        },
+      });
+    }
+
+    if (reading.state === "recovering") cameFromResetRef.current = false;
+  }, [
+    open,
+    user?.id,
+    block?.id,
+    cogLoad.level,
+    incorrectAttemptsCount,
+    fastClickingPattern,
+    longPausePattern,
+  ]);
+
   // Load saved data for builtin
   useEffect(() => {
     if (!block || mode !== "builtin" || !user) return;
