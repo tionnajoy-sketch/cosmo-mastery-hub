@@ -1,0 +1,3 @@
+UPDATE public.terms
+SET information_content = E'**TJ Memory Anchor**\n\nWhen you think of the dermis, think **FOUNDATION**.\n\nThis is where everything that keeps skin alive is happening.\n\nIf the epidermis is what people see, the dermis is what keeps it working.\n\nSo ask yourself:\n\n*"Is this protecting… or supporting?"*\n\nIf it''s supporting structure, nutrients, or function — it''s the dermis.'
+WHERE id = '4b963972-f371-40ce-a755-f14f8d481c24';
