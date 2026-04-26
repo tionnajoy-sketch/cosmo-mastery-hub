@@ -539,6 +539,18 @@ const LearningOrbDialog = ({
       setIncorrectAttemptsCount(0);
       setBreakdownAcked(false);
       setBreakdownRouteCard(null);
+      // Cognitive load reset
+      termOpenedAtRef.current = Date.now();
+      questionOpenedAtRef.current = null;
+      clickTimesRef.current = [];
+      lastInteractionRef.current = Date.now();
+      skippedStepsRef.current = new Set();
+      setSkippedSectionsCount(0);
+      setFastClickingPattern(false);
+      setLongPausePattern(false);
+      setCogLoad({ level: "low", reasons: [] });
+      setCogLoadAcked(false);
+      setPauseTickMs(0);
       // Pre-seed with admin-authored static content so no AI call is needed
       if (block.static_break_it_down) {
         setEtymology({ parts: [], pronunciation: "", summary: block.static_break_it_down });
