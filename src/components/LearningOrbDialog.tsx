@@ -67,6 +67,13 @@ import {
   emitRhythmChange,
   type LearningRhythmReading,
 } from "@/lib/learning-rhythm";
+import {
+  evaluateBreath,
+  persistBreathEvent,
+  type BreathResponseChoice,
+  type BreathSignals,
+} from "@/lib/breath-trigger";
+import BreathPrompt from "@/components/breath-trigger/BreathPrompt";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
