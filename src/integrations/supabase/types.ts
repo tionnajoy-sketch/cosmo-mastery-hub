@@ -1498,6 +1498,51 @@ export type Database = {
         }
         Relationships: []
       }
+      reentry_choices: {
+        Row: {
+          created_at: string
+          id: string
+          module_id: string | null
+          reasons: Json
+          recovery_success: boolean
+          reentry_choice: string
+          resolved_at: string | null
+          routed_to: string
+          session_id: string
+          term_id: string | null
+          trigger_source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          recovery_success?: boolean
+          reentry_choice: string
+          resolved_at?: string | null
+          routed_to?: string
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          recovery_success?: boolean
+          reentry_choice?: string
+          resolved_at?: string | null
+          routed_to?: string
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reflections: {
         Row: {
           id: string
