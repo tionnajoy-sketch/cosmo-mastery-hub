@@ -47,6 +47,12 @@ import SecondChancePrompt from "@/components/second-chance/SecondChancePrompt";
 import { useLearningMode } from "@/hooks/useLearningMode";
 import { LearningModeToggle } from "@/components/learning-mode/LearningModeToggle";
 import { filterStepsByMode } from "@/lib/learning-mode";
+import { LayerIntegrityGate } from "@/components/layer-integrity/LayerIntegrityGate";
+import {
+  computeIntegrity,
+  layerToStepKey,
+  recordIntegrityCheck,
+} from "@/lib/layer-integrity";
 import {
   recordSecondChancePick,
   resolveTryAgainOutcome,
@@ -446,6 +452,10 @@ const LearningOrbDialog = ({
     setCompleted(false);
   }, [learningMode]);
 
+  // Layer Integrity Check (Mastery Check gate)
+  const [integrityAck, setIntegrityAck] = useState(false);
+  const [explainItBackDone, setExplainItBackDone] = useState(false);
+
   // Visual
   const [imageUrl, setImageUrl] = useState("");
   const [imageLoading, setImageLoading] = useState(false);
@@ -525,6 +535,8 @@ const LearningOrbDialog = ({
       setCompleted(false);
       setEntryChosen(false);
       setEntryPath(null);
+      setIntegrityAck(false);
+      setExplainItBackDone(false);
       setImageUrl(block.image_url || "");
       setJournalNote(block.user_notes || "");
       setQuizSelected(null);
@@ -554,6 +566,24 @@ const LearningOrbDialog = ({
       autoVoiceRef.current = false;
     }
   }, [block?.id]);
+
+  // Hydrate explain-it-back completion (used by Layer Integrity Check).
+  useEffect(() => {
+    if (!block?.id || !user?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("explain_it_back_responses")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("term_id", block.id)
+        .eq("skipped", false)
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data) setExplainItBackDone(true);
+    })();
+    return () => { cancelled = true; };
+  }, [block?.id, user?.id]);
 
   // AUTO-VOICE: speak on tile open (including step 0)
   useEffect(() => {
@@ -1049,6 +1079,7 @@ const LearningOrbDialog = ({
                   termId={block.id}
                   trigger="definition"
                   contextRef={`define:${block.term_title}`}
+                  onComplete={(r) => { if (!r.skipped) setExplainItBackDone(true); }}
                 />
               </div>
             </EditorialShell>
@@ -1099,6 +1130,7 @@ const LearningOrbDialog = ({
                   termId={block.id}
                   trigger="guided_lesson"
                   contextRef={`guided_lesson:${block.term_title}`}
+                  onComplete={(r) => { if (!r.skipped) setExplainItBackDone(true); }}
                 />
               </div>
             </EditorialShell>
@@ -1570,7 +1602,75 @@ const LearningOrbDialog = ({
         );
       }
 
-      case "quiz":
+      case "quiz": {
+        // Layer Completion Integrity Check — soft gate before Mastery Check
+        const completedKeys = Array.from(completedSteps)
+          .map((idx) => adaptedSteps[idx]?.key)
+          .filter((k): k is string => !!k);
+        const integrityResult = computeIntegrity({
+          completedStepKeys: completedKeys,
+          explainItBackCompleted: explainItBackDone,
+        });
+        const showIntegrityGate = !integrityAck && !integrityResult.passes;
+
+        if (showIntegrityGate) {
+          const handleDecision = async (
+            decision: "continue_anyway" | "go_to_missing" | "show_most_important"
+          ) => {
+            if (user?.id) {
+              try {
+                await recordIntegrityCheck({
+                  userId: user.id,
+                  termId: block.id,
+                  moduleId: (block as any)?.module_id ?? null,
+                  result: integrityResult,
+                  decision,
+                });
+              } catch (err) {
+                console.error("[integrity] record failed", err);
+              }
+            }
+            if (decision === "continue_anyway") {
+              setIntegrityAck(true);
+              return;
+            }
+            if (decision === "show_most_important" && integrityResult.mostImportantMissing) {
+              const targetKey = layerToStepKey(integrityResult.mostImportantMissing);
+              const idx = adaptedSteps.findIndex((s) => s.key === targetKey);
+              if (idx >= 0) {
+                stopSpeaking();
+                setCurrentStep(idx);
+                return;
+              }
+            }
+            // go_to_missing — jump to first missing layer in the visible flow
+            const firstMissingKey = integrityResult.missing
+              .map((l) => layerToStepKey(l))
+              .find((k) => adaptedSteps.some((s) => s.key === k));
+            if (firstMissingKey) {
+              const idx = adaptedSteps.findIndex((s) => s.key === firstMissingKey);
+              if (idx >= 0) {
+                stopSpeaking();
+                setCurrentStep(idx);
+                return;
+              }
+            }
+            // Fallback: go back one step
+            if (currentStep > 0) setCurrentStep((s) => s - 1);
+          };
+
+          return (
+            <motion.div key="quiz-integrity" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+              <LayerIntegrityGate
+                result={integrityResult}
+                onContinueAnyway={() => handleDecision("continue_anyway")}
+                onGoToMissing={() => handleDecision("go_to_missing")}
+                onShowMostImportant={() => handleDecision("show_most_important")}
+              />
+            </motion.div>
+          );
+        }
+
         return (
           <motion.div key="quiz" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
             <EditorialShell>
@@ -1927,6 +2027,7 @@ const LearningOrbDialog = ({
                               termId={block.id}
                               trigger="missed_question"
                               contextRef={`missed_question:${(missedQuestionText || quizQuestion || "").slice(0, 80)}`}
+                              onComplete={(r) => { if (!r.skipped) setExplainItBackDone(true); }}
                             />
                           </div>
                         )}
@@ -1944,6 +2045,7 @@ const LearningOrbDialog = ({
             </EditorialShell>
           </motion.div>
         );
+      }
 
       case "recall_reconstruction":
         return (
