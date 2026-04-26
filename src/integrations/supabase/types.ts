@@ -481,6 +481,51 @@ export type Database = {
           },
         ]
       }
+      layer_integrity_checks: {
+        Row: {
+          completed_layers: Json
+          completion_pct: number
+          created_at: string
+          decision: string
+          id: string
+          integrity_override: boolean
+          integrity_recovery: boolean
+          missing_layers: Json
+          module_id: string | null
+          most_important_missing: string | null
+          term_id: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_layers?: Json
+          completion_pct?: number
+          created_at?: string
+          decision: string
+          id?: string
+          integrity_override?: boolean
+          integrity_recovery?: boolean
+          missing_layers?: Json
+          module_id?: string | null
+          most_important_missing?: string | null
+          term_id?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_layers?: Json
+          completion_pct?: number
+          created_at?: string
+          decision?: string
+          id?: string
+          integrity_override?: boolean
+          integrity_recovery?: boolean
+          missing_layers?: Json
+          module_id?: string | null
+          most_important_missing?: string | null
+          term_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       learner_behavior_signals: {
         Row: {
           attempt_number: number
