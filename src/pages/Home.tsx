@@ -22,6 +22,7 @@ import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 import { openTJCafe } from "@/hooks/useStudyBreak";
 import { Eye, Mic, PenLine, BookOpen as BookOpenIcon2 } from "lucide-react";
+import BehaviorSummaryPanel from "@/components/behavior-summary/BehaviorSummaryPanel";
 
 const c = pageColors.home;
 
@@ -258,6 +259,9 @@ const Home = () => {
 
       {/* ── Minimal Content ── */}
       <div className="flex-1 px-4 pb-6 max-w-2xl mx-auto w-full space-y-6">
+
+        {/* ── Behavior Summary Panel ── */}
+        <BehaviorSummaryPanel />
 
         {/* ── Your Learning Style ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
