@@ -322,6 +322,42 @@ export type Database = {
         }
         Relationships: []
       }
+      error_type_picks: {
+        Row: {
+          block_number: number | null
+          created_at: string
+          error_type: string
+          id: string
+          module_id: string | null
+          question_ref: string
+          routed_to: string
+          term_id: string | null
+          user_id: string
+        }
+        Insert: {
+          block_number?: number | null
+          created_at?: string
+          error_type: string
+          id?: string
+          module_id?: string | null
+          question_ref?: string
+          routed_to?: string
+          term_id?: string | null
+          user_id: string
+        }
+        Update: {
+          block_number?: number | null
+          created_at?: string
+          error_type?: string
+          id?: string
+          module_id?: string | null
+          question_ref?: string
+          routed_to?: string
+          term_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       explain_it_back_responses: {
         Row: {
           block_number: number | null
@@ -445,6 +481,51 @@ export type Database = {
           },
         ]
       }
+      layer_integrity_checks: {
+        Row: {
+          completed_layers: Json
+          completion_pct: number
+          created_at: string
+          decision: string
+          id: string
+          integrity_override: boolean
+          integrity_recovery: boolean
+          missing_layers: Json
+          module_id: string | null
+          most_important_missing: string | null
+          term_id: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_layers?: Json
+          completion_pct?: number
+          created_at?: string
+          decision: string
+          id?: string
+          integrity_override?: boolean
+          integrity_recovery?: boolean
+          missing_layers?: Json
+          module_id?: string | null
+          most_important_missing?: string | null
+          term_id?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_layers?: Json
+          completion_pct?: number
+          created_at?: string
+          decision?: string
+          id?: string
+          integrity_override?: boolean
+          integrity_recovery?: boolean
+          missing_layers?: Json
+          module_id?: string | null
+          most_important_missing?: string | null
+          term_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       learner_behavior_signals: {
         Row: {
           attempt_number: number
@@ -507,6 +588,165 @@ export type Database = {
           term_id?: string
           thinking_path?: string | null
           time_on_stage_ms?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      learning_mode_events: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          from_mode: string | null
+          id: string
+          module_id: string | null
+          term_id: string | null
+          to_mode: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number
+          from_mode?: string | null
+          id?: string
+          module_id?: string | null
+          term_id?: string | null
+          to_mode: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          from_mode?: string | null
+          id?: string
+          module_id?: string | null
+          term_id?: string | null
+          to_mode?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      learning_mode_stats: {
+        Row: {
+          created_at: string
+          first_mode: string | null
+          id: string
+          last_mode: string | null
+          mode_switch_count: number
+          module_id: string | null
+          preferred_mode: string | null
+          teach_mode_time: number
+          teach_open_count: number
+          term_id: string | null
+          test_mode_time: number
+          test_open_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_mode?: string | null
+          id?: string
+          last_mode?: string | null
+          mode_switch_count?: number
+          module_id?: string | null
+          preferred_mode?: string | null
+          teach_mode_time?: number
+          teach_open_count?: number
+          term_id?: string | null
+          test_mode_time?: number
+          test_open_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_mode?: string | null
+          id?: string
+          last_mode?: string | null
+          mode_switch_count?: number
+          module_id?: string | null
+          preferred_mode?: string | null
+          teach_mode_time?: number
+          teach_open_count?: number
+          term_id?: string | null
+          test_mode_time?: number
+          test_open_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      micro_decision_events: {
+        Row: {
+          action: string
+          block_number: number | null
+          created_at: string
+          id: string
+          metadata: Json
+          module_id: string | null
+          surface: string
+          term_id: string | null
+          time_on_surface_ms: number | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          block_number?: number | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          module_id?: string | null
+          surface?: string
+          term_id?: string | null
+          time_on_surface_ms?: number | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          block_number?: number | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          module_id?: string | null
+          surface?: string
+          term_id?: string | null
+          time_on_surface_ms?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      micro_decision_flags: {
+        Row: {
+          created_at: string
+          flag: string
+          id: string
+          last_triggered_at: string
+          occurrence_count: number
+          term_id: string | null
+          triggered: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          flag: string
+          id?: string
+          last_triggered_at?: string
+          occurrence_count?: number
+          term_id?: string | null
+          triggered?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          flag?: string
+          id?: string
+          last_triggered_at?: string
+          occurrence_count?: number
+          term_id?: string | null
+          triggered?: boolean
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -981,6 +1221,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      second_chance_picks: {
+        Row: {
+          block_number: number | null
+          created_at: string
+          error_type: string | null
+          id: string
+          module_id: string | null
+          question_ref: string | null
+          recovery_pattern: string | null
+          retry_correct: boolean | null
+          second_chance_behavior: string
+          term_id: string | null
+          user_id: string
+        }
+        Insert: {
+          block_number?: number | null
+          created_at?: string
+          error_type?: string | null
+          id?: string
+          module_id?: string | null
+          question_ref?: string | null
+          recovery_pattern?: string | null
+          retry_correct?: boolean | null
+          second_chance_behavior: string
+          term_id?: string | null
+          user_id: string
+        }
+        Update: {
+          block_number?: number | null
+          created_at?: string
+          error_type?: string | null
+          id?: string
+          module_id?: string | null
+          question_ref?: string | null
+          recovery_pattern?: string | null
+          retry_correct?: boolean | null
+          second_chance_behavior?: string
+          term_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       sections: {
         Row: {
