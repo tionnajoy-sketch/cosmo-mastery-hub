@@ -1712,11 +1712,12 @@ const LearningOrbDialog = ({
                                   // Routing/reveal is now decided by the Second Chance prompt
                                   // unless the learner explicitly clicked "Show me the answer anyway".
                                   setErrorReflectionDone(true);
-                                  setLastErrorType(errorType ?? null);
-                                  if (revealAnswer) {
-                                    setSecondChanceDone(true);
-                                    setRevealAnswerOverride(true);
-                                  }
+                                   setLastErrorType(errorType ?? null);
+                                   if (revealAnswer) {
+                                     setSecondChanceDone(true);
+                                     setRevealAnswerOverride(true);
+                                     void microDecisions.trackShowAnswer();
+                                   }
                                 }}
                               />
                             )}
@@ -1755,6 +1756,7 @@ const LearningOrbDialog = ({
                                     setRevealAnswerOverride(false);
                                   } else if (opt.key === "show_answer") {
                                     setRevealAnswerOverride(true);
+                                    void microDecisions.trackShowAnswer();
                                   } else if (opt.jumpTo) {
                                     jumpToStepKey(opt.jumpTo, "Second-Chance Routing");
                                   }
