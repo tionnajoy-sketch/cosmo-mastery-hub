@@ -22,6 +22,7 @@ import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 import { openTJCafe } from "@/hooks/useStudyBreak";
 import { Eye, Mic, PenLine, BookOpen as BookOpenIcon2 } from "lucide-react";
+import BehaviorSummaryPanel from "@/components/behavior-summary/BehaviorSummaryPanel";
 
 const c = pageColors.home;
 
