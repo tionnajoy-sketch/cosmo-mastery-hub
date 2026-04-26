@@ -90,6 +90,14 @@ import {
   type OrbStepKey as PaceOrbStepKey,
   type SlowDownStep,
 } from "@/lib/pace-adjustment";
+import ReentryPrompt from "@/components/reentry/ReentryPrompt";
+import {
+  REENTRY_OPTIONS,
+  logReentryChoice,
+  markReentrySuccess,
+  type ReentryChoice,
+  type ReentryTrigger,
+} from "@/lib/reentry";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
@@ -807,6 +815,33 @@ const LearningOrbDialog = ({
     return () => window.removeEventListener("tj-cafe-closed", onCafeClosed);
   }, []);
 
+  // ---------------- Re-Entry Intelligence triggers ----------------
+  // Fire the prompt when the learner returns from TJ Café OR when Recovery
+  // Mode just exited. We never re-enter into the exact same state.
+  useEffect(() => {
+    if (!open) return;
+    const onCafeClosed = () => {
+      setReentryTrigger("tj_cafe");
+      setReentryOpen(true);
+    };
+    window.addEventListener("tj-cafe-closed", onCafeClosed);
+    return () => window.removeEventListener("tj-cafe-closed", onCafeClosed);
+  }, [open]);
+
+  // Detect Recovery Mode active → inactive transition (a "return").
+  useEffect(() => {
+    if (recovery.active) {
+      recoveryWasActiveRef.current = true;
+      return;
+    }
+    if (recoveryWasActiveRef.current && open) {
+      recoveryWasActiveRef.current = false;
+      setReentryTrigger("recovery_exit");
+      setReentryOpen(true);
+    }
+  }, [recovery.active, open]);
+
+
   const recordCycleTransition = (next: CycleStage, reasons: string[], stepKeyAtEvent: string) => {
     const prev = cycleStageRef.current;
     if (prev === next) return;
@@ -861,6 +896,15 @@ const LearningOrbDialog = ({
   // Follow-up flows after a Breath choice. All decisions persist to pace_adjustments.
   const [differentWayOpen, setDifferentWayOpen] = useState(false);
   const [slowDownOpen, setSlowDownOpen] = useState(false);
+
+  // ---------------- Re-Entry Intelligence ----------------
+  // After TJ Café or Recovery Mode, ask the learner how they want to re-enter
+  // instead of dropping them back into the same exact state. We persist the
+  // choice and flip recovery_success once they answer correctly.
+  const [reentryOpen, setReentryOpen] = useState(false);
+  const [reentryTrigger, setReentryTrigger] = useState<ReentryTrigger>("tj_cafe");
+  const pendingReentryIdRef = useRef<string | null>(null);
+  const recoveryWasActiveRef = useRef<boolean>(false);
 
   // Track rhythm state so the breath evaluator can use it without recomputing.
   useEffect(() => {
@@ -1334,6 +1378,38 @@ const LearningOrbDialog = ({
     stopSpeaking();
     setCurrentStep(idx);
   }, [adaptedSteps, user, block, stopSpeaking]);
+
+  /* ─── Re-Entry choice handler ─── */
+  const handleReentryChoice = useCallback(async (choice: ReentryChoice) => {
+    const opt = REENTRY_OPTIONS.find((o) => o.choice === choice);
+    if (!opt) { setReentryOpen(false); return; }
+    setReentryOpen(false);
+
+    // "Start simpler" — flag the simpler-version pathway used by the AI generator.
+    if (choice === "start_simpler") {
+      try { (window as any).__tjSimplerVersion = true; } catch {}
+    }
+
+    // Route to the chosen layer.
+    jumpToStepKey(opt.routeStep, `Re-entry → ${opt.label}`);
+
+    // Persist the choice and remember the row id so we can flip
+    // recovery_success when the learner answers correctly.
+    if (user?.id) {
+      const id = await logReentryChoice({
+        userId: user.id,
+        termId: block?.id ?? null,
+        moduleId: (block as any)?.module_id ?? null,
+        sessionId: sessionIdRef.current,
+        trigger: reentryTrigger,
+        choice,
+        routedTo: opt.routeStep,
+        reasons: [reentryTrigger],
+      });
+      pendingReentryIdRef.current = id;
+    }
+  }, [jumpToStepKey, user?.id, block, reentryTrigger]);
+
 
   /* ─── Editorial spread shell — wraps every step's content ─── */
   const stepIndex = currentStep;
@@ -2078,6 +2154,12 @@ const LearningOrbDialog = ({
                                     sessionId: sessionIdRef.current,
                                   });
                                 }
+                                // Re-Entry Intelligence — flag recovery_success on the
+                                // most recent re-entry choice once the learner gets it right.
+                                if (pendingReentryIdRef.current) {
+                                  await markReentrySuccess(pendingReentryIdRef.current);
+                                  pendingReentryIdRef.current = null;
+                                }
                               } else {
                                 setMissedQuestionText(quizQuestion);
                                 await recordIncorrect(block.id);
@@ -2712,6 +2794,11 @@ const LearningOrbDialog = ({
                   />
                 </div>
               )}
+              <ReentryPrompt
+                open={reentryOpen}
+                onChoose={handleReentryChoice}
+                onDismiss={() => setReentryOpen(false)}
+              />
               <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
             </div>
           </div>
