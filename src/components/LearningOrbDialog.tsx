@@ -74,6 +74,14 @@ import {
   type BreathSignals,
 } from "@/lib/breath-trigger";
 import BreathPrompt from "@/components/breath-trigger/BreathPrompt";
+import DifferentWayPicker from "@/components/pace-adjustment/DifferentWayPicker";
+import SlowDownGuide from "@/components/pace-adjustment/SlowDownGuide";
+import {
+  logPaceAdjustment,
+  type PaceChoice,
+  type OrbStepKey as PaceOrbStepKey,
+  type SlowDownStep,
+} from "@/lib/pace-adjustment";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
@@ -783,6 +791,11 @@ const LearningOrbDialog = ({
   const breathCooldownRef = useRef<number>(0);
   const breathSignalsRef = useRef<BreathSignals | null>(null);
 
+  // ---------------- Guided Pace Adjustment ----------------
+  // Follow-up flows after a Breath choice. All decisions persist to pace_adjustments.
+  const [differentWayOpen, setDifferentWayOpen] = useState(false);
+  const [slowDownOpen, setSlowDownOpen] = useState(false);
+
   // Track rhythm state so the breath evaluator can use it without recomputing.
   useEffect(() => {
     const reading = computeLearningRhythm({
@@ -827,6 +840,25 @@ const LearningOrbDialog = ({
     skippedSectionsCount,
   ]);
 
+  const logPace = (
+    breathChoice: Exclude<BreathResponseChoice, "dismissed">,
+    paceChoice: PaceChoice,
+    extra?: { routeStep?: number; paceOverride?: boolean },
+  ) => {
+    if (!user?.id) return;
+    logPaceAdjustment({
+      userId: user.id,
+      termId: block?.id ?? null,
+      moduleId: (block as any)?.module_id ?? null,
+      sessionId: sessionIdRef.current,
+      breathChoice,
+      paceChoice,
+      routeStep: extra?.routeStep,
+      paceOverride: extra?.paceOverride,
+      reasons: breathReasons,
+    });
+  };
+
   const handleBreathChoice = (choice: Exclude<BreathResponseChoice, "dismissed">) => {
     const signals = breathSignalsRef.current;
     if (user?.id && signals) {
@@ -842,25 +874,34 @@ const LearningOrbDialog = ({
     }
     setBreathOpen(false);
 
-    // Route the chosen action — reuses the same handlers as Cognitive Load prompt
+    // Guided Pace Adjustment routing
     if (choice === "different_way") {
-      // Switch to the visual layer as the most universal "different way"
-      jumpToStepKey("visual", "Breath → Different way");
+      // Open the picker (Visual / Metaphor / Guided Lesson)
+      setDifferentWayOpen(true);
     } else if (choice === "tj_cafe") {
+      logPace("tj_cafe", "tj_cafe");
       try { openTJCafe(); } catch {}
     } else if (choice === "simpler_version") {
+      logPace("simpler_version", "simpler_version");
+      // Load a lower-difficulty version of the question
       setQuizSelected(null);
       setQuizRevealed(false);
       setAiQuestion(null);
+      try {
+        // Best-effort flag so the AI question generator picks an easier prompt
+        (window as any).__tjSimplerVersion = true;
+      } catch {}
       const idx = adaptedSteps.findIndex((s) => s.key === "quiz");
       if (idx >= 0) setCurrentStep(idx);
     } else if (choice === "slow_down") {
-      // Reset the click/pause flags so we don't immediately re-trigger,
-      // and let the learner stay where they are.
+      // Walk the learner: Breakdown → Guided Lesson → Visual → Metaphor → Practice
       setFastClickingPattern(false);
       setLongPausePattern(false);
+      setSlowDownOpen(true);
+    } else if (choice === "continue") {
+      // Allow progression but track pace_override = true
+      logPace("continue", "continue_override", { paceOverride: true });
     }
-    // "continue" = just dismiss
   };
 
   const handleBreathDismiss = () => {
@@ -2558,6 +2599,30 @@ const LearningOrbDialog = ({
         reasons={breathReasons}
         onChoose={handleBreathChoice}
         onDismiss={handleBreathDismiss}
+      />
+      <DifferentWayPicker
+        open={differentWayOpen}
+        onPick={(pace, stepKey) => {
+          setDifferentWayOpen(false);
+          logPace("different_way", pace);
+          jumpToStepKey(stepKey, `Pace → Different way (${stepKey})`);
+        }}
+        onClose={() => setDifferentWayOpen(false)}
+      />
+      <SlowDownGuide
+        open={slowDownOpen}
+        onAdvance={(step: SlowDownStep, index: number) => {
+          logPace("slow_down", step.pace, { routeStep: index + 1 });
+          jumpToStepKey(step.stepKey as PaceOrbStepKey, `Slow down → ${step.label}`);
+        }}
+        onComplete={() => {
+          setSlowDownOpen(false);
+          logPace("slow_down", "slow_down_complete", { routeStep: 5 });
+        }}
+        onExit={(atIndex) => {
+          setSlowDownOpen(false);
+          logPace("slow_down", "slow_down_exit", { routeStep: atIndex + 1 });
+        }}
       />
     </Dialog>
   );

@@ -1041,6 +1041,48 @@ export type Database = {
           },
         ]
       }
+      pace_adjustments: {
+        Row: {
+          breath_choice: string
+          created_at: string
+          id: string
+          module_id: string | null
+          pace_choice: string
+          pace_override: boolean
+          reasons: Json
+          route_step: number
+          session_id: string
+          term_id: string | null
+          user_id: string
+        }
+        Insert: {
+          breath_choice: string
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          pace_choice: string
+          pace_override?: boolean
+          reasons?: Json
+          route_step?: number
+          session_id?: string
+          term_id?: string | null
+          user_id: string
+        }
+        Update: {
+          breath_choice?: string
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          pace_choice?: string
+          pace_override?: boolean
+          reasons?: Json
+          route_step?: number
+          session_id?: string
+          term_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       posttest_results: {
         Row: {
           completed_at: string
