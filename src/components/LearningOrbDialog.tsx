@@ -1960,6 +1960,49 @@ const LearningOrbDialog = ({
       }
 
       case "quiz":
+        if (recovery.active) {
+          // Recovery Mode delays quizzes — show a calm gate that points the
+          // learner back to Visual / Metaphor / Guided Lesson.
+          return (
+            <motion.div key="quiz-recovery" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+              <EditorialShell>
+                <p className="editorial-eyebrow mb-2 text-violet-600 dark:text-violet-300">💜 Recovery Mode</p>
+                <p className="text-base leading-relaxed text-foreground/90">
+                  You are not behind. You are in a recovery phase. Let’s rebuild this step by step.
+                </p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Quizzes are paused for now. Try one of these calmer entry points first:
+                </p>
+                <div className="mt-4 grid gap-2">
+                  {RECOVERY_PRIORITY_LAYERS.map((key) => {
+                    const target = adaptedSteps.findIndex((s) => s.key === key);
+                    if (target < 0) return null;
+                    const labelMap: Record<string, string> = {
+                      visual: "Visual Layer",
+                      metaphor: "Metaphor Layer",
+                      information: "Guided Lesson",
+                    };
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setCurrentStep(target)}
+                        className="w-full text-left px-4 py-3 rounded-xl border border-border/50 bg-card/40 hover:bg-card/70 transition-colors text-sm text-foreground"
+                      >
+                        {labelMap[key] ?? key}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => recovery.exit("manual", { termId: block?.id ?? null, moduleId: (block as any)?.module_id ?? null, sessionId: sessionIdRef.current })}
+                  className="mt-5 text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                >
+                  I’m okay — show me the question
+                </button>
+              </EditorialShell>
+            </motion.div>
+          );
+        }
         return (
           <motion.div key="quiz" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
             <EditorialShell>
