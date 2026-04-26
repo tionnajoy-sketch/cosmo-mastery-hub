@@ -1788,6 +1788,56 @@ export type Database = {
         }
         Relationships: []
       }
+      term_guided_lessons: {
+        Row: {
+          created_at: string
+          guided_understanding: string
+          history_context: string
+          id: string
+          model_used: string | null
+          opening_breakdown: string
+          origin_root_meaning: string
+          term_id: string
+          updated_at: string
+          voice_version: string
+          why_it_matters: string
+        }
+        Insert: {
+          created_at?: string
+          guided_understanding?: string
+          history_context?: string
+          id?: string
+          model_used?: string | null
+          opening_breakdown?: string
+          origin_root_meaning?: string
+          term_id: string
+          updated_at?: string
+          voice_version?: string
+          why_it_matters?: string
+        }
+        Update: {
+          created_at?: string
+          guided_understanding?: string
+          history_context?: string
+          id?: string
+          model_used?: string | null
+          opening_breakdown?: string
+          origin_root_meaning?: string
+          term_id?: string
+          updated_at?: string
+          voice_version?: string
+          why_it_matters?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "term_guided_lessons_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       term_images: {
         Row: {
           created_at: string

@@ -15,6 +15,7 @@ import { LayerBlockSection, getBlockOpenState } from "@/components/LayerBlockSec
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
 import { shuffleOptions } from "@/lib/shuffleOptions";
+import GuidedLessonPanel from "@/components/guided-lesson/GuidedLessonPanel";
 
 const c = pageColors.study;
 
@@ -376,7 +377,17 @@ const StepContent = (props: StepContentProps) => {
       );
 
     case "breakdown":
-      return <EtymologyBreakdown block={block} stepColor={stepColor} />;
+      return (
+        <div className="space-y-4">
+          <EtymologyBreakdown block={block} stepColor={stepColor} />
+          <GuidedLessonPanel
+            termId={block.id}
+            termTitle={block.term_title}
+            definition={block.definition}
+            stepColor={stepColor}
+          />
+        </div>
+      );
 
     case "recognize":
       return (
