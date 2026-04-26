@@ -23,6 +23,7 @@ import {
   type StageOutcome,
   type ThinkingPath,
 } from "@/lib/behavior-intake";
+import { recordThinkingSelection } from "@/lib/thinking-pattern";
 
 interface UseBehaviorIntakeArgs {
   termId: string | null | undefined;
