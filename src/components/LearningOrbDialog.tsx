@@ -775,7 +775,110 @@ const LearningOrbDialog = ({
     longPausePattern,
   ]);
 
-  // Load saved data for builtin
+  // ---------------- Breath Trigger System ----------------
+  // Pauses or redirects learning when behavior signals indicate strain.
+  const [breathOpen, setBreathOpen] = useState(false);
+  const [breathReasons, setBreathReasons] = useState<string[]>([]);
+  const lastRhythmStateRef = useRef<LearningRhythmReading["state"] | null>(null);
+  const breathCooldownRef = useRef<number>(0);
+  const breathSignalsRef = useRef<BreathSignals | null>(null);
+
+  // Track rhythm state so the breath evaluator can use it without recomputing.
+  useEffect(() => {
+    const reading = computeLearningRhythm({
+      cognitiveLoad: cogLoad.level,
+      confidence: null,
+      wrongAttempts: incorrectAttemptsCount,
+      fastClickingPattern,
+      longPausePattern,
+      cameFromReset: false,
+    });
+    lastRhythmStateRef.current = reading.state;
+  }, [cogLoad.level, incorrectAttemptsCount, fastClickingPattern, longPausePattern]);
+
+  useEffect(() => {
+    if (!open || breathOpen) return;
+    // Cooldown: don't re-prompt within 90s of last breath moment
+    if (Date.now() - breathCooldownRef.current < 90_000) return;
+
+    const signals: BreathSignals = {
+      rhythmState: lastRhythmStateRef.current,
+      cognitiveLoad: cogLoad.level,
+      wrongAttempts: incorrectAttemptsCount,
+      confidenceRating: null,
+      fastClickingPattern,
+      longPausePattern,
+      repeatedSkipping: skippedSectionsCount >= 3,
+    };
+    const decision = evaluateBreath(signals);
+    if (decision.shouldTrigger) {
+      breathSignalsRef.current = signals;
+      setBreathReasons(decision.reasons);
+      setBreathOpen(true);
+      breathCooldownRef.current = Date.now();
+    }
+  }, [
+    open,
+    breathOpen,
+    cogLoad.level,
+    incorrectAttemptsCount,
+    fastClickingPattern,
+    longPausePattern,
+    skippedSectionsCount,
+  ]);
+
+  const handleBreathChoice = (choice: Exclude<BreathResponseChoice, "dismissed">) => {
+    const signals = breathSignalsRef.current;
+    if (user?.id && signals) {
+      persistBreathEvent({
+        userId: user.id,
+        termId: block?.id ?? null,
+        moduleId: (block as any)?.module_id ?? null,
+        sessionId: sessionIdRef.current,
+        choice,
+        reasons: breathReasons,
+        signals,
+      });
+    }
+    setBreathOpen(false);
+
+    // Route the chosen action — reuses the same handlers as Cognitive Load prompt
+    if (choice === "different_way") {
+      // Switch to the visual layer as the most universal "different way"
+      jumpToStepKey("visual", "Breath → Different way");
+    } else if (choice === "tj_cafe") {
+      try { openTJCafe(); } catch {}
+    } else if (choice === "simpler_version") {
+      setQuizSelected(null);
+      setQuizRevealed(false);
+      setAiQuestion(null);
+      const idx = adaptedSteps.findIndex((s) => s.key === "quiz");
+      if (idx >= 0) setCurrentStep(idx);
+    } else if (choice === "slow_down") {
+      // Reset the click/pause flags so we don't immediately re-trigger,
+      // and let the learner stay where they are.
+      setFastClickingPattern(false);
+      setLongPausePattern(false);
+    }
+    // "continue" = just dismiss
+  };
+
+  const handleBreathDismiss = () => {
+    const signals = breathSignalsRef.current;
+    if (user?.id && signals) {
+      persistBreathEvent({
+        userId: user.id,
+        termId: block?.id ?? null,
+        moduleId: (block as any)?.module_id ?? null,
+        sessionId: sessionIdRef.current,
+        choice: "dismissed",
+        reasons: breathReasons,
+        signals,
+      });
+    }
+    setBreathOpen(false);
+  };
+
   useEffect(() => {
     if (!block || mode !== "builtin" || !user) return;
     supabase.from("journal_notes").select("note").eq("user_id", user.id).eq("term_id", block.id).single().then(({ data }) => {
