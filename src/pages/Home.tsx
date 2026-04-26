@@ -264,6 +264,9 @@ const Home = () => {
         {/* ── Behavior Summary Panel ── */}
         <BehaviorSummaryPanel />
 
+        {/* ── Thinking Pattern Profile ── */}
+        <ThinkingPatternCard />
+
         {/* ── Your Learning Style ── */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
           <Card className="border-0 shadow-md bg-card overflow-hidden">
