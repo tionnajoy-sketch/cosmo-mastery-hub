@@ -457,6 +457,23 @@ const LearningOrbDialog = ({
     ];
   }, [dna, availableSteps]);
 
+  // Recovery Mode: prioritize Visual / Metaphor / Guided Lesson (information).
+  // Visual stays in slot 0, then any of metaphor + information present become
+  // slots 1–2 (in that order), preserving everything else after.
+  const effectiveSteps = useMemo(() => {
+    if (!recovery.active) return adaptedSteps;
+    const priority = RECOVERY_PRIORITY_LAYERS;
+    const head: typeof adaptedSteps = [];
+    const seen = new Set<string>();
+    for (const key of priority) {
+      const s = adaptedSteps.find((x) => x.key === key);
+      if (s) { head.push(s); seen.add(key); }
+    }
+    const tail = adaptedSteps.filter((s) => !seen.has(s.key));
+    return [...head, ...tail];
+  }, [recovery.active, adaptedSteps]);
+
+
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [completed, setCompleted] = useState(false);
