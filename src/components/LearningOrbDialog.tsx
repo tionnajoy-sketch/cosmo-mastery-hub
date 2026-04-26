@@ -1011,6 +1011,13 @@ const LearningOrbDialog = ({
                   )}
                 </div>
               )}
+              <div className="mt-4">
+                <ExplainItBackLayer
+                  termId={block.id}
+                  trigger="guided_lesson"
+                  contextRef={`guided_lesson:${block.term_title}`}
+                />
+              </div>
             </EditorialShell>
           </motion.div>
         );
