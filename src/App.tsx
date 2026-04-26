@@ -129,8 +129,10 @@ const App = () => (
         <AuthProvider>
           <CoinProvider>
             <BackgroundUploadProvider>
-              <AppContent />
-              <BackgroundUploadBanner />
+              <SessionBalanceProvider>
+                <AppContent />
+                <BackgroundUploadBanner />
+              </SessionBalanceProvider>
             </BackgroundUploadProvider>
           </CoinProvider>
         </AuthProvider>
