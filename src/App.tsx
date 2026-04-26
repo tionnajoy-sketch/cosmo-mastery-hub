@@ -112,7 +112,8 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />
-      <TJCafe open={showCafe} onDismiss={dismissCafe} requiredMode={!isManual} />
+      <TJCafe open={showCafe} onDismiss={() => { dismissCafe(); try { window.dispatchEvent(new CustomEvent("tj-cafe-closed")); } catch {} }} requiredMode={!isManual} />
+      <SessionBalancePrompt />
       <GlobalMenuFab />
       <DNAProgressBubble />
     </>
