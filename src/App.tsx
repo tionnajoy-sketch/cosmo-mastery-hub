@@ -7,6 +7,8 @@ import ScrollToTop from "@/components/ScrollToTop";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CoinProvider } from "@/hooks/useCoins";
 import { BackgroundUploadProvider } from "@/contexts/BackgroundUploadContext";
+import { RecoveryModeProvider } from "@/contexts/RecoveryModeContext";
+import RecoveryModeBanner from "@/components/recovery-mode/RecoveryModeBanner";
 import BackgroundUploadBanner from "@/components/BackgroundUploadBanner";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
@@ -128,8 +130,11 @@ const App = () => (
         <AuthProvider>
           <CoinProvider>
             <BackgroundUploadProvider>
-              <AppContent />
-              <BackgroundUploadBanner />
+              <RecoveryModeProvider>
+                <RecoveryModeBanner />
+                <AppContent />
+                <BackgroundUploadBanner />
+              </RecoveryModeProvider>
             </BackgroundUploadProvider>
           </CoinProvider>
         </AuthProvider>

@@ -68,6 +68,14 @@ import {
   type LearningRhythmReading,
 } from "@/lib/learning-rhythm";
 import {
+  evaluateCycleStage,
+  persistCycleStage,
+  emitCycleChange,
+  type CycleStage,
+} from "@/lib/learning-cycle";
+import { useRecoveryMode } from "@/contexts/RecoveryModeContext";
+import { RECOVERY_PRIORITY_LAYERS } from "@/lib/recovery-mode";
+import {
   evaluateBreath,
   persistBreathEvent,
   type BreathResponseChoice,
@@ -386,6 +394,7 @@ const LearningOrbDialog = ({
   }, [rawBlock]);
 
   const { user, profile } = useAuth();
+  const recovery = useRecoveryMode();
   const { addCoins } = useCoins();
   const { soundsEnabled } = useSoundsEnabled();
   const { dna, rules, context: dnaContext, updateDNA, getEncouragement, getAdaptedCaption } = useDNAAdaptation();
@@ -447,6 +456,7 @@ const LearningOrbDialog = ({
       ...(quiz ? [quiz] : []),
     ];
   }, [dna, availableSteps]);
+
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
@@ -783,6 +793,62 @@ const LearningOrbDialog = ({
     longPausePattern,
   ]);
 
+  // ---------------- Learning Cycle Loop ----------------
+  // Non-linear stages: Learn → Try → Struggle → Reset → Re-enter → Mastery.
+  const cycleStageRef = useRef<CycleStage | null>(null);
+  const lastQuizCorrectRef = useRef<boolean | null>(null);
+  const justAnsweredRef = useRef<boolean>(false);
+  const masteryReachedRef = useRef<boolean>(false);
+  const cycleResetEdgeRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const onCafeClosed = () => { cycleResetEdgeRef.current = true; };
+    window.addEventListener("tj-cafe-closed", onCafeClosed);
+    return () => window.removeEventListener("tj-cafe-closed", onCafeClosed);
+  }, []);
+
+  const recordCycleTransition = (next: CycleStage, reasons: string[], stepKeyAtEvent: string) => {
+    const prev = cycleStageRef.current;
+    if (prev === next) return;
+    cycleStageRef.current = next;
+    emitCycleChange(next);
+    if (user?.id) {
+      persistCycleStage({
+        userId: user.id,
+        termId: block?.id ?? null,
+        moduleId: (block as any)?.module_id ?? null,
+        sessionId: sessionIdRef.current,
+        stage: next,
+        previousStage: prev,
+        stepKey: stepKeyAtEvent,
+        wrongAttempts: incorrectAttemptsCount,
+        isCorrect: lastQuizCorrectRef.current,
+        reasons,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const stepKey = adaptedSteps[currentStep]?.key ?? "";
+    const decision = evaluateCycleStage(cycleStageRef.current, {
+      stepKey,
+      wrongAttempts: incorrectAttemptsCount,
+      isCorrect: lastQuizCorrectRef.current,
+      cameFromReset: cycleResetEdgeRef.current,
+      justAnswered: justAnsweredRef.current,
+      masteryReached: masteryReachedRef.current,
+    });
+    if (decision.next) {
+      recordCycleTransition(decision.next, decision.reasons, stepKey);
+      if (decision.next === "reset")    cycleResetEdgeRef.current = false;
+      if (decision.next === "reenter")  justAnsweredRef.current = false;
+      if (decision.next === "mastery")  masteryReachedRef.current = false;
+      if (decision.next === "try")      justAnsweredRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, currentStep, incorrectAttemptsCount, completed]);
+
   // ---------------- Breath Trigger System ----------------
   // Pauses or redirects learning when behavior signals indicate strain.
   const [breathOpen, setBreathOpen] = useState(false);
@@ -1107,6 +1173,7 @@ const LearningOrbDialog = ({
         onComplete?.();
       }
       setCompleted(true);
+      masteryReachedRef.current = true;
     }
   };
 
@@ -1893,6 +1960,49 @@ const LearningOrbDialog = ({
       }
 
       case "quiz":
+        if (recovery.active) {
+          // Recovery Mode delays quizzes — show a calm gate that points the
+          // learner back to Visual / Metaphor / Guided Lesson.
+          return (
+            <motion.div key="quiz-recovery" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+              <EditorialShell>
+                <p className="editorial-eyebrow mb-2 text-violet-600 dark:text-violet-300">💜 Recovery Mode</p>
+                <p className="text-base leading-relaxed text-foreground/90">
+                  You are not behind. You are in a recovery phase. Let’s rebuild this step by step.
+                </p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Quizzes are paused for now. Try one of these calmer entry points first:
+                </p>
+                <div className="mt-4 grid gap-2">
+                  {RECOVERY_PRIORITY_LAYERS.map((key) => {
+                    const target = adaptedSteps.findIndex((s) => s.key === key);
+                    if (target < 0) return null;
+                    const labelMap: Record<string, string> = {
+                      visual: "Visual Layer",
+                      metaphor: "Metaphor Layer",
+                      information: "Guided Lesson",
+                    };
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setCurrentStep(target)}
+                        className="w-full text-left px-4 py-3 rounded-xl border border-border/50 bg-card/40 hover:bg-card/70 transition-colors text-sm text-foreground"
+                      >
+                        {labelMap[key] ?? key}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => recovery.exit("manual", { termId: block?.id ?? null, moduleId: (block as any)?.module_id ?? null, sessionId: sessionIdRef.current })}
+                  className="mt-5 text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                >
+                  I’m okay — show me the question
+                </button>
+              </EditorialShell>
+            </motion.div>
+          );
+        }
         return (
           <motion.div key="quiz" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
             <EditorialShell>
@@ -1950,10 +2060,24 @@ const LearningOrbDialog = ({
                               const correct = isCorrect;
                               const isFirstAttempt = !quizAttempted;
                               setQuizAttempted(true);
+                              // Learning Cycle Loop signals
+                              lastQuizCorrectRef.current = correct;
+                              justAnsweredRef.current = true;
                               updateDNA({ quizCorrect: correct, layerCompleted: "quiz" });
                               if (correct) {
                                 addCoins(10, "correct");
                                 await recordCorrect(block.id, false);
+                                if (isFirstAttempt && incorrectAttemptsCount === 0) {
+                                  masteryReachedRef.current = true;
+                                }
+                                // Recovery Mode exits when learner answers correctly.
+                                if (recovery.active) {
+                                  recovery.exit("correct_answer", {
+                                    termId: block?.id ?? null,
+                                    moduleId: (block as any)?.module_id ?? null,
+                                    sessionId: sessionIdRef.current,
+                                  });
+                                }
                               } else {
                                 setMissedQuestionText(quizQuestion);
                                 await recordIncorrect(block.id);

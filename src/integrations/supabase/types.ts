@@ -733,6 +733,51 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_cycle_stages: {
+        Row: {
+          created_at: string
+          cycle_stage: string
+          id: string
+          is_correct: boolean | null
+          module_id: string | null
+          previous_stage: string | null
+          reasons: Json
+          session_id: string
+          step_key: string
+          term_id: string | null
+          user_id: string
+          wrong_attempts: number
+        }
+        Insert: {
+          created_at?: string
+          cycle_stage: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string | null
+          previous_stage?: string | null
+          reasons?: Json
+          session_id?: string
+          step_key?: string
+          term_id?: string | null
+          user_id: string
+          wrong_attempts?: number
+        }
+        Update: {
+          created_at?: string
+          cycle_stage?: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string | null
+          previous_stage?: string | null
+          reasons?: Json
+          session_id?: string
+          step_key?: string
+          term_id?: string | null
+          user_id?: string
+          wrong_attempts?: number
+        }
+        Relationships: []
+      }
       learning_mode_events: {
         Row: {
           created_at: string
@@ -1410,6 +1455,45 @@ export type Database = {
           score_pct?: number
           term_id?: string
           triggered_reinforcement?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recovery_mode_events: {
+        Row: {
+          action: string
+          created_at: string
+          exit_reason: string | null
+          id: string
+          module_id: string | null
+          reasons: Json
+          session_id: string
+          term_id: string | null
+          trigger_source: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          exit_reason?: string | null
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          exit_reason?: string | null
+          id?: string
+          module_id?: string | null
+          reasons?: Json
+          session_id?: string
+          term_id?: string | null
+          trigger_source?: string | null
           user_id?: string
         }
         Relationships: []
