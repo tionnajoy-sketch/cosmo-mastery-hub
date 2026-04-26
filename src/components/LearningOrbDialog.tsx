@@ -440,6 +440,12 @@ const LearningOrbDialog = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showNeuro, setShowNeuro] = useState(false);
 
+  // Reset step pointer when learning mode changes the visible step list.
+  useEffect(() => {
+    setCurrentStep(0);
+    setCompleted(false);
+  }, [learningMode]);
+
   // Visual
   const [imageUrl, setImageUrl] = useState("");
   const [imageLoading, setImageLoading] = useState(false);
