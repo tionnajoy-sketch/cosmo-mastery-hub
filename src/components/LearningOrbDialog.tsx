@@ -528,7 +528,26 @@ const LearningOrbDialog = ({
     }
   }, [block?.id]);
 
-  // AUTO-VOICE: speak on tile open (including step 0)
+  // Hydrate incorrect-attempt count + cross-term breakdown pattern.
+  useEffect(() => {
+    if (!block?.id || !user?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data: struggle } = await (supabase as any)
+        .from("term_struggle")
+        .select("incorrect_attempts")
+        .eq("user_id", user.id)
+        .eq("term_id", block.id)
+        .maybeSingle();
+      if (!cancelled && struggle) {
+        setIncorrectAttemptsCount(struggle.incorrect_attempts ?? 0);
+      }
+      const pattern = await loadBreakdownPattern(user.id);
+      if (!cancelled) setDominantBreakdownPattern(pattern.dominant);
+    })();
+    return () => { cancelled = true; };
+  }, [block?.id, user?.id]);
+
   useEffect(() => {
     if (!block || !open || autoVoiceRef.current || !voiceEnabled) return;
     stopGlobalNarration(); // stop any page-level narration
