@@ -1117,11 +1117,13 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          duration: string
           duration_minutes: number
           id: string
           lesson_type: string
           module_id: string
           objective: string
+          resources: Json
           sort_order: number
           term_id: string | null
           title: string
@@ -1130,11 +1132,13 @@ export type Database = {
         Insert: {
           content?: string
           created_at?: string
+          duration?: string
           duration_minutes?: number
           id?: string
           lesson_type?: string
           module_id: string
           objective?: string
+          resources?: Json
           sort_order?: number
           term_id?: string | null
           title: string
@@ -1143,11 +1147,13 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          duration?: string
           duration_minutes?: number
           id?: string
           lesson_type?: string
           module_id?: string
           objective?: string
+          resources?: Json
           sort_order?: number
           term_id?: string | null
           title?: string
