@@ -54,6 +54,12 @@ import VoiceCacheDashboard from "./pages/VoiceCacheDashboard";
 import StruggleTermsPage from "./pages/StruggleTermsPage";
 import AdminContentPage from "./pages/AdminContentPage";
 import AdminLearnerBehaviorPage from "./pages/AdminLearnerBehaviorPage";
+import LmsDashboardPage from "./pages/lms/LmsDashboardPage";
+import LmsCourseLibraryPage from "./pages/lms/LmsCourseLibraryPage";
+import LmsCourseDetailPage from "./pages/lms/LmsCourseDetailPage";
+import LmsLessonPlayerPage from "./pages/lms/LmsLessonPlayerPage";
+import LmsInstructorDashboardPage from "./pages/lms/LmsInstructorDashboardPage";
+import LmsCurriculumBuilderPage from "./pages/lms/LmsCurriculumBuilderPage";
 import NotFound from "./pages/NotFound";
 import GlobalMenuFab from "@/components/GlobalMenuFab";
 import DNAProgressBubble from "@/components/DNAProgressBubble";
@@ -111,6 +117,12 @@ const AppContent = () => {
         <Route path="/my-notes" element={<ProtectedRoute><StruggleTermsPage /></ProtectedRoute>} />
         <Route path="/admin/content" element={<ProtectedRoute><AdminContentPage /></ProtectedRoute>} />
         <Route path="/admin/learner-behavior" element={<ProtectedRoute><AdminLearnerBehaviorPage /></ProtectedRoute>} />
+        <Route path="/lms" element={<ProtectedRoute><LmsDashboardPage /></ProtectedRoute>} />
+        <Route path="/lms/courses" element={<ProtectedRoute><LmsCourseLibraryPage /></ProtectedRoute>} />
+        <Route path="/lms/courses/:id" element={<ProtectedRoute><LmsCourseDetailPage /></ProtectedRoute>} />
+        <Route path="/lms/lesson/:id" element={<ProtectedRoute><LmsLessonPlayerPage /></ProtectedRoute>} />
+        <Route path="/lms/instructor" element={<ProtectedRoute><LmsInstructorDashboardPage /></ProtectedRoute>} />
+        <Route path="/lms/builder" element={<ProtectedRoute><LmsCurriculumBuilderPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />
