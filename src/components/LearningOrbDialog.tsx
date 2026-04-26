@@ -665,6 +665,11 @@ const LearningOrbDialog = ({
     surface: step?.key ?? "",
   });
 
+  // Mark question render time so micro-decisions can detect a fast Show-Answer click.
+  useEffect(() => {
+    if (step?.key === "quiz") microDecisions.markQuestionShown();
+  }, [step?.key, block?.id, microDecisions]);
+
   // DNA-adapted encouragement message
   const encouragementMsg = rules.toneModifier === "supportive" ? getEncouragement() : null;
 
