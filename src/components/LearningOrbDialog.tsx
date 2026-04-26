@@ -513,6 +513,9 @@ const LearningOrbDialog = ({
       setEtymology(null);
       setExpandedInfo("");
       setMentorCheckInAnswers({});
+      setIncorrectAttemptsCount(0);
+      setBreakdownAcked(false);
+      setBreakdownRouteCard(null);
       // Pre-seed with admin-authored static content so no AI call is needed
       if (block.static_break_it_down) {
         setEtymology({ parts: [], pronunciation: "", summary: block.static_break_it_down });
