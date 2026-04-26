@@ -51,6 +51,8 @@ const ModuleQuizBankPage = () => {
   const [preQuizMessage] = useState(() => preQuizMessages[Math.floor(Math.random() * preQuizMessages.length)]);
   const [resultsSaved, setResultsSaved] = useState(false);
   const { addCoins } = useCoins();
+  const [confidenceStatusByQ, setConfidenceStatusByQ] = useState<Record<number, UnderstandingStatus>>({});
+  const confidenceComplete = selectedAnswer ? !!confidenceStatusByQ[currentIndex] : true;
 
   useEffect(() => {
     if (!id) return;
