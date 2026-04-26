@@ -1597,6 +1597,7 @@ const LearningOrbDialog = ({
                               } else {
                                 setMissedQuestionText(quizQuestion);
                                 await recordIncorrect(block.id);
+                                setIncorrectAttemptsCount((n) => n + 1);
                               }
                               await persistAssessmentDNA({ correct, isFirstAttempt });
                             }}
