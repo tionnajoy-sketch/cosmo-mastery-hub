@@ -61,6 +61,12 @@ import {
   type CognitiveLoadAction,
   type CognitiveLoadReading,
 } from "@/lib/cognitive-load";
+import {
+  computeLearningRhythm,
+  persistLearningRhythm,
+  emitRhythmChange,
+  type LearningRhythmReading,
+} from "@/lib/learning-rhythm";
 
 // Map Learning Orb step keys → canonical TJ Engine stage IDs.
 const ORB_STEP_TO_TJ_STAGE: Record<string, string> = {
