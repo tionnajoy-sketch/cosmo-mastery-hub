@@ -1813,6 +1813,88 @@ const LearningOrbDialog = ({
                             />
                           </div>
                         )}
+                        {!wasCorrect && incorrectAttemptsCount >= REPEATED_STRUGGLE_THRESHOLD && !breakdownAcked && !breakdownRouteCard && (
+                          <div className="mt-3">
+                            <BreakdownPointPrompt
+                              incorrectAttempts={incorrectAttemptsCount}
+                              dominantPattern={dominantBreakdownPattern}
+                              onPick={async (point) => {
+                                const route = resolveBreakdownRoute(point);
+                                const routedTo =
+                                  route.kind === "step" ? `step:${route.stepKey}` : route.kind;
+                                if (user?.id) {
+                                  try {
+                                    await recordBreakdownPoint({
+                                      userId: user.id,
+                                      termId: block.id,
+                                      moduleId: (block as any)?.module_id ?? null,
+                                      point,
+                                      incorrectAttempts: incorrectAttemptsCount,
+                                      routedTo,
+                                    });
+                                  } catch (err) {
+                                    console.error("[breakdown-point] record failed", err);
+                                  }
+                                }
+                                setBreakdownAcked(true);
+                                if (route.kind === "step") {
+                                  const idx = adaptedSteps.findIndex((s) => s.key === route.stepKey);
+                                  if (idx >= 0) {
+                                    stopSpeaking();
+                                    setQuizSelected(null);
+                                    setQuizRevealed(false);
+                                    setCurrentStep(idx);
+                                    return;
+                                  }
+                                }
+                                setBreakdownRouteCard(route);
+                              }}
+                              onDismiss={() => setBreakdownAcked(true)}
+                            />
+                          </div>
+                        )}
+                        {breakdownRouteCard && (
+                          <div
+                            className="mt-3 rounded-2xl border p-5 space-y-2"
+                            style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}
+                          >
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: "hsl(265 60% 45%)" }}>
+                              {breakdownRouteCard.kind === "question_strategy" && "Question-Reading Strategy"}
+                              {breakdownRouteCard.kind === "comparison_card" && "Compare the Answer Choices"}
+                              {breakdownRouteCard.kind === "guided_reset" && "Guided Reset"}
+                            </p>
+                            <p className="text-sm leading-relaxed" style={{ color: "hsl(var(--foreground))" }}>
+                              {breakdownRouteCard.kind === "question_strategy" && (
+                                <>Read the question twice before glancing at choices. Underline the verb (define, identify, choose). Then translate the question into your own words — what is it really asking?</>
+                              )}
+                              {breakdownRouteCard.kind === "comparison_card" && (
+                                <>Compare the two choices that feel closest. What single word makes them different? Eliminate the one that doesn't match the question's verb, then re-read the remaining option.</>
+                              )}
+                              {breakdownRouteCard.kind === "guided_reset" && (
+                                <>Take a breath. We'll start fresh from the Definition layer with a simpler breakdown — no pressure, no scoring this round.</>
+                              )}
+                            </p>
+                            <div className="flex gap-2 pt-2">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setBreakdownRouteCard(null);
+                                  if (breakdownRouteCard?.kind === "guided_reset") {
+                                    const idx = adaptedSteps.findIndex((s) => s.key === "definition");
+                                    if (idx >= 0) {
+                                      stopSpeaking();
+                                      setQuizSelected(null);
+                                      setQuizRevealed(false);
+                                      setCurrentStep(idx);
+                                    }
+                                  }
+                                }}
+                              >
+                                {breakdownRouteCard.kind === "guided_reset" ? "Start the reset" : "Got it"}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                         </>
                       );
                     })()}
