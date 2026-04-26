@@ -548,6 +548,7 @@ const LearningOrbDialog = ({
     return () => { cancelled = true; };
   }, [block?.id, user?.id]);
 
+  // AUTO-VOICE: speak on tile open (including step 0)
   useEffect(() => {
     if (!block || !open || autoVoiceRef.current || !voiceEnabled) return;
     stopGlobalNarration(); // stop any page-level narration
