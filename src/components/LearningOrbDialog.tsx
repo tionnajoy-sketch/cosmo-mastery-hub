@@ -567,7 +567,23 @@ const LearningOrbDialog = ({
     }
   }, [block?.id]);
 
-  // AUTO-VOICE: speak on tile open (including step 0)
+  // Hydrate explain-it-back completion (used by Layer Integrity Check).
+  useEffect(() => {
+    if (!block?.id || !user?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("explain_it_back_responses")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("term_id", block.id)
+        .eq("skipped", false)
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data) setExplainItBackDone(true);
+    })();
+    return () => { cancelled = true; };
+  }, [block?.id, user?.id]);
   useEffect(() => {
     if (!block || !open || autoVoiceRef.current || !voiceEnabled) return;
     stopGlobalNarration(); // stop any page-level narration
