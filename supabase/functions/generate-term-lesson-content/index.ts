@@ -154,9 +154,11 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const termId: string | undefined = body?.term_id;
+    const termIds: string[] | undefined = Array.isArray(body?.term_ids) ? body.term_ids : undefined;
     const batch: boolean = !!body?.batch;
     const limit: number = Math.max(1, Math.min(25, Number(body?.limit ?? 10)));
     const force: boolean = !!body?.force;
+    const dryRun: boolean = !!body?.dry_run;
     const model: string = body?.model || DEFAULT_MODEL;
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -178,6 +180,13 @@ Deno.serve(async (req) => {
       );
       if (hasAll && !force) return json({ skipped: true, reason: "already has content", term_id: termId });
       targets = [{ id: data.id, term: data.term, definition: data.definition }];
+    } else if (termIds && termIds.length > 0) {
+      const { data, error } = await supabase
+        .from("terms")
+        .select("id, term, definition")
+        .in("id", termIds);
+      if (error) throw error;
+      targets = (data ?? []) as never;
     } else if (batch) {
       let q = supabase.from("terms").select("id, term, definition").order("term").limit(limit);
       if (!force) {
@@ -199,10 +208,23 @@ Deno.serve(async (req) => {
       if (error) throw error;
       targets = (data ?? []) as never;
     } else {
-      return json({ error: "Provide term_id or batch:true" }, 400);
+      return json({ error: "Provide term_id, term_ids, or batch:true" }, 400);
     }
 
-    const results: Array<{ term_id: string; term: string; status: "ok" | "error"; error?: string }> = [];
+    const results: Array<{
+      term_id: string;
+      term: string;
+      status: "ok" | "error";
+      error?: string;
+      preview?: {
+        break_it_down_content: string;
+        information_content: string;
+        apply_content: string;
+        assess_question: string;
+        assess_answer: string;
+        assess_explanation: string;
+      };
+    }> = [];
 
     for (const t of targets) {
       try {
@@ -307,6 +329,23 @@ Deno.serve(async (req) => {
         ].join("\n");
 
         const assessAnswer = `${parsed.correct_choice}) ${correctText.trim()}`;
+
+        if (dryRun) {
+          results.push({
+            term_id: t.id,
+            term: t.term,
+            status: "ok",
+            preview: {
+              break_it_down_content: breakDown,
+              information_content: information,
+              apply_content: apply,
+              assess_question: assessQ,
+              assess_answer: assessAnswer,
+              assess_explanation: parsed.assess_explanation.trim(),
+            },
+          });
+          continue;
+        }
 
         const { error: updErr } = await supabase
           .from("terms")
