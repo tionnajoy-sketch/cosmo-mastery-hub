@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brain, X, CheckCircle2, XCircle } from "lucide-react";
 import { shuffleOptions } from "@/lib/shuffleOptions";
+import ConfidenceRatingPrompt from "./ConfidenceRatingPrompt";
+import { saveConfidenceRating } from "@/lib/confidence/saveConfidenceRating";
+import type { UnderstandingStatus } from "@/lib/confidence/understanding";
 
 interface PopupQuestion {
   id: string;
