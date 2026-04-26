@@ -322,6 +322,54 @@ export type Database = {
         }
         Relationships: []
       }
+      explain_it_back_responses: {
+        Row: {
+          block_number: number | null
+          context_ref: string
+          created_at: string
+          explain_it_back_response: string
+          follow_up_action: string | null
+          id: string
+          learning_behavior_flag: string | null
+          module_id: string | null
+          skipped: boolean
+          term_id: string | null
+          trigger_source: string
+          user_id: string
+          word_count: number
+        }
+        Insert: {
+          block_number?: number | null
+          context_ref?: string
+          created_at?: string
+          explain_it_back_response?: string
+          follow_up_action?: string | null
+          id?: string
+          learning_behavior_flag?: string | null
+          module_id?: string | null
+          skipped?: boolean
+          term_id?: string | null
+          trigger_source?: string
+          user_id: string
+          word_count?: number
+        }
+        Update: {
+          block_number?: number | null
+          context_ref?: string
+          created_at?: string
+          explain_it_back_response?: string
+          follow_up_action?: string | null
+          id?: string
+          learning_behavior_flag?: string | null
+          module_id?: string | null
+          skipped?: boolean
+          term_id?: string | null
+          trigger_source?: string
+          user_id?: string
+          word_count?: number
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           correctness: boolean | null
