@@ -66,11 +66,42 @@ YOU MUST PRODUCE FOUR THINGS:
        GOOD example for "Sebum": "Think of that mid-day shine on a client's forehead before a touch-up — that's sebum showing up. You can almost feel it on a tissue when you blot."
        2–4 short sentences. Lead with the picture, the moment, or the sensation — not with a label.
 
-3) APPLY (TJ Anderson Layer Method — own-words prompt):
-   - apply_intro: ONE short TJ-voice line inviting the student to apply this. ROTATE the opening across terms — never reuse the same intro twice. Pick a vibe that fits the term. Examples (do not copy verbatim, vary them): "Let's break this down together…", "Here's where this clicks…", "Now connect this to your real work…", "Okay — say it back to me in your words.", "This is the part where it sticks.", "Let's bring it into the salon."
-   - apply_q1: a question prompting them to explain what the concept REALLY means in their own words. Vary how you phrase it across terms.
-   - apply_q2: a question prompting them to explain why it matters in real practice with a client. Vary how you phrase it across terms.
-   - apply_q3: a question prompting them to explain how they would teach this to someone else (a friend, a new student, a client). Vary how you phrase it across terms.
+3) APPLY (TJ Anderson Layer Method — practice thinking like a pro):
+   This section is where the learner stops studying and starts THINKING like a working stylist.
+
+   - apply_intro: ONE short TJ-voice line that opens the practice moment.
+       HARD RULES:
+       • DO NOT use patterned/recycled openers. Banned phrases include (but not limited to): "Let's break this down…", "Let's bring this into the salon…", "Here's where this clicks…", "Now connect this to your real work…", "Okay — say it back to me…", "This is the part where it sticks…", "Apply the TJ Anderson Layer Method…", "In your own words…".
+       • Make it feel like a unique coaching moment for THIS specific term — reference the term's real context (the chair, the product, the skin, the hair, the bone, the tool, the client situation).
+       • One line. Confident. Direct. No fluff. No throat-clearing.
+       • Examples of the vibe (DO NOT COPY — each term gets its own line): "Walk me through what you'd actually do here.", "Pretend the client is in the chair right now.", "You just spotted this on a consultation — go.", "A new stylist is shadowing you. Teach as you work."
+
+   - apply_q1, apply_q2, apply_q3: THREE different practice questions.
+       CRITICAL — DIVERSIFY THE THINKING. Each of the three questions MUST use a DIFFERENT thinking task, picked from this menu:
+         • EXPLAIN  — teach it simply (to a client, a new stylist, a friend)
+         • DECIDE   — what would you do in this situation?
+         • IDENTIFY — what are you noticing / what do you see?
+         • CORRECT  — what went wrong and how do you fix it?
+         • COMPARE  — this vs that, when do you use which?
+         • PREDICT  — what's going to happen next if…?
+         • CONNECT  — tie this to another concept / another step in the service
+       Pick the THREE thinking tasks that fit THIS term best. Rotate across terms — do not default to the same three every time.
+
+       For each question:
+       • Frame it like real salon work. The learner is in the chair, on a consultation, mid-service, or coaching another stylist.
+       • Use specific scenarios when possible — "A client says her scalp itches after every shampoo — what are you noticing?" beats "What is this in your own words?"
+       • TJ voice: confident, direct, practical. No "please" or "kindly". No fluff.
+       • One question per item. Don't stack multiple questions inside one.
+
+       For each question, also return its task type label (one of: Explain, Decide, Identify, Correct, Compare, Predict, Connect) so the UI can show it.
+
+       NEVER use the old generic trio:
+         1) "What is this in your own words?"
+         2) "Why is it important?"
+         3) "How would you explain it?"
+       That pattern is BANNED.
+
+       The learner should finish this section thinking: "I'm not just studying — I'm practicing thinking like a professional."
 
 4) ASSESS (One state-board-style question):
    - assess_question: a clear scenario or knowledge-check question. One question only. Prefer scenario-style ("A client comes in with…").
