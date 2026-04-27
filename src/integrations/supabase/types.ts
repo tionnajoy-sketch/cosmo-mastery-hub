@@ -403,6 +403,66 @@ export type Database = {
         }
         Relationships: []
       }
+      dna_action_log: {
+        Row: {
+          accuracy_score: number
+          action: string
+          correct: boolean | null
+          created_at: string
+          delta: Json
+          dna_after: Json
+          dna_before: Json
+          id: string
+          layer: string
+          lesson_label: string
+          module_id: string | null
+          reasons: Json
+          reattempt: boolean
+          reinforcement_triggered: boolean
+          term_id: string | null
+          time_spent_ms: number
+          user_id: string
+        }
+        Insert: {
+          accuracy_score?: number
+          action: string
+          correct?: boolean | null
+          created_at?: string
+          delta?: Json
+          dna_after?: Json
+          dna_before?: Json
+          id?: string
+          layer?: string
+          lesson_label?: string
+          module_id?: string | null
+          reasons?: Json
+          reattempt?: boolean
+          reinforcement_triggered?: boolean
+          term_id?: string | null
+          time_spent_ms?: number
+          user_id: string
+        }
+        Update: {
+          accuracy_score?: number
+          action?: string
+          correct?: boolean | null
+          created_at?: string
+          delta?: Json
+          dna_after?: Json
+          dna_before?: Json
+          id?: string
+          layer?: string
+          lesson_label?: string
+          module_id?: string | null
+          reasons?: Json
+          reattempt?: boolean
+          reinforcement_triggered?: boolean
+          term_id?: string | null
+          time_spent_ms?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       dna_milestones: {
         Row: {
           id: string
@@ -2998,6 +3058,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_dna_debug: { Args: { _user_id: string }; Returns: Json }
       admin_learner_behavior: {
         Args: never
         Returns: {
