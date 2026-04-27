@@ -18,28 +18,44 @@ const corsHeaders = {
 const DEFAULT_MODEL = "gpt-4o-mini";
 
 const SYSTEM_PROMPT = `You are TJ Anderson grading a cosmetology student's reasoning.
-You grade for UNDERSTANDING, not exact wording.
+You grade for UNDERSTANDING, not exact wording. Be precise. Be human.
 
-You will receive:
+You receive:
 - the question (plus its type)
 - the rubric: must_include (semantic concepts), must_not_say, sample_correct_answer, common_misconceptions
 - the student's answer
 
-Decide ONE verdict:
-- "correct"   — the student's reasoning covers the must_include concepts (in their own words is fine) AND avoids the must_not_say errors.
-- "partial"   — the student is on the right track but missed key reasoning OR included a small misconception.
-- "incorrect" — the answer is mostly wrong, off-topic, blank, or hits a must_not_say error squarely.
+GRADING STANDARD — apply strictly:
 
-Then write ONE short TJ-voice feedback line (max 2 sentences):
-- If correct: affirm what they got right, briefly.
-- If partial: name what's missing in plain language.
-- If incorrect: gently redirect — name the misunderstanding, point to the right idea. Never harsh.
+"correct" requires BOTH:
+  1. FUNCTION — the student names what the concept does / how it works (the mechanism or action).
+  2. PURPOSE — the student names why it matters / its role / the outcome it produces.
+  AND the student avoids every must_not_say error.
+  Paraphrasing is fine; missing either function or purpose is NOT correct.
+
+"partial" — the student shows the basic idea but is missing depth:
+  - has function but no purpose (or vice versa), OR
+  - vague gesture at the right concept without explaining the mechanism, OR
+  - mostly right but includes one small misconception.
+
+"incorrect" — any of:
+  - hits a must_not_say error squarely
+  - off-topic, contradicts the concept, or restates the question
+  - VAGUE/SHALLOW: under ~12 meaningful words, no explanation, generic filler ("it helps the body", "it's important", "it does stuff"), or just lists keywords with no reasoning.
+
+FEEDBACK — write ONE TJ-voice line, MAX 2 sentences, conversational coach tone:
+- Sound like a mentor sitting next to them, not a grader.
+- Guide, don't judge. Never say "wrong" or "fail".
+- Do NOT re-teach the full lesson. Point to the one missing piece.
+- correct → affirm the specific thing they nailed.
+- partial → name exactly what's missing ("you got the function — now tell me why it matters").
+- incorrect → gently redirect to the core idea in one nudge.
 
 Also return:
-- matched_concepts: array of the must_include items the student actually demonstrated (semantic match).
-- triggered_misconceptions: array of any must_not_say or common_misconceptions the student exhibited.
+- matched_concepts: must_include items the student actually demonstrated (semantic match).
+- triggered_misconceptions: any must_not_say or common_misconceptions the student exhibited. Include "vague_answer" if the answer was too short/generic to evaluate.
 
-Be strict on REASONING, lenient on grammar/spelling.`;
+Be strict on REASONING DEPTH. Lenient on grammar/spelling.`;
 
 const schema = {
   name: "grade_diversified_answer",
@@ -82,12 +98,26 @@ Deno.serve(async (req) => {
       // Empty answer = incorrect, no AI call needed (deterministic).
       return json({
         verdict: "incorrect",
-        feedback: "Take a real swing at it — even one sentence shows me your thinking.",
+        feedback: "Take a swing — even one sentence shows me how you're thinking.",
         matched_concepts: [],
         triggered_misconceptions: ["blank_answer"],
-        dna_signal: { correct: false, reattempt: false, skippedReflection: true },
+        dna_signal: { correct: false, partial: false, reattempt: false, skippedReflection: true, triggerReinforcement: true },
       });
     }
+
+    // Deterministic vague-answer guard — strict on shallow responses.
+    const wordCount = studentAnswer.split(/\s+/).filter(Boolean).length;
+    const genericPatterns = /^(it|this|that)\s+(helps|works|is\s+important|does\s+stuff|matters)\.?$/i;
+    if (wordCount < 6 || genericPatterns.test(studentAnswer)) {
+      return json({
+        verdict: "incorrect",
+        feedback: "Too quick — give me the function and the why behind it.",
+        matched_concepts: [],
+        triggered_misconceptions: ["vague_answer"],
+        dna_signal: { correct: false, partial: false, reattempt: false, skippedReflection: false, triggerReinforcement: true },
+      });
+    }
+
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { data: term, error: termErr } = await supabase
