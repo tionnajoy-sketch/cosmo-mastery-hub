@@ -27,6 +27,8 @@ import {
   type AdaptiveContext,
   type AdaptiveDeltaResult,
 } from "@/lib/dna/adaptiveRules";
+import { applyDelta } from "@/lib/dna/brainStrengths";
+import { deriveActionType, logDnaAction } from "@/lib/dna/actionLogger";
 
 export interface UseTJEngineResult {
   loading: boolean;
@@ -47,7 +49,7 @@ export interface UseTJEngineResult {
 
 export function useTJEngine(termId: string | null | undefined): UseTJEngineResult {
   const { user } = useAuth();
-  const { applyManualDelta } = useBrainStrengths();
+  const { applyManualDelta, strengths } = useBrainStrengths();
   const [loading, setLoading] = useState(false);
   const [stages, setStages] = useState<TermStageRow[]>([]);
   const [unlocked, setUnlocked] = useState<StageId[]>([]);
