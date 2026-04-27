@@ -2353,6 +2353,7 @@ export type Database = {
           deep_dive_content: Json | null
           define_content: string
           definition: string
+          diversified_questions: Json
           id: string
           information_content: string
           lesson_narrative: Json
@@ -2377,6 +2378,7 @@ export type Database = {
           deep_dive_content?: Json | null
           define_content?: string
           definition?: string
+          diversified_questions?: Json
           id?: string
           information_content?: string
           lesson_narrative?: Json
@@ -2401,6 +2403,7 @@ export type Database = {
           deep_dive_content?: Json | null
           define_content?: string
           definition?: string
+          diversified_questions?: Json
           id?: string
           information_content?: string
           lesson_narrative?: Json
