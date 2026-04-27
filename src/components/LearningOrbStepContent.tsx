@@ -14,7 +14,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import { LayerBlockSection, getBlockOpenState } from "@/components/LayerBlockSection";
 import { useDNAAdaptation } from "@/hooks/useDNAAdaptation";
 import type { UploadedBlock } from "@/components/UploadedTermCard";
-import { shuffleOptions } from "@/lib/shuffleOptions";
+// shuffleOptions removed — term lesson flow no longer renders MCQ.
 import GuidedLessonPanel from "@/components/guided-lesson/GuidedLessonPanel";
 import DeepDiveWithTJ from "@/components/deep-dive/DeepDiveWithTJ";
 
@@ -714,157 +714,173 @@ const StepContent = (props: StepContentProps) => {
       );
 
     case "quiz":
-      return <StateboardQuiz block={block} quizSelected={props.quizSelected} setQuizSelected={props.setQuizSelected} quizRevealed={props.quizRevealed} setQuizRevealed={props.setQuizRevealed} stepColor={stepColor} />;
+      // TJ Anderson Layer Method™ — term lesson flow uses OPEN RESPONSE only.
+      // Multiple choice lives in the Quiz / Comprehension / Final Exam blocks.
+      return <FinalThinkingCheck block={block} props={props} stepColor={stepColor} />;
+
 
     default:
       return null;
   }
 };
 
-// Self-contained State Board quiz with AI fallback
-const StateboardQuiz = ({ block, quizSelected, setQuizSelected, quizRevealed, setQuizRevealed, stepColor }: {
+// TJ Anderson Layer Method™ — Final Thinking Check (open response, no MCQ)
+// Replaces the old StateboardQuiz inside the term lesson flow.
+// Multiple-choice State Board questions remain ONLY in the Quiz block,
+// Comprehension block, and Final Exam block.
+const FinalThinkingCheck = ({ block, props, stepColor }: {
   block: UploadedBlock;
-  quizSelected: string | null;
-  setQuizSelected: (v: string | null) => void;
-  quizRevealed: boolean;
-  setQuizRevealed: (v: boolean) => void;
+  props: StepContentProps;
   stepColor: string;
 }) => {
-  const [aiQuestion, setAiQuestion] = useState<{ question: string; options: string[]; answer: string } | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState("");
+  const [response, setResponse] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [grading, setGrading] = useState(false);
+  const [verdict, setVerdict] = useState<"correct" | "partial" | "incorrect" | null>(null);
+  const [feedback, setFeedback] = useState("");
+  const [error, setError] = useState("");
 
-  // STATIC-FIRST: admin-authored assessment beats both built-in and AI.
-  const hasStaticAssess = !!(block.static_assess_question && block.static_assess_answer);
-  const hasBuiltinQuiz = block.quiz_question && block.quiz_options.length > 0;
+  const prompt = `Before moving forward, explain what ${block.term_title} does, why it matters, and how it connects to real cosmetology practice.`;
 
-  // STATIC-ONLY: lesson assessments never call AI. If no static or
-  // built-in question exists, the UI shows a friendly "coming soon" hint.
-  const generateQuestion = async () => { /* no-op */ };
+  const handleSubmit = async () => {
+    if (!response.trim()) return;
+    setGrading(true);
+    setError("");
+    try {
+      const { data, error: invokeErr } = await supabase.functions.invoke(
+        "evaluate-diversified-answer",
+        {
+          body: {
+            term_id: block.id,
+            question_index: 0,
+            answer: response.trim(),
+          },
+        }
+      );
+      if (invokeErr) throw invokeErr;
+      if (data?.error) {
+        // Soft fallback so the learner isn't blocked when the rubric is missing.
+        setVerdict("partial");
+        setFeedback("Got your thinking. We'll grade this once the rubric is wired up for this term.");
+      } else {
+        setVerdict(data?.verdict ?? "partial");
+        setFeedback(data?.feedback ?? "");
+      }
+      setSubmitted(true);
+    } catch (e) {
+      console.error("FinalThinkingCheck grading failed", e);
+      setError("Couldn't reach the grader. Your answer was saved — keep going.");
+      setSubmitted(true);
+    } finally {
+      setGrading(false);
+    }
+  };
 
-  // Build 4 options for static assess: correct + 3 plausible distractors derived from term/definition.
-  const staticDistractors = (() => {
-    if (!hasStaticAssess) return [];
-    const def = (block.definition || "").trim();
-    const term = block.term_title;
-    return [
-      def ? `A different process unrelated to ${term}.` : `Not related to ${term}.`,
-      `A general term often confused with ${term}.`,
-      `None of the above.`,
-    ];
-  })();
-
-  const question = hasStaticAssess
-    ? block.static_assess_question!
-    : (hasBuiltinQuiz ? block.quiz_question : aiQuestion?.question);
-  const rawOptions = hasStaticAssess
-    ? [block.static_assess_answer!, ...staticDistractors]
-    : (hasBuiltinQuiz ? block.quiz_options.map(String) : (aiQuestion?.options || []));
-  const answer = hasStaticAssess
-    ? block.static_assess_answer!
-    : (hasBuiltinQuiz ? block.quiz_answer : (aiQuestion?.answer || ""));
-
-  // Apply seeded shuffle so the correct answer rotates positions
-  const sh = (question && rawOptions.length >= 4) ? (() => {
-    const A = String(rawOptions[0] || "").replace(/^[A-D]\)\s*/, "");
-    const B = String(rawOptions[1] || "").replace(/^[A-D]\)\s*/, "");
-    const C = String(rawOptions[2] || "").replace(/^[A-D]\)\s*/, "");
-    const D = String(rawOptions[3] || "").replace(/^[A-D]\)\s*/, "");
-    const origCorrect = ["A","B","C","D"].find((L, i) => {
-      const t = String(rawOptions[i] || "").replace(/^[A-D]\)\s*/, "");
-      return String(rawOptions[i]) === answer || t === answer;
-    }) || "A";
-    return shuffleOptions({ A, B, C, D }, origCorrect, `${block.id}-${question.slice(0, 32)}`);
-  })() : null;
+  const verdictBg =
+    verdict === "correct" ? "hsl(145 40% 92%)" :
+    verdict === "partial" ? "hsl(40 80% 94%)" :
+    verdict === "incorrect" ? "hsl(0 60% 94%)" :
+    "hsl(var(--card))";
+  const verdictBorder =
+    verdict === "correct" ? "hsl(145 40% 45%)" :
+    verdict === "partial" ? "hsl(40 80% 50%)" :
+    verdict === "incorrect" ? "hsl(0 60% 50%)" :
+    "hsl(var(--border))";
+  const verdictLabel =
+    verdict === "correct" ? "You've got it" :
+    verdict === "partial" ? "Almost there" :
+    verdict === "incorrect" ? "Let's revisit this" : "";
 
   return (
     <div className="space-y-4">
       <motion.div
         className="p-4 rounded-xl mb-2"
         style={{
-          background: "linear-gradient(135deg, hsl(0 50% 97%), hsl(0 40% 94%))",
-          border: "1.5px solid hsl(0 40% 85%)",
-          boxShadow: "0 2px 8px hsl(0 40% 50% / 0.08)",
+          background: "linear-gradient(135deg, hsl(260 50% 97%), hsl(260 40% 94%))",
+          border: "1.5px solid hsl(260 40% 85%)",
+          boxShadow: "0 2px 8px hsl(260 40% 50% / 0.08)",
         }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(0 75% 45%)" }}>
-          🎓 State Board Cosmetology Practice Question
+        <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "hsl(260 60% 45%)" }}>
+          🧠 Final Thinking Check
         </p>
         <p className="text-xs" style={{ color: c.subtext }}>
-          This question mirrors what you'll see on the actual State Board exam. Use what you just learned about <strong>{block.term_title}</strong>.
+          No multiple choice here. Just your thinking. Show me you understand <strong>{block.term_title}</strong> in your own words.
         </p>
       </motion.div>
 
-      {aiLoading && (
-        <div className="flex items-center gap-3 py-6 justify-center">
-          <Loader2 className="h-5 w-5 animate-spin" style={{ color: stepColor }} />
-          <p className="text-sm" style={{ color: c.subtext }}>Generating State Board question…</p>
-        </div>
-      )}
+      <motion.p
+        className="text-sm font-medium leading-relaxed"
+        style={{ color: c.termHeading }}
+        initial={{ opacity: 0, x: 6 }}
+        animate={{ opacity: 1, x: 0 }}
+      >
+        {prompt}
+      </motion.p>
 
-      {aiError && (
-        <div className="text-center space-y-2 py-4">
-          <p className="text-sm" style={{ color: "hsl(0 60% 50%)" }}>{aiError}</p>
-          <Button size="sm" variant="outline" onClick={generateQuestion}>Try Again</Button>
-        </div>
-      )}
-
-      {sh && (
-        <div className="space-y-3">
-          <motion.p
-            className="text-sm font-medium leading-relaxed"
-            style={{ color: c.termHeading }}
-            initial={{ opacity: 0, x: 6 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
-            {question}
-          </motion.p>
-          <div className="space-y-2">
-            {sh.options.map((opt, i) => {
-              const letter = opt.letter;
-              const isSelected = quizSelected === letter;
-              const isCorrect = letter === sh.correctLetter;
-              let bg = "hsl(var(--card))";
-              let border = "hsl(var(--border))";
-              if (quizRevealed && isSelected && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
-              else if (quizRevealed && isSelected && !isCorrect) { bg = "hsl(0 60% 94%)"; border = "hsl(0 60% 50%)"; }
-              else if (quizRevealed && isCorrect) { bg = "hsl(145 40% 92%)"; border = "hsl(145 40% 45%)"; }
-              return (
-                <motion.button
-                  key={letter}
-                  onClick={() => { if (!quizRevealed) { setQuizSelected(letter); setQuizRevealed(true); } }}
-                  className="w-full text-left p-3 rounded-lg text-sm transition-all"
-                  style={{ background: bg, border: `2px solid ${border}`, color: c.bodyText }}
-                  disabled={quizRevealed}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 + i * 0.05 }}
-                >
-                  <span className="font-semibold mr-2">{letter})</span> {opt.text}
-                  {quizRevealed && isCorrect && <CheckCircle2 className="inline h-4 w-4 ml-2" style={{ color: "hsl(145 40% 45%)" }} />}
-                  {quizRevealed && isSelected && !isCorrect && <XCircle className="inline h-4 w-4 ml-2" style={{ color: "hsl(0 60% 50%)" }} />}
-                </motion.button>
-              );
-            })}
+      <div className="relative">
+        <Textarea
+          placeholder="Explain what it does, why it matters, and how it shows up in the salon…"
+          value={response}
+          onChange={(e) => setResponse(e.target.value)}
+          disabled={submitted || grading}
+          className="min-h-[120px] text-sm resize-none pr-10"
+          style={{ color: c.bodyText }}
+        />
+        {!submitted && (
+          <div className="absolute right-1 bottom-1">
+            <SpeechToTextButton onTranscript={(text) => setResponse(response ? `${response} ${text}` : text)} />
           </div>
-          {quizRevealed && (
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => { setQuizSelected(null); setQuizRevealed(false); }}>
-                Try Again
-              </Button>
+        )}
+      </div>
+
+      {!submitted && (
+        <Button
+          size="sm"
+          onClick={handleSubmit}
+          disabled={grading || !response.trim()}
+          style={{ background: stepColor, color: "white" }}
+        >
+          {grading ? (<><Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />Grading…</>) : "Submit My Thinking"}
+        </Button>
+      )}
+
+      {submitted && (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-3 rounded-lg space-y-1"
+          style={{ background: verdictBg, border: `2px solid ${verdictBorder}` }}
+        >
+          {verdict && (
+            <div className="flex items-center gap-2">
+              {verdict === "correct" && <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(145 40% 45%)" }} />}
+              {verdict === "incorrect" && <XCircle className="h-4 w-4" style={{ color: "hsl(0 60% 50%)" }} />}
+              <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: verdictBorder }}>
+                {verdictLabel}
+              </span>
             </div>
           )}
-        </div>
-      )}
-
-      {!hasBuiltinQuiz && !hasStaticAssess && !aiQuestion && !aiLoading && !aiError && (
-        <div className="text-center py-4">
-          <p className="text-sm italic" style={{ color: c.subtext }}>
-            No assessment question has been added for this term yet.
-          </p>
-        </div>
+          {feedback && (
+            <p className="text-sm leading-relaxed" style={{ color: c.bodyText }}>
+              {feedback}
+            </p>
+          )}
+          {error && (
+            <p className="text-xs" style={{ color: "hsl(0 60% 50%)" }}>{error}</p>
+          )}
+          {(verdict === "partial" || verdict === "incorrect") && (
+            <button
+              onClick={() => { setSubmitted(false); setVerdict(null); setFeedback(""); setError(""); }}
+              className="text-xs underline mt-1"
+              style={{ color: c.subtext }}
+            >
+              Try again
+            </button>
+          )}
+        </motion.div>
       )}
 
       {/* Optional Deep Dive — clean separation, collapsed by default */}
