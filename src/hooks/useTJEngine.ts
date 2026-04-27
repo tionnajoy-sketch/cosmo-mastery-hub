@@ -27,6 +27,8 @@ import {
   type AdaptiveContext,
   type AdaptiveDeltaResult,
 } from "@/lib/dna/adaptiveRules";
+import { applyDelta } from "@/lib/dna/brainStrengths";
+import { deriveActionType, logDnaAction } from "@/lib/dna/actionLogger";
 
 export interface UseTJEngineResult {
   loading: boolean;
@@ -47,7 +49,7 @@ export interface UseTJEngineResult {
 
 export function useTJEngine(termId: string | null | undefined): UseTJEngineResult {
   const { user } = useAuth();
-  const { applyManualDelta } = useBrainStrengths();
+  const { applyManualDelta, strengths } = useBrainStrengths();
   const [loading, setLoading] = useState(false);
   const [stages, setStages] = useState<TermStageRow[]>([]);
   const [unlocked, setUnlocked] = useState<StageId[]>([]);
@@ -131,6 +133,9 @@ export function useTJEngine(termId: string | null | undefined): UseTJEngineResul
         }
       }
 
+      const dnaBefore = strengths;
+      const dnaAfter = applyDelta(dnaBefore, merged as any);
+
       if (Object.keys(merged).length > 0) {
         await applyManualDelta(merged as any);
       }
@@ -145,12 +150,34 @@ export function useTJEngine(termId: string | null | undefined): UseTJEngineResul
         }
       }
 
+      // Action log: one row per submission with the full before/after snapshot.
+      await logDnaAction({
+        userId: user.id,
+        layer: args.stage,
+        action: deriveActionType({
+          correct: adaptiveCtx.correct,
+          reattempt: adaptiveCtx.reattempt,
+          skippedReflection: adaptiveCtx.skippedReflection,
+          timeSpentMs: adaptiveCtx.timeSpentMs,
+        }),
+        dnaBefore,
+        dnaAfter,
+        delta: merged as any,
+        reasons: adaptive.reasons,
+        correct: adaptiveCtx.correct ?? null,
+        reattempt: !!adaptiveCtx.reattempt,
+        timeSpentMs: adaptiveCtx.timeSpentMs ?? 0,
+        reinforcementTriggered: !!evaluation.decision.trigger_reinforcement,
+        accuracyScore: args.accuracyScore ?? 0,
+        termId,
+      });
+
       setLastAdaptive(adaptive);
       setLastEvaluation(evaluation);
       await refresh();
       return evaluation;
     },
-    [user, termId, stages, applyManualDelta, refresh],
+    [user, termId, stages, strengths, applyManualDelta, refresh],
   );
 
   return {
