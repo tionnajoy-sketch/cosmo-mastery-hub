@@ -19,7 +19,7 @@ export type BrainKey =
   | "application"
   | "recall";
 
-export type SignalKey = "engagement" | "retention" | "confidence";
+export type SignalKey = "engagement" | "retention" | "confidence" | "accuracy";
 
 export type StrengthKey = BrainKey | SignalKey;
 
@@ -37,7 +37,7 @@ export const BRAIN_KEYS: BrainKey[] = [
   "recall",
 ];
 
-export const SIGNAL_KEYS: SignalKey[] = ["engagement", "retention", "confidence"];
+export const SIGNAL_KEYS: SignalKey[] = ["engagement", "retention", "confidence", "accuracy"];
 
 export const ALL_STRENGTH_KEYS: StrengthKey[] = [...BRAIN_KEYS, ...SIGNAL_KEYS];
 
@@ -54,6 +54,7 @@ export const DEFAULT_BRAIN_STRENGTHS: BrainStrengths = {
   engagement: 50,
   retention: 50,
   confidence: 50,
+  accuracy: 50,
 };
 
 /** Layer (step key) → which brain muscle it trains */
@@ -84,6 +85,7 @@ export const BRAIN_LABEL: Record<StrengthKey, string> = {
   engagement: "Engagement",
   retention: "Retention",
   confidence: "Confidence",
+  accuracy: "Accuracy",
 };
 
 /* ─── Static per-layer DNA updates (matches the spec) ─── */

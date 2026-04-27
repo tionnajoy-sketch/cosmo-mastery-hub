@@ -22,6 +22,11 @@ import {
   upsertStageEvaluation,
   type TermStageRow,
 } from "@/lib/tj-engine/stageProgress";
+import {
+  computeAdaptiveDelta,
+  type AdaptiveContext,
+  type AdaptiveDeltaResult,
+} from "@/lib/dna/adaptiveRules";
 
 export interface UseTJEngineResult {
   loading: boolean;
@@ -29,10 +34,13 @@ export interface UseTJEngineResult {
   unlocked: StageId[];
   completionByStage: Partial<Record<StageId, CompletionState>>;
   lastEvaluation: EngineEvaluation | null;
+  lastAdaptive: AdaptiveDeltaResult | null;
   submitStage: (args: {
     stage: StageId;
     rawText: string;
     accuracyScore?: number;
+    /** Adaptive context — drives the rule-based DNA deltas (correct, reattempt, time, skip). */
+    adaptive?: AdaptiveContext;
   }) => Promise<EngineEvaluation | null>;
   refresh: () => Promise<void>;
 }
@@ -47,6 +55,7 @@ export function useTJEngine(termId: string | null | undefined): UseTJEngineResul
     Partial<Record<StageId, CompletionState>>
   >({});
   const [lastEvaluation, setLastEvaluation] = useState<EngineEvaluation | null>(null);
+  const [lastAdaptive, setLastAdaptive] = useState<AdaptiveDeltaResult | null>(null);
 
   const refresh = useCallback(async () => {
     if (!user || !termId) return;
@@ -69,10 +78,22 @@ export function useTJEngine(termId: string | null | undefined): UseTJEngineResul
   }, [refresh]);
 
   const submitStage = useCallback(
-    async (args: { stage: StageId; rawText: string; accuracyScore?: number }) => {
+    async (args: {
+      stage: StageId;
+      rawText: string;
+      accuracyScore?: number;
+      adaptive?: AdaptiveContext;
+    }) => {
       if (!user || !termId) return null;
       const prev = stages.find((s) => s.stage_id === args.stage);
       const prevAttemptCount = prev?.attempt_count ?? 0;
+
+      // If adaptive.reattempt isn't set, infer it from prior attempts.
+      const adaptiveCtx: AdaptiveContext = {
+        ...args.adaptive,
+        reattempt:
+          args.adaptive?.reattempt ?? (prevAttemptCount > 0 && args.adaptive?.correct === true),
+      };
 
       const evaluation = await evaluateSubmission({
         stage: args.stage,
@@ -91,12 +112,40 @@ export function useTJEngine(termId: string | null | undefined): UseTJEngineResul
         prevAttemptCount,
       });
 
-      // DNA brain-strength delta from the engine's verdict.
+      // 1. Static engine delta (existing behavior).
       const { brain_key, brain_delta, signal_delta } = evaluation.dna_update;
-      if (brain_delta || Object.keys(signal_delta).length > 0) {
-        await applyManualDelta({ [brain_key]: brain_delta, ...signal_delta });
+      const enginePatch: Record<string, number> = {};
+      if (brain_delta) enginePatch[brain_key] = brain_delta;
+      for (const [k, v] of Object.entries(signal_delta)) {
+        if (typeof v === "number" && v !== 0) {
+          enginePatch[k] = (enginePatch[k] ?? 0) + v;
+        }
       }
 
+      // 2. Adaptive delta (the new rule-based layer).
+      const adaptive = computeAdaptiveDelta(adaptiveCtx);
+      const merged: Record<string, number> = { ...enginePatch };
+      for (const [k, v] of Object.entries(adaptive.patch)) {
+        if (typeof v === "number" && v !== 0) {
+          merged[k] = (merged[k] ?? 0) + v;
+        }
+      }
+
+      if (Object.keys(merged).length > 0) {
+        await applyManualDelta(merged as any);
+      }
+
+      // Surface a reinforcement flag on the returned decision when adaptive
+      // logic says so (so callers can open StrengthenLayerDialog without
+      // waiting for the legacy attempt-count threshold).
+      if (adaptive.triggerReinforcement && !evaluation.decision.trigger_reinforcement) {
+        evaluation.decision.trigger_reinforcement = true;
+        if (!evaluation.decision.reason) {
+          evaluation.decision.reason = "Incorrect answer — reinforcement triggered.";
+        }
+      }
+
+      setLastAdaptive(adaptive);
       setLastEvaluation(evaluation);
       await refresh();
       return evaluation;
@@ -110,6 +159,7 @@ export function useTJEngine(termId: string | null | undefined): UseTJEngineResul
     unlocked,
     completionByStage,
     lastEvaluation,
+    lastAdaptive,
     submitStage,
     refresh,
   };
