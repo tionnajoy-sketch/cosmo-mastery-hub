@@ -98,12 +98,26 @@ Deno.serve(async (req) => {
       // Empty answer = incorrect, no AI call needed (deterministic).
       return json({
         verdict: "incorrect",
-        feedback: "Take a real swing at it — even one sentence shows me your thinking.",
+        feedback: "Take a swing — even one sentence shows me how you're thinking.",
         matched_concepts: [],
         triggered_misconceptions: ["blank_answer"],
-        dna_signal: { correct: false, reattempt: false, skippedReflection: true },
+        dna_signal: { correct: false, partial: false, reattempt: false, skippedReflection: true, triggerReinforcement: true },
       });
     }
+
+    // Deterministic vague-answer guard — strict on shallow responses.
+    const wordCount = studentAnswer.split(/\s+/).filter(Boolean).length;
+    const genericPatterns = /^(it|this|that)\s+(helps|works|is\s+important|does\s+stuff|matters)\.?$/i;
+    if (wordCount < 6 || genericPatterns.test(studentAnswer)) {
+      return json({
+        verdict: "incorrect",
+        feedback: "Too quick — give me the function and the why behind it.",
+        matched_concepts: [],
+        triggered_misconceptions: ["vague_answer"],
+        dna_signal: { correct: false, partial: false, reattempt: false, skippedReflection: false, triggerReinforcement: true },
+      });
+    }
+
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { data: term, error: termErr } = await supabase
