@@ -714,7 +714,10 @@ const StepContent = (props: StepContentProps) => {
       );
 
     case "quiz":
-      return <StateboardQuiz block={block} quizSelected={props.quizSelected} setQuizSelected={props.setQuizSelected} quizRevealed={props.quizRevealed} setQuizRevealed={props.setQuizRevealed} stepColor={stepColor} />;
+      // TJ Anderson Layer Method™ — term lesson flow uses OPEN RESPONSE only.
+      // Multiple choice lives in the Quiz / Comprehension / Final Exam blocks.
+      return <FinalThinkingCheck block={block} props={props} stepColor={stepColor} />;
+
 
     default:
       return null;
