@@ -116,3 +116,31 @@ export function canAdvanceTermEnd(input: TermEndGateInput): boolean {
   if (input.reinforcementCompleted) return true;
   return false;
 }
+
+/* ─── Action taxonomy ─── */
+
+export type DnaActionType =
+  | "correct"
+  | "incorrect"
+  | "retry"
+  | "skip"
+  | "complete"
+  | "reinforcement"
+  | "time";
+
+/** Decide the canonical action type from the adaptive context. Pure. */
+export function deriveActionType(args: {
+  correct?: boolean;
+  reattempt?: boolean;
+  skippedReflection?: boolean;
+  timeSpentMs?: number;
+  highTimeThresholdMs?: number;
+}): DnaActionType {
+  if (args.correct === true && args.reattempt) return "retry";
+  if (args.correct === true) return "correct";
+  if (args.correct === false) return "incorrect";
+  if (args.skippedReflection) return "skip";
+  const threshold = args.highTimeThresholdMs ?? HIGH_TIME_MS_THRESHOLD;
+  if (typeof args.timeSpentMs === "number" && args.timeSpentMs >= threshold) return "time";
+  return "complete";
+}

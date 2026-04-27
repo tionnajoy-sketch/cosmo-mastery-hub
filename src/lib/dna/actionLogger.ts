@@ -14,14 +14,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { getLessonContext } from "./currentLessonContext";
 import type { BrainStrengths, StrengthKey } from "./brainStrengths";
 
-export type DnaActionType =
-  | "correct"
-  | "incorrect"
-  | "retry"
-  | "skip"
-  | "complete"
-  | "reinforcement"
-  | "time";
+import { deriveActionType, type DnaActionType } from "./adaptiveRules";
+
+export { deriveActionType };
+export type { DnaActionType };
 
 export interface LogActionInput {
   userId: string;
