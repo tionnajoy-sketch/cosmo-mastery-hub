@@ -15,7 +15,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const DEFAULT_MODEL = "google/gemini-3-flash-preview";
+const DEFAULT_MODEL = "gpt-4o-mini";
 
 const SYSTEM_PROMPT = `You are TJ Anderson grading a cosmetology student's reasoning.
 You grade for UNDERSTANDING, not exact wording.
@@ -61,10 +61,10 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY)
       throw new Error("Supabase service env missing");
 
@@ -136,10 +136,10 @@ Deno.serve(async (req) => {
       "Grade now. Return JSON only.",
     ].filter(Boolean).join("\n");
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -149,17 +149,20 @@ Deno.serve(async (req) => {
           { role: "user", content: userPrompt },
         ],
         response_format: { type: "json_schema", json_schema: schema },
+        temperature: 0.2,
       }),
     });
 
     if (!aiResp.ok) {
       const errTxt = await aiResp.text();
-      console.error("AI gateway error", aiResp.status, errTxt);
+      console.error("OpenAI error", aiResp.status, errTxt);
       if (aiResp.status === 429)
         return json({ error: "rate_limited" }, 429);
-      if (aiResp.status === 402)
-        return json({ error: "credits_exhausted" }, 402);
-      return json({ error: `ai_${aiResp.status}`, detail: errTxt.slice(0, 400) }, 502);
+      if (aiResp.status === 402 || aiResp.status === 403)
+        return json({ error: "billing_or_access" }, aiResp.status);
+      if (aiResp.status === 401)
+        return json({ error: "invalid_api_key" }, 401);
+      return json({ error: `openai_${aiResp.status}`, detail: errTxt.slice(0, 400) }, 502);
     }
 
     const aiJson = await aiResp.json();
