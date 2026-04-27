@@ -68,22 +68,3 @@ export async function logDnaAction(input: LogActionInput): Promise<void> {
   }
 }
 
-/**
- * Decide the canonical action type from the adaptive context.
- * Used so callers don't have to think about the taxonomy.
- */
-export function deriveActionType(args: {
-  correct?: boolean;
-  reattempt?: boolean;
-  skippedReflection?: boolean;
-  timeSpentMs?: number;
-  highTimeThresholdMs?: number;
-}): DnaActionType {
-  if (args.correct === true && args.reattempt) return "retry";
-  if (args.correct === true) return "correct";
-  if (args.correct === false) return "incorrect";
-  if (args.skippedReflection) return "skip";
-  const threshold = args.highTimeThresholdMs ?? 60_000;
-  if (typeof args.timeSpentMs === "number" && args.timeSpentMs >= threshold) return "time";
-  return "complete";
-}
