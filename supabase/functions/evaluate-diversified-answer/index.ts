@@ -158,9 +158,11 @@ Deno.serve(async (req) => {
       console.error("OpenAI error", aiResp.status, errTxt);
       if (aiResp.status === 429)
         return json({ error: "rate_limited" }, 429);
-      if (aiResp.status === 402)
-        return json({ error: "credits_exhausted" }, 402);
-      return json({ error: `ai_${aiResp.status}`, detail: errTxt.slice(0, 400) }, 502);
+      if (aiResp.status === 402 || aiResp.status === 403)
+        return json({ error: "billing_or_access" }, aiResp.status);
+      if (aiResp.status === 401)
+        return json({ error: "invalid_api_key" }, 401);
+      return json({ error: `openai_${aiResp.status}`, detail: errTxt.slice(0, 400) }, 502);
     }
 
     const aiJson = await aiResp.json();
