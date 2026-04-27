@@ -18,6 +18,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeAdaptiveDelta,
   canAdvanceTermEnd,
+  deriveActionType,
   HIGH_TIME_MS_THRESHOLD,
   TERM_END_ACCURACY_THRESHOLD,
 } from "@/lib/dna/adaptiveRules";
@@ -27,7 +28,6 @@ import {
   ensureBrainStrengths,
   SIGNAL_KEYS,
 } from "@/lib/dna/brainStrengths";
-import { deriveActionType } from "@/lib/dna/actionLogger";
 import reinforcementRules from "@/lib/tj-engine/rules/reinforcement.json";
 
 describe("adaptiveRules — correct answer rules", () => {
