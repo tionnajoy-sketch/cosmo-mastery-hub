@@ -118,6 +118,7 @@ const AppContent = () => {
         <Route path="/my-notes" element={<ProtectedRoute><StruggleTermsPage /></ProtectedRoute>} />
         <Route path="/admin/content" element={<ProtectedRoute><AdminContentPage /></ProtectedRoute>} />
         <Route path="/admin/learner-behavior" element={<ProtectedRoute><AdminLearnerBehaviorPage /></ProtectedRoute>} />
+        <Route path="/admin/dna-debug" element={<ProtectedRoute><AdminDnaDebugPage /></ProtectedRoute>} />
         <Route path="/lms" element={<ProtectedRoute><LmsDashboardPage /></ProtectedRoute>} />
         <Route path="/lms/courses" element={<ProtectedRoute><LmsCourseLibraryPage /></ProtectedRoute>} />
         <Route path="/lms/courses/:id" element={<ProtectedRoute><LmsCourseDetailPage /></ProtectedRoute>} />
