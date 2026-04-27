@@ -1,3 +1,4 @@
+// @vitest-environment node
 /* Adaptive DNA Rule Validation Tests
  *
  * Verifies the deterministic behavior of the rule engine before any
