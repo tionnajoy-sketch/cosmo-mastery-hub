@@ -414,3 +414,65 @@
   letter-spacing: -0.01em;
   color: hsl(var(--lms-ink));
 }
+
+/* ============================================================
+   INTELLIGENCE ENGINE — dark "Source Engine" command center
+   Apply class="ie-scope" on the Intelligence layout root.
+   ============================================================ */
+.ie-scope {
+  --ie-bg: 230 20% 7%;
+  --ie-bg-soft: 230 18% 10%;
+  --ie-card: 230 18% 12%;
+  --ie-card-strong: 230 20% 14%;
+  --ie-border: 230 15% 20%;
+  --ie-fg: 40 25% 94%;
+  --ie-muted: 230 10% 60%;
+  --ie-accent: 38 80% 62%;
+  --ie-accent-soft: 38 60% 50%;
+  --ie-track: 230 15% 18%;
+
+  background:
+    radial-gradient(80% 50% at 50% 0%, hsl(var(--ie-accent) / 0.08), transparent 60%),
+    radial-gradient(60% 40% at 100% 100%, hsl(265 60% 50% / 0.06), transparent 60%),
+    hsl(var(--ie-bg));
+  color: hsl(var(--ie-fg));
+}
+.ie-scope .ie-card {
+  background: linear-gradient(180deg, hsl(var(--ie-card)), hsl(var(--ie-bg-soft)));
+  border: 1px solid hsl(var(--ie-border));
+  border-radius: 16px;
+  box-shadow: 0 1px 0 hsl(0 0% 100% / 0.03) inset, 0 8px 24px -12px hsl(0 0% 0% / 0.6);
+  backdrop-filter: blur(8px);
+}
+.ie-scope .ie-card-accent {
+  background:
+    linear-gradient(180deg, hsl(var(--ie-card-strong)), hsl(var(--ie-bg-soft))),
+    linear-gradient(135deg, hsl(var(--ie-accent) / 0.15), transparent);
+  border: 1px solid hsl(var(--ie-accent) / 0.35);
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px hsl(var(--ie-accent) / 0.08) inset,
+    0 8px 32px -10px hsl(var(--ie-accent) / 0.18);
+}
+.ie-scope .ie-glow {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(40% 60% at 90% 0%, hsl(var(--ie-accent) / 0.18), transparent 60%),
+    radial-gradient(30% 50% at 0% 100%, hsl(265 60% 60% / 0.12), transparent 60%);
+}
+.ie-scope .ie-eyebrow {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--ie-muted));
+}
+.ie-scope .ie-stat-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: hsl(var(--ie-fg));
+  letter-spacing: -0.01em;
+}

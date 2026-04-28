@@ -46,6 +46,7 @@ import CosmoConnectionGridPage from "./pages/CosmoConnectionGridPage";
 import AskTJFullScreen from "./components/AskTJFullScreen";
 import GameGridPage from "./pages/GameGridPage";
 import LearningDNAPage from "./pages/LearningDNAPage";
+import IntelligencePage from "./pages/IntelligencePage";
 import PracticeLabPage from "./pages/PracticeLabPage";
 import CommunityBoardPage from "./pages/CommunityBoardPage";
 import TJCafe from "./components/TJCafe";
@@ -113,6 +114,7 @@ const AppContent = () => {
         <Route path="/comprehensive-exam" element={<ProtectedRoute><ComprehensiveFinalExamPage /></ProtectedRoute>} />
         <Route path="/cosmo-grid" element={<ProtectedRoute><CosmoConnectionGridPage /></ProtectedRoute>} />
         <Route path="/learning-dna" element={<ProtectedRoute><LearningDNAPage /></ProtectedRoute>} />
+        <Route path="/intelligence" element={<ProtectedRoute><IntelligencePage /></ProtectedRoute>} />
         <Route path="/game-grid" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
         <Route path="/voice-cache" element={<ProtectedRoute><VoiceCacheDashboard /></ProtectedRoute>} />
         <Route path="/my-notes" element={<ProtectedRoute><StruggleTermsPage /></ProtectedRoute>} />
