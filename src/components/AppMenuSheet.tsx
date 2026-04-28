@@ -9,7 +9,7 @@ import {
   BookOpen, Menu, LogOut, BarChart3, Upload,
   GraduationCap, MessageCircle, Library, Grid3X3,
   Coffee, NotebookPen, Brain, Trophy, Users,
-  Volume2, VolumeX,
+  Volume2, VolumeX, Sparkles,
 } from "lucide-react";
 import { isVoiceGloballyPaused, setVoiceGloballyPaused } from "@/hooks/useAutoNarrate";
 
@@ -31,6 +31,7 @@ const AppMenuSheet = () => {
 
   const core: MenuItem[] = [
     { label: "Dashboard",        icon: BookOpen,       onClick: go("/"),                  color: "265 60% 50%" },
+    { label: "Intelligence",     icon: Sparkles,       onClick: go("/intelligence"),      color: "38 80% 55%", highlight: true },
     { label: "Learn & Practice", icon: Grid3X3,        onClick: go("/learn"),             color: "215 70% 50%" },
     { label: "Progress",         icon: BarChart3,      onClick: go("/progress"),          color: "42 70% 50%" },
     { label: "Final Exam",       icon: GraduationCap,  onClick: go("/comprehensive-exam"),color: "320 55% 48%" },
