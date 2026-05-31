@@ -128,6 +128,7 @@ const AppContent = () => {
         <Route path="/lms/lesson/:id" element={<ProtectedRoute><LmsLessonPlayerPage /></ProtectedRoute>} />
         <Route path="/lms/instructor" element={<ProtectedRoute><LmsInstructorDashboardPage /></ProtectedRoute>} />
         <Route path="/lms/builder" element={<ProtectedRoute><LmsCurriculumBuilderPage /></ProtectedRoute>} />
+        <Route path="/lesson/:slug" element={<ProtectedRoute><TJLessonPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />
