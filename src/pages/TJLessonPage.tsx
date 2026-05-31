@@ -142,7 +142,7 @@ export default function TJLessonPage() {
             <div
               key={l.label}
               className="h-1 flex-1 rounded-full transition-all"
-              style={{ backgroundColor: i <= step ? l.color : "hsl(var(--muted))" }}
+              style={{ backgroundColor: i <= step ? (lesson.accent_color || l.color) : "hsl(var(--muted))" }}
             />
           ))}
         </div>
