@@ -41,20 +41,25 @@ interface LayerDef {
 }
 
 const LAYERS: LayerDef[] = [
-  { key: "purpose",       label: "Purpose",            icon: Target,    color: "hsl(38 92% 58%)" },
-  { key: "definition",    label: "Definition",         icon: BookOpen,  color: "hsl(220 70% 60%)" },
-  { key: "word_origin",   label: "Word Origin",        icon: Sparkles,  color: "hsl(280 60% 60%)" },
-  { key: "knowledge_web", label: "Knowledge Web",      icon: Layers,    color: "hsl(180 55% 50%)" },
-  { key: "visualize",     label: "Visualize",          icon: Eye,       color: "hsl(200 80% 55%)" },
-  { key: "apply",         label: "Apply",              icon: Hand,      color: "hsl(150 55% 48%)" },
-  { key: "breakdown",     label: "Break It Down",      icon: Layers,    color: "hsl(25 85% 58%)" },
-  { key: "recognize",     label: "Recognize",          icon: Search,    color: "hsl(340 70% 60%)" },
-  { key: "metaphor",      label: "Metaphor",           icon: Lightbulb, color: "hsl(50 90% 58%)" },
-  { key: "information",   label: "Information",        icon: Info,      color: "hsl(210 60% 50%)" },
-  { key: "awareness",     label: "Awareness",          icon: Heart,     color: "hsl(0 65% 60%)" },
-  { key: "reflect",       label: "Reflect",            icon: PenLine,   color: "hsl(265 65% 60%)" },
-  { key: "assess_card",   label: "Show What You Know", icon: Wand2,     color: "hsl(160 70% 45%)" },
+  { key: "purpose",        label: "Purpose",            icon: Target,    color: "hsl(38 92% 58%)" },
+  { key: "why_it_matters", label: "Why It Matters",     icon: Flame,     color: "hsl(345 75% 62%)" },
+  { key: "definition",     label: "Definition",         icon: BookOpen,  color: "hsl(220 70% 60%)" },
+  { key: "word_origin",    label: "Word Origin",        icon: Sparkles,  color: "hsl(280 60% 60%)" },
+  { key: "knowledge_web",  label: "Knowledge Web",      icon: Layers,    color: "hsl(180 55% 50%)" },
+  { key: "visualize",      label: "Visualize",          icon: Eye,       color: "hsl(200 80% 55%)" },
+  { key: "apply",          label: "Apply",              icon: Hand,      color: "hsl(150 55% 48%)" },
+  { key: "breakdown",      label: "Break It Down",      icon: Layers,    color: "hsl(25 85% 58%)" },
+  { key: "recognize",      label: "Recognize",          icon: Search,    color: "hsl(340 70% 60%)" },
+  { key: "metaphor",       label: "Metaphor",           icon: Lightbulb, color: "hsl(50 90% 58%)" },
+  { key: "information",    label: "Information",        icon: Info,      color: "hsl(210 60% 50%)" },
+  { key: "awareness",      label: "Awareness",          icon: Heart,     color: "hsl(0 65% 60%)" },
+  { key: "reflect",        label: "Reflect",            icon: PenLine,   color: "hsl(265 65% 60%)" },
+  { key: "assess_card",    label: "Show What You Know", icon: Wand2,     color: "hsl(160 70% 45%)" },
 ];
+
+function slugify(s: string) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
 
 export default function TJLessonPage() {
   const { slug } = useParams<{ slug: string }>();
