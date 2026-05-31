@@ -1,73 +1,108 @@
-## Goal
-Make the Skin Structure & Growth cluster the gold-standard reference for the TJ Anderson Layer Method™ v2.0 — fully authored, visually connected, and wired into the app. This template will be reused for Proverbs, leadership, neuroscience, business, and EI clusters later.
 
-## 1. Schema additions
-Add two columns to `tj_lessons`:
-- `why_it_matters TEXT` — new layer slotted between Purpose and Definition.
-- `accent_color TEXT` — per-lesson signature hue (powers cluster map nodes and lesson glow).
+# Refining Learn & Practice vs TJ Anderson Layer Method™ v2
 
-Backfill the existing Melanin row with `why_it_matters` and `accent_color`.
+Two distinct environments, each with a clear purpose, active learning every 1–2 screens, and tighter visual polish.
 
-## 2. Static content — 10 lessons (Skin Structure & Growth)
-Insert/update one row per term, each containing the full canonical sequence:
+## 1. Positioning & entry points
 
-`Main Term → Purpose → Why It Matters → Definition → Word Origin → Related Concepts → Visualize → Apply → Breakdown → Recognize → Metaphor → Information → Awareness → Reflect → Assess (open response) → TJ Insight™`
+- **Learn & Practice** → rapid mastery / state-board prep.
+- **TJ Anderson Layer Method™ v2** → deep learning, reflection, transformation.
+- Update Home tiles + `AppMenuSheet` so each path has a one-line promise:
+  - Learn & Practice: "Drill, recall, and pass the exam."
+  - Layer Method™ v2: "Think it. Connect it. Transform it."
+- Route map:
+  - `/practice` → new **Rapid Mastery Hub** (replaces current Practice Lab landing for this purpose; existing routes preserved).
+  - `/cluster/skin-structure-and-growth` and `/lesson/:slug` continue to host v2.
 
-Terms (cluster: "Skin Structure & Growth", with signature colors):
-1. Cells — amber
-2. Tissue — rose
-3. Epidermis — sky blue
-4. Dermis — coral
-5. Subcutaneous — indigo
-6. Melanocyte — violet
-7. Melanin — bronze *(already seeded, just backfill new fields)*
-8. Keratin — gold
-9. Collagen — teal
-10. Elastin — emerald
+## 2. Learn & Practice — Rapid Mastery environment
 
-Each `related_concepts` array uses real slugs from the cluster so the Knowledge Web links resolve.
+New surface: `src/pages/RapidMasteryPage.tsx` at `/practice`. Pulls existing terms from `terms` table; reuses existing activity components.
 
-## 3. Lesson page — add the new "Why It Matters" layer
-Update `src/pages/TJLessonPage.tsx`:
-- Insert `Why It Matters` between Purpose and Definition.
-- Use the lesson's `accent_color` (fallback to per-layer color) for the card glow, progress bar fill, and CTA button so each lesson has its own signature feel.
-- Knowledge Web pills become clickable — navigate to `/lesson/{slug-of-related}`.
+Modes, one per tab, all built around **active recall every screen**:
 
-## 4. New cluster landing page — `/cluster/skin-structure-and-growth`
-File: `src/pages/TJClusterPage.tsx`. Renders:
-- Hero with cluster name, short intent, and persistent copyright.
-- **Knowledge Web visualization**: SVG canvas with one node per lesson (positioned in a radial layout, colored by `accent_color`), edges drawn from each lesson's `related_concepts` back to its targets. Hover highlights connected nodes; click opens that lesson.
-- Below the web: a clean card grid of all 10 lessons (title, one-line purpose, accent color band, "Begin lesson" link).
+1. **Flashcards** — front/back flip, "Got it / Review" buttons (writes to existing confidence/review tables via `saveConfidenceRating`).
+2. **Matching** — term ↔ definition pair game (reuse logic from `src/components/activities/PictureMatch.tsx` styling).
+3. **Multiple Choice** — 4-option state-board format (reuse `quiz_question_*` fields already on `terms`).
+4. **Timed Challenge** — 60-second rapid MCQ; coin reward via `useCoins`.
+5. **State Board Prep** — 25-question mixed bank pulling from any completed section.
+6. **Progress Checkpoint** — auto-shown every lesson completion: 3-question mini-check + confidence slider; stores result so the Readiness Meter updates.
 
-Route added in `src/App.tsx`: `/cluster/:slug → TJClusterPage`.
+Each screen ends with one action (answer, rate confidence, or flag for review). No passive reading screens.
 
-## 5. Wire entry points
-- Add a "TJ Layer Method™ v2.0" tile/section to `src/pages/Home.tsx` pointing to `/cluster/skin-structure-and-growth`.
-- Add a top-level "Layer Method™ Lessons" link in `src/components/AppMenuSheet.tsx`.
-- Leave the existing `/learn` flow untouched.
+## 3. TJ Anderson Layer Method™ v2 — Deep Learning environment
 
-## 6. Design system
-- Cream / off-white card surfaces, generous whitespace.
-- Each layer keeps its semantic color (Purpose=amber, Definition=blue, Word Origin=violet, Visualize=sky, Apply=green, Breakdown=orange, Recognize=pink, Metaphor=gold, Information=slate-blue, Awareness=red, Reflect=purple, Assess=mint, Why It Matters=rose).
-- Lesson signature `accent_color` overlays via soft glow and CTA tint so two lessons never feel identical.
-- All colors expressed as `hsl(...)` constants; semantic tokens used for surfaces.
+Upgrade `src/pages/TJLessonPage.tsx` so every 1–2 layers has an active beat:
 
-## Files touched
-- Migration: add `why_it_matters`, `accent_color` to `tj_lessons`
-- Data: insert/update 10 lessons in `tj_lessons`
-- `src/pages/TJLessonPage.tsx` — add Why It Matters layer, accent color, clickable Knowledge Web pills
-- `src/pages/TJClusterPage.tsx` — new cluster landing + SVG Knowledge Web
-- `src/App.tsx` — register `/cluster/:slug`
-- `src/pages/Home.tsx` — v2.0 entry tile
-- `src/components/AppMenuSheet.tsx` — menu link
+- **Visualize** → "What do you notice?" 1-tap prompt.
+- **Apply** → scenario tap-choice.
+- **Breakdown** → drag-or-tap word-part match.
+- **Recognize** → existing spatial click.
+- **Metaphor** → "Make it yours" short input.
+- **Awareness** → 3-option self-check.
+- **Reflect** → journal entry → **contextual TJ response** (see §5).
+- **Assess** → open response (existing).
+- **TJ Insight™** → reveal-on-tap card (already present, restyle).
 
-## Not in this pass
-- Replacing the existing `/learn` term flow
-- Other clusters (Proverbs, leadership, etc.) — this cluster becomes the template they will copy
-- Reflection Journal aggregation page (already planned separately)
+All v2 active beats write to existing behavior-intake / DNA tables — no new schema.
 
-## How to verify
-1. `/cluster/skin-structure-and-growth` renders the 10-node Knowledge Web; hover/click works.
-2. Open any node → full lesson card flow includes the new Why It Matters card with the lesson's accent color.
-3. Knowledge Web pill inside a lesson jumps to the related lesson.
-4. Home dashboard and menu both expose the new v2.0 entry.
+## 4. Knowledge Web™ → Learning Pathways
+
+Rework the SVG in `src/pages/TJClusterPage.tsx` and the in-lesson pill row in `TJLessonPage.tsx`:
+
+- Render nodes in a **progression chain** (left → right) with curved edges for "leads to" relationships, plus thin dotted edges for "related to".
+- Color edges by relationship type; size nodes by mastery (read from `term_learning_status`).
+- Add a legend: ● mastered, ◐ in progress, ○ not started; → prerequisite chain, ⋯ related concept.
+- Clicking a node still routes to `/lesson/:slug`; hovering shows a tooltip with the term's one-line purpose.
+
+Data: store prerequisite chain in a new `tj_lessons.prerequisites text[]` column (migration), backfill the 10 Skin cluster lessons.
+
+## 5. Contextual TJ in Reflection
+
+In `TJLessonPage.tsx` Reflect layer:
+
+- After learner submits reflection, call existing `generate-guided-lesson` edge function with a new `mode: "reflection_response"` branch (small addition), which returns a 3-part TJ reply: **mirror → affirm → next nudge**.
+- Cache per (user, term) in a new `tj_reflection_responses` table so re-opening shows the same response.
+- Empty-state placeholder before they write: "TJ is listening. Two sentences is enough."
+
+## 6. Visual alignment pass on lesson cards
+
+Standardize across `TJLessonPage`, `TJClusterPage`, Rapid Mastery cards, and Home v2 tile:
+
+- Card: `rounded-2xl`, `min-h-[280px]` for grid cards, `p-6`, consistent 1px border + soft accent glow.
+- Image / icon block: fixed `h-32` top region, `object-cover`, centered.
+- Typography scale: title `font-display text-lg`, body `text-sm leading-relaxed text-muted-foreground`, meta `text-xs uppercase tracking-wide`.
+- Spacing rhythm: `space-y-3` inside cards, `gap-4` between cards, `py-8` between sections.
+- All colors via existing semantic tokens + `accent_color` per lesson — no hard-coded hex in components.
+
+## Files to be created or edited
+
+**New**
+- `src/pages/RapidMasteryPage.tsx`
+- `src/components/rapid-mastery/FlashcardDeck.tsx`
+- `src/components/rapid-mastery/MatchingBoard.tsx`
+- `src/components/rapid-mastery/MultipleChoiceRunner.tsx`
+- `src/components/rapid-mastery/TimedChallenge.tsx`
+- `src/components/rapid-mastery/StateBoardPrep.tsx`
+- `src/components/rapid-mastery/ProgressCheckpoint.tsx`
+- `src/components/tj-lesson/ActiveBeat.tsx` (shared 1-screen active prompt)
+- `src/components/tj-lesson/ReflectionWithTJ.tsx`
+- `src/components/knowledge-web/PathwayGraph.tsx`
+
+**Edited**
+- `src/App.tsx` — register `/practice`
+- `src/pages/Home.tsx` — two clear entry tiles + promise copy
+- `src/components/AppMenuSheet.tsx` — relabel + reorder
+- `src/pages/TJLessonPage.tsx` — wire ActiveBeat into Visualize / Apply / Awareness, swap Reflect for `ReflectionWithTJ`, restyle cards
+- `src/pages/TJClusterPage.tsx` — swap radial SVG for `PathwayGraph`, add legend, card polish
+- `supabase/functions/generate-guided-lesson/index.ts` — add `mode: "reflection_response"` branch
+
+**Schema (migration)**
+- `tj_lessons.prerequisites text[]` (nullable), backfill 10 Skin cluster rows
+- `tj_reflection_responses` table: `id`, `user_id`, `lesson_slug`, `reflection_text`, `tj_response`, timestamps; RLS owner-only; GRANTs to authenticated + service_role
+
+## Out of scope this pass
+
+- New clusters beyond Skin Structure & Growth
+- Replacing legacy `/learn` flow
+- Reflection Journal aggregation page (separate future task)
+- New AI models or providers
