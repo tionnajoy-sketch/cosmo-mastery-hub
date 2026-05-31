@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import {
   BookOpen, Target, TrendingUp,
-  CheckCircle2, Flame, Gamepad2, Coffee, Brain,
+  CheckCircle2, Flame, Gamepad2, Coffee, Brain, Zap, Sparkles, Hexagon,
 } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { pageColors } from "@/lib/colors";
@@ -191,53 +191,80 @@ const Home = () => {
       {/* ── Hero Welcome ── */}
       <div className="px-4 pt-10 pb-4 max-w-2xl mx-auto w-full">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className="font-display text-3xl font-bold mb-3 text-foreground">
+          <div className="mb-1 text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "hsl(var(--violet))" }}>
+            TJ Anderson Layer Method<span style={{ color: "hsl(var(--gold))" }}>™</span>
+          </div>
+          <h1 className="font-display text-3xl font-bold mb-3" style={{ color: "hsl(var(--plum))" }}>
             Welcome back, {firstName} ✨
           </h1>
-          <p className="text-base text-muted-foreground leading-relaxed">
+          <p className="text-sm leading-relaxed italic" style={{ color: "hsl(var(--plum) / 0.75)" }}>
+            Built on Connections. Layered for Retention. Designed for Transformation.
+          </p>
+          <p className="text-base text-muted-foreground leading-relaxed mt-3">
             {confidenceMessage}
           </p>
 
-          {/* Two distinct learning environments */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Three primary experiences */}
+          <div className="mt-6 grid grid-cols-1 gap-3">
             <button
               onClick={() => navigate("/practice")}
-              className="group text-left p-5 rounded-2xl border-2 bg-card hover:shadow-lg transition-all min-h-[160px] flex flex-col"
-              style={{ borderColor: "hsl(215 70% 50% / 0.35)" }}
+              className="group text-left p-5 rounded-2xl border-2 hover:shadow-lg transition-all flex items-start gap-4"
+              style={{
+                borderColor: "hsl(var(--gold) / 0.45)",
+                background: "linear-gradient(135deg, hsl(var(--gold) / 0.10), hsl(var(--cream-soft)))",
+              }}
             >
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(215 70% 50% / 0.15)" }}>
-                  <Gamepad2 className="h-5 w-5" style={{ color: "hsl(215 70% 50%)" }} />
-                </div>
-                <span className="text-[10px] uppercase tracking-[0.18em] font-bold" style={{ color: "hsl(215 70% 50%)" }}>Learn &amp; Practice</span>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "hsl(var(--gold) / 0.20)" }}>
+                <Zap className="h-6 w-6" style={{ color: "hsl(var(--gold))" }} />
               </div>
-              <h3 className="font-display text-lg font-bold text-foreground mb-1">Rapid Mastery</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed flex-1">Drill, recall, and pass the exam. Flashcards, MCQs, timed sprints, state board prep.</p>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] uppercase tracking-[0.18em] font-bold mb-0.5" style={{ color: "hsl(var(--gold))" }}>Pass the Exam</div>
+                <h3 className="font-display text-lg font-bold mb-1" style={{ color: "hsl(var(--plum))" }}>
+                  Rapid Mastery<span style={{ color: "hsl(var(--gold))" }}>™</span>
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Flashcards, timed quizzes, practice tests, spaced repetition, state board prep.</p>
+              </div>
             </button>
+
             <button
               onClick={() => navigate("/cluster/skin-structure-and-growth")}
-              className="group text-left p-5 rounded-2xl border-2 bg-card hover:shadow-lg transition-all min-h-[160px] flex flex-col"
-              style={{ borderColor: "hsl(345 75% 55% / 0.35)", background: "linear-gradient(135deg, hsl(345 75% 55% / 0.06), hsl(var(--card)))" }}
+              className="group text-left p-5 rounded-2xl border-2 hover:shadow-lg transition-all flex items-start gap-4"
+              style={{
+                borderColor: "hsl(var(--plum) / 0.45)",
+                background: "linear-gradient(135deg, hsl(var(--plum) / 0.08), hsl(var(--cream-soft)))",
+              }}
             >
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(345 75% 55% / 0.15)" }}>
-                  <BookOpen className="h-5 w-5" style={{ color: "hsl(345 75% 55%)" }} />
-                </div>
-                <span className="text-[10px] uppercase tracking-[0.18em] font-bold" style={{ color: "hsl(345 75% 55%)" }}>Layer Method™ v2</span>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "hsl(var(--plum) / 0.15)" }}>
+                <Sparkles className="h-6 w-6" style={{ color: "hsl(var(--plum))" }} />
               </div>
-              <h3 className="font-display text-lg font-bold text-foreground mb-1">Deep Learning</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed flex-1">Think it. Connect it. Transform it. Knowledge Web™, layers, reflection, TJ Insight™.</p>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] uppercase tracking-[0.18em] font-bold mb-0.5" style={{ color: "hsl(var(--plum))" }}>Understand the Concept</div>
+                <h3 className="font-display text-lg font-bold mb-1" style={{ color: "hsl(var(--plum))" }}>
+                  Deep Learning<span style={{ color: "hsl(var(--gold))" }}>™</span>
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Knowledge Web™, layer lessons, reflection, TJ Insight™, real-world application.</p>
+              </div>
             </button>
-          </div>
-          <div className="mt-3">
-            <Button
-              variant="outline"
-              className="w-full py-5 text-sm font-display font-semibold gap-2 rounded-xl shadow-md border-2 animate-pulse hover:animate-none"
-              style={{ borderColor: "hsl(265 60% 50%)", color: "hsl(265 60% 50%)", background: "hsl(265 60% 98%)" }}
-              onClick={() => navigate("/learning-dna")}
+
+            <button
+              onClick={() => navigate("/learning-geometry")}
+              className="group text-left p-5 rounded-2xl border-2 hover:shadow-lg transition-all flex items-start gap-4"
+              style={{
+                borderColor: "hsl(var(--violet) / 0.45)",
+                background: "linear-gradient(135deg, hsl(var(--violet) / 0.10), hsl(var(--cream-soft)))",
+              }}
             >
-              <Brain className="h-5 w-5" /> My TJ DNA Code
-            </Button>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "hsl(var(--violet) / 0.18)" }}>
+                <Hexagon className="h-6 w-6" style={{ color: "hsl(var(--violet))" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] uppercase tracking-[0.18em] font-bold mb-0.5" style={{ color: "hsl(var(--violet))" }}>Understand Yourself</div>
+                <h3 className="font-display text-lg font-bold mb-1" style={{ color: "hsl(var(--plum))" }}>
+                  Learning Geometry<span style={{ color: "hsl(var(--gold))" }}>™</span>
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Seven learning dimensions, interactive geometry, strength analysis, growth recommendations.</p>
+              </div>
+            </button>
           </div>
 
           {/* Cafe countdown indicator */}

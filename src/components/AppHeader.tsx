@@ -18,8 +18,15 @@ const AppHeader = () => {
           className="flex items-center gap-2 cursor-pointer"
           onClick={() => navigate("/")}
         >
-          <BookOpen className="h-5 w-5 text-foreground" />
-          <span className="font-display text-lg font-bold text-foreground tracking-tight">TJ Test Prep</span>
+          <BookOpen className="h-5 w-5" style={{ color: "hsl(var(--plum))" }} />
+          <div className="flex flex-col leading-none">
+            <span className="font-display text-[15px] font-bold tracking-tight" style={{ color: "hsl(var(--plum))" }}>
+              TJ Anderson Layer Method<span style={{ color: "hsl(var(--gold))" }}>™</span>
+            </span>
+            <span className="text-[9px] uppercase tracking-[0.18em] font-semibold text-muted-foreground mt-0.5">
+              Built on Connections
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <LearningCycleBadge />
