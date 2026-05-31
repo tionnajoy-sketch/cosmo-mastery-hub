@@ -146,37 +146,7 @@ const LearningGeometryPage = () => {
           </p>
         </div>
 
-        {/* Official Learning Geometry™ Artwork */}
-        <Card
-          className="border-0 shadow-2xl overflow-hidden mb-6"
-          style={{
-            background: "linear-gradient(135deg, hsl(var(--plum)), hsl(var(--violet)))",
-          }}
-        >
-          <div className="relative">
-            <img
-              src={learningGeometryHero}
-              alt="The TJ Anderson Layer Method™ — Learning Geometry™ visual architecture"
-              className="w-full h-auto block"
-              loading="eager"
-            />
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                boxShadow: "inset 0 0 60px hsl(var(--plum) / 0.35)",
-              }}
-            />
-          </div>
-          <div
-            className="px-4 py-3 text-center text-[10px] uppercase tracking-[0.24em] font-bold"
-            style={{
-              background: "hsl(var(--plum))",
-              color: "hsl(var(--gold))",
-            }}
-          >
-            Learning is not memorization. Learning is geometry.
-          </div>
-        </Card>
+
 
         {/* Interactive geometry */}
         <Card
