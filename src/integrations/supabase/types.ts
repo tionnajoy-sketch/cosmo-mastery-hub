@@ -2537,6 +2537,7 @@ export type Database = {
           information: string | null
           layer_color_overrides: Json | null
           metaphor: string | null
+          prerequisites: string[] | null
           purpose: string | null
           recognize: string | null
           reflect_prompt: string | null
@@ -2563,6 +2564,7 @@ export type Database = {
           information?: string | null
           layer_color_overrides?: Json | null
           metaphor?: string | null
+          prerequisites?: string[] | null
           purpose?: string | null
           recognize?: string | null
           reflect_prompt?: string | null
@@ -2589,6 +2591,7 @@ export type Database = {
           information?: string | null
           layer_color_overrides?: Json | null
           metaphor?: string | null
+          prerequisites?: string[] | null
           purpose?: string | null
           recognize?: string | null
           reflect_prompt?: string | null
@@ -2600,6 +2603,36 @@ export type Database = {
           visualize?: string | null
           why_it_matters?: string | null
           word_origin?: string | null
+        }
+        Relationships: []
+      }
+      tj_reflection_responses: {
+        Row: {
+          created_at: string
+          id: string
+          lesson_slug: string
+          reflection_text: string
+          tj_response: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lesson_slug: string
+          reflection_text: string
+          tj_response?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lesson_slug?: string
+          reflection_text?: string
+          tj_response?: Json
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
