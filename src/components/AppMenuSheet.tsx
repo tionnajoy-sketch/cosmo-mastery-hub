@@ -8,8 +8,8 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/co
 import {
   BookOpen, Menu, LogOut, BarChart3, Upload,
   GraduationCap, MessageCircle, Library, Grid3X3,
-  Coffee, NotebookPen, Brain, Trophy, Users,
-  Volume2, VolumeX, Sparkles,
+  Coffee, NotebookPen, Hexagon, Trophy, Users,
+  Volume2, VolumeX, Sparkles, Zap,
 } from "lucide-react";
 import { isVoiceGloballyPaused, setVoiceGloballyPaused } from "@/hooks/useAutoNarrate";
 
@@ -30,23 +30,23 @@ const AppMenuSheet = () => {
   const go = (path: string) => () => { close(); navigate(path); };
 
   const core: MenuItem[] = [
-    { label: "Dashboard",          icon: BookOpen,      onClick: go("/"),                                color: "265 60% 50%" },
-    { label: "Learn & Practice",   icon: Grid3X3,       onClick: go("/practice"),                        color: "215 70% 50%", highlight: true },
-    { label: "Layer Method™ v2",   icon: Sparkles,      onClick: go("/cluster/skin-structure-and-growth"), color: "345 75% 55%", highlight: true },
-    { label: "Intelligence",       icon: Sparkles,      onClick: go("/intelligence"),                    color: "38 80% 55%" },
-    { label: "Sections",           icon: Library,       onClick: go("/learn"),                           color: "175 55% 42%" },
-    { label: "Progress",           icon: BarChart3,     onClick: go("/progress"),                        color: "42 70% 50%" },
-    { label: "Final Exam",         icon: GraduationCap, onClick: go("/comprehensive-exam"),              color: "320 55% 48%" },
-    { label: "Foreword",           icon: Library,       onClick: go("/welcome"),                         color: "25 70% 50%" },
+    { label: "Dashboard",            icon: BookOpen,      onClick: go("/"),                                color: "285 45% 32%" },
+    { label: "Rapid Mastery™",       icon: Zap,           onClick: go("/practice"),                        color: "42 75% 50%", highlight: true },
+    { label: "Deep Learning™",       icon: Sparkles,      onClick: go("/cluster/skin-structure-and-growth"), color: "285 45% 32%", highlight: true },
+    { label: "Learning Geometry™",   icon: Hexagon,       onClick: go("/learning-geometry"),               color: "270 60% 45%", highlight: true },
+    { label: "Progress",             icon: BarChart3,     onClick: go("/progress"),                        color: "270 50% 40%" },
+    { label: "Final Exam",           icon: GraduationCap, onClick: go("/comprehensive-exam"),              color: "285 45% 32%" },
+    { label: "Intelligence",         icon: Sparkles,      onClick: go("/intelligence"),                    color: "42 75% 50%" },
+    { label: "Sections",             icon: Library,       onClick: go("/learn"),                           color: "270 30% 45%" },
   ];
 
   const resources: MenuItem[] = [
-    { label: "Ask TJ",         icon: MessageCircle, onClick: () => { close(); openTJChat(false); }, color: "275 60% 55%" },
-    { label: "TJ Café",        icon: Coffee,        onClick: () => { close(); openTJCafe(); },     color: "25 65% 45%" },
-    { label: "My Journal",     icon: NotebookPen,   onClick: go("/insights"),                       color: "200 60% 45%" },
-    { label: "Learning DNA",   icon: Brain,         onClick: go("/learning-dna"),                   color: "265 60% 50%" },
-    { label: "Leaderboard",    icon: Trophy,        onClick: go("/leaderboard"),                    color: "42 80% 50%" },
-    { label: "Community",      icon: Users,         onClick: go("/community"),                      color: "200 65% 50%" },
+    { label: "Ask TJ™",        icon: MessageCircle, onClick: () => { close(); openTJChat(false); }, color: "270 60% 45%" },
+    { label: "TJ Café™",       icon: Coffee,        onClick: () => { close(); openTJCafe(); },     color: "25 65% 45%" },
+    { label: "My Journal",     icon: NotebookPen,   onClick: go("/insights"),                       color: "285 45% 32%" },
+    { label: "Leaderboard",    icon: Trophy,        onClick: go("/leaderboard"),                    color: "42 75% 50%" },
+    { label: "Community",      icon: Users,         onClick: go("/community"),                      color: "270 50% 45%" },
+    { label: "Foreword",       icon: Library,       onClick: go("/welcome"),                        color: "25 70% 50%" },
   ];
 
   const premium: MenuItem[] = [
