@@ -2524,6 +2524,7 @@ export type Database = {
       }
       tj_lessons: {
         Row: {
+          accent_color: string | null
           apply: string | null
           assess: Json | null
           awareness: string | null
@@ -2545,9 +2546,11 @@ export type Database = {
           tj_insight: string | null
           updated_at: string
           visualize: string | null
+          why_it_matters: string | null
           word_origin: string | null
         }
         Insert: {
+          accent_color?: string | null
           apply?: string | null
           assess?: Json | null
           awareness?: string | null
@@ -2569,9 +2572,11 @@ export type Database = {
           tj_insight?: string | null
           updated_at?: string
           visualize?: string | null
+          why_it_matters?: string | null
           word_origin?: string | null
         }
         Update: {
+          accent_color?: string | null
           apply?: string | null
           assess?: Json | null
           awareness?: string | null
@@ -2593,6 +2598,7 @@ export type Database = {
           tj_insight?: string | null
           updated_at?: string
           visualize?: string | null
+          why_it_matters?: string | null
           word_origin?: string | null
         }
         Relationships: []
