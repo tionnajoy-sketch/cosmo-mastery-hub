@@ -64,25 +64,19 @@ const DIMENSIONS = [
   },
 ] as const;
 
-const FOUNDER_BIO = `My name is Tionna Joy Anderson.
+const FOUNDER_BIO = `For years, I watched students struggle with information they were fully capable of learning.
 
-I am a licensed cosmetologist, educator, entrepreneur, and creator of the TJ Anderson Layer Method™.
+The problem was never intelligence.
 
-For more than twenty years, I have worked in beauty, education, leadership, and personal development.
+The problem was connection.
 
-Throughout my career, I noticed something important: Many people do not struggle because they are incapable. They struggle because they have never been taught in a way that truly connects with how they learn.
+Many learning systems ask students to memorize information before they understand it.
 
-As someone who often had to create my own pathways to understanding, I became fascinated by learning itself — why some concepts stick, why others disappear, and how meaning transforms information into lasting knowledge.
+The TJ Anderson Layer Method™ was built differently.
 
-That journey led to the creation of the TJ Anderson Layer Method™.
-
-A framework built on connections.
-A system designed to transform memorization into understanding.
-A method that helps learners retain information, build confidence, apply knowledge in real-world situations, and create lasting transformation.
-
-This platform is not simply about passing an exam.
-
-It is about changing the way people learn.
+Every layer creates another connection.
+Every connection strengthens retention.
+Every dimension transforms information into understanding.
 
 Because when learning connects to meaning, transformation becomes possible.
 
