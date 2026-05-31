@@ -186,6 +186,7 @@ export default function TJLessonPage() {
                   onSaveReflection={saveReflection}
                   assessAnswer={assessAnswer}
                   setAssessAnswer={setAssessAnswer}
+                  onNavigateSlug={(s) => navigate(`/lesson/${s}`)}
                 />
               </div>
             </Card>
