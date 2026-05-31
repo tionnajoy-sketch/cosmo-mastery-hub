@@ -6,7 +6,6 @@ import AppFooter from "@/components/AppFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Hexagon, TrendingUp, Sparkles, X } from "lucide-react";
-import learningGeometryHero from "@/assets/learning-geometry-hero.png";
 
 type DimKey = "personal" | "visual" | "real" | "reflect" | "practice" | "assess";
 
