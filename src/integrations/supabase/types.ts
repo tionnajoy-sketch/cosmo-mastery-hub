@@ -2495,6 +2495,108 @@ export type Database = {
         }
         Relationships: []
       }
+      tj_lesson_reflections: {
+        Row: {
+          created_at: string
+          id: string
+          lesson_slug: string
+          reflection: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lesson_slug: string
+          reflection: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lesson_slug?: string
+          reflection?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tj_lessons: {
+        Row: {
+          apply: string | null
+          assess: Json | null
+          awareness: string | null
+          breakdown: string | null
+          cluster: string | null
+          created_at: string
+          definition: string | null
+          display_order: number | null
+          id: string
+          information: string | null
+          layer_color_overrides: Json | null
+          metaphor: string | null
+          purpose: string | null
+          recognize: string | null
+          reflect_prompt: string | null
+          related_concepts: string[] | null
+          slug: string
+          title: string
+          tj_insight: string | null
+          updated_at: string
+          visualize: string | null
+          word_origin: string | null
+        }
+        Insert: {
+          apply?: string | null
+          assess?: Json | null
+          awareness?: string | null
+          breakdown?: string | null
+          cluster?: string | null
+          created_at?: string
+          definition?: string | null
+          display_order?: number | null
+          id?: string
+          information?: string | null
+          layer_color_overrides?: Json | null
+          metaphor?: string | null
+          purpose?: string | null
+          recognize?: string | null
+          reflect_prompt?: string | null
+          related_concepts?: string[] | null
+          slug: string
+          title: string
+          tj_insight?: string | null
+          updated_at?: string
+          visualize?: string | null
+          word_origin?: string | null
+        }
+        Update: {
+          apply?: string | null
+          assess?: Json | null
+          awareness?: string | null
+          breakdown?: string | null
+          cluster?: string | null
+          created_at?: string
+          definition?: string | null
+          display_order?: number | null
+          id?: string
+          information?: string | null
+          layer_color_overrides?: Json | null
+          metaphor?: string | null
+          purpose?: string | null
+          recognize?: string | null
+          reflect_prompt?: string | null
+          related_concepts?: string[] | null
+          slug?: string
+          title?: string
+          tj_insight?: string | null
+          updated_at?: string
+          visualize?: string | null
+          word_origin?: string | null
+        }
+        Relationships: []
+      }
       tj_rules: {
         Row: {
           created_at: string
