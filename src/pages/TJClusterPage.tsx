@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Network } from "lucide-react";
@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import PathwayGraph, { type PathwayLesson } from "@/components/knowledge-web/PathwayGraph";
 
 interface ClusterLesson {
   id: string;
@@ -15,6 +17,7 @@ interface ClusterLesson {
   purpose: string | null;
   accent_color: string | null;
   related_concepts: string[] | null;
+  prerequisites: string[] | null;
   display_order: number | null;
 }
 
@@ -32,9 +35,10 @@ function slugify(s: string) {
 export default function TJClusterPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [lessons, setLessons] = useState<ClusterLesson[]>([]);
+  const [masteryBySlug, setMasteryBySlug] = useState<Record<string, "not_started" | "in_progress" | "mastered">>({});
   const [loading, setLoading] = useState(true);
-  const [hovered, setHovered] = useState<string | null>(null);
 
   const meta = CLUSTER_TITLES[slug ?? ""] ?? { title: "Cluster", intent: "" };
 
@@ -43,59 +47,41 @@ export default function TJClusterPage() {
       const clusterName = meta.title;
       const { data, error } = await supabase
         .from("tj_lessons" as any)
-        .select("id,slug,title,cluster,purpose,accent_color,related_concepts,display_order")
+        .select("id,slug,title,cluster,purpose,accent_color,related_concepts,prerequisites,display_order")
         .eq("cluster", clusterName)
         .order("display_order", { ascending: true });
       if (error) toast.error("Couldn't load cluster");
-      setLessons((data as unknown as ClusterLesson[]) ?? []);
+      const rows = (data as unknown as ClusterLesson[]) ?? [];
+      setLessons(rows);
+
+      // Pull lightweight mastery state from reflection responses (anything reflected on = in_progress)
+      if (user && rows.length) {
+        const slugs = rows.map((r) => r.slug);
+        const { data: refl } = await supabase
+          .from("tj_reflection_responses" as any)
+          .select("lesson_slug")
+          .eq("user_id", user.id)
+          .in("lesson_slug", slugs);
+        const m: Record<string, "not_started" | "in_progress" | "mastered"> = {};
+        rows.forEach((r) => { m[r.slug] = "not_started"; });
+        (refl as any[] | null)?.forEach((row) => { m[row.lesson_slug] = "in_progress"; });
+        setMasteryBySlug(m);
+      }
+
       setLoading(false);
     })();
-  }, [meta.title]);
+  }, [meta.title, user]);
 
-  // Build slug map for matching related_concepts -> lessons (titles or slugs).
-  const slugByLabel = useMemo(() => {
-    const map: Record<string, string> = {};
-    lessons.forEach((l) => {
-      map[l.slug] = l.slug;
-      map[l.title.toLowerCase()] = l.slug;
-      map[slugify(l.title)] = l.slug;
-    });
-    return map;
-  }, [lessons]);
-
-  // Radial layout for the knowledge web
-  const SIZE = 560;
-  const R = 220;
-  const center = SIZE / 2;
-  const positions = useMemo(() => {
-    return lessons.map((_, i) => {
-      const angle = (i / lessons.length) * Math.PI * 2 - Math.PI / 2;
-      return { x: center + Math.cos(angle) * R, y: center + Math.sin(angle) * R };
-    });
-  }, [lessons]);
-
-  const edges = useMemo(() => {
-    const out: { from: number; to: number; color: string }[] = [];
-    lessons.forEach((l, i) => {
-      (l.related_concepts ?? []).forEach((rc) => {
-        const targetSlug = slugByLabel[rc] || slugByLabel[rc.toLowerCase()] || slugByLabel[slugify(rc)];
-        const j = lessons.findIndex((x) => x.slug === targetSlug);
-        if (j > -1 && j !== i) out.push({ from: i, to: j, color: l.accent_color || "hsl(var(--muted-foreground))" });
-      });
-    });
-    return out;
-  }, [lessons, slugByLabel]);
-
-  const isConnected = (slug: string) => {
-    if (!hovered) return true;
-    if (hovered === slug) return true;
-    const a = lessons.find((l) => l.slug === hovered);
-    const b = lessons.find((l) => l.slug === slug);
-    return Boolean(
-      a?.related_concepts?.some((rc) => slugByLabel[slugify(rc)] === slug || slugByLabel[rc.toLowerCase()] === slug) ||
-      b?.related_concepts?.some((rc) => slugByLabel[slugify(rc)] === hovered || slugByLabel[rc.toLowerCase()] === hovered)
-    );
-  };
+  const pathwayLessons: PathwayLesson[] = lessons.map((l) => ({
+    slug: l.slug,
+    title: l.title,
+    accent_color: l.accent_color,
+    prerequisites: l.prerequisites,
+    related_concepts: l.related_concepts,
+    display_order: l.display_order,
+    mastery: masteryBySlug[l.slug] ?? "not_started",
+    purpose: l.purpose,
+  }));
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground">Loading cluster…</div>;
@@ -112,71 +98,15 @@ export default function TJClusterPage() {
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">{meta.intent}</p>
       </header>
 
-      {/* Knowledge Web */}
+      {/* Knowledge Web as Learning Pathway */}
       <section className="max-w-5xl mx-auto px-5">
         <div className="flex items-center gap-2 mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-          <Network className="h-3.5 w-3.5" /> Knowledge Web Learning™
+          <Network className="h-3.5 w-3.5" /> Knowledge Web™ — Learning Pathway
         </div>
-        <Card className="relative bg-card border-border/60 overflow-hidden">
-          <div className="aspect-square sm:aspect-auto sm:h-[560px] w-full">
-            <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full h-full">
-              {/* Edges */}
-              {edges.map((e, k) => {
-                const a = positions[e.from], b = positions[e.to];
-                const fromSlug = lessons[e.from].slug, toSlug = lessons[e.to].slug;
-                const dim = hovered && !(hovered === fromSlug || hovered === toSlug);
-                return (
-                  <line
-                    key={k}
-                    x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                    stroke={e.color}
-                    strokeWidth={hovered && (hovered === fromSlug || hovered === toSlug) ? 1.8 : 0.9}
-                    opacity={dim ? 0.08 : 0.45}
-                  />
-                );
-              })}
-              {/* Nodes */}
-              {lessons.map((l, i) => {
-                const p = positions[i];
-                const connected = isConnected(l.slug);
-                const color = l.accent_color || "hsl(var(--foreground))";
-                return (
-                  <g
-                    key={l.slug}
-                    transform={`translate(${p.x}, ${p.y})`}
-                    style={{ cursor: "pointer", transition: "opacity 0.2s" }}
-                    opacity={connected ? 1 : 0.25}
-                    onMouseEnter={() => setHovered(l.slug)}
-                    onMouseLeave={() => setHovered(null)}
-                    onClick={() => navigate(`/lesson/${l.slug}`)}
-                  >
-                    <circle r={hovered === l.slug ? 38 : 32} fill={color} opacity={0.15} />
-                    <circle r={hovered === l.slug ? 26 : 22} fill={color} />
-                    <text
-                      y={50}
-                      textAnchor="middle"
-                      className="fill-foreground"
-                      style={{ fontSize: 13, fontWeight: 600, fontFamily: "inherit" }}
-                    >
-                      {l.title}
-                    </text>
-                  </g>
-                );
-              })}
-              {/* Center label */}
-              <g transform={`translate(${center}, ${center})`}>
-                <circle r={50} fill="hsl(var(--background))" stroke="hsl(var(--border))" />
-                <text textAnchor="middle" y={-3} className="fill-muted-foreground" style={{ fontSize: 10, letterSpacing: 2 }}>
-                  CLUSTER
-                </text>
-                <text textAnchor="middle" y={14} className="fill-foreground" style={{ fontSize: 13, fontWeight: 700 }}>
-                  Skin
-                </text>
-              </g>
-            </svg>
-          </div>
-        </Card>
-        <p className="text-xs text-muted-foreground text-center mt-3">Hover a node to highlight its connections. Click any concept to open the lesson.</p>
+        <PathwayGraph lessons={pathwayLessons} onSelect={(s) => navigate(`/lesson/${s}`)} />
+        <p className="text-xs text-muted-foreground text-center mt-3">
+          Foundation flows left → right. Solid arrows show the pathway. Dotted lines show related concepts. Hover any node to focus its connections.
+        </p>
       </section>
 
       {/* Lesson grid */}
