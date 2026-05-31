@@ -284,11 +284,58 @@ const WelcomePage = () => {
           />
         </div>
 
-        {/* ─── Who I Am ─── */}
+        {/* ─── Why Learning Geometry™ Works ─── */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.18 }}
+          className="mb-8"
+        >
+          <Card
+            className="border-0 shadow-lg overflow-hidden"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--plum-soft)), hsl(var(--cream-soft)))",
+            }}
+          >
+            <CardContent className="p-6">
+              <div
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.22em] font-bold mb-3"
+                style={{ background: "hsl(var(--gold) / 0.18)", color: "hsl(var(--plum))" }}
+              >
+                <Hexagon className="h-3 w-3" /> Why It Works
+              </div>
+              <h2
+                className="font-display text-xl font-bold mb-3"
+                style={{ color: "hsl(var(--plum))" }}
+              >
+                Why Learning Geometry™ Works
+              </h2>
+              <div className="text-sm leading-relaxed text-foreground/85 space-y-3">
+                <p>Traditional learning treats information as isolated facts.</p>
+                <p>Learning Geometry™ treats information as connected structures.</p>
+                <p>
+                  Just as an icosahedron gains strength through interconnected points, learning
+                  becomes stronger when concepts connect to identity, experience, visualization,
+                  application, reflection, retrieval, and transfer.
+                </p>
+                <p>Remove a connection and retention weakens.</p>
+                <p>Strengthen connections and understanding grows.</p>
+              </div>
+              <div
+                className="mt-5 pt-4 border-t font-display italic text-base"
+                style={{ borderColor: "hsl(var(--plum) / 0.15)", color: "hsl(var(--violet))" }}
+              >
+                Learning is not memorization. Learning is geometry.
+              </div>
+            </CardContent>
+          </Card>
+        </motion.section>
+
+        {/* ─── Why This Method Exists™ ─── */}
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
           className="mb-8"
         >
           <Card className="border-0 shadow-md bg-card">
@@ -298,7 +345,7 @@ const WelcomePage = () => {
                   className="font-display text-xl font-bold"
                   style={{ color: "hsl(var(--plum))" }}
                 >
-                  Who I Am
+                  Why This Method Exists™
                 </h2>
                 <SpeakButton text={FOUNDER_BIO} label="Listen" size="sm" />
               </div>
@@ -317,6 +364,7 @@ const WelcomePage = () => {
             </CardContent>
           </Card>
         </motion.section>
+
 
         {/* ─── CTA ─── */}
         <motion.div
