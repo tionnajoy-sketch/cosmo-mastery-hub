@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Sparkles, BookOpen, Eye, Hand, Layers, Search, Lightbulb, Info, Heart, PenLine, Target, Wand2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, BookOpen, Eye, Hand, Layers, Search, Lightbulb, Info, Heart, PenLine, Target, Wand2, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ interface TJLesson {
   title: string;
   cluster: string | null;
   purpose: string | null;
+  why_it_matters: string | null;
   definition: string | null;
   word_origin: string | null;
   related_concepts: string[] | null;
@@ -28,6 +29,7 @@ interface TJLesson {
   reflect_prompt: string | null;
   assess: { question?: string; type?: string; rubric?: string[] } | null;
   tj_insight: string | null;
+  accent_color: string | null;
   layer_color_overrides: Record<string, string> | null;
 }
 
@@ -39,20 +41,25 @@ interface LayerDef {
 }
 
 const LAYERS: LayerDef[] = [
-  { key: "purpose",       label: "Purpose",            icon: Target,    color: "hsl(38 92% 58%)" },
-  { key: "definition",    label: "Definition",         icon: BookOpen,  color: "hsl(220 70% 60%)" },
-  { key: "word_origin",   label: "Word Origin",        icon: Sparkles,  color: "hsl(280 60% 60%)" },
-  { key: "knowledge_web", label: "Knowledge Web",      icon: Layers,    color: "hsl(180 55% 50%)" },
-  { key: "visualize",     label: "Visualize",          icon: Eye,       color: "hsl(200 80% 55%)" },
-  { key: "apply",         label: "Apply",              icon: Hand,      color: "hsl(150 55% 48%)" },
-  { key: "breakdown",     label: "Break It Down",      icon: Layers,    color: "hsl(25 85% 58%)" },
-  { key: "recognize",     label: "Recognize",          icon: Search,    color: "hsl(340 70% 60%)" },
-  { key: "metaphor",      label: "Metaphor",           icon: Lightbulb, color: "hsl(50 90% 58%)" },
-  { key: "information",   label: "Information",        icon: Info,      color: "hsl(210 60% 50%)" },
-  { key: "awareness",     label: "Awareness",          icon: Heart,     color: "hsl(0 65% 60%)" },
-  { key: "reflect",       label: "Reflect",            icon: PenLine,   color: "hsl(265 65% 60%)" },
-  { key: "assess_card",   label: "Show What You Know", icon: Wand2,     color: "hsl(160 70% 45%)" },
+  { key: "purpose",        label: "Purpose",            icon: Target,    color: "hsl(38 92% 58%)" },
+  { key: "why_it_matters", label: "Why It Matters",     icon: Flame,     color: "hsl(345 75% 62%)" },
+  { key: "definition",     label: "Definition",         icon: BookOpen,  color: "hsl(220 70% 60%)" },
+  { key: "word_origin",    label: "Word Origin",        icon: Sparkles,  color: "hsl(280 60% 60%)" },
+  { key: "knowledge_web",  label: "Knowledge Web",      icon: Layers,    color: "hsl(180 55% 50%)" },
+  { key: "visualize",      label: "Visualize",          icon: Eye,       color: "hsl(200 80% 55%)" },
+  { key: "apply",          label: "Apply",              icon: Hand,      color: "hsl(150 55% 48%)" },
+  { key: "breakdown",      label: "Break It Down",      icon: Layers,    color: "hsl(25 85% 58%)" },
+  { key: "recognize",      label: "Recognize",          icon: Search,    color: "hsl(340 70% 60%)" },
+  { key: "metaphor",       label: "Metaphor",           icon: Lightbulb, color: "hsl(50 90% 58%)" },
+  { key: "information",    label: "Information",        icon: Info,      color: "hsl(210 60% 50%)" },
+  { key: "awareness",      label: "Awareness",          icon: Heart,     color: "hsl(0 65% 60%)" },
+  { key: "reflect",        label: "Reflect",            icon: PenLine,   color: "hsl(265 65% 60%)" },
+  { key: "assess_card",    label: "Show What You Know", icon: Wand2,     color: "hsl(160 70% 45%)" },
 ];
+
+function slugify(s: string) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
 
 export default function TJLessonPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -135,7 +142,7 @@ export default function TJLessonPage() {
             <div
               key={l.label}
               className="h-1 flex-1 rounded-full transition-all"
-              style={{ backgroundColor: i <= step ? l.color : "hsl(var(--muted))" }}
+              style={{ backgroundColor: i <= step ? (lesson.accent_color || l.color) : "hsl(var(--muted))" }}
             />
           ))}
         </div>
@@ -152,9 +159,9 @@ export default function TJLessonPage() {
           >
             <Card
               className="relative overflow-hidden border-border/60 shadow-xl bg-card"
-              style={{ boxShadow: `0 20px 60px -30px ${current.color}` }}
+              style={{ boxShadow: `0 24px 70px -28px ${lesson.accent_color || current.color}, 0 14px 40px -30px ${current.color}` }}
             >
-              <div className="h-1.5 w-full" style={{ backgroundColor: current.color }} />
+              <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${current.color}, ${lesson.accent_color || current.color})` }} />
               <div className="p-7 sm:p-10">
                 <div className="flex items-center gap-3 mb-5">
                   <div
@@ -179,6 +186,7 @@ export default function TJLessonPage() {
                   onSaveReflection={saveReflection}
                   assessAnswer={assessAnswer}
                   setAssessAnswer={setAssessAnswer}
+                  onNavigateSlug={(s) => navigate(`/lesson/${s}`)}
                 />
               </div>
             </Card>
@@ -190,7 +198,7 @@ export default function TJLessonPage() {
             <ArrowLeft className="h-4 w-4 mr-1" /> Previous
           </Button>
           {!isLast ? (
-            <Button onClick={() => setStep((s) => s + 1)} style={{ backgroundColor: current.color, color: "white" }}>
+            <Button onClick={() => setStep((s) => s + 1)} style={{ backgroundColor: lesson.accent_color || current.color, color: "white" }}>
               Next layer <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
@@ -237,7 +245,7 @@ export default function TJLessonPage() {
 }
 
 function LayerBody({
-  lesson, layer, reflection, setReflection, onSaveReflection, assessAnswer, setAssessAnswer,
+  lesson, layer, reflection, setReflection, onSaveReflection, assessAnswer, setAssessAnswer, onNavigateSlug,
 }: {
   lesson: TJLesson;
   layer: LayerDef;
@@ -246,19 +254,22 @@ function LayerBody({
   onSaveReflection: () => void;
   assessAnswer: string;
   setAssessAnswer: (v: string) => void;
+  onNavigateSlug: (slug: string) => void;
 }) {
   if (layer.key === "knowledge_web") {
     return (
       <div>
-        <p className="text-muted-foreground mb-5">This lesson connects to other concepts in your Knowledge Web™.</p>
+        <p className="text-muted-foreground mb-5">This lesson connects to other concepts in your Knowledge Web™. Tap to jump.</p>
         <div className="flex flex-wrap gap-2">
           {(lesson.related_concepts ?? []).map((c) => (
-            <span
+            <button
               key={c}
-              className="px-4 py-2 rounded-full text-sm font-medium border border-border bg-muted/40 text-foreground hover:border-foreground transition cursor-default"
+              onClick={() => onNavigateSlug(slugify(c))}
+              className="px-4 py-2 rounded-full text-sm font-medium border border-border bg-muted/40 text-foreground hover:border-foreground hover:bg-muted transition"
+              style={{ borderColor: lesson.accent_color || undefined }}
             >
               {c}
-            </span>
+            </button>
           ))}
         </div>
       </div>

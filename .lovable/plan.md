@@ -1,51 +1,73 @@
-## What's already done
-- Database tables `tj_lessons` and `tj_lesson_reflections` exist with RLS and grants.
-- Melanin lesson has been seeded with full content (purpose, definition, word origin, all 7 layers, awareness, reflect prompt, open-response assess, TJ Insight, related concepts).
+## Goal
+Make the Skin Structure & Growth cluster the gold-standard reference for the TJ Anderson Layer Method™ v2.0 — fully authored, visually connected, and wired into the app. This template will be reused for Proverbs, leadership, neuroscience, business, and EI clusters later.
 
-## What this build adds
+## 1. Schema additions
+Add two columns to `tj_lessons`:
+- `why_it_matters TEXT` — new layer slotted between Purpose and Definition.
+- `accent_color TEXT` — per-lesson signature hue (powers cluster map nodes and lesson glow).
 
-### 1. New route — `/lesson/:slug`
-Add to `src/App.tsx`, wrapped in `ProtectedRoute`. Does not touch existing `/learn` flow.
+Backfill the existing Melanin row with `why_it_matters` and `accent_color`.
 
-### 2. New page — `src/pages/TJLessonPage.tsx`
-A single, premium, Apple/Notion/Headspace-feeling card flow that reads from `tj_lessons`:
+## 2. Static content — 10 lessons (Skin Structure & Growth)
+Insert/update one row per term, each containing the full canonical sequence:
 
-- **Sticky header**: cluster label, lesson title, step counter, animated progress bar with each layer's unique color.
-- **Card stack** (only layers with content render; advance one at a time with framer-motion crossfade):
-  1. Purpose
-  2. Definition
-  3. Word Origin
-  4. Knowledge Web™ — related concepts as pill nodes
-  5. Visualize
-  6. Apply
-  7. Break It Down
-  8. Recognize
-  9. Metaphor
-  10. Information
-  11. Awareness
-  12. Reflect — prompt + textarea → saves to `tj_lesson_reflections`
-  13. Show What You Know — open-response only (no multiple choice), with note that MCQ lives in Quiz/Exam blocks
-- Each card: layer icon in tinted chip, color band, layer-tinted shadow glow, large readable body type.
-- **Final action**: "Reveal TJ Insight™" button → dark gradient card with the insight quote, "Back to lessons" / "Review lesson" actions.
-- **Footer**: persistent `© Tionna Anderson · TJ Anderson Layer Method™` line.
+`Main Term → Purpose → Why It Matters → Definition → Word Origin → Related Concepts → Visualize → Apply → Breakdown → Recognize → Metaphor → Information → Awareness → Reflect → Assess (open response) → TJ Insight™`
 
-### 3. Design tokens
-Uses existing semantic tokens (`background`, `card`, `foreword`, `muted`, `border`). Per-layer accent colors set inline as HSL constants (matches existing 9-layer color memory).
+Terms (cluster: "Skin Structure & Growth", with signature colors):
+1. Cells — amber
+2. Tissue — rose
+3. Epidermis — sky blue
+4. Dermis — coral
+5. Subcutaneous — indigo
+6. Melanocyte — violet
+7. Melanin — bronze *(already seeded, just backfill new fields)*
+8. Keratin — gold
+9. Collagen — teal
+10. Elastin — emerald
 
-### 4. Open-response only on term lessons
-The Assess card uses a textarea — keeps the "no MCQ in lesson flow" rule from the earlier task. Multiple choice stays in Quiz, Comprehension, and Final Exam routes (unchanged).
+Each `related_concepts` array uses real slugs from the cluster so the Knowledge Web links resolve.
 
-### 5. Reflection journal write
-`Save to my journal` inserts into `tj_lesson_reflections` (user_id, lesson_slug, reflection). RLS already enforces per-user.
+## 3. Lesson page — add the new "Why It Matters" layer
+Update `src/pages/TJLessonPage.tsx`:
+- Insert `Why It Matters` between Purpose and Definition.
+- Use the lesson's `accent_color` (fallback to per-layer color) for the card glow, progress bar fill, and CTA button so each lesson has its own signature feel.
+- Knowledge Web pills become clickable — navigate to `/lesson/{slug-of-related}`.
+
+## 4. New cluster landing page — `/cluster/skin-structure-and-growth`
+File: `src/pages/TJClusterPage.tsx`. Renders:
+- Hero with cluster name, short intent, and persistent copyright.
+- **Knowledge Web visualization**: SVG canvas with one node per lesson (positioned in a radial layout, colored by `accent_color`), edges drawn from each lesson's `related_concepts` back to its targets. Hover highlights connected nodes; click opens that lesson.
+- Below the web: a clean card grid of all 10 lessons (title, one-line purpose, accent color band, "Begin lesson" link).
+
+Route added in `src/App.tsx`: `/cluster/:slug → TJClusterPage`.
+
+## 5. Wire entry points
+- Add a "TJ Layer Method™ v2.0" tile/section to `src/pages/Home.tsx` pointing to `/cluster/skin-structure-and-growth`.
+- Add a top-level "Layer Method™ Lessons" link in `src/components/AppMenuSheet.tsx`.
+- Leave the existing `/learn` flow untouched.
+
+## 6. Design system
+- Cream / off-white card surfaces, generous whitespace.
+- Each layer keeps its semantic color (Purpose=amber, Definition=blue, Word Origin=violet, Visualize=sky, Apply=green, Breakdown=orange, Recognize=pink, Metaphor=gold, Information=slate-blue, Awareness=red, Reflect=purple, Assess=mint, Why It Matters=rose).
+- Lesson signature `accent_color` overlays via soft glow and CTA tint so two lessons never feel identical.
+- All colors expressed as `hsl(...)` constants; semantic tokens used for surfaces.
 
 ## Files touched
-- `src/pages/TJLessonPage.tsx` — new
-- `src/App.tsx` — add `<Route path="/lesson/:slug" …>`
+- Migration: add `why_it_matters`, `accent_color` to `tj_lessons`
+- Data: insert/update 10 lessons in `tj_lessons`
+- `src/pages/TJLessonPage.tsx` — add Why It Matters layer, accent color, clickable Knowledge Web pills
+- `src/pages/TJClusterPage.tsx` — new cluster landing + SVG Knowledge Web
+- `src/App.tsx` — register `/cluster/:slug`
+- `src/pages/Home.tsx` — v2.0 entry tile
+- `src/components/AppMenuSheet.tsx` — menu link
 
-## Not in this pass (per earlier scope)
-- Authoring content for the other 9 Skin Structure terms
-- Replacing the existing `/learn` flow
-- Knowledge Web graph visualization (uses pill chips for now; graph view comes in a follow-up)
+## Not in this pass
+- Replacing the existing `/learn` term flow
+- Other clusters (Proverbs, leadership, etc.) — this cluster becomes the template they will copy
+- Reflection Journal aggregation page (already planned separately)
 
 ## How to verify
-Navigate to `/lesson/melanin` after login. Step through all 13 cards, save a reflection, reveal the TJ Insight.
+1. `/cluster/skin-structure-and-growth` renders the 10-node Knowledge Web; hover/click works.
+2. Open any node → full lesson card flow includes the new Why It Matters card with the lesson's accent color.
+3. Knowledge Web pill inside a lesson jumps to the related lesson.
+4. Home dashboard and menu both expose the new v2.0 entry.
