@@ -63,6 +63,7 @@ import LmsLessonPlayerPage from "./pages/lms/LmsLessonPlayerPage";
 import LmsInstructorDashboardPage from "./pages/lms/LmsInstructorDashboardPage";
 import LmsCurriculumBuilderPage from "./pages/lms/LmsCurriculumBuilderPage";
 import NotFound from "./pages/NotFound";
+import TJLessonPage from "./pages/TJLessonPage";
 import GlobalMenuFab from "@/components/GlobalMenuFab";
 import DNAProgressBubble from "@/components/DNAProgressBubble";
 
@@ -127,6 +128,7 @@ const AppContent = () => {
         <Route path="/lms/lesson/:id" element={<ProtectedRoute><LmsLessonPlayerPage /></ProtectedRoute>} />
         <Route path="/lms/instructor" element={<ProtectedRoute><LmsInstructorDashboardPage /></ProtectedRoute>} />
         <Route path="/lms/builder" element={<ProtectedRoute><LmsCurriculumBuilderPage /></ProtectedRoute>} />
+        <Route path="/lesson/:slug" element={<ProtectedRoute><TJLessonPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AskTJFullScreen />
