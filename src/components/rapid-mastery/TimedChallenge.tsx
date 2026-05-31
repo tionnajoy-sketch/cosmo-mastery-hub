@@ -80,7 +80,7 @@ export default function TimedChallenge({ terms }: { terms: TimedTerm[] }) {
         sectionId: q.term.section_id ?? null,
         blockNumber: q.term.block_number ?? null,
         isCorrect,
-        confidence: isCorrect ? "high" : "low",
+        confidence: isCorrect ? 4 : 2,
       });
     }
     setTimeout(() => {

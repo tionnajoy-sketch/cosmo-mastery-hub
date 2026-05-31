@@ -88,7 +88,7 @@ export default function MultipleChoiceRunner({ terms, limit = 10 }: { terms: MCQ
         sectionId: q.sectionId ?? null,
         blockNumber: q.blockNumber ?? null,
         isCorrect,
-        confidence: isCorrect ? "high" : "low",
+        confidence: isCorrect ? 4 : 2,
       });
     }
   };
