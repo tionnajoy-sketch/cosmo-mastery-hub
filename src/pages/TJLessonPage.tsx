@@ -15,6 +15,7 @@ interface TJLesson {
   title: string;
   cluster: string | null;
   purpose: string | null;
+  why_it_matters: string | null;
   definition: string | null;
   word_origin: string | null;
   related_concepts: string[] | null;
@@ -28,6 +29,7 @@ interface TJLesson {
   reflect_prompt: string | null;
   assess: { question?: string; type?: string; rubric?: string[] } | null;
   tj_insight: string | null;
+  accent_color: string | null;
   layer_color_overrides: Record<string, string> | null;
 }
 
