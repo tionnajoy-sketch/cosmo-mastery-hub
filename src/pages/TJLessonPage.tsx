@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Sparkles, BookOpen, Eye, Hand, Layers, Search, Lightbulb, Info, Heart, PenLine, Target, Wand2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, BookOpen, Eye, Hand, Layers, Search, Lightbulb, Info, Heart, PenLine, Target, Wand2, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
