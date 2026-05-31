@@ -245,7 +245,7 @@ export default function TJLessonPage() {
 }
 
 function LayerBody({
-  lesson, layer, reflection, setReflection, onSaveReflection, assessAnswer, setAssessAnswer,
+  lesson, layer, reflection, setReflection, onSaveReflection, assessAnswer, setAssessAnswer, onNavigateSlug,
 }: {
   lesson: TJLesson;
   layer: LayerDef;
@@ -254,19 +254,22 @@ function LayerBody({
   onSaveReflection: () => void;
   assessAnswer: string;
   setAssessAnswer: (v: string) => void;
+  onNavigateSlug: (slug: string) => void;
 }) {
   if (layer.key === "knowledge_web") {
     return (
       <div>
-        <p className="text-muted-foreground mb-5">This lesson connects to other concepts in your Knowledge Web™.</p>
+        <p className="text-muted-foreground mb-5">This lesson connects to other concepts in your Knowledge Web™. Tap to jump.</p>
         <div className="flex flex-wrap gap-2">
           {(lesson.related_concepts ?? []).map((c) => (
-            <span
+            <button
               key={c}
-              className="px-4 py-2 rounded-full text-sm font-medium border border-border bg-muted/40 text-foreground hover:border-foreground transition cursor-default"
+              onClick={() => onNavigateSlug(slugify(c))}
+              className="px-4 py-2 rounded-full text-sm font-medium border border-border bg-muted/40 text-foreground hover:border-foreground hover:bg-muted transition"
+              style={{ borderColor: lesson.accent_color || undefined }}
             >
               {c}
-            </span>
+            </button>
           ))}
         </div>
       </div>
