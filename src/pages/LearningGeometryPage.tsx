@@ -380,8 +380,48 @@ const LearningGeometryPage = () => {
         {/* Dimension Cards */}
         <div className="mt-6">
           <div className="text-[10px] uppercase tracking-[0.22em] font-bold mb-3" style={{ color: "hsl(var(--plum))" }}>
-            Six Dimensions
+            The Seven Learning Dimensions™
           </div>
+
+          {/* Core Term Mastery — the center of the geometry */}
+          <button
+            onClick={() => {}}
+            className="w-full text-left p-4 rounded-2xl border mb-3 shadow-md"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--plum)), hsl(var(--violet)))",
+              borderColor: "hsl(var(--gold) / 0.5)",
+              color: "hsl(var(--cream))",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "hsl(var(--gold) / 0.22)", boxShadow: "0 0 14px hsl(var(--gold) / 0.6)" }}
+              >
+                <span className="font-display font-bold text-sm" style={{ color: "hsl(var(--gold))" }}>
+                  82
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-display font-bold text-sm">Core Term Mastery™</h3>
+                  <span
+                    className="text-[9px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full"
+                    style={{ background: "hsl(var(--gold) / 0.22)", color: "hsl(var(--gold))" }}
+                  >
+                    Center of the Geometry
+                  </span>
+                </div>
+                <p className="text-xs italic mt-0.5 opacity-85">
+                  The anchor every dimension connects back to.
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--cream) / 0.18)" }}>
+              <div className="h-full rounded-full" style={{ width: "82%", background: "linear-gradient(90deg, hsl(var(--gold)), hsl(var(--cream)))" }} />
+            </div>
+          </button>
+
           <div className="grid grid-cols-1 gap-3">
             {DIMENSIONS.map((d) => {
               const g = glowFor(d.score);
