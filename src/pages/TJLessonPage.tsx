@@ -198,7 +198,7 @@ export default function TJLessonPage() {
             <ArrowLeft className="h-4 w-4 mr-1" /> Previous
           </Button>
           {!isLast ? (
-            <Button onClick={() => setStep((s) => s + 1)} style={{ backgroundColor: current.color, color: "white" }}>
+            <Button onClick={() => setStep((s) => s + 1)} style={{ backgroundColor: lesson.accent_color || current.color, color: "white" }}>
               Next layer <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
