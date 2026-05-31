@@ -159,9 +159,9 @@ export default function TJLessonPage() {
           >
             <Card
               className="relative overflow-hidden border-border/60 shadow-xl bg-card"
-              style={{ boxShadow: `0 20px 60px -30px ${current.color}` }}
+              style={{ boxShadow: `0 24px 70px -28px ${lesson.accent_color || current.color}, 0 14px 40px -30px ${current.color}` }}
             >
-              <div className="h-1.5 w-full" style={{ backgroundColor: current.color }} />
+              <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${current.color}, ${lesson.accent_color || current.color})` }} />
               <div className="p-7 sm:p-10">
                 <div className="flex items-center gap-3 mb-5">
                   <div
