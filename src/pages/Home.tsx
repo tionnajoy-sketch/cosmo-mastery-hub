@@ -24,6 +24,7 @@ import { openTJCafe } from "@/hooks/useStudyBreak";
 import { Eye, Mic, PenLine, BookOpen as BookOpenIcon2 } from "lucide-react";
 import BehaviorSummaryPanel from "@/components/behavior-summary/BehaviorSummaryPanel";
 import ThinkingPatternCard from "@/components/thinking-pattern/ThinkingPatternCard";
+import learningGeometryHero from "@/assets/learning-geometry-hero.png";
 
 const c = pageColors.home;
 
@@ -190,7 +191,16 @@ const Home = () => {
 
       {/* ── Hero Welcome ── */}
       <div className="px-4 pt-10 pb-4 max-w-2xl mx-auto w-full">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative">
+          {/* Learning Geometry™ watermark */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-6 -right-10 w-56 h-56 opacity-[0.07] bg-no-repeat bg-contain bg-center"
+            style={{
+              backgroundImage: `url(${learningGeometryHero})`,
+              mixBlendMode: "multiply",
+            }}
+          />
           <div className="mb-1 text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "hsl(var(--violet))" }}>
             TJ Anderson Layer Method<span style={{ color: "hsl(var(--gold))" }}>™</span>
           </div>
@@ -203,6 +213,7 @@ const Home = () => {
           <p className="text-base text-muted-foreground leading-relaxed mt-3">
             {confidenceMessage}
           </p>
+
 
           {/* Three primary experiences */}
           <div className="mt-6 grid grid-cols-1 gap-3">
