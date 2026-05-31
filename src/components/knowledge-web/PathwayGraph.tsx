@@ -231,6 +231,19 @@ export default function PathwayGraph({ lessons, onSelect }: PathwayGraphProps) {
             const color = l.accent_color || "hsl(var(--foreground))";
             const r = nodeRadius(l);
             const opacity = isHighlighted(l.slug) ? 1 : 0.25;
+            const depth = depthBySlug[l.slug] ?? 0;
+            const layerLabel = depth === 0 ? "Foundation" : depth === maxDepth ? "Advanced" : `Layer ${depth}`;
+            const connectionsIn = prereqEdges.filter((e) => e.to === l.slug).length;
+            const connectionsOut = prereqEdges.filter((e) => e.from === l.slug).length;
+            const relatedCount = relatedEdges.filter((e) => e.from === l.slug || e.to === l.slug).length;
+            const masteryLabel =
+              l.mastery === "mastered" ? "Mastered" :
+              l.mastery === "in_progress" ? "In progress" : "Not started";
+            const masteryColor =
+              l.mastery === "mastered" ? "hsl(145 55% 42%)" :
+              l.mastery === "in_progress" ? "hsl(42 80% 52%)" : "hsl(270 60% 50%)";
+            const relatedNames = (l.related_concepts ?? []).slice(0, 4);
+            const isHover = hovered === l.slug;
             return (
               <g
                 key={l.slug}
@@ -241,13 +254,13 @@ export default function PathwayGraph({ lessons, onSelect }: PathwayGraphProps) {
                 onMouseLeave={() => setHovered(null)}
                 onClick={() => onSelect?.(l.slug)}
               >
-                <circle r={r + 8} fill={color} opacity={0.12} />
+                <circle r={r + 8} fill={color} opacity={isHover ? 0.22 : 0.12} />
                 <circle
                   r={r}
                   fill={color}
                   fillOpacity={nodeFillOpacity(l)}
                   stroke={color}
-                  strokeWidth={2}
+                  strokeWidth={isHover ? 3 : 2}
                 />
                 {l.mastery === "mastered" && (
                   <path
@@ -267,10 +280,40 @@ export default function PathwayGraph({ lessons, onSelect }: PathwayGraphProps) {
                 >
                   {l.title}
                 </text>
-                {hovered === l.slug && l.purpose && (
-                  <foreignObject x={-90} y={r + 22} width={180} height={70}>
-                    <div className="text-[10px] leading-snug text-muted-foreground text-center bg-background/95 backdrop-blur rounded-md px-2 py-1 border border-border">
-                      {l.purpose}
+                {isHover && (
+                  <foreignObject x={-120} y={r + 22} width={240} height={160}>
+                    <div className="text-left bg-popover/98 backdrop-blur rounded-lg px-3 py-2 border border-border shadow-xl">
+                      <div className="text-[9px] uppercase tracking-[0.18em] font-bold mb-1" style={{ color }}>
+                        {layerLabel}
+                      </div>
+                      <div className="text-[12px] font-semibold text-foreground leading-tight mb-1.5">
+                        {l.title}
+                      </div>
+                      {l.purpose && (
+                        <div className="text-[10px] text-muted-foreground leading-snug mb-2 line-clamp-2">
+                          {l.purpose}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span
+                          className="inline-block h-2 w-2 rounded-full"
+                          style={{ background: masteryColor, boxShadow: `0 0 6px ${masteryColor}` }}
+                        />
+                        <span className="text-[10px] font-semibold" style={{ color: masteryColor }}>
+                          {masteryLabel}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mb-1">
+                        <span className="font-semibold text-foreground">{connectionsIn}</span> in ·{" "}
+                        <span className="font-semibold text-foreground">{connectionsOut}</span> out ·{" "}
+                        <span className="font-semibold text-foreground">{relatedCount}</span> related
+                      </div>
+                      {relatedNames.length > 0 && (
+                        <div className="text-[10px] text-muted-foreground leading-snug">
+                          <span className="uppercase tracking-[0.14em] font-bold text-[9px] text-foreground/70">Connects to:</span>{" "}
+                          {relatedNames.join(" · ")}
+                        </div>
+                      )}
                     </div>
                   </foreignObject>
                 )}

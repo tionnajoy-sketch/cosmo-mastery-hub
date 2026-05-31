@@ -210,21 +210,21 @@ const LearningGeometryPage = () => {
               />
 
               {/* Core */}
-              <circle cx={CX} cy={CY} r={68} fill="url(#coreGlow)" />
+              <circle cx={CX} cy={CY} r={74} fill="url(#coreGlow)" />
               <circle
                 cx={CX}
                 cy={CY}
-                r={44}
+                r={50}
                 fill="hsl(var(--plum))"
                 stroke="hsl(var(--gold))"
                 strokeWidth={2}
               />
               <text
                 x={CX}
-                y={CY - 5}
+                y={CY - 14}
                 textAnchor="middle"
                 fontFamily="DM Sans, sans-serif"
-                fontSize="9"
+                fontSize="8"
                 fontWeight="700"
                 fill="hsl(var(--gold))"
                 letterSpacing="3"
@@ -233,14 +233,25 @@ const LearningGeometryPage = () => {
               </text>
               <text
                 x={CX}
-                y={CY + 13}
+                y={CY + 3}
                 textAnchor="middle"
                 fontFamily="Playfair Display, serif"
-                fontSize="15"
+                fontSize="13"
                 fontWeight="700"
                 fill="hsl(var(--cream))"
               >
                 TERM
+              </text>
+              <text
+                x={CX}
+                y={CY + 19}
+                textAnchor="middle"
+                fontFamily="Playfair Display, serif"
+                fontSize="13"
+                fontWeight="700"
+                fill="hsl(var(--cream))"
+              >
+                MASTERY
               </text>
 
               {/* Dimension nodes */}

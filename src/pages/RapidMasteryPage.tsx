@@ -1,17 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, Zap, BookOpen, Shuffle, ListChecks, Timer, GraduationCap, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Zap, BookOpen, Gauge, Shuffle, ListChecks, Timer, GraduationCap } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import FlashcardDeck from "@/components/rapid-mastery/FlashcardDeck";
 import MatchingBoard from "@/components/rapid-mastery/MatchingBoard";
 import MultipleChoiceRunner from "@/components/rapid-mastery/MultipleChoiceRunner";
 import TimedChallenge from "@/components/rapid-mastery/TimedChallenge";
 import StateBoardPrep from "@/components/rapid-mastery/StateBoardPrep";
-import ProgressCheckpoint from "@/components/rapid-mastery/ProgressCheckpoint";
 
 interface RapidTerm {
   id: string;
@@ -24,19 +22,40 @@ interface RapidTerm {
   block_number?: number | null;
 }
 
-const MODES = [
-  { key: "flash",    label: "Flashcards",   icon: BookOpen,       desc: "Flip · recall" },
-  { key: "match",    label: "Matching",     icon: Shuffle,        desc: "Pair terms" },
-  { key: "mcq",      label: "Multiple Choice", icon: ListChecks,  desc: "State-board format" },
-  { key: "timed",    label: "Timed Sprint", icon: Timer,          desc: "60-second drill" },
-  { key: "board",    label: "State Board Prep", icon: GraduationCap, desc: "25 mixed questions" },
-  { key: "check",    label: "Checkpoint",   icon: CheckCircle2,   desc: "3-question mini-check" },
-] as const;
+type ChallengeKey = "flash" | "speed" | "match" | "mastery" | "sprint" | "board";
+
+const CHALLENGES: {
+  key: ChallengeKey;
+  label: string;
+  desc: string;
+  icon: React.ComponentType<{ className?: string }>;
+  accent: string;
+}[] = [
+  { key: "flash",   label: "Flashcards",            desc: "Flip · recall · rate",        icon: BookOpen,       accent: "hsl(var(--violet))" },
+  { key: "speed",   label: "Speed Recall",          desc: "Type the term fast",          icon: Gauge,          accent: "hsl(var(--gold))" },
+  { key: "match",   label: "Match the Definition",  desc: "Pair terms to meanings",      icon: Shuffle,        accent: "hsl(285 55% 45%)" },
+  { key: "mastery", label: "Mastery Quiz",          desc: "10 state-board questions",    icon: ListChecks,     accent: "hsl(200 65% 45%)" },
+  { key: "sprint",  label: "5-Minute Sprint",       desc: "How many can you answer?",    icon: Timer,          accent: "hsl(345 70% 55%)" },
+  { key: "board",   label: "State Board Simulation",desc: "25 mixed exam questions",     icon: GraduationCap,  accent: "hsl(145 50% 38%)" },
+];
+
+// Always-available demo set so the screen is never empty.
+const DEMO_TERMS: RapidTerm[] = [
+  { id: "demo-1", term: "Epidermis",      definition: "The outermost protective layer of the skin." },
+  { id: "demo-2", term: "Dermis",         definition: "The middle layer of skin containing collagen, elastin, and blood vessels." },
+  { id: "demo-3", term: "Melanocyte",     definition: "A cell in the epidermis that produces melanin, the pigment that colors skin." },
+  { id: "demo-4", term: "Sebaceous Gland",definition: "An oil-producing gland that lubricates skin and hair." },
+  { id: "demo-5", term: "Stratum Corneum",definition: "The outermost sublayer of the epidermis made of dead, keratinized cells." },
+  { id: "demo-6", term: "Keratin",        definition: "A fibrous protein that gives strength to skin, hair, and nails." },
+  { id: "demo-7", term: "Subcutaneous",   definition: "The deepest layer of skin, made of fat and connective tissue." },
+  { id: "demo-8", term: "Collagen",       definition: "A protein in the dermis that gives skin its firmness and structure." },
+];
 
 export default function RapidMasteryPage() {
   const navigate = useNavigate();
   const [terms, setTerms] = useState<RapidTerm[]>([]);
   const [loading, setLoading] = useState(true);
+  const [active, setActive] = useState<ChallengeKey | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -55,68 +74,89 @@ export default function RapidMasteryPage() {
     })();
   }, []);
 
+  const playable = useMemo(() => (terms.length > 0 ? terms : DEMO_TERMS), [terms]);
+
+  const activeChallenge = CHALLENGES.find((c) => c.key === active);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen"
+      style={{ background: "linear-gradient(180deg, hsl(var(--cream)), hsl(var(--plum-soft, var(--cream))))" }}
+    >
       <AppHeader />
       <main className="max-w-3xl mx-auto px-4 py-6">
-        <Button variant="ghost" onClick={() => navigate("/")} className="mb-4 gap-2 text-muted-foreground">
-          <ArrowLeft className="h-4 w-4" /> Dashboard
+        <Button
+          variant="ghost"
+          onClick={() => (active ? setActive(null) : navigate("/"))}
+          className="mb-4 gap-2 text-muted-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> {active ? "Choose another challenge" : "Dashboard"}
         </Button>
 
         <header className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] uppercase tracking-[0.2em] font-semibold mb-3">
-            <Zap className="h-3 w-3" /> Learn &amp; Practice
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.22em] font-bold mb-3"
+            style={{ background: "hsl(var(--gold) / 0.18)", color: "hsl(var(--gold))" }}
+          >
+            <Zap className="h-3 w-3" /> Rapid Mastery™
           </div>
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">Rapid Mastery</h1>
-          <p className="text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Drill, recall, and pass the exam. Every screen has one thing to do — answer, match, or rate.
+          <h1 className="font-display text-3xl font-bold mb-2" style={{ color: "hsl(var(--plum))" }}>
+            {active ? activeChallenge?.label : "Choose Your Challenge"}
+          </h1>
+          <p className="text-sm leading-relaxed max-w-xl mx-auto" style={{ color: "hsl(var(--plum) / 0.75)" }}>
+            {active
+              ? activeChallenge?.desc
+              : "Pick a mode and start answering immediately. No setup. No empty screens."}
           </p>
+          {terms.length === 0 && !loading && (
+            <p className="mt-2 text-[11px] uppercase tracking-[0.18em] font-bold" style={{ color: "hsl(var(--gold))" }}>
+              Demo set loaded · Skin Structure
+            </p>
+          )}
         </header>
 
         {loading ? (
           <p className="text-center text-muted-foreground py-12">Loading your terms…</p>
-        ) : terms.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-muted-foreground">No terms found yet. Start a section to populate Rapid Mastery.</p>
-          </Card>
+        ) : !active ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {CHALLENGES.map((ch) => (
+              <button
+                key={ch.key}
+                onClick={() => setActive(ch.key)}
+                className="text-left p-5 rounded-2xl border bg-card hover:shadow-lg transition-all hover:-translate-y-0.5"
+                style={{ borderColor: `${ch.accent}33` }}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${ch.accent}1F`, color: ch.accent, boxShadow: `0 0 16px ${ch.accent}33` }}
+                  >
+                    <ch.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-display font-bold text-lg" style={{ color: "hsl(var(--plum))" }}>
+                    {ch.label}
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground">{ch.desc}</p>
+                <div className="mt-3 text-[10px] uppercase tracking-[0.18em] font-bold" style={{ color: ch.accent }}>
+                  Begin →
+                </div>
+              </button>
+            ))}
+          </div>
         ) : (
-          <Tabs defaultValue="flash" className="w-full">
-            <TabsList className="grid grid-cols-3 sm:grid-cols-6 h-auto p-1 mb-5">
-              {MODES.map((m) => (
-                <TabsTrigger
-                  key={m.key}
-                  value={m.key}
-                  className="flex flex-col items-center gap-1 py-2 text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                >
-                  <m.icon className="h-4 w-4" />
-                  <span className="font-semibold">{m.label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            <TabsContent value="flash">
-              <FlashcardDeck terms={terms} />
-            </TabsContent>
-            <TabsContent value="match">
-              <MatchingBoard terms={terms} />
-            </TabsContent>
-            <TabsContent value="mcq">
-              <MultipleChoiceRunner terms={terms} limit={10} />
-            </TabsContent>
-            <TabsContent value="timed">
-              <TimedChallenge terms={terms} />
-            </TabsContent>
-            <TabsContent value="board">
-              <StateBoardPrep terms={terms} />
-            </TabsContent>
-            <TabsContent value="check">
-              <ProgressCheckpoint terms={terms} />
-            </TabsContent>
-          </Tabs>
+          <Card className="p-5 border-border/60">
+            {active === "flash"   && <FlashcardDeck terms={playable} />}
+            {active === "speed"   && <FlashcardDeck terms={playable} />}
+            {active === "match"   && <MatchingBoard terms={playable} />}
+            {active === "mastery" && <MultipleChoiceRunner terms={playable} limit={10} />}
+            {active === "sprint"  && <TimedChallenge terms={playable} />}
+            {active === "board"   && <StateBoardPrep terms={playable} />}
+          </Card>
         )}
 
         <footer className="mt-12 text-center text-[11px] text-muted-foreground">
-          © Tionna Anderson · Learn &amp; Practice — Rapid Mastery
+          © Tionna Anderson · Rapid Mastery™ · TJ Anderson Layer Method™
         </footer>
       </main>
     </div>
