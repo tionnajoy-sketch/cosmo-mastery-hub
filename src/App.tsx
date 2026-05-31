@@ -64,6 +64,7 @@ import LmsInstructorDashboardPage from "./pages/lms/LmsInstructorDashboardPage";
 import LmsCurriculumBuilderPage from "./pages/lms/LmsCurriculumBuilderPage";
 import NotFound from "./pages/NotFound";
 import TJLessonPage from "./pages/TJLessonPage";
+import TJClusterPage from "./pages/TJClusterPage";
 import GlobalMenuFab from "@/components/GlobalMenuFab";
 import DNAProgressBubble from "@/components/DNAProgressBubble";
 
