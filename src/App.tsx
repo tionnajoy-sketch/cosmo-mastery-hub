@@ -48,6 +48,7 @@ import GameGridPage from "./pages/GameGridPage";
 import LearningDNAPage from "./pages/LearningDNAPage";
 import IntelligencePage from "./pages/IntelligencePage";
 import PracticeLabPage from "./pages/PracticeLabPage";
+import RapidMasteryPage from "./pages/RapidMasteryPage";
 import CommunityBoardPage from "./pages/CommunityBoardPage";
 import TJCafe from "./components/TJCafe";
 import { useStudyBreak } from "./hooks/useStudyBreak";
@@ -108,8 +109,9 @@ const AppContent = () => {
         <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
         <Route path="/learn" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
         <Route path="/study-modules" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
-        {/* Practice Lab merged into /learn — keep route alive but render merged Learn page */}
-        <Route path="/practice-lab" element={<ProtectedRoute><GameGridPage /></ProtectedRoute>} />
+        {/* Learn & Practice — Rapid Mastery environment (flashcards, MCQ, timed, state board prep) */}
+        <Route path="/practice" element={<ProtectedRoute><RapidMasteryPage /></ProtectedRoute>} />
+        <Route path="/practice-lab" element={<ProtectedRoute><RapidMasteryPage /></ProtectedRoute>} />
         <Route path="/community" element={<ProtectedRoute><CommunityBoardPage /></ProtectedRoute>} />
         <Route path="/strategy" element={<ProtectedRoute><StrategyPage /></ProtectedRoute>} />
         <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />

@@ -198,14 +198,36 @@ const Home = () => {
             {confidenceMessage}
           </p>
 
-          {/* TWO Primary Actions */}
-          <div className="mt-6 grid grid-cols-2 gap-4">
-            <Button className="py-7 text-base font-display font-semibold gap-2 shadow-lg rounded-xl" onClick={() => navigate("/learn")}>
-              <BookOpen className="h-5 w-5" /> Start Learning
-            </Button>
-            <Button variant="secondary" className="py-7 text-base font-display font-semibold gap-2 shadow-md rounded-xl" onClick={() => navigate("/practice-lab")}>
-              <Gamepad2 className="h-5 w-5" /> Practice Lab
-            </Button>
+          {/* Two distinct learning environments */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              onClick={() => navigate("/practice")}
+              className="group text-left p-5 rounded-2xl border-2 bg-card hover:shadow-lg transition-all min-h-[160px] flex flex-col"
+              style={{ borderColor: "hsl(215 70% 50% / 0.35)" }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(215 70% 50% / 0.15)" }}>
+                  <Gamepad2 className="h-5 w-5" style={{ color: "hsl(215 70% 50%)" }} />
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.18em] font-bold" style={{ color: "hsl(215 70% 50%)" }}>Learn &amp; Practice</span>
+              </div>
+              <h3 className="font-display text-lg font-bold text-foreground mb-1">Rapid Mastery</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed flex-1">Drill, recall, and pass the exam. Flashcards, MCQs, timed sprints, state board prep.</p>
+            </button>
+            <button
+              onClick={() => navigate("/cluster/skin-structure-and-growth")}
+              className="group text-left p-5 rounded-2xl border-2 bg-card hover:shadow-lg transition-all min-h-[160px] flex flex-col"
+              style={{ borderColor: "hsl(345 75% 55% / 0.35)", background: "linear-gradient(135deg, hsl(345 75% 55% / 0.06), hsl(var(--card)))" }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(345 75% 55% / 0.15)" }}>
+                  <BookOpen className="h-5 w-5" style={{ color: "hsl(345 75% 55%)" }} />
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.18em] font-bold" style={{ color: "hsl(345 75% 55%)" }}>Layer Method™ v2</span>
+              </div>
+              <h3 className="font-display text-lg font-bold text-foreground mb-1">Deep Learning</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed flex-1">Think it. Connect it. Transform it. Knowledge Web™, layers, reflection, TJ Insight™.</p>
+            </button>
           </div>
           <div className="mt-3">
             <Button

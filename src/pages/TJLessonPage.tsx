@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import ActiveBeat from "@/components/tj-lesson/ActiveBeat";
+import ReflectionWithTJ from "@/components/tj-lesson/ReflectionWithTJ";
 
 interface TJLesson {
   id: string;
@@ -278,19 +280,54 @@ function LayerBody({
 
   if (layer.key === "reflect") {
     return (
+      <ReflectionWithTJ
+        lessonSlug={lesson.slug}
+        lessonTitle={lesson.title}
+        prompt={lesson.reflect_prompt || ""}
+        accentColor={lesson.accent_color || layer.color}
+      />
+    );
+  }
+
+  if (layer.key === "visualize") {
+    const content = (lesson as any)[layer.key] as string;
+    return (
       <div>
-        <p className="text-card-foreground font-display text-lg leading-relaxed mb-4">{lesson.reflect_prompt}</p>
-        <Textarea
-          value={reflection}
-          onChange={(e) => setReflection(e.target.value)}
-          placeholder="Write what comes up for you…"
-          className="min-h-[140px] resize-none"
+        <p className="text-card-foreground text-lg leading-relaxed font-light whitespace-pre-line">{content}</p>
+        <ActiveBeat
+          prompt="What's the first thing you notice when you picture this?"
+          accentColor={lesson.accent_color || layer.color}
+          acknowledgement="That noticing is your visual anchor — hold onto it."
         />
-        <div className="flex justify-end mt-3">
-          <Button onClick={onSaveReflection} disabled={!reflection.trim()} style={{ backgroundColor: layer.color, color: "white" }}>
-            Save to my journal
-          </Button>
-        </div>
+      </div>
+    );
+  }
+
+  if (layer.key === "apply") {
+    const content = (lesson as any)[layer.key] as string;
+    return (
+      <div>
+        <p className="text-card-foreground text-lg leading-relaxed font-light whitespace-pre-line">{content}</p>
+        <ActiveBeat
+          prompt="In your own work, where would this show up first?"
+          options={["On the client's skin", "In my consultation", "In product choice", "I'm not sure yet"]}
+          accentColor={lesson.accent_color || layer.color}
+        />
+      </div>
+    );
+  }
+
+  if (layer.key === "awareness") {
+    const content = (lesson as any)[layer.key] as string;
+    return (
+      <div>
+        <p className="text-card-foreground text-lg leading-relaxed font-light whitespace-pre-line">{content}</p>
+        <ActiveBeat
+          prompt="Right now, how solid does this feel?"
+          options={["Clicked — I see it", "Half-there", "Still fuzzy"]}
+          accentColor={lesson.accent_color || layer.color}
+          acknowledgement="Naming where you are is half the work."
+        />
       </div>
     );
   }
