@@ -30,13 +30,14 @@ const AppMenuSheet = () => {
   const go = (path: string) => () => { close(); navigate(path); };
 
   const core: MenuItem[] = [
-    { label: "Dashboard",        icon: BookOpen,       onClick: go("/"),                  color: "265 60% 50%" },
-    { label: "Intelligence",     icon: Sparkles,       onClick: go("/intelligence"),      color: "38 80% 55%", highlight: true },
-    { label: "Layer Method™ v2.0", icon: Sparkles,     onClick: go("/cluster/skin-structure-and-growth"), color: "345 75% 55%", highlight: true },
-    { label: "Learn & Practice", icon: Grid3X3,        onClick: go("/learn"),             color: "215 70% 50%" },
-    { label: "Progress",         icon: BarChart3,      onClick: go("/progress"),          color: "42 70% 50%" },
-    { label: "Final Exam",       icon: GraduationCap,  onClick: go("/comprehensive-exam"),color: "320 55% 48%" },
-    { label: "Foreword",         icon: Library,        onClick: go("/welcome"),           color: "25 70% 50%" },
+    { label: "Dashboard",          icon: BookOpen,      onClick: go("/"),                                color: "265 60% 50%" },
+    { label: "Learn & Practice",   icon: Grid3X3,       onClick: go("/practice"),                        color: "215 70% 50%", highlight: true },
+    { label: "Layer Method™ v2",   icon: Sparkles,      onClick: go("/cluster/skin-structure-and-growth"), color: "345 75% 55%", highlight: true },
+    { label: "Intelligence",       icon: Sparkles,      onClick: go("/intelligence"),                    color: "38 80% 55%" },
+    { label: "Sections",           icon: Library,       onClick: go("/learn"),                           color: "175 55% 42%" },
+    { label: "Progress",           icon: BarChart3,     onClick: go("/progress"),                        color: "42 70% 50%" },
+    { label: "Final Exam",         icon: GraduationCap, onClick: go("/comprehensive-exam"),              color: "320 55% 48%" },
+    { label: "Foreword",           icon: Library,       onClick: go("/welcome"),                         color: "25 70% 50%" },
   ];
 
   const resources: MenuItem[] = [

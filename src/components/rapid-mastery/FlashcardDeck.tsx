@@ -44,7 +44,7 @@ export default function FlashcardDeck({ terms }: { terms: FlashcardTerm[] }) {
       sectionId: card.section_id ?? null,
       blockNumber: card.block_number ?? null,
       isCorrect: got,
-      confidence: got ? "high" : "low",
+      confidence: got ? 4 : 2,
     });
     advance();
   };
