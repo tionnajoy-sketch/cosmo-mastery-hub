@@ -26,6 +26,10 @@ const CLUSTER_TITLES: Record<string, { title: string; intent: string }> = {
     title: "Skin Structure & Growth",
     intent: "The foundation of every service you'll ever perform. Ten lessons, woven together, building the way you see skin forever.",
   },
+  "general-anatomy-and-physiology": {
+    title: "General Anatomy & Physiology",
+    intent: "Cells become tissues. Tissues become organs. Organs become systems. Ten lessons that layer the entire body into one connected picture.",
+  },
 };
 
 function slugify(s: string) {
