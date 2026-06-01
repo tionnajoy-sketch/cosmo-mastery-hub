@@ -105,6 +105,47 @@ const AppMenuSheet = () => {
 
         <div className="space-y-5">
           <SectionGrid title="Core" items={core} />
+
+          {/* Deep Learning™ — collapsible cluster picker */}
+          <Collapsible defaultOpen>
+            <div className="space-y-2">
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-1 group">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Deep Learning™</p>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2">
+                {DEEP_LEARNING_CLUSTERS.map((c) => {
+                  const disabled = !c.slug;
+                  return (
+                    <button
+                      key={c.label}
+                      disabled={disabled}
+                      onClick={() => { if (c.slug) { close(); navigate(`/cluster/${c.slug}`); } }}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl border bg-card hover:bg-accent transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={!disabled ? {
+                        background: `linear-gradient(135deg, hsl(285 45% 32%/0.12), hsl(285 45% 32%/0.04))`,
+                        borderColor: `hsl(285 45% 32%/0.3)`,
+                      } : undefined}
+                    >
+                      <div
+                        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ background: `hsl(285 45% 32%/0.15)` }}
+                      >
+                        {disabled
+                          ? <Lock className="h-4 w-4" style={{ color: `hsl(285 45% 32%)` }} />
+                          : <Sparkles className="h-4 w-4" style={{ color: `hsl(285 45% 32%)` }} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold text-foreground leading-tight">{c.label}</div>
+                        {c.note && <div className="text-[10px] text-muted-foreground mt-0.5">{c.note}</div>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
+
           <SectionGrid title="Resources" items={resources} />
           <SectionGrid title="Premium Tools" items={premium} />
 
