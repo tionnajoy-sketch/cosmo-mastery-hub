@@ -5,13 +5,20 @@ import { openTJCafe } from "@/hooks/useStudyBreak";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   BookOpen, Menu, LogOut, BarChart3, Upload,
   GraduationCap, MessageCircle, Library, Grid3X3,
   Coffee, NotebookPen, Hexagon, Trophy, Users,
-  Volume2, VolumeX, Sparkles, Zap,
+  Volume2, VolumeX, Sparkles, Zap, ChevronDown, Lock,
 } from "lucide-react";
 import { isVoiceGloballyPaused, setVoiceGloballyPaused } from "@/hooks/useAutoNarrate";
+
+const DEEP_LEARNING_CLUSTERS: { label: string; slug: string | null; note?: string }[] = [
+  { label: "Skin Structure & Growth", slug: "skin-structure-and-growth" },
+  { label: "General Anatomy & Physiology", slug: "general-anatomy-and-physiology" },
+  { label: "Infectious Disease", slug: null, note: "Coming soon" },
+];
 
 interface MenuItem {
   label: string;
@@ -32,7 +39,6 @@ const AppMenuSheet = () => {
   const core: MenuItem[] = [
     { label: "Dashboard",            icon: BookOpen,      onClick: go("/"),                                color: "285 45% 32%" },
     { label: "Rapid Mastery™",       icon: Zap,           onClick: go("/practice"),                        color: "42 75% 50%", highlight: true },
-    { label: "Deep Learning™",       icon: Sparkles,      onClick: go("/cluster/skin-structure-and-growth"), color: "285 45% 32%", highlight: true },
     { label: "Learning Geometry™",   icon: Hexagon,       onClick: go("/learning-geometry"),               color: "270 60% 45%", highlight: true },
     { label: "Progress",             icon: BarChart3,     onClick: go("/progress"),                        color: "270 50% 40%" },
     { label: "Final Exam",           icon: GraduationCap, onClick: go("/comprehensive-exam"),              color: "285 45% 32%" },
@@ -99,6 +105,47 @@ const AppMenuSheet = () => {
 
         <div className="space-y-5">
           <SectionGrid title="Core" items={core} />
+
+          {/* Deep Learning™ — collapsible cluster picker */}
+          <Collapsible defaultOpen>
+            <div className="space-y-2">
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-1 group">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Deep Learning™</p>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2">
+                {DEEP_LEARNING_CLUSTERS.map((c) => {
+                  const disabled = !c.slug;
+                  return (
+                    <button
+                      key={c.label}
+                      disabled={disabled}
+                      onClick={() => { if (c.slug) { close(); navigate(`/cluster/${c.slug}`); } }}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl border bg-card hover:bg-accent transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={!disabled ? {
+                        background: `linear-gradient(135deg, hsl(285 45% 32%/0.12), hsl(285 45% 32%/0.04))`,
+                        borderColor: `hsl(285 45% 32%/0.3)`,
+                      } : undefined}
+                    >
+                      <div
+                        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ background: `hsl(285 45% 32%/0.15)` }}
+                      >
+                        {disabled
+                          ? <Lock className="h-4 w-4" style={{ color: `hsl(285 45% 32%)` }} />
+                          : <Sparkles className="h-4 w-4" style={{ color: `hsl(285 45% 32%)` }} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold text-foreground leading-tight">{c.label}</div>
+                        {c.note && <div className="text-[10px] text-muted-foreground mt-0.5">{c.note}</div>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
+
           <SectionGrid title="Resources" items={resources} />
           <SectionGrid title="Premium Tools" items={premium} />
 
