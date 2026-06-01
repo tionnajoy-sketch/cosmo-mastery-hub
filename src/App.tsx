@@ -136,6 +136,7 @@ const AppContent = () => {
         <Route path="/lms/instructor" element={<ProtectedRoute><LmsInstructorDashboardPage /></ProtectedRoute>} />
         <Route path="/lms/builder" element={<ProtectedRoute><LmsCurriculumBuilderPage /></ProtectedRoute>} />
         <Route path="/lesson/:slug" element={<ProtectedRoute><TJLessonPage /></ProtectedRoute>} />
+        <Route path="/cluster/skin-structure-and-growth" element={<ProtectedRoute><SkinStructureClusterPage /></ProtectedRoute>} />
         <Route path="/cluster/:slug" element={<ProtectedRoute><TJClusterPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
