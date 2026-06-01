@@ -5,13 +5,20 @@ import { openTJCafe } from "@/hooks/useStudyBreak";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   BookOpen, Menu, LogOut, BarChart3, Upload,
   GraduationCap, MessageCircle, Library, Grid3X3,
   Coffee, NotebookPen, Hexagon, Trophy, Users,
-  Volume2, VolumeX, Sparkles, Zap,
+  Volume2, VolumeX, Sparkles, Zap, ChevronDown, Lock,
 } from "lucide-react";
 import { isVoiceGloballyPaused, setVoiceGloballyPaused } from "@/hooks/useAutoNarrate";
+
+const DEEP_LEARNING_CLUSTERS: { label: string; slug: string | null; note?: string }[] = [
+  { label: "Skin Structure & Growth", slug: "skin-structure-and-growth" },
+  { label: "General Anatomy & Physiology", slug: "general-anatomy-and-physiology" },
+  { label: "Infectious Disease", slug: null, note: "Coming soon" },
+];
 
 interface MenuItem {
   label: string;
