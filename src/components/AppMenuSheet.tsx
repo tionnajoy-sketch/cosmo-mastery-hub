@@ -39,7 +39,6 @@ const AppMenuSheet = () => {
   const core: MenuItem[] = [
     { label: "Dashboard",            icon: BookOpen,      onClick: go("/"),                                color: "285 45% 32%" },
     { label: "Rapid Mastery™",       icon: Zap,           onClick: go("/practice"),                        color: "42 75% 50%", highlight: true },
-    { label: "Deep Learning™",       icon: Sparkles,      onClick: go("/cluster/skin-structure-and-growth"), color: "285 45% 32%", highlight: true },
     { label: "Learning Geometry™",   icon: Hexagon,       onClick: go("/learning-geometry"),               color: "270 60% 45%", highlight: true },
     { label: "Progress",             icon: BarChart3,     onClick: go("/progress"),                        color: "270 50% 40%" },
     { label: "Final Exam",           icon: GraduationCap, onClick: go("/comprehensive-exam"),              color: "285 45% 32%" },
