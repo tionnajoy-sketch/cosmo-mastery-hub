@@ -22,14 +22,28 @@ interface ClusterLesson {
 }
 
 const CLUSTER_TITLES: Record<string, { title: string; intent: string }> = {
-  "skin-structure-and-growth": {
-    title: "Skin Structure & Growth",
-    intent: "The foundation of every service you'll ever perform. Ten lessons, woven together, building the way you see skin forever.",
-  },
-  "general-anatomy-and-physiology": {
-    title: "General Anatomy & Physiology",
-    intent: "Cells become tissues. Tissues become organs. Organs become systems. Ten lessons that layer the entire body into one connected picture.",
-  },
+  "skin-structure-and-growth": { title: "Skin Structure & Growth", intent: "The foundation of every service you'll ever perform. Ten lessons, woven together, building the way you see skin forever." },
+  "general-anatomy-and-physiology": { title: "General Anatomy & Physiology", intent: "Cells become tissues. Tissues become organs. Organs become systems. Ten lessons that layer the entire body into one connected picture." },
+  "cells-cell-structure": { title: "Cells & Cell Structure", intent: "Every body system starts here. Learn the parts of the cell — and how your clients' bodies are built from these tiny units up." },
+  "cellular-metabolism": { title: "Cellular Metabolism", intent: "How cells use energy to grow, divide, and repair. This is why hair grows back, why skin heals, why nails regenerate." },
+  "tissues": { title: "Tissues", intent: "When cells team up, they form tissues. Tissues are why skin behaves like a system — not isolated spots." },
+  "body-organization-the-study-of-it": { title: "Body Organization & The Study of It", intent: "Tissues become organs. Organs become systems. And then there are the sciences that study them." },
+  "cranial-bones": { title: "Cranial Bones", intent: "The bones that form the skull and protect the brain. You touch these every time you shampoo, cut, or style." },
+  "facial-bones": { title: "Facial Bones", intent: "The bones that shape the face. Every haircut, every makeup look, every consultation starts with these." },
+  "upper-body-bones": { title: "Upper Body Bones", intent: "Neck, shoulders, arms, hands — every bone you rely on to do your work as a stylist." },
+  "leg-foot-bones": { title: "Leg & Foot Bones", intent: "The bones that keep you standing all day on the salon floor." },
+  "muscle-foundations": { title: "Muscle Foundations", intent: "Before you learn any specific muscle, you need to know how muscles work." },
+  "scalp-brow-eye-muscles": { title: "Scalp, Brow & Eye Muscles", intent: "The muscles that move the scalp, raise the brows, and close the eyes. Every styling and brow service touches these." },
+  "mouth-lip-muscles": { title: "Mouth & Lip Muscles", intent: "Every smile, every pout, every lip color application engages these muscles." },
+  "jaw-chewing-muscles": { title: "Jaw & Chewing Muscles", intent: "The muscles that move the jaw — strong, often-clenched, and critical for facial massage." },
+  "neck-upper-back-muscles": { title: "Neck & Upper Back Muscles", intent: "The muscles that hold the head up and shape the upper back — heavily used in massage and styling." },
+  "arm-shoulder-muscles": { title: "Arm & Shoulder Muscles", intent: "The muscles your client uses to lift the arms — and the ones you use to do your job." },
+  "hand-muscles": { title: "Hand Muscles", intent: "The small muscles of the hand that give you the precision to do detailed work." },
+  "foot-lower-leg-muscles": { title: "Foot & Lower Leg Muscles", intent: "The muscles that get you through a full day on your feet — and matter in pedicure and reflexology work." },
+  "nervous-system": { title: "Nervous System", intent: "The body's communication network — how every touch, sensation, and reaction is processed." },
+  "circulatory-system": { title: "Circulatory System", intent: "The heart and the vessels that carry blood — the foundation of healthy skin, hair, and nails." },
+  "head-neck-circulation": { title: "Head & Neck Circulation", intent: "The specific arteries and veins of the head and neck — what every facial massage stylist should know." },
+  "glands-hormones-lymph": { title: "Glands, Hormones & Lymph", intent: "The slower communication networks — hormones, lymph, and the integumentary system tie it all together." },
 };
 
 function slugify(s: string) {
